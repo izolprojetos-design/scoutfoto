@@ -9,10 +9,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Upload as UploadIcon, X, ImageIcon } from 'lucide-react';
+import { Upload as UploadIcon, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { compressImage, createThumbnail } from '@/lib/imageCompression';
+import { logAudit } from '@/lib/auditLog';
 
 interface Branch {
   id: string;
@@ -21,16 +23,24 @@ interface Branch {
   icon: string;
 }
 
+interface Event {
+  id: string;
+  name: string;
+}
+
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_SIZE = 10 * 1024 * 1024;
 
 const Upload = () => {
   const { user } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [branchId, setBranchId] = useState('');
+  const [eventId, setEventId] = useState('');
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
   const [consent, setConsent] = useState(false);
+  const [responsibleName, setResponsibleName] = useState('');
   const [minorAge, setMinorAge] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'group' | 'public'>('group');
   const [file, setFile] = useState<File | null>(null);
@@ -43,7 +53,18 @@ const Upload = () => {
     supabase.from('branches').select('*').order('sort_order').then(({ data }) => {
       if (data) setBranches(data);
     });
+    supabase.from('events').select('id, name').order('event_date', { ascending: false }).then(({ data }) => {
+      if (data) setEvents(data);
+    });
   }, []);
+
+  // Force visibility when minor
+  useEffect(() => {
+    if (minorAge && parseInt(minorAge) > 0 && visibility === 'public') {
+      setVisibility('group');
+      toast.info('Fotos de menores não podem ser públicas.');
+    }
+  }, [minorAge, visibility]);
 
   const handleFile = (f: File) => {
     if (!ACCEPTED_TYPES.includes(f.type)) {
@@ -55,8 +76,7 @@ const Upload = () => {
       return;
     }
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreview(url);
+    setPreview(URL.createObjectURL(f));
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -68,46 +88,69 @@ const Upload = () => {
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file || !branchId || !user) return;
+
+    const hasMinor = minorAge && parseInt(minorAge) > 0;
+    if (hasMinor && !consent) {
+      toast.error('Consentimento obrigatório para fotos de menores.');
+      return;
+    }
     if (!consent) {
       toast.error('Você precisa confirmar o consentimento.');
       return;
     }
 
     setUploading(true);
-    setProgress(20);
+    setProgress(10);
+
+    // Compress image
+    const compressed = await compressImage(file);
+    setProgress(30);
+
+    // Create thumbnail
+    const thumbnail = await createThumbnail(file);
+    setProgress(40);
 
     const branch = branches.find(b => b.id === branchId);
     const ext = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${ext}`;
-    const storagePath = `${branch?.key}/${fileName}`;
+    const ts = Date.now();
+    const storagePath = `${branch?.key}/${ts}.${ext}`;
+    const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
 
-    setProgress(40);
-
+    // Upload main image
     const { error: uploadError } = await supabase.storage
       .from('images')
-      .upload(storagePath, file, { contentType: file.type });
+      .upload(storagePath, compressed, { contentType: compressed.type });
 
     if (uploadError) {
       toast.error('Erro no upload: ' + uploadError.message);
       setUploading(false);
       return;
     }
+    setProgress(60);
 
-    setProgress(70);
+    // Upload thumbnail
+    await supabase.storage
+      .from('images')
+      .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
+
+    setProgress(75);
 
     const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
 
-    const { error: dbError } = await supabase.from('images').insert({
+    const { data: imgData, error: dbError } = await supabase.from('images').insert({
       user_id: user.id,
       branch_id: branchId,
-      filename: fileName,
+      event_id: eventId || null,
+      filename: `${ts}.${ext}`,
       storage_path: storagePath,
+      thumbnail_path: thumbPath,
       caption,
       tags: parsedTags,
       consent,
-      minor_age: minorAge ? parseInt(minorAge) : null,
-      visibility,
-    });
+      responsible_name: responsibleName,
+      minor_age: hasMinor ? parseInt(minorAge) : null,
+      visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
+    }).select('id').single();
 
     if (dbError) {
       toast.error('Erro ao salvar: ' + dbError.message);
@@ -115,11 +158,8 @@ const Upload = () => {
       return;
     }
 
-    // Log upload
-    await supabase.from('upload_logs').insert({
-      user_id: user.id,
-      action: 'upload',
-    });
+    // Audit log
+    await logAudit(user.id, 'upload', imgData?.id);
 
     setProgress(100);
     toast.success('Foto enviada com sucesso!');
@@ -130,8 +170,10 @@ const Upload = () => {
     setCaption('');
     setTags('');
     setConsent(false);
+    setResponsibleName('');
     setMinorAge('');
     setVisibility('group');
+    setEventId('');
     setUploading(false);
     setProgress(0);
   };
@@ -172,10 +214,8 @@ const Upload = () => {
                 ) : (
                   <>
                     <UploadIcon className="mb-2 h-10 w-10 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Arraste uma imagem ou clique para selecionar
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB</p>
+                    <p className="text-sm text-muted-foreground">Arraste uma imagem ou clique para selecionar</p>
+                    <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB • Compressão automática</p>
                   </>
                 )}
                 <input
@@ -187,98 +227,81 @@ const Upload = () => {
                 />
               </div>
 
-              {/* Branch */}
-              <div className="space-y-2">
-                <Label>Ramo</Label>
-                <Select value={branchId} onValueChange={setBranchId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o ramo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {branches.map(b => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.icon} {b.display_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Ramo *</Label>
+                  <Select value={branchId} onValueChange={setBranchId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o ramo" /></SelectTrigger>
+                    <SelectContent>
+                      {branches.map(b => (
+                        <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Evento (opcional)</Label>
+                  <Select value={eventId} onValueChange={setEventId}>
+                    <SelectTrigger><SelectValue placeholder="Selecione o evento" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhum evento</SelectItem>
+                      {events.map(ev => (
+                        <SelectItem key={ev.id} value={ev.id}>{ev.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
-              {/* Caption */}
               <div className="space-y-2">
                 <Label>Descrição</Label>
-                <Textarea
-                  placeholder="Descreva a atividade..."
-                  value={caption}
-                  onChange={e => setCaption(e.target.value)}
-                  maxLength={500}
-                />
+                <Textarea placeholder="Descreva a atividade..." value={caption} onChange={e => setCaption(e.target.value)} maxLength={500} />
               </div>
 
-              {/* Tags */}
               <div className="space-y-2">
                 <Label>Tags (separadas por vírgula)</Label>
-                <Input
-                  placeholder="acampamento, trilha, cerimônia"
-                  value={tags}
-                  onChange={e => setTags(e.target.value)}
-                />
+                <Input placeholder="acampamento, trilha, cerimônia" value={tags} onChange={e => setTags(e.target.value)} />
               </div>
 
-              {/* Visibility */}
-              <div className="space-y-2">
-                <Label>Visibilidade</Label>
-                <Select value={visibility} onValueChange={(v: 'private' | 'group' | 'public') => setVisibility(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">🔒 Privada</SelectItem>
-                    <SelectItem value="group">👥 Grupo</SelectItem>
-                    <SelectItem value="public">🌍 Pública</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="space-y-2">
+                  <Label>Visibilidade</Label>
+                  <Select value={visibility} onValueChange={(v: 'private' | 'group' | 'public') => setVisibility(v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="private">🔒 Privada</SelectItem>
+                      <SelectItem value="group">👥 Grupo</SelectItem>
+                      <SelectItem value="public" disabled={!!minorAge && parseInt(minorAge) > 0}>🌍 Pública</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Idade do menor</Label>
+                  <Input type="number" min="1" max="17" placeholder="Se aplicável" value={minorAge} onChange={e => setMinorAge(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Nome do responsável</Label>
+                  <Input placeholder="Se menor" value={responsibleName} onChange={e => setResponsibleName(e.target.value)} />
+                </div>
               </div>
 
-              {/* Minor age */}
-              <div className="space-y-2">
-                <Label>Idade do menor (se aplicável)</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="17"
-                  placeholder="Deixe vazio se não houver menor"
-                  value={minorAge}
-                  onChange={e => setMinorAge(e.target.value)}
-                />
-              </div>
-
-              {/* Consent */}
               <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
-                <Checkbox
-                  id="consent"
-                  checked={consent}
-                  onCheckedChange={(checked) => setConsent(checked === true)}
-                />
+                <Checkbox id="consent" checked={consent} onCheckedChange={(checked) => setConsent(checked === true)} />
                 <Label htmlFor="consent" className="text-sm leading-snug">
                   Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram com sua publicação.
                 </Label>
               </div>
 
-              {/* Progress */}
               {uploading && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <Progress value={progress} className="h-2" />
-                  <p className="mt-1 text-center text-xs text-muted-foreground">Enviando...</p>
+                  <p className="mt-1 text-center text-xs text-muted-foreground">
+                    {progress < 30 ? 'Comprimindo...' : progress < 60 ? 'Enviando...' : progress < 90 ? 'Salvando...' : 'Concluído!'}
+                  </p>
                 </motion.div>
               )}
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={!file || !branchId || !consent || uploading}
-                size="lg"
-              >
+              <Button type="submit" className="w-full" disabled={!file || !branchId || !consent || uploading} size="lg">
                 <UploadIcon className="mr-2 h-4 w-4" />
                 Enviar Foto
               </Button>

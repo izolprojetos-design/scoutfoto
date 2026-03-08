@@ -25,7 +25,9 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   isAdmin: boolean;
+  isChefe: boolean;
   canUpload: boolean;
+  canViewMinors: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -108,10 +110,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const hasRole = (role: AppRole) => roles.includes(role);
   const isAdmin = hasRole('admin');
-  const canUpload = isAdmin || hasRole('uploader');
+  const isChefe = hasRole('chefe');
+  const canUpload = isAdmin || isChefe || hasRole('uploader');
+  const canViewMinors = isAdmin || isChefe;
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signUp, signOut, hasRole, isAdmin, canUpload }}>
+    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signUp, signOut, hasRole, isAdmin, isChefe, canUpload, canViewMinors }}>
       {children}
     </AuthContext.Provider>
   );
