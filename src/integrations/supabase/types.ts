@@ -73,6 +73,50 @@ export type Database = {
         }
         Relationships: []
       }
+      event_share_links: {
+        Row: {
+          created_at: string
+          created_by: string
+          event_id: string
+          expires_at: string
+          id: string
+          is_active: boolean
+          max_views: number | null
+          token: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          event_id: string
+          expires_at: string
+          id?: string
+          is_active?: boolean
+          max_views?: number | null
+          token?: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event_id?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean
+          max_views?: number | null
+          token?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_share_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           branch_id: string | null
@@ -283,7 +327,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "uploader" | "viewer" | "chefe"
+      app_role: "admin" | "uploader" | "viewer" | "chefe" | "parent"
       image_visibility: "private" | "group" | "public"
     }
     CompositeTypes: {
@@ -412,7 +456,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "uploader", "viewer", "chefe"],
+      app_role: ["admin", "uploader", "viewer", "chefe", "parent"],
       image_visibility: ["private", "group", "public"],
     },
   },
