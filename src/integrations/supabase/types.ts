@@ -14,16 +14,182 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      branches: {
+        Row: {
+          display_name: string
+          icon: string
+          id: string
+          key: string
+          sort_order: number
+        }
+        Insert: {
+          display_name: string
+          icon?: string
+          id?: string
+          key: string
+          sort_order?: number
+        }
+        Update: {
+          display_name?: string
+          icon?: string
+          id?: string
+          key?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      images: {
+        Row: {
+          branch_id: string
+          caption: string | null
+          consent: boolean
+          created_at: string
+          filename: string
+          id: string
+          minor_age: number | null
+          storage_path: string
+          tags: string[] | null
+          thumbnail_path: string | null
+          user_id: string
+          visibility: Database["public"]["Enums"]["image_visibility"]
+        }
+        Insert: {
+          branch_id: string
+          caption?: string | null
+          consent?: boolean
+          created_at?: string
+          filename: string
+          id?: string
+          minor_age?: number | null
+          storage_path: string
+          tags?: string[] | null
+          thumbnail_path?: string | null
+          user_id: string
+          visibility?: Database["public"]["Enums"]["image_visibility"]
+        }
+        Update: {
+          branch_id?: string
+          caption?: string | null
+          consent?: boolean
+          created_at?: string
+          filename?: string
+          id?: string
+          minor_age?: number | null
+          storage_path?: string
+          tags?: string[] | null
+          thumbnail_path?: string | null
+          user_id?: string
+          visibility?: Database["public"]["Enums"]["image_visibility"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "images_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      upload_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          image_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          image_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          image_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "upload_logs_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "uploader" | "viewer"
+      image_visibility: "private" | "group" | "public"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +316,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "uploader", "viewer"],
+      image_visibility: ["private", "group", "public"],
+    },
   },
 } as const
