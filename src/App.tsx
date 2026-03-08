@@ -12,6 +12,7 @@ import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
+import EventPortal from "./pages/EventPortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
