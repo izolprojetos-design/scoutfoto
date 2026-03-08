@@ -12,6 +12,7 @@ import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
+import EventPortal from "./pages/EventPortal";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/gallery/:branchKey" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
+            <Route path="/evento/:token" element={<EventPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

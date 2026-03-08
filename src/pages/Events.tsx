@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import ShareLinkDialog from '@/components/ShareLinkDialog';
 
 interface Branch {
   id: string;
@@ -44,6 +45,7 @@ const Events = () => {
   const [eventDate, setEventDate] = useState('');
   const [location, setLocation] = useState('');
   const [branchId, setBranchId] = useState('');
+  const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
     const { data } = await supabase
@@ -202,11 +204,33 @@ const Events = () => {
                       <Badge variant="secondary">{getBranchName(event.branch_id)}</Badge>
                     )}
                   </div>
+                  {(isAdmin || isChefe) && (
+                    <div className="mt-3 pt-3 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 w-full"
+                        onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        Compartilhar com pais
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
+      )}
+
+      {shareEvent && (
+        <ShareLinkDialog
+          open={!!shareEvent}
+          onOpenChange={(open) => !open && setShareEvent(null)}
+          eventId={shareEvent.id}
+          eventName={shareEvent.name}
+        />
       )}
     </AppLayout>
   );

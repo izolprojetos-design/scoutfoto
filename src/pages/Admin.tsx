@@ -213,6 +213,7 @@ const Admin = () => {
                       <SelectItem value="chefe">Chefe</SelectItem>
                       <SelectItem value="uploader">Uploader</SelectItem>
                       <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -254,6 +255,7 @@ const Admin = () => {
                                 <SelectItem value="chefe">Chefe</SelectItem>
                                 <SelectItem value="uploader">Uploader</SelectItem>
                                 <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="parent">Parent</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button variant="outline" size="sm" onClick={() => toggleActive(u.user_id, u.is_active)} disabled={u.user_id === user?.id}>
