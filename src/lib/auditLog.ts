@@ -8,10 +8,10 @@ export const logAudit = async (
   imageId?: string,
   details?: Record<string, unknown>
 ) => {
-  await supabase.from('audit_logs').insert({
+  await supabase.from('audit_logs').insert([{
     user_id: userId,
     action,
     image_id: imageId || null,
-    details: details || {},
-  });
+    details: (details || {}) as any,
+  }]);
 };
