@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          image_id: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          image_id?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          image_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           display_name: string
@@ -38,19 +73,64 @@ export type Database = {
         }
         Relationships: []
       }
+      events: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          event_date: string | null
+          id: string
+          location: string | null
+          name: string
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          name: string
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       images: {
         Row: {
           branch_id: string
           caption: string | null
           consent: boolean
           created_at: string
+          downloads: number
+          event_id: string | null
           filename: string
           id: string
           minor_age: number | null
+          responsible_name: string | null
           storage_path: string
           tags: string[] | null
           thumbnail_path: string | null
           user_id: string
+          views: number
           visibility: Database["public"]["Enums"]["image_visibility"]
         }
         Insert: {
@@ -58,13 +138,17 @@ export type Database = {
           caption?: string | null
           consent?: boolean
           created_at?: string
+          downloads?: number
+          event_id?: string | null
           filename: string
           id?: string
           minor_age?: number | null
+          responsible_name?: string | null
           storage_path: string
           tags?: string[] | null
           thumbnail_path?: string | null
           user_id: string
+          views?: number
           visibility?: Database["public"]["Enums"]["image_visibility"]
         }
         Update: {
@@ -72,13 +156,17 @@ export type Database = {
           caption?: string | null
           consent?: boolean
           created_at?: string
+          downloads?: number
+          event_id?: string | null
           filename?: string
           id?: string
           minor_age?: number | null
+          responsible_name?: string | null
           storage_path?: string
           tags?: string[] | null
           thumbnail_path?: string | null
           user_id?: string
+          views?: number
           visibility?: Database["public"]["Enums"]["image_visibility"]
         }
         Relationships: [
@@ -87,6 +175,13 @@ export type Database = {
             columns: ["branch_id"]
             isOneToOne: false
             referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "images_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
