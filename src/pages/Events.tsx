@@ -11,10 +11,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import ShareLinkDialog from '@/components/ShareLinkDialog';
 
 interface Branch {
   id: string;
