@@ -213,6 +213,7 @@ const Admin = () => {
                       <SelectItem value="chefe">Chefe</SelectItem>
                       <SelectItem value="uploader">Uploader</SelectItem>
                       <SelectItem value="viewer">Viewer</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

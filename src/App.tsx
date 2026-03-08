@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/gallery/:branchKey" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
+            <Route path="/evento/:token" element={<EventPortal />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

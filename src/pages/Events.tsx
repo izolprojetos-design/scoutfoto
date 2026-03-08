@@ -204,11 +204,33 @@ const Events = () => {
                       <Badge variant="secondary">{getBranchName(event.branch_id)}</Badge>
                     )}
                   </div>
+                  {(isAdmin || isChefe) && (
+                    <div className="mt-3 pt-3 border-t">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-2 w-full"
+                        onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                        Compartilhar com pais
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
           ))}
         </div>
+      )}
+
+      {shareEvent && (
+        <ShareLinkDialog
+          open={!!shareEvent}
+          onOpenChange={(open) => !open && setShareEvent(null)}
+          eventId={shareEvent.id}
+          eventName={shareEvent.name}
+        />
       )}
     </AppLayout>
   );
