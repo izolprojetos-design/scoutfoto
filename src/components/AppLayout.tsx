@@ -1,12 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Upload, Settings, Home, Menu, X } from 'lucide-react';
+import { LogOut, Upload, Settings, Home, Menu, X, Calendar } from 'lucide-react';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { profile, signOut, isAdmin, canUpload } = useAuth();
+  const { profile, signOut, isAdmin, isChefe, canUpload } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,12 +18,12 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: Home, show: true },
     { to: '/upload', label: 'Upload', icon: Upload, show: canUpload },
+    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe },
     { to: '/admin', label: 'Admin', icon: Settings, show: isAdmin },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Link to="/dashboard" className="flex items-center gap-2">
@@ -34,7 +33,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             </span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden items-center gap-1 md:flex">
             {navItems.filter(i => i.show).map(item => (
               <Link key={item.to} to={item.to}>
@@ -68,7 +66,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
 
-        {/* Mobile nav */}
         {mobileMenuOpen && (
           <div className="border-t bg-background p-4 md:hidden">
             <nav className="flex flex-col gap-1">
