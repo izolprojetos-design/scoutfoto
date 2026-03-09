@@ -60,6 +60,7 @@ const Scouts = () => {
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
