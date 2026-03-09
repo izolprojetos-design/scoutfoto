@@ -71,6 +71,7 @@ const Scouts = () => {
   const [editBirth, setEditBirth] = useState('');
   const [editGroup, setEditGroup] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editBranch, setEditBranch] = useState('auto');
   const [editPhoto, setEditPhoto] = useState<File | null>(null);
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [editUploading, setEditUploading] = useState(false);
