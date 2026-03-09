@@ -10,12 +10,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, Calendar, ArrowRightLeft, UserPlus, Trash2, Camera } from 'lucide-react';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { motion } from 'framer-motion';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   getCurrentBranch,
   getNextBranchChange,
@@ -61,6 +58,18 @@ const Scouts = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
+  const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
+
+  // Edit state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingScout, setEditingScout] = useState<Scout | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editBirth, setEditBirth] = useState('');
+  const [editGroup, setEditGroup] = useState('');
+  const [editNotes, setEditNotes] = useState('');
+  const [editPhoto, setEditPhoto] = useState<File | null>(null);
+  const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
+  const [editUploading, setEditUploading] = useState(false);
 
   // Scout form
   const [scoutName, setScoutName] = useState('');
@@ -89,6 +98,15 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const toggleExpand = (id: string) => {
+    setExpandedScouts(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -98,14 +116,22 @@ const Scouts = () => {
     reader.readAsDataURL(file);
   };
 
-  const uploadPhoto = async (scoutId: string): Promise<string | null> => {
-    if (!scoutPhoto) return null;
-    const ext = scoutPhoto.name.split('.').pop();
+  const handleEditPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditPhoto(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setEditPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadPhoto = async (scoutId: string, photo: File): Promise<string | null> => {
+    const ext = photo.name.split('.').pop();
     const path = `${scoutId}.${ext}`;
-    const { error } = await supabase.storage.from('scout-photos').upload(path, scoutPhoto, { upsert: true });
+    const { error } = await supabase.storage.from('scout-photos').upload(path, photo, { upsert: true });
     if (error) { console.error('Upload error:', error); return null; }
     const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
-    return publicUrl;
+    return `${publicUrl}?t=${Date.now()}`;
   };
 
   const handleCreateScout = async (e: React.FormEvent) => {
@@ -128,7 +154,7 @@ const Scouts = () => {
     }
 
     if (scoutPhoto && data) {
-      const photoUrl = await uploadPhoto(data.id);
+      const photoUrl = await uploadPhoto(data.id, scoutPhoto);
       if (photoUrl) {
         await supabase.from('scouts').update({ photo_url: photoUrl }).eq('id', data.id);
       }
@@ -140,6 +166,46 @@ const Scouts = () => {
     setScoutPhoto(null); setScoutPhotoPreview(null);
     setUploading(false);
     fetchData();
+  };
+
+  const openEditDialog = (scout: Scout) => {
+    setEditingScout(scout);
+    setEditName(scout.name);
+    setEditBirth(scout.birth_date);
+    setEditGroup(scout.scout_group);
+    setEditNotes(scout.notes || '');
+    setEditPhoto(null);
+    setEditPhotoPreview(scout.photo_url);
+    setEditDialogOpen(true);
+  };
+
+  const handleEditScout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingScout) return;
+    setEditUploading(true);
+
+    let photoUrl = editingScout.photo_url;
+    if (editPhoto) {
+      const uploaded = await uploadPhoto(editingScout.id, editPhoto);
+      if (uploaded) photoUrl = uploaded;
+    }
+
+    const { error } = await supabase.from('scouts').update({
+      name: editName,
+      birth_date: editBirth,
+      scout_group: editGroup,
+      notes: editNotes,
+      photo_url: photoUrl,
+    }).eq('id', editingScout.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar: ' + error.message);
+    } else {
+      toast.success('Jovem atualizado com sucesso!');
+      setEditDialogOpen(false);
+      fetchData();
+    }
+    setEditUploading(false);
   };
 
   const handleAddGuardian = async (e: React.FormEvent) => {
@@ -187,14 +253,78 @@ const Scouts = () => {
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
 
+  const renderScoutForm = (
+    onSubmit: (e: React.FormEvent) => Promise<void>,
+    name: string, setName: (v: string) => void,
+    birth: string, setBirth: (v: string) => void,
+    group: string, setGroup: (v: string) => void,
+    notes: string, setNotes: (v: string) => void,
+    photoPreview: string | null,
+    onPhotoSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    isUploading: boolean,
+    submitLabel: string,
+    photoInputId: string,
+  ) => (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="flex flex-col items-center gap-3">
+        <label htmlFor={photoInputId} className="cursor-pointer">
+          <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+            {photoPreview ? (
+              <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+            ) : (
+              <Camera className="h-6 w-6 text-muted-foreground" />
+            )}
+          </div>
+        </label>
+        <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
+        <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Nome completo *</Label>
+        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Data de nascimento *</Label>
+          <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
+        </div>
+        <div className="space-y-2">
+          <Label>Grupo escoteiro</Label>
+          <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 123º GE SP" className="h-11" />
+        </div>
+      </div>
+      {birth && (
+        <div className="rounded-lg bg-muted/50 p-3 space-y-1">
+          <p className="text-sm font-medium">Idade: {formatAge(new Date(birth))}</p>
+          {getCurrentBranch(new Date(birth)) && (
+            <p className="text-sm text-muted-foreground">
+              Ramo atual: {getCurrentBranch(new Date(birth))!.icon} {getCurrentBranch(new Date(birth))!.name}
+            </p>
+          )}
+          {getNextBranchChange(new Date(birth)) && (
+            <p className="text-sm text-muted-foreground">
+              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatMonthsLeft(getNextBranchChange(new Date(birth))!.monthsLeft)}
+            </p>
+          )}
+        </div>
+      )}
+      <div className="space-y-2">
+        <Label>Observações</Label>
+        <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas adicionais..." />
+      </div>
+      <Button type="submit" className="w-full h-11 font-semibold" disabled={isUploading}>
+        {isUploading ? 'Salvando...' : submitLabel}
+      </Button>
+    </form>
+  );
+
   return (
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Jovens Escoteiros</h1>
-          <p className="mt-1 text-muted-foreground">
-            {scouts.length} jovens cadastrados
-          </p>
+          <p className="mt-1 text-muted-foreground">{scouts.length} jovens cadastrados</p>
         </div>
         {(isAdmin || isChefe || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -208,61 +338,18 @@ const Scouts = () => {
               <DialogHeader>
                 <DialogTitle>Cadastrar Jovem Escoteiro</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleCreateScout} className="space-y-4">
-                {/* Photo upload */}
-                <div className="flex flex-col items-center gap-3">
-                  <label htmlFor="scout-photo" className="cursor-pointer">
-                    <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
-                      {scoutPhotoPreview ? (
-                        <img src={scoutPhotoPreview} alt="Preview" className="h-full w-full object-cover" />
-                      ) : (
-                        <Camera className="h-6 w-6 text-muted-foreground" />
-                      )}
-                    </div>
-                  </label>
-                  <input id="scout-photo" type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
-                  <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Nome completo *</Label>
-                  <Input value={scoutName} onChange={e => setScoutName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Data de nascimento *</Label>
-                    <Input type="date" value={scoutBirth} onChange={e => setScoutBirth(e.target.value)} required className="h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Grupo escoteiro</Label>
-                    <Input value={scoutGroup} onChange={e => setScoutGroup(e.target.value)} placeholder="Ex: 123º GE SP" className="h-11" />
-                  </div>
-                </div>
-                {scoutBirth && (
-                  <div className="rounded-lg bg-muted/50 p-3 space-y-1">
-                    <p className="text-sm font-medium">
-                      Idade: {formatAge(new Date(scoutBirth))}
-                    </p>
-                    {getCurrentBranch(new Date(scoutBirth)) && (
-                      <p className="text-sm text-muted-foreground">
-                        Ramo atual: {getCurrentBranch(new Date(scoutBirth))!.icon} {getCurrentBranch(new Date(scoutBirth))!.name}
-                      </p>
-                    )}
-                    {getNextBranchChange(new Date(scoutBirth)) && (
-                      <p className="text-sm text-muted-foreground">
-                        Mudança para {getNextBranchChange(new Date(scoutBirth))!.branch.name}: {formatMonthsLeft(getNextBranchChange(new Date(scoutBirth))!.monthsLeft)}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <div className="space-y-2">
-                  <Label>Observações</Label>
-                  <Textarea value={scoutNotes} onChange={e => setScoutNotes(e.target.value)} placeholder="Notas adicionais..." />
-                </div>
-                <Button type="submit" className="w-full h-11 font-semibold" disabled={uploading}>
-                  {uploading ? 'Cadastrando...' : 'Cadastrar'}
-                </Button>
-              </form>
+              {renderScoutForm(
+                handleCreateScout,
+                scoutName, setScoutName,
+                scoutBirth, setScoutBirth,
+                scoutGroup, setScoutGroup,
+                scoutNotes, setScoutNotes,
+                scoutPhotoPreview,
+                handlePhotoSelect,
+                uploading,
+                'Cadastrar',
+                'scout-photo-create',
+              )}
             </DialogContent>
           </Dialog>
         )}
@@ -288,7 +375,7 @@ const Scouts = () => {
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-48 animate-pulse rounded-xl bg-muted" />)}
+          {[...Array(6)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />)}
         </div>
       ) : filteredScouts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
@@ -304,6 +391,7 @@ const Scouts = () => {
             const branch = getCurrentBranch(new Date(scout.birth_date));
             const nextChange = getNextBranchChange(new Date(scout.birth_date));
             const scoutGuardians = getGuardiansForScout(scout.id);
+            const isExpanded = expandedScouts.has(scout.id);
 
             return (
               <motion.div
@@ -312,104 +400,146 @@ const Scouts = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
-                <Card className="border bg-card shadow-sm hover:shadow-md transition-shadow">
-                  <CardContent className="p-5">
-                    <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                        {scout.photo_url ? (
-                          <img
-                            src={scout.photo_url}
-                            alt={scout.name}
-                            className="h-12 w-12 rounded-xl object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
-                            {branch?.icon || '⚜️'}
-                          </div>
-                        )}
-                        <div>
-                          <h3 className="font-semibold tracking-tight">{scout.name}</h3>
-                          <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
+                <Card className="border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                  <CardContent className="p-0">
+                    {/* Main row: photo, branch, name, age */}
+                    <div className="flex items-center gap-3 p-4">
+                      {scout.photo_url ? (
+                        <img
+                          src={scout.photo_url}
+                          alt={scout.name}
+                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
+                          {branch?.icon || '⚜️'}
                         </div>
-                      </div>
-                      {(isAdmin || isChefe) && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
-                              <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
                       )}
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {branch && (
-                        <Badge className={`${branchColorMap[branch.color]} border font-normal`}>
-                          {branch.icon} {branch.name}
-                        </Badge>
-                      )}
-                      {scout.scout_group && (
-                        <Badge variant="outline" className="font-normal">{scout.scout_group}</Badge>
-                      )}
-                    </div>
-
-                    {nextChange && (
-                      <div className="rounded-lg bg-muted/50 p-2.5 mb-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
-                          <span className="text-muted-foreground">
-                            {nextChange.branch.icon} {nextChange.branch.name} em{' '}
-                            <span className="font-medium text-foreground">{formatMonthsLeft(nextChange.monthsLeft)}</span>
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Guardians */}
-                    <div className="flex items-center justify-between">
-                      <div className="text-xs text-muted-foreground">
-                        {scoutGuardians.length > 0 ? (
-                          <span>{scoutGuardians.length} responsável(is)</span>
-                        ) : (
-                          <span className="text-amber-600">Sem responsável</span>
-                        )}
-                      </div>
-                      {(isAdmin || isChefe) && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-7 gap-1 text-xs"
-                          onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
-                        >
-                          <UserPlus className="h-3 w-3" />
-                          Responsável
-                        </Button>
-                      )}
-                    </div>
-
-                    {scoutGuardians.length > 0 && (
-                      <div className="mt-2 space-y-1">
-                        {scoutGuardians.map(g => (
-                          <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                            <span>{g.name}</span>
-                            <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
-                              {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold tracking-tight truncate">{scout.name}</h3>
+                        <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
+                        <div className="flex gap-1.5 mt-1">
+                          {branch && (
+                            <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
+                              {branch.icon} {branch.name}
                             </Badge>
-                          </div>
-                        ))}
+                          )}
+                          {scout.scout_group && (
+                            <Badge variant="outline" className="font-normal text-xs">{scout.scout_group}</Badge>
+                          )}
+                        </div>
                       </div>
-                    )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 flex-shrink-0"
+                        onClick={() => toggleExpand(scout.id)}
+                      >
+                        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      </Button>
+                    </div>
+
+                    {/* Expandable details */}
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-4 pb-4 space-y-3 border-t pt-3">
+                            {nextChange && (
+                              <div className="rounded-lg bg-muted/50 p-2.5">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="text-muted-foreground">
+                                    {nextChange.branch.icon} {nextChange.branch.name} em{' '}
+                                    <span className="font-medium text-foreground">{formatMonthsLeft(nextChange.monthsLeft)}</span>
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+
+                            {scout.notes && (
+                              <div className="text-sm text-muted-foreground">
+                                <span className="font-medium text-foreground">Obs:</span> {scout.notes}
+                              </div>
+                            )}
+
+                            {/* Guardians */}
+                            <div>
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-medium text-muted-foreground">
+                                  {scoutGuardians.length > 0
+                                    ? `${scoutGuardians.length} responsável(is)`
+                                    : <span className="text-amber-600">Sem responsável</span>}
+                                </span>
+                                {(isAdmin || isChefe) && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 gap-1 text-xs"
+                                    onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
+                                  >
+                                    <UserPlus className="h-3 w-3" />
+                                    Responsável
+                                  </Button>
+                                )}
+                              </div>
+                              {scoutGuardians.length > 0 && (
+                                <div className="space-y-1">
+                                  {scoutGuardians.map(g => (
+                                    <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
+                                      <span>{g.name}</span>
+                                      <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
+                                        {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
+                                      </Badge>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
+                            <div className="flex gap-2 pt-1">
+                              {(isAdmin || isChefe) && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1.5 flex-1"
+                                  onClick={() => openEditDialog(scout)}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                  Editar
+                                </Button>
+                              )}
+                              {isAdmin && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button variant="destructive" size="sm" className="gap-1.5">
+                                      <Trash2 className="h-3.5 w-3.5" />
+                                      Excluir
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
+                                      <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -417,6 +547,27 @@ const Scouts = () => {
           })}
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Jovem Escoteiro</DialogTitle>
+          </DialogHeader>
+          {renderScoutForm(
+            handleEditScout,
+            editName, setEditName,
+            editBirth, setEditBirth,
+            editGroup, setEditGroup,
+            editNotes, setEditNotes,
+            editPhotoPreview,
+            handleEditPhotoSelect,
+            editUploading,
+            'Salvar Alterações',
+            'scout-photo-edit',
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Guardian Dialog */}
       <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
