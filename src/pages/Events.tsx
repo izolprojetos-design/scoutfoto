@@ -131,7 +131,7 @@ const Events = () => {
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Nome do evento</Label>
-                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Acampamento de Inverno" className="h-11" />
+                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Acampamento no Água Boa" className="h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>Descrição</Label>
@@ -144,7 +144,7 @@ const Events = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Local</Label>
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra da Mantiqueira" className="h-11" />
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Serra Grande" className="h-11" />
                   </div>
                 </div>
                 <div className="space-y-2">
