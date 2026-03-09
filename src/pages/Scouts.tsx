@@ -232,7 +232,7 @@ const Scouts = () => {
     if (error) {
       toast.error('Erro ao atualizar: ' + error.message);
     } else {
-      toast.success('Jovem atualizado com sucesso!');
+      toast.success('Membro atualizado com sucesso!');
       setEditDialogOpen(false);
       fetchData();
     }
