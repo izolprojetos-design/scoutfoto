@@ -13,6 +13,8 @@ import Gallery from "./pages/Gallery";
 import Events from "./pages/Events";
 import Admin from "./pages/Admin";
 import EventPortal from "./pages/EventPortal";
+import Scouts from "./pages/Scouts";
+import ScoutCalendar from "./pages/ScoutCalendar";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +33,8 @@ const App = () => (
             <Route path="/upload" element={<ProtectedRoute requiredRole="uploader"><Upload /></ProtectedRoute>} />
             <Route path="/gallery/:branchKey" element={<ProtectedRoute><Gallery /></ProtectedRoute>} />
             <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+            <Route path="/scouts" element={<ProtectedRoute><Scouts /></ProtectedRoute>} />
+            <Route path="/calendar" element={<ProtectedRoute><ScoutCalendar /></ProtectedRoute>} />
             <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
             <Route path="/evento/:token" element={<EventPortal />} />
             <Route path="*" element={<NotFound />} />

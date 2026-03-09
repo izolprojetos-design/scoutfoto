@@ -158,6 +158,50 @@ export type Database = {
           },
         ]
       }
+      guardians: {
+        Row: {
+          authorization_date: string | null
+          created_at: string
+          created_by: string
+          email: string
+          id: string
+          image_authorization: boolean
+          name: string
+          phone: string | null
+          scout_id: string
+        }
+        Insert: {
+          authorization_date?: string | null
+          created_at?: string
+          created_by: string
+          email?: string
+          id?: string
+          image_authorization?: boolean
+          name: string
+          phone?: string | null
+          scout_id: string
+        }
+        Update: {
+          authorization_date?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string
+          id?: string
+          image_authorization?: boolean
+          name?: string
+          phone?: string | null
+          scout_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardians_scout_id_fkey"
+            columns: ["scout_id"]
+            isOneToOne: false
+            referencedRelation: "scouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       images: {
         Row: {
           branch_id: string
@@ -260,6 +304,42 @@ export type Database = {
           name?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      scouts: {
+        Row: {
+          birth_date: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          notes: string | null
+          photo_url: string | null
+          scout_group: string
+          updated_at: string
+        }
+        Insert: {
+          birth_date: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          notes?: string | null
+          photo_url?: string | null
+          scout_group?: string
+          updated_at?: string
+        }
+        Update: {
+          birth_date?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          photo_url?: string | null
+          scout_group?: string
+          updated_at?: string
         }
         Relationships: []
       }
