@@ -35,6 +35,7 @@ const MAX_SIZE = 10 * 1024 * 1024;
 
 const Upload = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [branchId, setBranchId] = useState('');
