@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Upload as UploadIcon, X } from 'lucide-react';
+import { Upload as UploadIcon, X, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
 import { logAudit } from '@/lib/auditLog';
