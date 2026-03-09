@@ -268,7 +268,7 @@ const Scouts = () => {
     if (error) {
       toast.error('Erro ao excluir: ' + error.message);
     } else {
-      toast.success('Jovem excluído!');
+      toast.success('Membro excluído!');
       fetchData();
     }
   };
