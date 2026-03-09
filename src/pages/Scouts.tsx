@@ -60,6 +60,7 @@ const Scouts = () => {
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
+  const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -437,7 +438,8 @@ const Scouts = () => {
                         <img
                           src={scout.photo_url}
                           alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0"
+                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
+                          onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
                         />
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
@@ -642,6 +644,22 @@ const Scouts = () => {
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCropComplete}
       />
+
+      {/* Photo viewer dialog */}
+      <Dialog open={!!viewingPhoto} onOpenChange={() => setViewingPhoto(null)}>
+        <DialogContent className="max-w-lg p-2 bg-background/95 backdrop-blur">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Foto do jovem</DialogTitle>
+          </DialogHeader>
+          {viewingPhoto && (
+            <img
+              src={viewingPhoto}
+              alt="Foto do jovem"
+              className="w-full h-auto rounded-lg object-contain max-h-[80vh]"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
