@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Upload, Settings, Home, Menu, X, Calendar, User, ChevronDown } from 'lucide-react';
+import { LogOut, Upload, Settings, Home, Menu, X, Calendar, User, ChevronDown, Users, CalendarDays } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
