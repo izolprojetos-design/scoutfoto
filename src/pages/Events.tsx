@@ -196,22 +196,30 @@ const Events = () => {
           <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
-        {(isAdmin || isChefe) && (
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 shadow-sm">
-                <Plus className="h-4 w-4" />
-                Novo Evento
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Evento</DialogTitle>
-              </DialogHeader>
-              {renderForm(handleCreate, "Criar Evento")}
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex gap-2">
+          {canUpload && (
+            <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
+              <Upload className="h-4 w-4" />
+              Upload
+            </Button>
+          )}
+          {(isAdmin || isChefe) && (
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 shadow-sm">
+                  <Plus className="h-4 w-4" />
+                  Novo Evento
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Evento</DialogTitle>
+                </DialogHeader>
+                {renderForm(handleCreate, "Criar Evento")}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       {loading ? (
