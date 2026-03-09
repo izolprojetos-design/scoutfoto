@@ -322,7 +322,7 @@ const Scouts = () => {
         </div>
         <div className="space-y-2">
           <Label>Grupo escoteiro</Label>
-          <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 123º GE SP" className="h-11" />
+          <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 12º GEMC" className="h-11" />
         </div>
       </div>
       {birth && (
