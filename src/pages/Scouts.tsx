@@ -635,6 +635,13 @@ const Scouts = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ImageCropper
+        open={cropperOpen}
+        imageSrc={cropperImage}
+        onClose={() => setCropperOpen(false)}
+        onCropComplete={handleCropComplete}
+      />
     </AppLayout>
   );
 };
