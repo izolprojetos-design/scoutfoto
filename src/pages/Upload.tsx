@@ -225,6 +225,14 @@ const Upload = () => {
                   className="hidden"
                   onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
+                <input
+                  id="camera-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
