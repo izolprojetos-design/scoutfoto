@@ -4,13 +4,15 @@ import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity } from 'lucide-react';
+import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
@@ -50,6 +52,21 @@ const Admin = () => {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
+  // Create user form
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<AppRole>('viewer');
+  const [creating, setCreating] = useState(false);
+
+  // Reset password form
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetUserId, setResetUserId] = useState('');
+  const [resetUserName, setResetUserName] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetting, setResetting] = useState(false);
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
@@ -73,7 +90,6 @@ const Admin = () => {
 
   const fetchStats = async () => {
     const { count: totalImages } = await supabase.from('images').select('*', { count: 'exact', head: true });
-
     const { data: branches } = await supabase.from('branches').select('id, display_name');
     const branchCounts: { name: string; count: number }[] = [];
     if (branches) {
@@ -82,11 +98,9 @@ const Admin = () => {
         branchCounts.push({ name: b.display_name, count: count || 0 });
       }
     }
-
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { count: recentUploads } = await supabase.from('images').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-
     setStats({ totalImages: totalImages || 0, branchCounts, recentUploads: recentUploads || 0 });
   };
 
@@ -124,6 +138,63 @@ const Admin = () => {
       toast.success(currentActive ? 'Usuário desativado' : 'Usuário ativado');
       fetchUsers();
     }
+  };
+
+  const handleCreateUser = async () => {
+    if (!newName || !newEmail || !newPassword) {
+      toast.error('Preencha todos os campos');
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error('Senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    setCreating(true);
+
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole },
+    });
+
+    if (error || data?.error) {
+      toast.error('Erro ao criar usuário: ' + (data?.error || error?.message));
+    } else {
+      toast.success('Usuário criado com sucesso!');
+      setCreateOpen(false);
+      setNewName('');
+      setNewEmail('');
+      setNewPassword('');
+      setNewRole('viewer');
+      fetchUsers();
+    }
+    setCreating(false);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetPassword || resetPassword.length < 6) {
+      toast.error('Senha deve ter pelo menos 6 caracteres');
+      return;
+    }
+    setResetting(true);
+
+    const { data, error } = await supabase.functions.invoke('admin-create-user', {
+      body: { action: 'reset-password', user_id: resetUserId, new_password: resetPassword },
+    });
+
+    if (error || data?.error) {
+      toast.error('Erro: ' + (data?.error || error?.message));
+    } else {
+      toast.success('Senha redefinida com sucesso!');
+      setResetOpen(false);
+      setResetPassword('');
+    }
+    setResetting(false);
+  };
+
+  const openResetDialog = (userId: string, userName: string) => {
+    setResetUserId(userId);
+    setResetUserName(userName);
+    setResetPassword('');
+    setResetOpen(true);
   };
 
   const filtered = users.filter(u => {
@@ -200,8 +271,8 @@ const Admin = () => {
                   <Users className="h-5 w-5" />
                   Usuários ({filtered.length})
                 </CardTitle>
-                <div className="flex gap-2">
-                  <div className="relative flex-1">
+                <div className="flex flex-wrap gap-2">
+                  <div className="relative flex-1 min-w-[160px]">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
                   </div>
@@ -216,6 +287,52 @@ const Admin = () => {
                       <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
+
+                  {/* Create User Button */}
+                  <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Criar Usuário
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Criar novo usuário</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 pt-2">
+                        <div className="space-y-2">
+                          <Label>Nome completo</Label>
+                          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome do usuário" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Email</Label>
+                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Senha</Label>
+                          <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Cargo</Label>
+                          <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="viewer">Visualizador</SelectItem>
+                              <SelectItem value="uploader">Uploader</SelectItem>
+                              <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="parent">Pai/Mãe</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
+                          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                          Criar Usuário
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardHeader>
@@ -243,7 +360,7 @@ const Admin = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex gap-2">
+                          <div className="flex flex-wrap gap-2">
                             <Select
                               value={u.role}
                               onValueChange={(v: AppRole) => handleRoleChange(u.user_id, v)}
@@ -258,6 +375,10 @@ const Admin = () => {
                                 <SelectItem value="parent">Parent</SelectItem>
                               </SelectContent>
                             </Select>
+                            <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>
+                              <KeyRound className="h-3.5 w-3.5 mr-1" />
+                              Senha
+                            </Button>
                             <Button variant="outline" size="sm" onClick={() => toggleActive(u.user_id, u.is_active)} disabled={u.user_id === user?.id}>
                               {u.is_active ? 'Desativar' : 'Ativar'}
                             </Button>
@@ -337,6 +458,30 @@ const Admin = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={resetOpen} onOpenChange={setResetOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Redefinir senha de {resetUserName}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Nova senha</Label>
+              <Input
+                type="password"
+                value={resetPassword}
+                onChange={e => setResetPassword(e.target.value)}
+                placeholder="Mínimo 6 caracteres"
+              />
+            </div>
+            <Button onClick={handleResetPassword} disabled={resetting} className="w-full gap-2">
+              {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
+              Redefinir Senha
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
