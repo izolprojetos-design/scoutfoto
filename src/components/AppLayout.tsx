@@ -43,7 +43,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
   const navItems = [
     { to: '/dashboard', label: 'Dashboard', icon: Home, show: true },
-    { to: '/scouts', label: 'Jovens', icon: Users, show: true },
+    { to: '/scouts', label: 'Integrantes', icon: Users, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     
     { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe },
