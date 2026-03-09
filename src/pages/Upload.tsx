@@ -15,6 +15,7 @@ import { Upload as UploadIcon, X, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
 import { logAudit } from '@/lib/auditLog';
+import ImageCropper from '@/components/ImageCropper';
 
 interface Branch {
   id: string;
