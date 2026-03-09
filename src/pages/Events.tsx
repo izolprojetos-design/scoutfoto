@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2 } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -41,6 +41,8 @@ const Events = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [eventDate, setEventDate] = useState('');
@@ -64,6 +66,14 @@ const Events = () => {
     fetchEvents();
   }, []);
 
+  const resetForm = () => {
+    setName('');
+    setDescription('');
+    setEventDate('');
+    setLocation('');
+    setBranchId('');
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -82,11 +92,43 @@ const Events = () => {
     } else {
       toast.success('Evento criado com sucesso!');
       setDialogOpen(false);
-      setName('');
-      setDescription('');
-      setEventDate('');
-      setLocation('');
-      setBranchId('');
+      resetForm();
+      fetchEvents();
+    }
+  };
+
+  const openEditDialog = (event: Event) => {
+    setEditingEvent(event);
+    setName(event.name);
+    setDescription(event.description || '');
+    setEventDate(event.event_date || '');
+    setLocation(event.location || '');
+    setBranchId(event.branch_id || '');
+    setEditDialogOpen(true);
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+
+    const { error } = await supabase
+      .from('events')
+      .update({
+        name,
+        description,
+        event_date: eventDate || null,
+        location,
+        branch_id: branchId || null,
+      })
+      .eq('id', editingEvent.id);
+
+    if (error) {
+      toast.error('Erro ao editar evento: ' + error.message);
+    } else {
+      toast.success('Evento atualizado com sucesso!');
+      setEditDialogOpen(false);
+      setEditingEvent(null);
+      resetForm();
       fetchEvents();
     }
   };
@@ -106,18 +148,54 @@ const Events = () => {
     return branches.find(br => br.id === bId);
   };
 
+  const EventForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => Promise<void>; submitLabel: string }) => (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label>Nome do evento</Label>
+        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Acampamento no Água Boa" className="h-11" />
+      </div>
+      <div className="space-y-2">
+        <Label>Descrição</Label>
+        <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes da atividade..." />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Data</Label>
+          <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="h-11" />
+        </div>
+        <div className="space-y-2">
+          <Label>Local</Label>
+          <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra Grande" className="h-11" />
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Ramo (opcional)</Label>
+        <Select value={branchId} onValueChange={setBranchId}>
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Todos os ramos" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos os ramos</SelectItem>
+            {branches.map(b => (
+              <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+      <Button type="submit" className="w-full h-11 font-semibold">{submitLabel}</Button>
+    </form>
+  );
+
   return (
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Eventos
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
           <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
         {(isAdmin || isChefe) && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
@@ -128,41 +206,7 @@ const Events = () => {
               <DialogHeader>
                 <DialogTitle>Criar Evento</DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Nome do evento</Label>
-                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Acampamento no Água Boa" className="h-11" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Descrição</Label>
-                  <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Detalhes da atividade..." />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>Data</Label>
-                    <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="h-11" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Local</Label>
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra Grande" className="h-11" />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>Ramo (opcional)</Label>
-                  <Select value={branchId} onValueChange={setBranchId}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Todos os ramos" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Todos os ramos</SelectItem>
-                      {branches.map(b => (
-                        <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button type="submit" className="w-full h-11 font-semibold">Criar Evento</Button>
-              </form>
+              <EventForm onSubmit={handleCreate} submitLabel="Criar Evento" />
             </DialogContent>
           </Dialog>
         )}
@@ -233,6 +277,14 @@ const Events = () => {
                           <Share2 className="h-3.5 w-3.5" />
                           Compartilhar
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
+                          onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button variant="destructive" size="sm" className="gap-2" onClick={e => e.stopPropagation()}>
@@ -259,6 +311,16 @@ const Events = () => {
           })}
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) { setEditingEvent(null); resetForm(); } }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+          </DialogHeader>
+          <EventForm onSubmit={handleEdit} submitLabel="Salvar Alterações" />
+        </DialogContent>
+      </Dialog>
 
       {shareEvent && (
         <ShareLinkDialog
