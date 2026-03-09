@@ -209,6 +209,21 @@ const Scouts = () => {
                 <DialogTitle>Cadastrar Jovem Escoteiro</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateScout} className="space-y-4">
+                {/* Photo upload */}
+                <div className="flex flex-col items-center gap-3">
+                  <label htmlFor="scout-photo" className="cursor-pointer">
+                    <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+                      {scoutPhotoPreview ? (
+                        <img src={scoutPhotoPreview} alt="Preview" className="h-full w-full object-cover" />
+                      ) : (
+                        <Camera className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                  </label>
+                  <input id="scout-photo" type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+                  <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Nome completo *</Label>
                   <Input value={scoutName} onChange={e => setScoutName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
@@ -244,7 +259,9 @@ const Scouts = () => {
                   <Label>Observações</Label>
                   <Textarea value={scoutNotes} onChange={e => setScoutNotes(e.target.value)} placeholder="Notas adicionais..." />
                 </div>
-                <Button type="submit" className="w-full h-11 font-semibold">Cadastrar</Button>
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={uploading}>
+                  {uploading ? 'Cadastrando...' : 'Cadastrar'}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
