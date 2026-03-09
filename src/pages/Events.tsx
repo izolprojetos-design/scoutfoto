@@ -318,7 +318,7 @@ const Events = () => {
           <DialogHeader>
             <DialogTitle>Editar Evento</DialogTitle>
           </DialogHeader>
-          <EventForm onSubmit={handleEdit} submitLabel="Salvar Alterações" />
+          {renderForm(handleEdit, "Salvar Alterações")}
         </DialogContent>
       </Dialog>
 
