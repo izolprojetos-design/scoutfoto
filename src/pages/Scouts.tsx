@@ -313,7 +313,7 @@ const Scouts = () => {
 
       <div className="space-y-2">
         <Label>Nome completo *</Label>
-        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
+        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
