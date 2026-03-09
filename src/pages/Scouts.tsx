@@ -540,39 +540,48 @@ const Scouts = () => {
                               </div>
                             )}
 
-                            {/* Guardians */}
-                            <div>
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-xs font-medium text-muted-foreground">
-                                  {scoutGuardians.length > 0
-                                    ? `${scoutGuardians.length} responsável(is)`
-                                    : <span className="text-amber-600">Sem responsável</span>}
-                                </span>
-                                {(isAdmin || isChefe) && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-7 gap-1 text-xs"
-                                    onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
-                                  >
-                                    <UserPlus className="h-3 w-3" />
-                                    Responsável
-                                  </Button>
-                                )}
-                              </div>
-                              {scoutGuardians.length > 0 && (
-                                <div className="space-y-1">
-                                  {scoutGuardians.map(g => (
-                                    <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                                      <span>{g.name}</span>
-                                      <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
-                                        {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
-                                      </Badge>
+                            {/* Guardians - only show for minors (under 18) */}
+                            {(() => {
+                              const ageInYears = differenceInYears(new Date(), new Date(scout.birth_date));
+                              const isMinor = ageInYears < 18;
+                              if (!isMinor && scoutGuardians.length === 0) return null;
+                              return (
+                                <div>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs font-medium text-muted-foreground">
+                                      {scoutGuardians.length > 0
+                                        ? `${scoutGuardians.length} responsável(is)`
+                                        : isMinor
+                                          ? <span className="text-amber-600">Sem responsável</span>
+                                          : null}
+                                    </span>
+                                    {(isAdmin || isChefe) && isMinor && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-7 gap-1 text-xs"
+                                        onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
+                                      >
+                                        <UserPlus className="h-3 w-3" />
+                                        Responsável
+                                      </Button>
+                                    )}
+                                  </div>
+                                  {scoutGuardians.length > 0 && (
+                                    <div className="space-y-1">
+                                      {scoutGuardians.map(g => (
+                                        <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
+                                          <span>{g.name}</span>
+                                          <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
+                                            {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
+                                          </Badge>
+                                        </div>
+                                      ))}
                                     </div>
-                                  ))}
+                                  )}
                                 </div>
-                              )}
-                            </div>
+                              );
+                            })()}
 
                             {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
                             <div className="flex gap-2 pt-1">
