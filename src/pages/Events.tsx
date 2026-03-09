@@ -9,9 +9,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
@@ -196,12 +197,33 @@ const Events = () => {
           <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {canUpload && (
-            <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
-              <Upload className="h-4 w-4" />
-              Upload
-            </Button>
+            <>
+              <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
+                <Upload className="h-4 w-4" />
+                Upload
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 shadow-sm">
+                    <Camera className="h-4 w-4" />
+                    Tirar Foto
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
+                  <DropdownMenuItem onClick={() => navigate('/upload?camera=true')}>
+                    📷 Sem evento específico
+                  </DropdownMenuItem>
+                  {events.length > 0 && <DropdownMenuSeparator />}
+                  {events.map(ev => (
+                    <DropdownMenuItem key={ev.id} onClick={() => navigate(`/upload?camera=true&eventId=${ev.id}`)}>
+                      📅 {ev.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
           {(isAdmin || isChefe) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
@@ -34,6 +35,7 @@ const MAX_SIZE = 10 * 1024 * 1024;
 
 const Upload = () => {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
   const [branchId, setBranchId] = useState('');
@@ -60,6 +62,16 @@ const Upload = () => {
       if (data) setEvents(data);
     });
   }, []);
+
+  // Pre-select event and open camera from query params
+  useEffect(() => {
+    const qEventId = searchParams.get('eventId');
+    const qCamera = searchParams.get('camera');
+    if (qEventId) setEventId(qEventId);
+    if (qCamera === 'true') {
+      setTimeout(() => document.getElementById('camera-input')?.click(), 500);
+    }
+  }, [searchParams]);
 
   // Force visibility when minor
   useEffect(() => {
