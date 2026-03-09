@@ -130,11 +130,9 @@ const Dashboard = () => {
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12º GEMC</p>
           </div>
           <div className="flex gap-2">
-            {canUpload && (
-              <Button onClick={() => navigate('/upload')} className="gap-2 shadow-sm">
-                <Upload className="h-4 w-4" /> Nova Foto
-              </Button>
-            )}
+            <Button onClick={() => navigate('/scouts')} className="gap-2 shadow-sm">
+              <Users className="h-4 w-4" /> Cadastrar Integrante
+            </Button>
             {(canUpload || isChefe) && (
               <Button variant="outline" onClick={() => navigate('/events')} className="gap-2">
                 <Calendar className="h-4 w-4" /> Eventos
