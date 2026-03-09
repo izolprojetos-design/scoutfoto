@@ -127,7 +127,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-muted-foreground">Gerencie seu grupo escoteiro</p>
+            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12º GEMC</p>
           </div>
           <div className="flex gap-2">
             {canUpload && (
