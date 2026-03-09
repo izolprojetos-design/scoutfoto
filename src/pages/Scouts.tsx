@@ -81,6 +81,11 @@ const Scouts = () => {
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
 
+  // Cropper state
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [cropperImage, setCropperImage] = useState('');
+  const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
+
   // Guardian form
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
