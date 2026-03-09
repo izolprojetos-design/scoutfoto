@@ -47,6 +47,7 @@ const branchColorMap: Record<string, string> = {
   emerald: 'bg-emerald-100 text-emerald-800 border-emerald-200',
   red: 'bg-red-100 text-red-800 border-red-200',
   orange: 'bg-orange-100 text-orange-800 border-orange-200',
+  blue: 'bg-blue-100 text-blue-800 border-blue-200',
 };
 
 const Scouts = () => {
@@ -190,7 +191,7 @@ const Scouts = () => {
       }
     }
 
-    toast.success('Jovem cadastrado com sucesso!');
+    toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
     setScoutPhoto(null); setScoutPhotoPreview(null);
@@ -231,7 +232,7 @@ const Scouts = () => {
     if (error) {
       toast.error('Erro ao atualizar: ' + error.message);
     } else {
-      toast.success('Jovem atualizado com sucesso!');
+      toast.success('Membro atualizado com sucesso!');
       setEditDialogOpen(false);
       fetchData();
     }
@@ -267,7 +268,7 @@ const Scouts = () => {
     if (error) {
       toast.error('Erro ao excluir: ' + error.message);
     } else {
-      toast.success('Jovem excluído!');
+      toast.success('Membro excluído!');
       fetchData();
     }
   };
@@ -312,7 +313,7 @@ const Scouts = () => {
 
       <div className="space-y-2">
         <Label>Nome completo *</Label>
-        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
+        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
@@ -353,20 +354,20 @@ const Scouts = () => {
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Jovens Escoteiros</h1>
-          <p className="mt-1 text-muted-foreground">{scouts.length} jovens cadastrados</p>
+          <h1 className="text-3xl font-bold tracking-tight">Jovens e Adultos</h1>
+          <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
         {(isAdmin || isChefe || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
-                Novo Jovem
+                Novo Cadastro
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Cadastrar Jovem Escoteiro</DialogTitle>
+                <DialogTitle>Cadastrar Membro</DialogTitle>
               </DialogHeader>
               {renderScoutForm(
                 handleCreateScout,
@@ -412,8 +413,8 @@ const Scouts = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <Users className="h-8 w-8" />
           </div>
-          <p className="text-lg font-medium text-foreground">Nenhum jovem cadastrado</p>
-          <p className="mt-1 text-sm">Cadastre o primeiro jovem escoteiro</p>
+          <p className="text-lg font-medium text-foreground">Nenhum membro cadastrado</p>
+          <p className="mt-1 text-sm">Cadastre o primeiro membro</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -583,7 +584,7 @@ const Scouts = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Jovem Escoteiro</DialogTitle>
+            <DialogTitle>Editar Membro</DialogTitle>
           </DialogHeader>
           {renderScoutForm(
             handleEditScout,
