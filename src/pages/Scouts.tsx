@@ -584,7 +584,7 @@ const Scouts = () => {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Editar Jovem Escoteiro</DialogTitle>
+            <DialogTitle>Editar Membro</DialogTitle>
           </DialogHeader>
           {renderScoutForm(
             handleEditScout,
