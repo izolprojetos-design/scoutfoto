@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Calendar, MapPin, Lock, Clock } from 'lucide-react';
+import { Calendar, MapPin, Lock, Clock, ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -45,7 +45,6 @@ const EventPortal = () => {
         return;
       }
 
-      // Fetch the share link
       const { data: linkData, error: linkError } = await supabase
         .from('event_share_links')
         .select('*')
@@ -59,14 +58,12 @@ const EventPortal = () => {
         return;
       }
 
-      // Check expiration
       if (new Date(linkData.expires_at) < new Date()) {
         setError('Este link expirou.');
         setLoading(false);
         return;
       }
 
-      // Check max views
       if (linkData.max_views && linkData.view_count >= linkData.max_views) {
         setError('Este link atingiu o limite de visualizações.');
         setLoading(false);
@@ -75,10 +72,6 @@ const EventPortal = () => {
 
       setExpiresAt(linkData.expires_at);
 
-      // Increment view count - use RPC or direct update won't work due to RLS
-      // We'll skip incrementing for anon users since RLS only allows admin/chefe to update
-
-      // Fetch event info
       const { data: eventData } = await supabase
         .from('events')
         .select('id, name, description, event_date, location')
@@ -93,7 +86,6 @@ const EventPortal = () => {
 
       setEvent(eventData);
 
-      // Fetch public/group images for this event (no minors)
       const { data: imgs } = await supabase
         .from('images')
         .select('id, filename, storage_path, thumbnail_path, caption, tags, created_at')
@@ -105,7 +97,6 @@ const EventPortal = () => {
       const filtered = imgs || [];
       setImages(filtered);
 
-      // Get signed URLs
       const urls: Record<string, string> = {};
       const thumbs: Record<string, string> = {};
       for (const img of filtered) {
@@ -138,11 +129,13 @@ const EventPortal = () => {
   if (error) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">
-        <Lock className="mb-4 h-12 w-12 text-muted-foreground" />
-        <h1 className="mb-2 text-2xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted mb-6">
+          <Lock className="h-10 w-10 text-muted-foreground" />
+        </div>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">
           Acesso Indisponível
         </h1>
-        <p className="text-center text-muted-foreground">{error}</p>
+        <p className="text-center text-muted-foreground max-w-sm">{error}</p>
       </div>
     );
   }
@@ -150,16 +143,18 @@ const EventPortal = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">⚜️</span>
-            <span className="font-bold text-primary" style={{ fontFamily: 'Space Grotesk' }}>
+      <header className="border-b bg-card/95 backdrop-blur sticky top-0 z-50">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg scout-gradient text-sm">
+              ⚜️
+            </div>
+            <span className="font-bold text-foreground tracking-tight">
               ScoutFoto
             </span>
           </div>
           {expiresAt && (
-            <Badge variant="outline" className="gap-1 text-xs">
+            <Badge variant="outline" className="gap-1.5 text-xs font-normal">
               <Clock className="h-3 w-3" />
               Expira em {format(new Date(expiresAt), "dd/MM/yyyy", { locale: ptBR })}
             </Badge>
@@ -167,47 +162,53 @@ const EventPortal = () => {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
         {/* Event Info */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
-            📸 {event?.name}
+          <h1 className="text-3xl font-bold tracking-tight">
+            {event?.name}
           </h1>
           {event?.description && (
-            <p className="mt-2 text-muted-foreground">{event.description}</p>
+            <p className="mt-2 text-muted-foreground max-w-2xl">{event.description}</p>
           )}
-          <div className="mt-3 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-wrap gap-2">
             {event?.event_date && (
-              <Badge variant="secondary" className="gap-1">
+              <Badge variant="secondary" className="gap-1.5 font-normal">
                 <Calendar className="h-3 w-3" />
                 {format(new Date(event.event_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
               </Badge>
             )}
             {event?.location && (
-              <Badge variant="outline" className="gap-1">
+              <Badge variant="outline" className="gap-1.5 font-normal">
                 <MapPin className="h-3 w-3" />
                 {event.location}
               </Badge>
             )}
-            <Badge variant="secondary">{images.length} fotos</Badge>
+            <Badge variant="secondary" className="gap-1.5 font-normal">
+              <ImageIcon className="h-3 w-3" />
+              {images.length} {images.length === 1 ? 'foto' : 'fotos'}
+            </Badge>
           </div>
         </div>
 
         {/* Gallery */}
         {images.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-            <span className="mb-2 text-4xl">📷</span>
-            <p>Nenhuma foto disponível para este evento</p>
+          <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
+              <ImageIcon className="h-8 w-8" />
+            </div>
+            <p className="text-lg font-medium text-foreground">Nenhuma foto disponível</p>
+            <p className="mt-1 text-sm">As fotos deste evento ainda não foram publicadas</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
             {images.map((img, index) => (
               <motion.div
                 key={img.id}
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.96 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: Math.min(index * 0.03, 0.5) }}
-                className="group cursor-pointer overflow-hidden rounded-xl bg-muted"
+                className="group cursor-pointer overflow-hidden rounded-xl bg-muted shadow-sm transition-shadow hover:shadow-md"
                 onClick={() => setSelectedImage(img)}
               >
                 <div className="aspect-square overflow-hidden">
@@ -220,7 +221,7 @@ const EventPortal = () => {
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
-                      <span className="text-2xl">📷</span>
+                      <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
                     </div>
                   )}
                 </div>
@@ -230,18 +231,23 @@ const EventPortal = () => {
         )}
 
         {/* Footer */}
-        <div className="mt-12 border-t py-6 text-center text-xs text-muted-foreground">
-          <p>⚜️ ScoutFoto — Compartilhamento seguro de fotos escoteiras</p>
-          <p className="mt-1">Este link é temporário e protegido. Não compartilhe com terceiros.</p>
+        <div className="mt-16 border-t py-8 text-center">
+          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <span>⚜️</span>
+            <span>ScoutFoto — Compartilhamento seguro de fotos escoteiras</span>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground/70">
+            Este link é temporário e protegido. Não compartilhe com terceiros.
+          </p>
         </div>
       </main>
 
       {/* Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
-        <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden">
+        <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden bg-card">
           {selectedImage && (
             <div>
-              <div className="bg-black">
+              <div className="bg-black/95 flex items-center justify-center min-h-[40vh]">
                 {imageUrls[selectedImage.id] && (
                   <img
                     src={imageUrls[selectedImage.id]}
@@ -261,7 +267,7 @@ const EventPortal = () => {
                 {selectedImage.tags && selectedImage.tags.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {selectedImage.tags.map(tag => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
+                      <Badge key={tag} variant="secondary" className="font-normal">{tag}</Badge>
                     ))}
                   </div>
                 )}
