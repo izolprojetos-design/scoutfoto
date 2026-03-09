@@ -10,7 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, Calendar, ArrowRightLeft, UserPlus } from 'lucide-react';
+import { Plus, Search, Users, Calendar, ArrowRightLeft, UserPlus, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -126,6 +127,16 @@ const Scouts = () => {
       toast.success('Responsável adicionado!');
       setGuardianDialogOpen(false);
       setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(false);
+      fetchData();
+    }
+  };
+
+  const handleDeleteScout = async (scoutId: string) => {
+    const { error } = await supabase.from('scouts').delete().eq('id', scoutId);
+    if (error) {
+      toast.error('Erro ao excluir: ' + error.message);
+    } else {
+      toast.success('Jovem excluído!');
       fetchData();
     }
   };
@@ -261,6 +272,25 @@ const Scouts = () => {
                           <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         </div>
                       </div>
+                      {(isAdmin || isChefe) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-3">

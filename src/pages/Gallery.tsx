@@ -8,11 +8,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Search, ArrowLeft, Calendar, Download, Eye } from 'lucide-react';
+import { Search, ArrowLeft, Calendar, Download, Eye, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
+import { toast } from 'sonner';
 
 interface ImageData {
   id: string;
@@ -164,6 +166,24 @@ const Gallery = () => {
     if (user) await logAudit(user.id, 'download', img.id);
   };
 
+  const handleDeleteImage = async (img: ImageData) => {
+    // Delete from storage
+    await supabase.storage.from('images').remove([img.storage_path]);
+    if (img.thumbnail_path) {
+      await supabase.storage.from('images').remove([img.thumbnail_path]);
+    }
+    // Delete from DB
+    const { error } = await supabase.from('images').delete().eq('id', img.id);
+    if (error) {
+      toast.error('Erro ao excluir: ' + error.message);
+    } else {
+      toast.success('Foto excluída com sucesso!');
+      setImages(prev => prev.filter(i => i.id !== img.id));
+      setSelectedImage(null);
+      if (user) await logAudit(user.id, 'delete', img.id);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4">
@@ -279,11 +299,31 @@ const Gallery = () => {
                     ))}
                   </div>
                 )}
-                <div className="mt-4">
+                <div className="mt-4 flex gap-2">
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => handleDownload(selectedImage)}>
                     <Download className="h-4 w-4" />
                     Download
                   </Button>
+                  {(selectedImage.user_id === user?.id) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="gap-2">
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir foto?</AlertDialogTitle>
+                          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteImage(selectedImage)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </div>
