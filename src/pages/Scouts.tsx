@@ -408,6 +408,7 @@ const Scouts = () => {
                 uploading,
                 'Cadastrar',
                 'scout-photo-create',
+                scoutBranch, setScoutBranch,
               )}
             </DialogContent>
           </Dialog>
