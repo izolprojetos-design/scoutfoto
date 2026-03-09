@@ -206,7 +206,7 @@ const Events = () => {
               <DialogHeader>
                 <DialogTitle>Criar Evento</DialogTitle>
               </DialogHeader>
-              <EventForm onSubmit={handleCreate} submitLabel="Criar Evento" />
+              {renderForm(handleCreate, "Criar Evento")}
             </DialogContent>
           </Dialog>
         )}
