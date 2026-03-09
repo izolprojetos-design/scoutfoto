@@ -11,7 +11,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -36,7 +37,8 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isChefe } = useAuth();
+  const { user, isAdmin, isChefe, canUpload } = useAuth();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -194,22 +196,30 @@ const Events = () => {
           <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
-        {(isAdmin || isChefe) && (
-          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 shadow-sm">
-                <Plus className="h-4 w-4" />
-                Novo Evento
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Criar Evento</DialogTitle>
-              </DialogHeader>
-              {renderForm(handleCreate, "Criar Evento")}
-            </DialogContent>
-          </Dialog>
-        )}
+        <div className="flex gap-2">
+          {canUpload && (
+            <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
+              <Upload className="h-4 w-4" />
+              Upload
+            </Button>
+          )}
+          {(isAdmin || isChefe) && (
+            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+              <DialogTrigger asChild>
+                <Button className="gap-2 shadow-sm">
+                  <Plus className="h-4 w-4" />
+                  Novo Evento
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Criar Evento</DialogTitle>
+                </DialogHeader>
+                {renderForm(handleCreate, "Criar Evento")}
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
       </div>
 
       {loading ? (
