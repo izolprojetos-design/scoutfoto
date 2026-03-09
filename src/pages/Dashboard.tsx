@@ -11,6 +11,7 @@ import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightL
 import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 interface BranchWithCount {
   id: string;
@@ -35,6 +36,13 @@ const branchColors: Record<string, string> = {
   pioneiro: 'from-orange-500/15 to-orange-600/5 border-orange-200/50 hover:border-orange-300',
   adulto: 'from-purple-500/15 to-purple-600/5 border-purple-200/50 hover:border-purple-300',
   chefes: 'from-blue-500/15 to-blue-600/5 border-blue-200/50 hover:border-blue-300',
+};
+
+const PIE_COLORS: Record<string, string> = {
+  lobinho: '#f59e0b',
+  escoteiro: '#10b981',
+  senior: '#ef4444',
+  pioneiro: '#f97316',
 };
 
 const Dashboard = () => {
@@ -161,24 +169,50 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
-        {/* Branch Distribution */}
+        {/* Branch Distribution - Pie Chart */}
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4" /> Jovens por Ramo
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            {branchDistribution.map(b => (
-              <div key={b.key} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                <span className="flex items-center gap-2 text-sm font-medium">
-                  {b.icon} {b.name}
-                </span>
-                <Badge variant="secondary">{b.count}</Badge>
+          <CardContent>
+            {scouts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Cadastre jovens para ver a distribuição</p>
+            ) : (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={200}>
+                  <PieChart>
+                    <Pie
+                      data={branchDistribution.filter(b => b.count > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={50}
+                      outerRadius={80}
+                      paddingAngle={3}
+                      dataKey="count"
+                      nameKey="name"
+                    >
+                      {branchDistribution.filter(b => b.count > 0).map((entry, idx) => (
+                        <Cell key={idx} fill={PIE_COLORS[entry.key] || '#8884d8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      formatter={(value: number, name: string) => [`${value} jovens`, name]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2">
+                  {branchDistribution.map(b => (
+                    <div key={b.key} className="flex items-center gap-2 text-xs">
+                      <div className="h-3 w-3 rounded-full" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                      <span className="text-muted-foreground">{b.icon} {b.name}</span>
+                      <span className="ml-auto font-semibold">{b.count}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-            {scouts.length === 0 && (
-              <p className="text-sm text-muted-foreground text-center py-4">Cadastre jovens para ver a distribuição</p>
             )}
           </CardContent>
         </Card>
@@ -243,6 +277,34 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Photos per Branch Bar Chart */}
+      {branches.length > 0 && (
+        <Card className="border shadow-sm mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ImageIcon className="h-4 w-4" /> Fotos por Ramo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={branches.map(b => ({ name: b.display_name, fotos: b.imageCount, key: b.key }))}>
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
+                <Tooltip
+                  contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                  formatter={(value: number) => [`${value} fotos`]}
+                />
+                <Bar dataKey="fotos" radius={[6, 6, 0, 0]}>
+                  {branches.map((b, idx) => (
+                    <Cell key={idx} fill={PIE_COLORS[b.key] || 'hsl(var(--primary))'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Branch Cards */}
       <div className="mb-4 flex items-center justify-between">
