@@ -342,6 +342,15 @@ const Upload = () => {
           </CardContent>
         </Card>
       </div>
+
+      {rawPreview && (
+        <ImageCropper
+          open={cropperOpen}
+          imageSrc={rawPreview}
+          onClose={handleCropCancel}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </AppLayout>
   );
 };
