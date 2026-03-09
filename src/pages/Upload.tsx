@@ -63,6 +63,16 @@ const Upload = () => {
     });
   }, []);
 
+  // Pre-select event and open camera from query params
+  useEffect(() => {
+    const qEventId = searchParams.get('eventId');
+    const qCamera = searchParams.get('camera');
+    if (qEventId) setEventId(qEventId);
+    if (qCamera === 'true') {
+      setTimeout(() => document.getElementById('camera-input')?.click(), 500);
+    }
+  }, [searchParams]);
+
   // Force visibility when minor
   useEffect(() => {
     if (minorAge && parseInt(minorAge) > 0 && visibility === 'public') {
