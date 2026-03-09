@@ -644,6 +644,22 @@ const Scouts = () => {
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCropComplete}
       />
+
+      {/* Photo viewer dialog */}
+      <Dialog open={!!viewingPhoto} onOpenChange={() => setViewingPhoto(null)}>
+        <DialogContent className="max-w-lg p-2 bg-background/95 backdrop-blur">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Foto do jovem</DialogTitle>
+          </DialogHeader>
+          {viewingPhoto && (
+            <img
+              src={viewingPhoto}
+              alt="Foto do jovem"
+              className="w-full h-auto rounded-lg object-contain max-h-[80vh]"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
