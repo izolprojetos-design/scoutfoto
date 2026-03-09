@@ -9,9 +9,26 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, Upload, Settings, Home, Menu, X, Calendar, User, ChevronDown, Users, CalendarDays } from 'lucide-react';
+import { LogOut, Upload, Settings, Home, Menu, X, Calendar, User, ChevronDown, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
+
+const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      className="h-9 w-9"
+    >
+      <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+      <span className="sr-only">Alternar tema</span>
+    </Button>
+  );
+};
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const { profile, signOut, isAdmin, isChefe, canUpload, roles } = useAuth();
@@ -84,7 +101,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </nav>
 
           {/* User Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 px-2">
