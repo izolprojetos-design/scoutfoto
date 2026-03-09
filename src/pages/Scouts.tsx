@@ -272,6 +272,25 @@ const Scouts = () => {
                           <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         </div>
                       </div>
+                      {(isAdmin || isChefe) && (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-3">

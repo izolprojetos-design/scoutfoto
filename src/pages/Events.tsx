@@ -223,15 +223,34 @@ const Events = () => {
                       )}
                     </div>
                     {(isAdmin || isChefe) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full gap-2"
-                        onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
-                      >
-                        <Share2 className="h-3.5 w-3.5" />
-                        Compartilhar com pais
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 gap-2"
+                          onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
+                        >
+                          <Share2 className="h-3.5 w-3.5" />
+                          Compartilhar
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm" className="gap-2" onClick={e => e.stopPropagation()}>
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Excluir evento "{event.name}"?</AlertDialogTitle>
+                              <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDeleteEvent(event.id)}>Excluir</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     )}
                   </CardContent>
                 </Card>

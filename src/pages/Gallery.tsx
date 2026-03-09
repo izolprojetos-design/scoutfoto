@@ -298,11 +298,31 @@ const Gallery = () => {
                     ))}
                   </div>
                 )}
-                <div className="mt-4">
+                <div className="mt-4 flex gap-2">
                   <Button variant="outline" size="sm" className="gap-2" onClick={() => handleDownload(selectedImage)}>
                     <Download className="h-4 w-4" />
                     Download
                   </Button>
+                  {(selectedImage.user_id === user?.id) && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="gap-2">
+                          <Trash2 className="h-4 w-4" />
+                          Excluir
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir foto?</AlertDialogTitle>
+                          <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteImage(selectedImage)}>Excluir</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
               </div>
             </div>
