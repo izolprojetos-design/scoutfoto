@@ -15,6 +15,7 @@ import { Upload as UploadIcon, X, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
 import { logAudit } from '@/lib/auditLog';
+import ImageCropper from '@/components/ImageCropper';
 
 interface Branch {
   id: string;
@@ -48,6 +49,8 @@ const Upload = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawPreview, setRawPreview] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from('branches').select('*').order('sort_order').then(({ data }) => {
@@ -75,9 +78,21 @@ const Upload = () => {
       toast.error('Arquivo muito grande. Máximo 10MB.');
       return;
     }
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    setRawPreview(URL.createObjectURL(f));
+    setCropperOpen(true);
   };
+
+  const handleCropComplete = useCallback((croppedFile: File) => {
+    setFile(croppedFile);
+    setPreview(URL.createObjectURL(croppedFile));
+    setCropperOpen(false);
+    setRawPreview(null);
+  }, []);
+
+  const handleCropCancel = useCallback(() => {
+    setCropperOpen(false);
+    setRawPreview(null);
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -327,6 +342,15 @@ const Upload = () => {
           </CardContent>
         </Card>
       </div>
+
+      {rawPreview && (
+        <ImageCropper
+          open={cropperOpen}
+          imageSrc={rawPreview}
+          onClose={handleCropCancel}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </AppLayout>
   );
 };
