@@ -10,7 +10,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, Calendar, ArrowRightLeft, UserPlus, Trash2 } from 'lucide-react';
+import { Plus, Search, Users, Calendar, ArrowRightLeft, UserPlus, Trash2, Camera } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -66,6 +67,9 @@ const Scouts = () => {
   const [scoutBirth, setScoutBirth] = useState('');
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
+  const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
+  const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Guardian form
   const [guardianName, setGuardianName] = useState('');
@@ -85,26 +89,57 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScoutPhoto(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setScoutPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadPhoto = async (scoutId: string): Promise<string | null> => {
+    if (!scoutPhoto) return null;
+    const ext = scoutPhoto.name.split('.').pop();
+    const path = `${scoutId}.${ext}`;
+    const { error } = await supabase.storage.from('scout-photos').upload(path, scoutPhoto, { upsert: true });
+    if (error) { console.error('Upload error:', error); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
+    return publicUrl;
+  };
+
   const handleCreateScout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    setUploading(true);
 
-    const { error } = await supabase.from('scouts').insert({
+    const { data, error } = await supabase.from('scouts').insert({
       name: scoutName,
       birth_date: scoutBirth,
       scout_group: scoutGroup,
       notes: scoutNotes,
       created_by: user.id,
-    });
+    }).select('id').single();
 
     if (error) {
       toast.error('Erro ao cadastrar: ' + error.message);
-    } else {
-      toast.success('Jovem cadastrado com sucesso!');
-      setDialogOpen(false);
-      setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
-      fetchData();
+      setUploading(false);
+      return;
     }
+
+    if (scoutPhoto && data) {
+      const photoUrl = await uploadPhoto(data.id);
+      if (photoUrl) {
+        await supabase.from('scouts').update({ photo_url: photoUrl }).eq('id', data.id);
+      }
+    }
+
+    toast.success('Jovem cadastrado com sucesso!');
+    setDialogOpen(false);
+    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
+    setScoutPhoto(null); setScoutPhotoPreview(null);
+    setUploading(false);
+    fetchData();
   };
 
   const handleAddGuardian = async (e: React.FormEvent) => {
@@ -174,6 +209,21 @@ const Scouts = () => {
                 <DialogTitle>Cadastrar Jovem Escoteiro</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleCreateScout} className="space-y-4">
+                {/* Photo upload */}
+                <div className="flex flex-col items-center gap-3">
+                  <label htmlFor="scout-photo" className="cursor-pointer">
+                    <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+                      {scoutPhotoPreview ? (
+                        <img src={scoutPhotoPreview} alt="Preview" className="h-full w-full object-cover" />
+                      ) : (
+                        <Camera className="h-6 w-6 text-muted-foreground" />
+                      )}
+                    </div>
+                  </label>
+                  <input id="scout-photo" type="file" accept="image/*" className="hidden" onChange={handlePhotoSelect} />
+                  <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Nome completo *</Label>
                   <Input value={scoutName} onChange={e => setScoutName(e.target.value)} required placeholder="Nome do jovem" className="h-11" />
@@ -209,7 +259,9 @@ const Scouts = () => {
                   <Label>Observações</Label>
                   <Textarea value={scoutNotes} onChange={e => setScoutNotes(e.target.value)} placeholder="Notas adicionais..." />
                 </div>
-                <Button type="submit" className="w-full h-11 font-semibold">Cadastrar</Button>
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={uploading}>
+                  {uploading ? 'Cadastrando...' : 'Cadastrar'}
+                </Button>
               </form>
             </DialogContent>
           </Dialog>
