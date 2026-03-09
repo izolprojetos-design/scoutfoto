@@ -67,6 +67,9 @@ const Scouts = () => {
   const [scoutBirth, setScoutBirth] = useState('');
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
+  const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
+  const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Guardian form
   const [guardianName, setGuardianName] = useState('');
@@ -86,26 +89,57 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScoutPhoto(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setScoutPhotoPreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const uploadPhoto = async (scoutId: string): Promise<string | null> => {
+    if (!scoutPhoto) return null;
+    const ext = scoutPhoto.name.split('.').pop();
+    const path = `${scoutId}.${ext}`;
+    const { error } = await supabase.storage.from('scout-photos').upload(path, scoutPhoto, { upsert: true });
+    if (error) { console.error('Upload error:', error); return null; }
+    const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
+    return publicUrl;
+  };
+
   const handleCreateScout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    setUploading(true);
 
-    const { error } = await supabase.from('scouts').insert({
+    const { data, error } = await supabase.from('scouts').insert({
       name: scoutName,
       birth_date: scoutBirth,
       scout_group: scoutGroup,
       notes: scoutNotes,
       created_by: user.id,
-    });
+    }).select('id').single();
 
     if (error) {
       toast.error('Erro ao cadastrar: ' + error.message);
-    } else {
-      toast.success('Jovem cadastrado com sucesso!');
-      setDialogOpen(false);
-      setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
-      fetchData();
+      setUploading(false);
+      return;
     }
+
+    if (scoutPhoto && data) {
+      const photoUrl = await uploadPhoto(data.id);
+      if (photoUrl) {
+        await supabase.from('scouts').update({ photo_url: photoUrl }).eq('id', data.id);
+      }
+    }
+
+    toast.success('Jovem cadastrado com sucesso!');
+    setDialogOpen(false);
+    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
+    setScoutPhoto(null); setScoutPhotoPreview(null);
+    setUploading(false);
+    fetchData();
   };
 
   const handleAddGuardian = async (e: React.FormEvent) => {
