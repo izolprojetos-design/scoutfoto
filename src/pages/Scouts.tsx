@@ -263,10 +263,18 @@ const Scouts = () => {
                 <Card className="border bg-card shadow-sm hover:shadow-md transition-shadow">
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
-                          {branch?.icon || '⚜️'}
-                        </div>
+                        <div className="flex items-center gap-3">
+                        {scout.photo_url ? (
+                          <img
+                            src={scout.photo_url}
+                            alt={scout.name}
+                            className="h-12 w-12 rounded-xl object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-2xl">
+                            {branch?.icon || '⚜️'}
+                          </div>
+                        )}
                         <div>
                           <h3 className="font-semibold tracking-tight">{scout.name}</h3>
                           <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
