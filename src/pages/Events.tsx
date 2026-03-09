@@ -91,6 +91,16 @@ const Events = () => {
     }
   };
 
+  const handleDeleteEvent = async (eventId: string) => {
+    const { error } = await supabase.from('events').delete().eq('id', eventId);
+    if (error) {
+      toast.error('Erro ao excluir: ' + error.message);
+    } else {
+      toast.success('Evento excluído!');
+      fetchEvents();
+    }
+  };
+
   const getBranchInfo = (bId: string | null) => {
     if (!bId) return null;
     return branches.find(br => br.id === bId);
