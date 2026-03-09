@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -652,11 +652,35 @@ const Scouts = () => {
             <DialogTitle>Foto do jovem</DialogTitle>
           </DialogHeader>
           {viewingPhoto && (
-            <img
-              src={viewingPhoto}
-              alt="Foto do jovem"
-              className="w-full h-auto rounded-lg object-contain max-h-[80vh]"
-            />
+            <div className="relative">
+              <img
+                src={viewingPhoto}
+                alt="Foto do jovem"
+                className="w-full h-auto rounded-lg object-contain max-h-[75vh]"
+              />
+              <div className="flex justify-center mt-3 pb-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(viewingPhoto);
+                      const blob = await response.blob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'foto-escoteiro.jpg';
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    } catch {
+                      toast.error('Erro ao baixar a foto');
+                    }
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-1" /> Baixar foto
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
