@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Shield, Camera, Users } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Login = () => {
@@ -50,116 +50,189 @@ const Login = () => {
     setLoading(false);
   };
 
+  const features = [
+    { icon: Camera, text: 'Upload seguro de fotos' },
+    { icon: Shield, text: 'Proteção de menores' },
+    { icon: Users, text: 'Compartilhamento controlado' },
+  ];
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[hsl(var(--scout-cream))] via-background to-[hsl(var(--scout-cream))] p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-            className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-4xl shadow-lg"
-          >
-            ⚜️
-          </motion.div>
-          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: 'Space Grotesk' }}>
-            ScoutFoto
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            🏕️ Todas as aventuras escoteiras em um só lugar.
+    <div className="flex min-h-screen">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 scout-gradient relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10" />
+        <div className="relative z-10 flex flex-col justify-between p-12 text-white">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-2xl backdrop-blur-sm">
+                ⚜️
+              </div>
+              <span className="text-2xl font-bold tracking-tight">ScoutFoto</span>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-4xl font-bold leading-tight tracking-tight text-balance">
+                Todas as aventuras escoteiras em um só lugar
+              </h1>
+              <p className="mt-4 text-lg text-white/80 leading-relaxed">
+                Organize, proteja e compartilhe fotos de atividades do seu grupo escoteiro com segurança e praticidade.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {features.map((f, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.15 }}
+                  className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 backdrop-blur-sm"
+                >
+                  <f.icon className="h-5 w-5 text-white/90" />
+                  <span className="text-sm font-medium text-white/90">{f.text}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-sm text-white/50">
+            © {new Date().getFullYear()} ScoutFoto — Feito com ❤️ para o escotismo
           </p>
         </div>
 
-        <Card className="border-0 shadow-xl">
-          <Tabs defaultValue="login">
-            <CardHeader className="pb-4">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-              </TabsList>
-            </CardHeader>
+        {/* Decorative circles */}
+        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/5" />
+        <div className="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-white/5" />
+      </div>
 
-            <CardContent>
-              <TabsContent value="login" className="mt-0">
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">Email</Label>
-                    <Input
-                      id="login-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={loginEmail}
-                      onChange={e => setLoginEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="login-password">Senha</Label>
-                    <Input
-                      id="login-password"
-                      type="password"
-                      placeholder="••••••"
-                      value={loginPassword}
-                      onChange={e => setLoginPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
-                  </Button>
-                </form>
-              </TabsContent>
+      {/* Right Panel - Form */}
+      <div className="flex w-full items-center justify-center px-4 py-8 lg:w-1/2 bg-background">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="w-full max-w-[420px]"
+        >
+          {/* Mobile Logo */}
+          <div className="mb-8 text-center lg:hidden">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl scout-gradient text-3xl shadow-lg"
+            >
+              ⚜️
+            </motion.div>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              ScoutFoto
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Banco de imagens escoteiro
+            </p>
+          </div>
 
-              <TabsContent value="signup" className="mt-0">
-                <form onSubmit={handleSignup} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-name">Nome</Label>
-                    <Input
-                      id="signup-name"
-                      placeholder="Seu nome"
-                      value={signupName}
-                      onChange={e => setSignupName(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">Email</Label>
-                    <Input
-                      id="signup-email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={signupEmail}
-                      onChange={e => setSignupEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Senha</Label>
-                    <Input
-                      id="signup-password"
-                      type="password"
-                      placeholder="Mínimo 6 caracteres"
-                      value={signupPassword}
-                      onChange={e => setSignupPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={loading}>
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Cadastrar'}
-                  </Button>
-                </form>
-              </TabsContent>
-            </CardContent>
-          </Tabs>
-        </Card>
-      </motion.div>
+          {/* Desktop heading */}
+          <div className="mb-6 hidden lg:block">
+            <h2 className="text-2xl font-bold tracking-tight">Bem-vindo de volta</h2>
+            <p className="mt-1 text-muted-foreground">Acesse sua conta para continuar</p>
+          </div>
+
+          <Card className="border shadow-sm">
+            <Tabs defaultValue="login">
+              <div className="px-6 pt-6 pb-2">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Entrar</TabsTrigger>
+                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                </TabsList>
+              </div>
+
+              <CardContent className="px-6 pb-6">
+                <TabsContent value="login" className="mt-4">
+                  <form onSubmit={handleLogin} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email">Email</Label>
+                      <Input
+                        id="login-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={loginEmail}
+                        onChange={e => setLoginEmail(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password">Senha</Label>
+                      <Input
+                        id="login-password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={loginPassword}
+                        onChange={e => setLoginPassword(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
+                    </Button>
+                  </form>
+                </TabsContent>
+
+                <TabsContent value="signup" className="mt-4">
+                  <form onSubmit={handleSignup} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-name">Nome completo</Label>
+                      <Input
+                        id="signup-name"
+                        placeholder="Seu nome"
+                        value={signupName}
+                        onChange={e => setSignupName(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-email">Email</Label>
+                      <Input
+                        id="signup-email"
+                        type="email"
+                        placeholder="seu@email.com"
+                        value={signupEmail}
+                        onChange={e => setSignupEmail(e.target.value)}
+                        required
+                        className="h-11"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-password">Senha</Label>
+                      <Input
+                        id="signup-password"
+                        type="password"
+                        placeholder="Mínimo 6 caracteres"
+                        value={signupPassword}
+                        onChange={e => setSignupPassword(e.target.value)}
+                        required
+                        minLength={6}
+                        className="h-11"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
+                      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Criar conta'}
+                    </Button>
+                  </form>
+                </TabsContent>
+              </CardContent>
+            </Tabs>
+          </Card>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            Ao continuar, você concorda com os termos de uso e política de privacidade do ScoutFoto.
+          </p>
+        </motion.div>
+      </div>
     </div>
   );
 };

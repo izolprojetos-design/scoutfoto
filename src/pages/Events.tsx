@@ -7,11 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2 } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -79,7 +79,7 @@ const Events = () => {
     if (error) {
       toast.error('Erro ao criar evento: ' + error.message);
     } else {
-      toast.success('Evento criado!');
+      toast.success('Evento criado com sucesso!');
       setDialogOpen(false);
       setName('');
       setDescription('');
@@ -90,27 +90,25 @@ const Events = () => {
     }
   };
 
-  const getBranchName = (bId: string | null) => {
+  const getBranchInfo = (bId: string | null) => {
     if (!bId) return null;
-    const b = branches.find(br => br.id === bId);
-    return b ? `${b.icon} ${b.display_name}` : null;
+    return branches.find(br => br.id === bId);
   };
 
   return (
     <AppLayout>
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
-            <Calendar className="mr-2 inline h-7 w-7" />
+          <h1 className="text-3xl font-bold tracking-tight">
             Eventos
           </h1>
-          <p className="mt-1 text-muted-foreground">Gerencie atividades escoteiras</p>
+          <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
         {(isAdmin || isChefe) && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button className="gap-2">
+              <Button className="gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
                 Novo Evento
               </Button>
@@ -122,7 +120,7 @@ const Events = () => {
               <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
                   <Label>Nome do evento</Label>
-                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Acampamento de Inverno" />
+                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Ex: Acampamento de Inverno" className="h-11" />
                 </div>
                 <div className="space-y-2">
                   <Label>Descrição</Label>
@@ -131,17 +129,17 @@ const Events = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Data</Label>
-                    <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} />
+                    <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="h-11" />
                   </div>
                   <div className="space-y-2">
                     <Label>Local</Label>
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra da Mantiqueira" />
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra da Mantiqueira" className="h-11" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Ramo (opcional)</Label>
                   <Select value={branchId} onValueChange={setBranchId}>
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Todos os ramos" />
                     </SelectTrigger>
                     <SelectContent>
@@ -152,7 +150,7 @@ const Events = () => {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button type="submit" className="w-full">Criar Evento</Button>
+                <Button type="submit" className="w-full h-11 font-semibold">Criar Evento</Button>
               </form>
             </DialogContent>
           </Dialog>
@@ -162,65 +160,73 @@ const Events = () => {
       {loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-40 animate-pulse rounded-xl bg-muted" />
+            <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <Calendar className="mb-2 h-10 w-10" />
-          <p>Nenhum evento cadastrado</p>
+        <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
+            <Calendar className="h-8 w-8" />
+          </div>
+          <p className="text-lg font-medium text-foreground">Nenhum evento cadastrado</p>
+          <p className="mt-1 text-sm">Crie seu primeiro evento para começar</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event, index) => (
-            <motion.div
-              key={event.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Card className="border-0 shadow-md transition-shadow hover:shadow-lg">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-lg">{event.name}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {event.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2">
-                    {event.event_date && (
-                      <Badge variant="secondary" className="gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
-                      </Badge>
-                    )}
-                    {event.location && (
-                      <Badge variant="outline" className="gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {event.location}
-                      </Badge>
-                    )}
-                    {getBranchName(event.branch_id) && (
-                      <Badge variant="secondary">{getBranchName(event.branch_id)}</Badge>
-                    )}
-                  </div>
-                  {(isAdmin || isChefe) && (
-                    <div className="mt-3 pt-3 border-t">
+          {events.map((event, index) => {
+            const branchInfo = getBranchInfo(event.branch_id);
+            return (
+              <motion.div
+                key={event.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04 }}
+              >
+                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md">
+                  <CardContent className="p-5">
+                    <div className="mb-3">
+                      <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
+                        {event.name}
+                      </h3>
+                      {event.description && (
+                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {event.event_date && (
+                        <Badge variant="secondary" className="gap-1 font-normal">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                        </Badge>
+                      )}
+                      {event.location && (
+                        <Badge variant="outline" className="gap-1 font-normal">
+                          <MapPin className="h-3 w-3" />
+                          {event.location}
+                        </Badge>
+                      )}
+                      {branchInfo && (
+                        <Badge variant="secondary" className="font-normal">
+                          {branchInfo.icon} {branchInfo.display_name}
+                        </Badge>
+                      )}
+                    </div>
+                    {(isAdmin || isChefe) && (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-2 w-full"
+                        className="w-full gap-2"
                         onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
                       >
                         <Share2 className="h-3.5 w-3.5" />
                         Compartilhar com pais
                       </Button>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
