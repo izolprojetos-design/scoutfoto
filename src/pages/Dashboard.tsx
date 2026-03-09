@@ -45,7 +45,7 @@ const PIE_COLORS: Record<string, string> = {
   pioneiro: '#f97316',
 };
 
-
+const Dashboard = () => {
   const { profile, canUpload, isChefe } = useAuth();
   const [branches, setBranches] = useState<BranchWithCount[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
