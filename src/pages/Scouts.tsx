@@ -116,19 +116,42 @@ const Scouts = () => {
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setScoutPhoto(file);
     const reader = new FileReader();
-    reader.onloadend = () => setScoutPhotoPreview(reader.result as string);
+    reader.onloadend = () => {
+      setCropperImage(reader.result as string);
+      setCropperTarget('new');
+      setCropperOpen(true);
+    };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const handleEditPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setEditPhoto(file);
     const reader = new FileReader();
-    reader.onloadend = () => setEditPhotoPreview(reader.result as string);
+    reader.onloadend = () => {
+      setCropperImage(reader.result as string);
+      setCropperTarget('edit');
+      setCropperOpen(true);
+    };
     reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleCropComplete = (croppedFile: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (cropperTarget === 'new') {
+        setScoutPhoto(croppedFile);
+        setScoutPhotoPreview(reader.result as string);
+      } else {
+        setEditPhoto(croppedFile);
+        setEditPhotoPreview(reader.result as string);
+      }
+    };
+    reader.readAsDataURL(croppedFile);
+    setCropperOpen(false);
   };
 
   const uploadPhoto = async (scoutId: string, photo: File): Promise<string | null> => {
