@@ -438,7 +438,8 @@ const Scouts = () => {
                         <img
                           src={scout.photo_url}
                           alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0"
+                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
+                          onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
                         />
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
