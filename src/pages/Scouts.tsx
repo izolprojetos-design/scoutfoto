@@ -413,8 +413,8 @@ const Scouts = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <Users className="h-8 w-8" />
           </div>
-          <p className="text-lg font-medium text-foreground">Nenhum jovem cadastrado</p>
-          <p className="mt-1 text-sm">Cadastre o primeiro jovem escoteiro</p>
+          <p className="text-lg font-medium text-foreground">Nenhum membro cadastrado</p>
+          <p className="mt-1 text-sm">Cadastre o primeiro membro</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
