@@ -78,8 +78,8 @@ const Upload = () => {
       toast.error('Arquivo muito grande. Máximo 10MB.');
       return;
     }
-    setFile(f);
-    setPreview(URL.createObjectURL(f));
+    setRawPreview(URL.createObjectURL(f));
+    setCropperOpen(true);
   };
 
   const handleDrop = useCallback((e: React.DragEvent) => {
