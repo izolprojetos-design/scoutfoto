@@ -138,8 +138,8 @@ const Dashboard = () => {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
           <Card className="border bg-card shadow-sm">
             <CardContent className="flex items-center gap-4 p-5">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10">
-                <TrendingUp className="h-5 w-5 text-emerald-600" />
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                <TrendingUp className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold tracking-tight">{branches.length}</p>
