@@ -101,7 +101,8 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           </nav>
 
           {/* User Menu */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="gap-2 px-2">
