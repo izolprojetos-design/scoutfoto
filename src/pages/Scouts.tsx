@@ -80,6 +80,7 @@ const Scouts = () => {
   const [scoutBirth, setScoutBirth] = useState('');
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
+  const [scoutBranch, setScoutBranch] = useState('auto');
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
