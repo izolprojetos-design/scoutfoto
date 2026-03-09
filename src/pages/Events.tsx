@@ -196,12 +196,33 @@ const Events = () => {
           <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {canUpload && (
-            <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
-              <Upload className="h-4 w-4" />
-              Upload
-            </Button>
+            <>
+              <Button variant="outline" className="gap-2 shadow-sm" onClick={() => navigate('/upload')}>
+                <Upload className="h-4 w-4" />
+                Upload
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2 shadow-sm">
+                    <Camera className="h-4 w-4" />
+                    Tirar Foto
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="max-h-64 overflow-y-auto">
+                  <DropdownMenuItem onClick={() => navigate('/upload?camera=true')}>
+                    📷 Sem evento específico
+                  </DropdownMenuItem>
+                  {events.length > 0 && <DropdownMenuSeparator />}
+                  {events.map(ev => (
+                    <DropdownMenuItem key={ev.id} onClick={() => navigate(`/upload?camera=true&eventId=${ev.id}`)}>
+                      📅 {ev.name}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           )}
           {(isAdmin || isChefe) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
