@@ -37,7 +37,8 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isChefe } = useAuth();
+  const { user, isAdmin, isChefe, canUpload } = useAuth();
+  const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
