@@ -191,7 +191,7 @@ const Scouts = () => {
       }
     }
 
-    toast.success('Jovem cadastrado com sucesso!');
+    toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
     setScoutPhoto(null); setScoutPhotoPreview(null);
