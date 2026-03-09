@@ -543,7 +543,7 @@ const Scouts = () => {
 
                             {/* Guardians - only show for minors (under 18) */}
                             {(() => {
-                              const ageInYears = differenceInYears(new Date(), new Date(scout.birth_date));
+                              const ageInYears = calculateAge(new Date(scout.birth_date)).years;
                               const isMinor = ageInYears < 18;
                               if (!isMinor && scoutGuardians.length === 0) return null;
                               return (
