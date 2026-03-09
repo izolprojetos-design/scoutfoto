@@ -165,6 +165,24 @@ const Gallery = () => {
     if (user) await logAudit(user.id, 'download', img.id);
   };
 
+  const handleDeleteImage = async (img: ImageData) => {
+    // Delete from storage
+    await supabase.storage.from('images').remove([img.storage_path]);
+    if (img.thumbnail_path) {
+      await supabase.storage.from('images').remove([img.thumbnail_path]);
+    }
+    // Delete from DB
+    const { error } = await supabase.from('images').delete().eq('id', img.id);
+    if (error) {
+      toast.error('Erro ao excluir: ' + error.message);
+    } else {
+      toast.success('Foto excluída com sucesso!');
+      setImages(prev => prev.filter(i => i.id !== img.id));
+      setSelectedImage(null);
+      if (user) await logAudit(user.id, 'delete', img.id);
+    }
+  };
+
   return (
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4">
