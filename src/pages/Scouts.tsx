@@ -131,6 +131,16 @@ const Scouts = () => {
     }
   };
 
+  const handleDeleteScout = async (scoutId: string) => {
+    const { error } = await supabase.from('scouts').delete().eq('id', scoutId);
+    if (error) {
+      toast.error('Erro ao excluir: ' + error.message);
+    } else {
+      toast.success('Jovem excluído!');
+      fetchData();
+    }
+  };
+
   const filteredScouts = scouts.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.scout_group.toLowerCase().includes(search.toLowerCase());
