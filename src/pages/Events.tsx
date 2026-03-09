@@ -144,7 +144,7 @@ const Events = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Local</Label>
-                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Ex: Serra da Mantiqueira" className="h-11" />
+                    <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="Serra Grande" className="h-11" />
                   </div>
                 </div>
                 <div className="space-y-2">
