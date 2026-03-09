@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Upload as UploadIcon, X } from 'lucide-react';
+import { Upload as UploadIcon, X, Camera } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
 import { logAudit } from '@/lib/auditLog';
@@ -225,7 +225,25 @@ const Upload = () => {
                   className="hidden"
                   onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
                 />
+                <input
+                  id="camera-input"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                />
               </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => document.getElementById('camera-input')?.click()}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                Tirar Foto com Câmera
+              </Button>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
