@@ -19,6 +19,7 @@ import {
   getNextBranchChange,
   formatAge,
   formatMonthsLeft,
+  calculateAge,
   SCOUT_BRANCHES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
