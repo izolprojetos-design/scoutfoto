@@ -82,6 +82,18 @@ const Upload = () => {
     setCropperOpen(true);
   };
 
+  const handleCropComplete = useCallback((croppedFile: File) => {
+    setFile(croppedFile);
+    setPreview(URL.createObjectURL(croppedFile));
+    setCropperOpen(false);
+    setRawPreview(null);
+  }, []);
+
+  const handleCropCancel = useCallback(() => {
+    setCropperOpen(false);
+    setRawPreview(null);
+  }, []);
+
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
