@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -70,6 +71,7 @@ const Scouts = () => {
   const [editBirth, setEditBirth] = useState('');
   const [editGroup, setEditGroup] = useState('');
   const [editNotes, setEditNotes] = useState('');
+  const [editBranch, setEditBranch] = useState('auto');
   const [editPhoto, setEditPhoto] = useState<File | null>(null);
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [editUploading, setEditUploading] = useState(false);
@@ -79,6 +81,7 @@ const Scouts = () => {
   const [scoutBirth, setScoutBirth] = useState('');
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
+  const [scoutBranch, setScoutBranch] = useState('auto');
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -193,7 +196,7 @@ const Scouts = () => {
 
     toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
-    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes('');
+    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto');
     setScoutPhoto(null); setScoutPhotoPreview(null);
     setUploading(false);
     fetchData();
@@ -205,6 +208,7 @@ const Scouts = () => {
     setEditBirth(scout.birth_date);
     setEditGroup(scout.scout_group);
     setEditNotes(scout.notes || '');
+    setEditBranch('auto');
     setEditPhoto(null);
     setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
@@ -295,7 +299,14 @@ const Scouts = () => {
     isUploading: boolean,
     submitLabel: string,
     photoInputId: string,
-  ) => (
+    branchOverride: string, setBranchOverride: (v: string) => void,
+  ) => {
+    const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
+    const effectiveBranch = branchOverride !== 'auto' 
+      ? SCOUT_BRANCHES.find(b => b.key === branchOverride) 
+      : detectedBranch;
+
+    return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
         <label htmlFor={photoInputId} className="cursor-pointer">
@@ -325,15 +336,32 @@ const Scouts = () => {
           <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 12º GEMC" className="h-11" />
         </div>
       </div>
+      <div className="space-y-2">
+        <Label>Ramo</Label>
+        <Select value={branchOverride} onValueChange={setBranchOverride}>
+          <SelectTrigger className="h-11">
+            <SelectValue placeholder="Selecione o ramo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="auto">Automático (por idade)</SelectItem>
+            {SCOUT_BRANCHES.map(b => (
+              <SelectItem key={b.key} value={b.key}>
+                {b.icon} {b.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       {birth && (
         <div className="rounded-lg bg-muted/50 p-3 space-y-1">
           <p className="text-sm font-medium">Idade: {formatAge(new Date(birth))}</p>
-          {getCurrentBranch(new Date(birth)) && (
+          {effectiveBranch && (
             <p className="text-sm text-muted-foreground">
-              Ramo atual: {getCurrentBranch(new Date(birth))!.icon} {getCurrentBranch(new Date(birth))!.name}
+              Ramo: {effectiveBranch.icon} {effectiveBranch.name}
+              {branchOverride === 'auto' && ' (automático)'}
             </p>
           )}
-          {getNextBranchChange(new Date(birth)) && (
+          {branchOverride === 'auto' && getNextBranchChange(new Date(birth)) && (
             <p className="text-sm text-muted-foreground">
               Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatMonthsLeft(getNextBranchChange(new Date(birth))!.monthsLeft)}
             </p>
@@ -348,7 +376,7 @@ const Scouts = () => {
         {isUploading ? 'Salvando...' : submitLabel}
       </Button>
     </form>
-  );
+  );};
 
   return (
     <AppLayout>
@@ -380,6 +408,7 @@ const Scouts = () => {
                 uploading,
                 'Cadastrar',
                 'scout-photo-create',
+                scoutBranch, setScoutBranch,
               )}
             </DialogContent>
           </Dialog>
@@ -597,6 +626,7 @@ const Scouts = () => {
             editUploading,
             'Salvar Alterações',
             'scout-photo-edit',
+            editBranch, setEditBranch,
           )}
         </DialogContent>
       </Dialog>
