@@ -367,7 +367,7 @@ const Scouts = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Cadastrar Jovem Escoteiro</DialogTitle>
+                <DialogTitle>Cadastrar Membro</DialogTitle>
               </DialogHeader>
               {renderScoutForm(
                 handleCreateScout,
