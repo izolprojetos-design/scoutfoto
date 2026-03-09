@@ -124,10 +124,9 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   <p className="text-xs text-muted-foreground">{profile?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2 text-muted-foreground">
+                <DropdownMenuItem className="gap-2 text-muted-foreground" onClick={() => navigate('/profile')}>
                   <User className="h-4 w-4" />
                   <span>Perfil</span>
-                  <Badge variant="secondary" className="ml-auto text-[10px]">Em breve</Badge>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive focus:text-destructive">
