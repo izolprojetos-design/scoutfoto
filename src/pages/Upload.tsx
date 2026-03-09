@@ -49,6 +49,8 @@ const Upload = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [dragActive, setDragActive] = useState(false);
+  const [cropperOpen, setCropperOpen] = useState(false);
+  const [rawPreview, setRawPreview] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.from('branches').select('*').order('sort_order').then(({ data }) => {
