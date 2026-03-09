@@ -38,7 +38,14 @@ const branchColors: Record<string, string> = {
   chefes: 'from-blue-500/15 to-blue-600/5 border-blue-200/50 hover:border-blue-300',
 };
 
-const Dashboard = () => {
+const PIE_COLORS: Record<string, string> = {
+  lobinho: '#f59e0b',
+  escoteiro: '#10b981',
+  senior: '#ef4444',
+  pioneiro: '#f97316',
+};
+
+
   const { profile, canUpload, isChefe } = useAuth();
   const [branches, setBranches] = useState<BranchWithCount[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
