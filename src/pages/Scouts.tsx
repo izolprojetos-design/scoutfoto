@@ -47,6 +47,7 @@ const branchColorMap: Record<string, string> = {
   emerald: 'bg-emerald-100 text-emerald-800 border-emerald-200',
   red: 'bg-red-100 text-red-800 border-red-200',
   orange: 'bg-orange-100 text-orange-800 border-orange-200',
+  blue: 'bg-blue-100 text-blue-800 border-blue-200',
 };
 
 const Scouts = () => {
