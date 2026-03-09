@@ -11,6 +11,7 @@ import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightL
 import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 
 interface BranchWithCount {
   id: string;
