@@ -148,7 +148,7 @@ const Events = () => {
     return branches.find(br => br.id === bId);
   };
 
-  const EventForm = ({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => Promise<void>; submitLabel: string }) => (
+  const renderForm = (onSubmit: (e: React.FormEvent) => Promise<void>, submitLabel: string) => (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label>Nome do evento</Label>
@@ -206,7 +206,7 @@ const Events = () => {
               <DialogHeader>
                 <DialogTitle>Criar Evento</DialogTitle>
               </DialogHeader>
-              <EventForm onSubmit={handleCreate} submitLabel="Criar Evento" />
+              {renderForm(handleCreate, "Criar Evento")}
             </DialogContent>
           </Dialog>
         )}
@@ -318,7 +318,7 @@ const Events = () => {
           <DialogHeader>
             <DialogTitle>Editar Evento</DialogTitle>
           </DialogHeader>
-          <EventForm onSubmit={handleEdit} submitLabel="Salvar Alterações" />
+          {renderForm(handleEdit, "Salvar Alterações")}
         </DialogContent>
       </Dialog>
 
