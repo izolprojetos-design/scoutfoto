@@ -62,7 +62,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const roleLabel: Record<string, string> = {
     admin: 'Administrador',
     chefe: 'Chefe Escoteiro',
-    uploader: 'Uploader',
+    
     viewer: 'Visualizador',
     parent: 'Pai/Mãe',
   };

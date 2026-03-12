@@ -15,7 +15,7 @@ const roleLabel: Record<string, string> = {
   admin: 'Administrador',
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
-  uploader: 'Uploader',
+  
   viewer: 'Visualizador',
 };
 

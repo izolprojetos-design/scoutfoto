@@ -272,7 +272,7 @@ const Admin = () => {
     switch (role) {
       case 'admin': return 'destructive' as const;
       case 'chefe': return 'default' as const;
-      case 'uploader': return 'default' as const;
+      
       case 'dirigente': return 'default' as const;
       case 'dirigente_gestor': return 'default' as const;
       default: return 'secondary' as const;
@@ -352,7 +352,7 @@ const Admin = () => {
                       <SelectItem value="chefe">Chefe</SelectItem>
                       <SelectItem value="dirigente">Dirigente</SelectItem>
                       <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
-                      <SelectItem value="uploader">Uploader</SelectItem>
+                      
                       <SelectItem value="viewer">Viewer</SelectItem>
                     </SelectContent>
                   </Select>
@@ -391,7 +391,7 @@ const Admin = () => {
                               <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
                               <SelectItem value="dirigente">Dirigente</SelectItem>
                               <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                              <SelectItem value="uploader">Uploader</SelectItem>
+                              
                               <SelectItem value="viewer">Visualizador</SelectItem>
                             </SelectContent>
                           </Select>
@@ -456,7 +456,7 @@ const Admin = () => {
                                 <SelectItem value="chefe">Chefe</SelectItem>
                                 <SelectItem value="dirigente">Dirigente</SelectItem>
                                 <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
-                                <SelectItem value="uploader">Uploader</SelectItem>
+                                
                                 <SelectItem value="viewer">Viewer</SelectItem>
                               </SelectContent>
                             </Select>
