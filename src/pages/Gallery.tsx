@@ -45,6 +45,7 @@ interface EventData {
   name: string;
   event_date: string | null;
   branch_id: string | null;
+  scout_group: string | null;
 }
 
 const PAGE_SIZE = 24;
