@@ -208,6 +208,7 @@ const Admin = () => {
       case 'admin': return 'destructive' as const;
       case 'chefe': return 'default' as const;
       case 'uploader': return 'default' as const;
+      case 'dirigente': return 'default' as const;
       default: return 'secondary' as const;
     }
   };
