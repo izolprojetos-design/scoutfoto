@@ -230,11 +230,15 @@ const Admin = () => {
     setEditingName(false);
   };
 
+  const ROLE_ORDER: Record<string, number> = {
+    admin: 0, chefe: 1, dirigente: 2, dirigente_gestor: 3, uploader: 4, viewer: 5,
+  };
+
   const filtered = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
-  });
+  }).sort((a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99));
 
   const roleBadgeVariant = (role: AppRole) => {
     switch (role) {
