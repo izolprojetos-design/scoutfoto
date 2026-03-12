@@ -116,6 +116,7 @@ const Events = () => {
     setEventDate(event.event_date || '');
     setLocation(event.location || '');
     setBranchId(event.branch_id || '');
+    setScoutGroup((event as any).scout_group || '');
     setEditDialogOpen(true);
   };
 
