@@ -61,12 +61,21 @@ const Events = () => {
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
-    const [{ data }, { data: permsData }] = await Promise.all([
+    const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
       supabase.from('events').select('*').order('event_date', { ascending: false }),
       supabase.from('event_permissions').select('event_id'),
+      supabase.from('images').select('event_id').not('event_id', 'is', null),
     ]);
     setEvents(data || []);
     setEventsWithPerms(new Set((permsData || []).map(p => p.event_id)));
+    
+    // Count photos per event
+    const counts: Record<string, number> = {};
+    (imgData || []).forEach(img => {
+      if (img.event_id) counts[img.event_id] = (counts[img.event_id] || 0) + 1;
+    });
+    setPhotoCounts(counts);
+    
     setLoading(false);
   };
 
