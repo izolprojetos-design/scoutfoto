@@ -157,34 +157,35 @@ const EventDetail = () => {
   const branchInfo = event ? getBranchInfo(event.branch_id) : null;
 
   // Upload handlers
-  const handleFile = (f: File) => {
-    if (!ACCEPTED_TYPES.includes(f.type)) {
-      toast.error('Formato não aceito. Use JPG, PNG ou WebP.');
-      return;
+  const handleFiles = (fileList: FileList) => {
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    Array.from(fileList).forEach(f => {
+      if (!ACCEPTED_TYPES.includes(f.type)) {
+        toast.error(`${f.name}: formato não aceito.`);
+        return;
+      }
+      if (f.size > MAX_SIZE) {
+        toast.error(`${f.name}: muito grande (máx 10MB).`);
+        return;
+      }
+      newFiles.push(f);
+      newPreviews.push(URL.createObjectURL(f));
+    });
+    if (newFiles.length > 0) {
+      setFiles(prev => [...prev, ...newFiles]);
+      setPreviews(prev => [...prev, ...newPreviews]);
     }
-    if (f.size > MAX_SIZE) {
-      toast.error('Arquivo muito grande. Máximo 10MB.');
-      return;
-    }
-    setRawPreview(URL.createObjectURL(f));
-    setCropperOpen(true);
   };
 
-  const handleCropComplete = useCallback((croppedFile: File) => {
-    setFile(croppedFile);
-    setPreview(URL.createObjectURL(croppedFile));
-    setCropperOpen(false);
-    setRawPreview(null);
-  }, []);
-
-  const handleCropCancel = useCallback(() => {
-    setCropperOpen(false);
-    setRawPreview(null);
-  }, []);
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
 
   const resetUploadForm = () => {
-    setFile(null);
-    setPreview(null);
+    setFiles([]);
+    setPreviews([]);
     setBranchId('');
     setCaption('');
     setTags('');
@@ -193,6 +194,7 @@ const EventDetail = () => {
     setMinorAge('');
     setVisibility('group');
     setProgress(0);
+    setUploadingIndex(0);
   };
 
   useEffect(() => {
