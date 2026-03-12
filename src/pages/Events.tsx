@@ -56,16 +56,8 @@ const Events = () => {
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
-  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
-
-  const toggleSelectEvent = (eventId: string) => {
-    setSelectedEvents(prev => {
-      const next = new Set(prev);
-      if (next.has(eventId)) next.delete(eventId);
-      else next.add(eventId);
-      return next;
-    });
-  };
+  const [deleteEventId, setDeleteEventId] = useState<string | null>(null);
+  const [deleteEventName, setDeleteEventName] = useState('');
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
