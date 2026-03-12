@@ -28,6 +28,7 @@ interface Scout {
   name: string;
   birth_date: string;
   scout_group: string;
+  photo_url: string | null;
 }
 
 const branchColors: Record<string, string> = {
