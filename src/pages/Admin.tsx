@@ -75,6 +75,13 @@ const Admin = () => {
   const [editNameValue, setEditNameValue] = useState('');
   const [editingName, setEditingName] = useState(false);
 
+  // Pending changes
+  const [pendingRoles, setPendingRoles] = useState<Record<string, AppRole>>({});
+  const [pendingStatus, setPendingStatus] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
+
+  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0;
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
