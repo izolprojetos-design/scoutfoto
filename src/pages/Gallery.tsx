@@ -222,14 +222,22 @@ const Gallery = () => {
           const ev = events.find(e => e.id === img.event_id);
           matchYear = !!ev?.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter;
         } else {
-          // Images without event: match by created_at year
           matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
         }
       }
 
-      return matchSearch && matchEvent && matchBranch && matchYear;
+      // Group filter
+      let matchGroup = true;
+      if (groupFilter !== 'all' && img.event_id) {
+        const ev = events.find(e => e.id === img.event_id);
+        matchGroup = ev?.scout_group === groupFilter;
+      } else if (groupFilter !== 'all' && !img.event_id) {
+        matchGroup = false;
+      }
+
+      return matchSearch && matchEvent && matchBranch && matchYear && matchGroup;
     });
-  }, [images, search, eventFilter, branchFilter, yearFilter, events]);
+  }, [images, search, eventFilter, branchFilter, yearFilter, groupFilter, events]);
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
