@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from '@/components/ui/badge';
 
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield, MoreVertical } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
@@ -56,6 +56,7 @@ const Events = () => {
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
+  const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
@@ -304,56 +305,40 @@ const Events = () => {
                       )}
                     </div>
                     {(isAdmin || isChefe || isDirigente) && (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 gap-2"
-                          onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
-                        >
-                          <Share2 className="h-3.5 w-3.5" />
-                          Compartilhar
-                        </Button>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="relative bg-amber-600 hover:bg-amber-700 text-white shadow-sm px-2.5"
-                          onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}
-                          title="Permissões do Evento"
-                        >
-                          <Shield className="h-4 w-4" />
-                          {eventsWithPerms.has(event.id) && (
-                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
-                              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
-                            </span>
-                          )}
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="gap-2"
-                          onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}
-                        >
-                          <Pencil className="h-3.5 w-3.5" />
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="sm" className="gap-2" onClick={e => e.stopPropagation()}>
-                              <Trash2 className="h-3.5 w-3.5" />
+                      <div className="flex justify-end">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
+                              <MoreVertical className="h-4 w-4" />
                             </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Excluir evento "{event.name}"?</AlertDialogTitle>
-                              <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDeleteEvent(event.id)}>Excluir</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => setShareEvent({ id: event.id, name: event.name })}>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Compartilhar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setPermEvent({ id: event.id, name: event.name })}>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Permissões
+                              {eventsWithPerms.has(event.id) && (
+                                <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => openEditDialog(event)}>
+                              <Pencil className="h-4 w-4 mr-2" />
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setDeleteEvent({ id: event.id, name: event.name })}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     )}
                   </CardContent>
@@ -391,6 +376,19 @@ const Events = () => {
           eventName={permEvent.name}
         />
       )}
+
+      <AlertDialog open={!!deleteEvent} onOpenChange={(open) => !open && setDeleteEvent(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir evento "{deleteEvent?.name}"?</AlertDialogTitle>
+            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (deleteEvent) handleDeleteEvent(deleteEvent.id); setDeleteEvent(null); }}>Excluir</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
