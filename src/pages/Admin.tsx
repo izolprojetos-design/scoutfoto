@@ -204,6 +204,32 @@ const Admin = () => {
     setResetOpen(true);
   };
 
+  const openEditNameDialog = (userId: string, currentName: string) => {
+    setEditNameUserId(userId);
+    setEditNameValue(currentName);
+    setEditNameOpen(true);
+  };
+
+  const handleEditName = async () => {
+    if (!editNameValue.trim()) {
+      toast.error('Nome não pode estar vazio');
+      return;
+    }
+    setEditingName(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ name: editNameValue.trim() })
+      .eq('user_id', editNameUserId);
+    if (error) {
+      toast.error('Erro ao atualizar nome: ' + error.message);
+    } else {
+      toast.success('Nome atualizado!');
+      setEditNameOpen(false);
+      fetchUsers();
+    }
+    setEditingName(false);
+  };
+
   const filtered = users.filter(u => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
