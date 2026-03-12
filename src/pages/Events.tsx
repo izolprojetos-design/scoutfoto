@@ -53,6 +53,7 @@ const Events = () => {
   const [location, setLocation] = useState('');
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
+  const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
     const { data } = await supabase
