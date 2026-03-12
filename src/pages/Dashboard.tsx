@@ -231,9 +231,23 @@ const Dashboard = () => {
             ) : (
               upcomingChanges.slice(0, 5).map(s => (
                 <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                  <div>
-                    <p className="text-sm font-medium">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">→ {s.change.branch.icon} {s.change.branch.name}</p>
+                  <div className="flex items-center gap-2">
+                    {s.photo_url ? (
+                      <button
+                        onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })}
+                        className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer"
+                      >
+                        <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                      </button>
+                    ) : (
+                      <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="text-sm font-medium">{s.name}</p>
+                      <p className="text-xs text-muted-foreground">→ {s.change.branch.icon} {s.change.branch.name}</p>
+                    </div>
                   </div>
                   <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs">
                     {formatMonthsLeft(s.change.monthsLeft)}
