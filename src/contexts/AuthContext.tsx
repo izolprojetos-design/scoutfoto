@@ -114,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = hasRole('admin');
   const isChefe = hasRole('chefe');
   const isDirigente = hasRole('dirigente');
-  const canUpload = isAdmin || isChefe || isDirigente || hasRole('uploader');
+  const canUpload = isAdmin || isChefe || isDirigente;
   const canViewMinors = isAdmin || isChefe || isDirigente;
 
   return (
