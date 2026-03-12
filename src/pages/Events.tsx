@@ -57,11 +57,12 @@ const Events = () => {
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
-    const { data } = await supabase
-      .from('events')
-      .select('*')
-      .order('event_date', { ascending: false });
+    const [{ data }, { data: permsData }] = await Promise.all([
+      supabase.from('events').select('*').order('event_date', { ascending: false }),
+      supabase.from('event_permissions').select('event_id'),
+    ]);
     setEvents(data || []);
+    setEventsWithPerms(new Set((permsData || []).map(p => p.event_id)));
     setLoading(false);
   };
 
