@@ -68,6 +68,12 @@ const Admin = () => {
   const [resetPassword, setResetPassword] = useState('');
   const [resetting, setResetting] = useState(false);
 
+  // Edit name form
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [editNameUserId, setEditNameUserId] = useState('');
+  const [editNameValue, setEditNameValue] = useState('');
+  const [editingName, setEditingName] = useState(false);
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
@@ -196,6 +202,32 @@ const Admin = () => {
     setResetUserName(userName);
     setResetPassword('');
     setResetOpen(true);
+  };
+
+  const openEditNameDialog = (userId: string, currentName: string) => {
+    setEditNameUserId(userId);
+    setEditNameValue(currentName);
+    setEditNameOpen(true);
+  };
+
+  const handleEditName = async () => {
+    if (!editNameValue.trim()) {
+      toast.error('Nome não pode estar vazio');
+      return;
+    }
+    setEditingName(true);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ name: editNameValue.trim() })
+      .eq('user_id', editNameUserId);
+    if (error) {
+      toast.error('Erro ao atualizar nome: ' + error.message);
+    } else {
+      toast.success('Nome atualizado!');
+      setEditNameOpen(false);
+      fetchUsers();
+    }
+    setEditingName(false);
   };
 
   const filtered = users.filter(u => {
@@ -357,7 +389,15 @@ const Admin = () => {
                   <TableBody>
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
-                        <TableCell className="font-medium">{u.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <button
+                            className="text-left hover:text-primary hover:underline cursor-pointer transition-colors"
+                            onClick={() => openEditNameDialog(u.user_id, u.name)}
+                            title="Clique para editar o nome"
+                          >
+                            {u.name}
+                          </button>
+                        </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{u.role}</Badge></TableCell>
                         <TableCell>
@@ -489,6 +529,29 @@ const Admin = () => {
             <Button onClick={handleResetPassword} disabled={resetting} className="w-full gap-2">
               {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
               Redefinir Senha
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Name Dialog */}
+      <Dialog open={editNameOpen} onOpenChange={setEditNameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar nome do usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input
+                value={editNameValue}
+                onChange={e => setEditNameValue(e.target.value)}
+                placeholder="Nome completo"
+              />
+            </div>
+            <Button onClick={handleEditName} disabled={editingName} className="w-full gap-2">
+              {editingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
+              Salvar Nome
             </Button>
           </div>
         </DialogContent>
