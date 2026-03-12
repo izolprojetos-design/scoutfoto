@@ -12,6 +12,7 @@ interface Profile {
   email: string;
   avatar_url: string | null;
   is_active: boolean;
+  must_change_password: boolean;
 }
 
 interface AuthContextType {

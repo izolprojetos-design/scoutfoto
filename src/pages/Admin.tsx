@@ -190,7 +190,9 @@ const Admin = () => {
     if (error || data?.error) {
       toast.error('Erro: ' + (data?.error || error?.message));
     } else {
-      toast.success('Senha redefinida com sucesso!');
+      // Set must_change_password flag
+      await supabase.from('profiles').update({ must_change_password: true }).eq('user_id', resetUserId);
+      toast.success('Senha redefinida! O usuário será solicitado a trocar a senha no próximo login.');
       setResetOpen(false);
       setResetPassword('');
     }
