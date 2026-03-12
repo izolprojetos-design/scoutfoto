@@ -116,15 +116,36 @@ const Profile = () => {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <Button
-                size="icon"
-                variant="secondary"
-                className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full shadow-md"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-              </Button>
+              <div className="absolute -bottom-1 -right-1 flex gap-1">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-9 w-9 rounded-full shadow-md"
+                  onClick={() => cameraRef.current?.click()}
+                  disabled={uploading}
+                  title="Tirar foto"
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-9 w-9 rounded-full shadow-md"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  title="Escolher da galeria"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                </Button>
+              </div>
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
               <input
                 ref={fileRef}
                 type="file"
