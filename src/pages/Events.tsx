@@ -43,6 +43,7 @@ const Events = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [eventsWithPerms, setEventsWithPerms] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
