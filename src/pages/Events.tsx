@@ -312,13 +312,14 @@ const Events = () => {
                           Compartilhar
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="default"
                           size="sm"
-                          className="gap-2"
+                          className="gap-2 bg-amber-600 hover:bg-amber-700 text-white shadow-sm"
                           onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}
                           title="Permissões do Evento"
                         >
-                          <Shield className="h-3.5 w-3.5" />
+                          <Shield className="h-4 w-4" />
+                          Permissões
                         </Button>
                         <Button
                           variant="outline"
