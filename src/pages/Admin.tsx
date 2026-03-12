@@ -134,25 +134,46 @@ const Admin = () => {
     fetchAuditLogs();
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: AppRole) => {
-    await supabase.from('user_roles').delete().eq('user_id', userId);
-    const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
-    if (error) {
-      toast.error('Erro ao alterar papel: ' + error.message);
+  const stageRoleChange = (userId: string, newRole: AppRole) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && original.role === newRole) {
+      setPendingRoles(prev => { const next = { ...prev }; delete next[userId]; return next; });
     } else {
-      toast.success('Papel atualizado!');
-      fetchUsers();
+      setPendingRoles(prev => ({ ...prev, [userId]: newRole }));
     }
   };
 
-  const toggleActive = async (userId: string, currentActive: boolean) => {
-    const { error } = await supabase.from('profiles').update({ is_active: !currentActive }).eq('user_id', userId);
-    if (error) {
-      toast.error('Erro: ' + error.message);
+  const stageStatusToggle = (userId: string, newActive: boolean) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && original.is_active === newActive) {
+      setPendingStatus(prev => { const next = { ...prev }; delete next[userId]; return next; });
     } else {
-      toast.success(currentActive ? 'Usuário desativado' : 'Usuário ativado');
-      fetchUsers();
+      setPendingStatus(prev => ({ ...prev, [userId]: newActive }));
     }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    let hasError = false;
+
+    // Save role changes
+    for (const [userId, role] of Object.entries(pendingRoles)) {
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
+      if (error) { toast.error('Erro ao alterar papel: ' + error.message); hasError = true; }
+    }
+
+    // Save status changes
+    for (const [userId, isActive] of Object.entries(pendingStatus)) {
+      const { error } = await supabase.from('profiles').update({ is_active: isActive }).eq('user_id', userId);
+      if (error) { toast.error('Erro: ' + error.message); hasError = true; }
+    }
+
+    if (!hasError) toast.success('Alterações salvas com sucesso!');
+    setPendingRoles({});
+    setPendingStatus({});
+    fetchUsers();
+    setSaving(false);
   };
 
   const handleCreateUser = async () => {
