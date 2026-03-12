@@ -28,7 +28,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
   dirigente_gestor: 'Dirigente Gestor',
-  uploader: 'Uploader',
+  
   viewer: 'Visualizador',
   parent: 'Pai/Mãe',
 };
