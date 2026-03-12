@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock } from 'lucide-react';
+import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import { format } from 'date-fns';
@@ -75,6 +76,13 @@ const Admin = () => {
   const [editNameValue, setEditNameValue] = useState('');
   const [editingName, setEditingName] = useState(false);
 
+  // Pending changes
+  const [pendingRoles, setPendingRoles] = useState<Record<string, AppRole>>({});
+  const [pendingStatus, setPendingStatus] = useState<Record<string, boolean>>({});
+  const [saving, setSaving] = useState(false);
+
+  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0;
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
@@ -127,25 +135,46 @@ const Admin = () => {
     fetchAuditLogs();
   }, []);
 
-  const handleRoleChange = async (userId: string, newRole: AppRole) => {
-    await supabase.from('user_roles').delete().eq('user_id', userId);
-    const { error } = await supabase.from('user_roles').insert({ user_id: userId, role: newRole });
-    if (error) {
-      toast.error('Erro ao alterar papel: ' + error.message);
+  const stageRoleChange = (userId: string, newRole: AppRole) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && original.role === newRole) {
+      setPendingRoles(prev => { const next = { ...prev }; delete next[userId]; return next; });
     } else {
-      toast.success('Papel atualizado!');
-      fetchUsers();
+      setPendingRoles(prev => ({ ...prev, [userId]: newRole }));
     }
   };
 
-  const toggleActive = async (userId: string, currentActive: boolean) => {
-    const { error } = await supabase.from('profiles').update({ is_active: !currentActive }).eq('user_id', userId);
-    if (error) {
-      toast.error('Erro: ' + error.message);
+  const stageStatusToggle = (userId: string, newActive: boolean) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && original.is_active === newActive) {
+      setPendingStatus(prev => { const next = { ...prev }; delete next[userId]; return next; });
     } else {
-      toast.success(currentActive ? 'Usuário desativado' : 'Usuário ativado');
-      fetchUsers();
+      setPendingStatus(prev => ({ ...prev, [userId]: newActive }));
     }
+  };
+
+  const handleSaveAll = async () => {
+    setSaving(true);
+    let hasError = false;
+
+    // Save role changes
+    for (const [userId, role] of Object.entries(pendingRoles)) {
+      await supabase.from('user_roles').delete().eq('user_id', userId);
+      const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
+      if (error) { toast.error('Erro ao alterar papel: ' + error.message); hasError = true; }
+    }
+
+    // Save status changes
+    for (const [userId, isActive] of Object.entries(pendingStatus)) {
+      const { error } = await supabase.from('profiles').update({ is_active: isActive }).eq('user_id', userId);
+      if (error) { toast.error('Erro: ' + error.message); hasError = true; }
+    }
+
+    if (!hasError) toast.success('Alterações salvas com sucesso!');
+    setPendingRoles({});
+    setPendingStatus({});
+    fetchUsers();
+    setSaving(false);
   };
 
   const handleCreateUser = async () => {
@@ -404,18 +433,24 @@ const Admin = () => {
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{u.role}</Badge></TableCell>
                         <TableCell>
-                          <Badge variant={u.is_active ? 'default' : 'secondary'}>
-                            {u.is_active ? 'Ativo' : 'Inativo'}
-                          </Badge>
+                          {(() => {
+                            const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
+                            const isPending = pendingStatus[u.user_id] !== undefined;
+                            return (
+                              <Badge variant={currentActive ? 'default' : 'secondary'} className={isPending ? 'ring-2 ring-primary/50' : ''}>
+                                {currentActive ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-2">
                             <Select
-                              value={u.role}
-                              onValueChange={(v: AppRole) => handleRoleChange(u.user_id, v)}
+                              value={pendingRoles[u.user_id] || u.role}
+                              onValueChange={(v: AppRole) => stageRoleChange(u.user_id, v)}
                               disabled={u.user_id === user?.id}
                             >
-                              <SelectTrigger className="h-8 w-[120px]"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className={`h-8 w-[120px] ${pendingRoles[u.user_id] ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="chefe">Chefe</SelectItem>
@@ -429,8 +464,16 @@ const Admin = () => {
                               <KeyRound className="h-3.5 w-3.5 mr-1" />
                               Senha
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => toggleActive(u.user_id, u.is_active)} disabled={u.user_id === user?.id}>
-                              {u.is_active ? 'Desativar' : 'Ativar'}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
+                                stageStatusToggle(u.user_id, !currentActive);
+                              }}
+                              disabled={u.user_id === user?.id}
+                            >
+                              {(pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active) ? 'Desativar' : 'Ativar'}
                             </Button>
                           </div>
                         </TableCell>
@@ -446,6 +489,28 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Floating Save Button */}
+          <AnimatePresence>
+            {hasPendingChanges && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+              >
+                <Button
+                  size="lg"
+                  className="gap-2 shadow-lg px-8"
+                  onClick={handleSaveAll}
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Salvar alterações ({Object.keys(pendingRoles).length + Object.keys(pendingStatus).length})
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </TabsContent>
 
         <TabsContent value="permissions">
