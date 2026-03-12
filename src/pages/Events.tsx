@@ -316,11 +316,17 @@ const Events = () => {
                         <Button
                           variant="default"
                           size="sm"
-                          className="bg-amber-600 hover:bg-amber-700 text-white shadow-sm px-2.5"
+                          className="relative bg-amber-600 hover:bg-amber-700 text-white shadow-sm px-2.5"
                           onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}
                           title="Permissões do Evento"
                         >
                           <Shield className="h-4 w-4" />
+                          {eventsWithPerms.has(event.id) && (
+                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                              <span className="relative inline-flex h-3 w-3 rounded-full bg-primary" />
+                            </span>
+                          )}
                         </Button>
                         <Button
                           variant="outline"
