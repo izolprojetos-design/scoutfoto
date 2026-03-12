@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -55,6 +56,16 @@ const Events = () => {
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
+
+  const toggleSelectEvent = (eventId: string) => {
+    setSelectedEvents(prev => {
+      const next = new Set(prev);
+      if (next.has(eventId)) next.delete(eventId);
+      else next.add(eventId);
+      return next;
+    });
+  };
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
@@ -273,15 +284,22 @@ const Events = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
-                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md">
+                <Card className={`group border bg-card shadow-sm transition-all hover:shadow-md ${selectedEvents.has(event.id) ? 'ring-2 ring-primary' : ''}`}>
                   <CardContent className="p-5">
-                    <div className="mb-3">
-                      <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
-                        {event.name}
-                      </h3>
-                      {event.description && (
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                      )}
+                    <div className="mb-3 flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedEvents.has(event.id)}
+                        onCheckedChange={() => toggleSelectEvent(event.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
+                          {event.name}
+                        </h3>
+                        {event.description && (
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+                        )}
+                      </div>
                     </div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {event.event_date && (
