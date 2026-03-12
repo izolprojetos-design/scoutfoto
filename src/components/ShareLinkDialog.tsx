@@ -24,12 +24,25 @@ const ShareLinkDialog = ({ open, onOpenChange, eventId, eventName }: ShareLinkDi
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  const generateShortCode = (length = 8): string => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let result = '';
+    const array = new Uint8Array(length);
+    crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      result += chars[array[i] % chars.length];
+    }
+    return result;
+  };
+
   const handleGenerate = async () => {
     if (!user) return;
     setLoading(true);
 
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + parseInt(expiry));
+
+    const shortToken = generateShortCode(8);
 
     const { data, error } = await supabase
       .from('event_share_links')
@@ -38,6 +51,7 @@ const ShareLinkDialog = ({ open, onOpenChange, eventId, eventName }: ShareLinkDi
         created_by: user.id,
         expires_at: expiresAt.toISOString(),
         max_views: maxViews ? parseInt(maxViews) : null,
+        token: shortToken,
       })
       .select('token')
       .single();
