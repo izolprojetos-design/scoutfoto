@@ -298,7 +298,7 @@ const Events = () => {
                         </Badge>
                       )}
                     </div>
-                    {(isAdmin || isChefe) && (
+                    {(isAdmin || isChefe || isDirigente) && (
                       <div className="flex gap-2">
                         <Button
                           variant="outline"

@@ -46,7 +46,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { to: '/scouts', label: 'Integrantes', icon: Users, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     
-    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe },
+    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe || isDirigente },
     { to: '/admin', label: 'Admin', icon: Settings, show: isAdmin },
   ];
 
