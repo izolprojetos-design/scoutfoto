@@ -154,7 +154,11 @@ const Profile = () => {
                 onChange={e => setName(e.target.value)}
                 placeholder="Seu nome completo"
                 className="h-11"
+                disabled={!isAdmin}
               />
+              {!isAdmin && (
+                <p className="text-xs text-muted-foreground">Apenas o administrador pode alterar o nome</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
