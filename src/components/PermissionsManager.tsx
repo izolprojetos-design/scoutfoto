@@ -27,12 +27,13 @@ const ROLE_LABELS: Record<AppRole, string> = {
   admin: 'Administrador',
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
+  dirigente_gestor: 'Dirigente Gestor',
   uploader: 'Uploader',
   viewer: 'Visualizador',
   parent: 'Pai/Mãe',
 };
 
-const MANAGED_ROLES: AppRole[] = ['admin', 'chefe', 'dirigente', 'uploader', 'viewer'];
+const MANAGED_ROLES: AppRole[] = ['admin', 'chefe', 'dirigente', 'dirigente_gestor', 'uploader', 'viewer'];
 
 const PermissionsManager = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);
