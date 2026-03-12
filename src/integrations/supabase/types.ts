@@ -168,6 +168,7 @@ export type Database = {
           id: string
           location: string | null
           name: string
+          scout_group: string | null
         }
         Insert: {
           branch_id?: string | null
@@ -178,6 +179,7 @@ export type Database = {
           id?: string
           location?: string | null
           name: string
+          scout_group?: string | null
         }
         Update: {
           branch_id?: string | null
@@ -188,6 +190,7 @@ export type Database = {
           id?: string
           location?: string | null
           name?: string
+          scout_group?: string | null
         }
         Relationships: [
           {

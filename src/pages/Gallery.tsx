@@ -45,6 +45,7 @@ interface EventData {
   name: string;
   event_date: string | null;
   branch_id: string | null;
+  scout_group: string | null;
 }
 
 const PAGE_SIZE = 24;
@@ -64,6 +65,7 @@ const Gallery = () => {
   const [eventFilter, setEventFilter] = useState('all');
   const [yearFilter, setYearFilter] = useState('all');
   const [branchFilter, setBranchFilter] = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
   const [events, setEvents] = useState<EventData[]>([]);
 
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
@@ -85,21 +87,32 @@ const Gallery = () => {
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [events]);
 
+  // Derive available groups from events
+  const availableGroups = useMemo(() => {
+    const groups = new Set<string>();
+    events.forEach(ev => {
+      if (ev.scout_group) groups.add(ev.scout_group);
+    });
+    return Array.from(groups).sort();
+  }, [events]);
+
   // Filter events shown in combobox based on year and branch filters
   const filteredEvents = useMemo(() => {
     return events.filter(ev => {
       const matchYear = yearFilter === 'all' || (ev.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter);
       const matchBranch = branchFilter === 'all' || ev.branch_id === branchFilter;
-      return matchYear && matchBranch;
+      const matchGroup = groupFilter === 'all' || ev.scout_group === groupFilter;
+      return matchYear && matchBranch && matchGroup;
     });
-  }, [events, yearFilter, branchFilter]);
+  }, [events, yearFilter, branchFilter, groupFilter]);
 
-  const hasActiveFilters = eventFilter !== 'all' || yearFilter !== 'all' || branchFilter !== 'all' || search !== '';
+  const hasActiveFilters = eventFilter !== 'all' || yearFilter !== 'all' || branchFilter !== 'all' || groupFilter !== 'all' || search !== '';
 
   const clearFilters = () => {
     setEventFilter('all');
     setYearFilter('all');
     setBranchFilter('all');
+    setGroupFilter('all');
     setSearch('');
   };
 
@@ -149,7 +162,7 @@ const Gallery = () => {
     const init = async () => {
       const [{ data: branchesData }, { data: evts }] = await Promise.all([
         supabase.from('branches').select('*').order('sort_order'),
-        supabase.from('events').select('id, name, event_date, branch_id').order('event_date', { ascending: false }),
+        supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
       ]);
 
       setBranches(branchesData || []);
@@ -209,14 +222,22 @@ const Gallery = () => {
           const ev = events.find(e => e.id === img.event_id);
           matchYear = !!ev?.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter;
         } else {
-          // Images without event: match by created_at year
           matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
         }
       }
 
-      return matchSearch && matchEvent && matchBranch && matchYear;
+      // Group filter
+      let matchGroup = true;
+      if (groupFilter !== 'all' && img.event_id) {
+        const ev = events.find(e => e.id === img.event_id);
+        matchGroup = ev?.scout_group === groupFilter;
+      } else if (groupFilter !== 'all' && !img.event_id) {
+        matchGroup = false;
+      }
+
+      return matchSearch && matchEvent && matchBranch && matchYear && matchGroup;
     });
-  }, [images, search, eventFilter, branchFilter, yearFilter, events]);
+  }, [images, search, eventFilter, branchFilter, yearFilter, groupFilter, events]);
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
@@ -312,6 +333,21 @@ const Gallery = () => {
                 <SelectItem value="all">Todos os ramos</SelectItem>
                 {branches.map(b => (
                   <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Group filter */}
+          {availableGroups.length > 0 && (
+            <Select value={groupFilter} onValueChange={setGroupFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Grupo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os grupos</SelectItem>
+                {availableGroups.map(g => (
+                  <SelectItem key={g} value={g}>{g}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
