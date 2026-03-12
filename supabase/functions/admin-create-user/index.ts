@@ -26,13 +26,12 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await anonClient.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user: callerUser }, error: callerError } = await anonClient.auth.getUser(token);
+    if (callerError || !callerUser) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: resHeaders });
     }
 
-    const callerId = claimsData.claims.sub as string;
+    const callerId = callerUser.id;
 
     // Service role client for admin operations
     const serviceClient = createClient(
@@ -76,7 +75,20 @@ Deno.serve(async (req) => {
 
       // Update role if provided and not default
       if (role && role !== "viewer" && newUser.user) {
-        await serviceClient.from("user_roles").update({ role }).eq("user_id", newUser.user.id);
+        // The trigger creates a 'viewer' role, so we update it
+        // Small delay to ensure trigger has completed
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { error: roleError } = await serviceClient
+          .from("user_roles")
+          .update({ role })
+          .eq("user_id", newUser.user.id);
+        
+        // If update didn't affect any rows, insert instead
+        if (roleError) {
+          await serviceClient
+            .from("user_roles")
+            .upsert({ user_id: newUser.user.id, role }, { onConflict: "user_id" });
+        }
       }
 
       return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), { headers: resHeaders });
