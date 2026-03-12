@@ -225,7 +225,7 @@ const Events = () => {
               </DropdownMenu>
             </>
           )}
-          {(isAdmin || isChefe) && (
+          {(isAdmin || isChefe || isDirigente) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 shadow-sm">
