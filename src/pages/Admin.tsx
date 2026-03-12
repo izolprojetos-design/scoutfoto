@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock } from 'lucide-react';
 import PermissionsManager from '@/components/PermissionsManager';
+import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
