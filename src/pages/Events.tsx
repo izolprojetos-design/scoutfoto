@@ -12,13 +12,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
+import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 
 interface Branch {
   id: string;
@@ -52,6 +53,7 @@ const Events = () => {
   const [location, setLocation] = useState('');
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
+  const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
     const { data } = await supabase
@@ -313,6 +315,15 @@ const Events = () => {
                           variant="outline"
                           size="sm"
                           className="gap-2"
+                          onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}
+                          title="Permissões do Evento"
+                        >
+                          <Shield className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
                           onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}
                         >
                           <Pencil className="h-3.5 w-3.5" />
@@ -360,6 +371,15 @@ const Events = () => {
           onOpenChange={(open) => !open && setShareEvent(null)}
           eventId={shareEvent.id}
           eventName={shareEvent.name}
+        />
+      )}
+
+      {permEvent && (
+        <EventPermissionsDialog
+          open={!!permEvent}
+          onOpenChange={(open) => !open && setPermEvent(null)}
+          eventId={permEvent.id}
+          eventName={permEvent.name}
         />
       )}
     </AppLayout>
