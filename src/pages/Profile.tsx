@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Camera, Save, Loader2, User } from 'lucide-react';
+import { Camera, Save, Loader2, User, ImagePlus } from 'lucide-react';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
@@ -26,6 +26,7 @@ const Profile = () => {
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
   const fileRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
 
   const initials = profile?.name
     ?.split(' ')
@@ -115,15 +116,36 @@ const Profile = () => {
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <Button
-                size="icon"
-                variant="secondary"
-                className="absolute -bottom-1 -right-1 h-9 w-9 rounded-full shadow-md"
-                onClick={() => fileRef.current?.click()}
-                disabled={uploading}
-              >
-                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-              </Button>
+              <div className="absolute -bottom-1 -right-1 flex gap-1">
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-9 w-9 rounded-full shadow-md"
+                  onClick={() => cameraRef.current?.click()}
+                  disabled={uploading}
+                  title="Tirar foto"
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+                </Button>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="h-9 w-9 rounded-full shadow-md"
+                  onClick={() => fileRef.current?.click()}
+                  disabled={uploading}
+                  title="Escolher da galeria"
+                >
+                  <ImagePlus className="h-4 w-4" />
+                </Button>
+              </div>
+              <input
+                ref={cameraRef}
+                type="file"
+                accept="image/*"
+                capture="user"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
               <input
                 ref={fileRef}
                 type="file"
