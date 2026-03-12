@@ -489,6 +489,28 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* Floating Save Button */}
+          <AnimatePresence>
+            {hasPendingChanges && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 20 }}
+                className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2"
+              >
+                <Button
+                  size="lg"
+                  className="gap-2 shadow-lg px-8"
+                  onClick={handleSaveAll}
+                  disabled={saving}
+                >
+                  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                  Salvar alterações ({Object.keys(pendingRoles).length + Object.keys(pendingStatus).length})
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </TabsContent>
 
         <TabsContent value="permissions">
