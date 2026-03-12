@@ -261,6 +261,7 @@ const Admin = () => {
       <Tabs defaultValue="users">
         <TabsList className="mb-4">
           <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="permissions" className="gap-1.5"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           <TabsTrigger value="stats">Estatísticas</TabsTrigger>
           <TabsTrigger value="audit">Auditoria</TabsTrigger>
         </TabsList>
