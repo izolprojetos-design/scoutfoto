@@ -493,7 +493,7 @@ const EventDetail = () => {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <Progress value={progress} className="h-2" />
                     <p className="mt-1 text-center text-xs text-muted-foreground">
-                      {progress < 30 ? 'Comprimindo...' : progress < 60 ? 'Enviando...' : progress < 90 ? 'Salvando...' : 'Concluído!'}
+                      Enviando foto {uploadingIndex} de {files.length}... {progress}%
                     </p>
                   </motion.div>
                 )}
@@ -502,9 +502,9 @@ const EventDetail = () => {
                   <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowUpload(false); resetUploadForm(); }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={!file || !branchId || !consent || uploading}>
+                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || !consent || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Enviar
+                    Enviar {files.length > 1 ? `${files.length} fotos` : ''}
                   </Button>
                 </div>
               </form>
