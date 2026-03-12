@@ -372,37 +372,48 @@ const EventDetail = () => {
           <Card className="mb-6 border shadow-sm">
             <CardContent className="p-5">
               <form onSubmit={handleUpload} className="space-y-4">
-                {/* Drop zone */}
+                {/* Drop zone / previews */}
                 <div
                   className="relative flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors"
                   onClick={() => document.getElementById('event-file-input')?.click()}
                 >
-                  {preview ? (
-                    <div className="relative">
-                      <img src={preview} alt="Preview" className="max-h-48 rounded-lg object-contain" />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute -right-2 -top-2 h-7 w-7"
-                        onClick={e => { e.stopPropagation(); setFile(null); setPreview(null); }}
+                  {previews.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 p-3" onClick={e => e.stopPropagation()}>
+                      {previews.map((p, i) => (
+                        <div key={i} className="relative">
+                          <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute right-0.5 top-0.5 h-5 w-5"
+                            onClick={() => removeFile(i)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                      <div
+                        className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
+                        onClick={() => document.getElementById('event-file-input')?.click()}
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                      </div>
                     </div>
                   ) : (
                     <>
                       <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
-                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB</p>
+                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB • Múltiplas fotos</p>
                     </>
                   )}
                   <input
                     id="event-file-input"
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp"
+                    multiple
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                    onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
                   />
                   <input
                     id="event-camera-input"
@@ -410,7 +421,7 @@ const EventDetail = () => {
                     accept="image/*"
                     capture="environment"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                    onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
                   />
                 </div>
 
