@@ -20,7 +20,7 @@ const roleLabel: Record<string, string> = {
 };
 
 const Profile = () => {
-  const { profile, roles, user } = useAuth();
+  const { profile, roles, user, isAdmin } = useAuth();
   const [name, setName] = useState(profile?.name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
