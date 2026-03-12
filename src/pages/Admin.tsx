@@ -282,9 +282,9 @@ const Admin = () => {
                       <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="chefe">Chefe</SelectItem>
+                      <SelectItem value="dirigente">Dirigente</SelectItem>
                       <SelectItem value="uploader">Uploader</SelectItem>
                       <SelectItem value="viewer">Viewer</SelectItem>
-                      <SelectItem value="parent">Parent</SelectItem>
                     </SelectContent>
                   </Select>
 
