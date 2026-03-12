@@ -112,11 +112,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const hasRole = (role: AppRole) => roles.includes(role);
   const isAdmin = hasRole('admin');
   const isChefe = hasRole('chefe');
-  const canUpload = isAdmin || isChefe || hasRole('uploader');
-  const canViewMinors = isAdmin || isChefe;
+  const isDirigente = hasRole('dirigente');
+  const canUpload = isAdmin || isChefe || isDirigente || hasRole('uploader');
+  const canViewMinors = isAdmin || isChefe || isDirigente;
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signUp, signOut, hasRole, isAdmin, isChefe, canUpload, canViewMinors }}>
+    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signUp, signOut, hasRole, isAdmin, isChefe, isDirigente, canUpload, canViewMinors }}>
       {children}
     </AuthContext.Provider>
   );
