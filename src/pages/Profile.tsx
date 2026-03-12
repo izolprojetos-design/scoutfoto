@@ -20,7 +20,7 @@ const roleLabel: Record<string, string> = {
 };
 
 const Profile = () => {
-  const { profile, roles, user } = useAuth();
+  const { profile, roles, user, isAdmin } = useAuth();
   const [name, setName] = useState(profile?.name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -154,7 +154,11 @@ const Profile = () => {
                 onChange={e => setName(e.target.value)}
                 placeholder="Seu nome completo"
                 className="h-11"
+                disabled={!isAdmin}
               />
+              {!isAdmin && (
+                <p className="text-xs text-muted-foreground">Apenas o administrador pode alterar o nome</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Email</Label>
@@ -165,10 +169,10 @@ const Profile = () => {
               <Input value={roleLabel[primaryRole]} disabled className="h-11 bg-muted" />
               <p className="text-xs text-muted-foreground">O cargo é definido pelo administrador</p>
             </div>
-            <Button onClick={handleSaveName} disabled={saving} className="gap-2">
+            {isAdmin && <Button onClick={handleSaveName} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Salvar alterações
-            </Button>
+            </Button>}
           </CardContent>
         </Card>
       </div>
