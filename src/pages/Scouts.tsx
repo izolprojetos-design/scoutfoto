@@ -397,7 +397,7 @@ const Scouts = () => {
           <h1 className="text-3xl font-bold tracking-tight">Jovens e Integrantes</h1>
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
-        {(isAdmin || isChefe || canUpload) && (
+        {(isAdmin || isChefe || isDirigente || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
