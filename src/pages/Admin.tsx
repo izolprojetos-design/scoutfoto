@@ -295,11 +295,11 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="users">
-        <TabsList className="mb-4">
-          <TabsTrigger value="users">Usuários</TabsTrigger>
-          <TabsTrigger value="permissions" className="gap-1.5"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
-          <TabsTrigger value="stats">Estatísticas</TabsTrigger>
-          <TabsTrigger value="audit">Auditoria</TabsTrigger>
+        <TabsList className="mb-4 bg-muted/60">
+          <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
+          <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
+          <TabsTrigger value="stats" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Estatísticas</TabsTrigger>
+          <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
