@@ -210,6 +210,7 @@ const Admin = () => {
       case 'chefe': return 'default' as const;
       case 'uploader': return 'default' as const;
       case 'dirigente': return 'default' as const;
+      case 'dirigente_gestor': return 'default' as const;
       default: return 'secondary' as const;
     }
   };
@@ -286,6 +287,7 @@ const Admin = () => {
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="chefe">Chefe</SelectItem>
                       <SelectItem value="dirigente">Dirigente</SelectItem>
+                      <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                       <SelectItem value="uploader">Uploader</SelectItem>
                       <SelectItem value="viewer">Viewer</SelectItem>
                     </SelectContent>
@@ -324,6 +326,7 @@ const Admin = () => {
                               <SelectItem value="admin">Administrador</SelectItem>
                               <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
                               <SelectItem value="dirigente">Dirigente</SelectItem>
+                              <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
                               <SelectItem value="uploader">Uploader</SelectItem>
                               <SelectItem value="viewer">Visualizador</SelectItem>
                             </SelectContent>
@@ -374,6 +377,7 @@ const Admin = () => {
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="chefe">Chefe</SelectItem>
                                 <SelectItem value="dirigente">Dirigente</SelectItem>
+                                <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                                 <SelectItem value="uploader">Uploader</SelectItem>
                                 <SelectItem value="viewer">Viewer</SelectItem>
                               </SelectContent>
