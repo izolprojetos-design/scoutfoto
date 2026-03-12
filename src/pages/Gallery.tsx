@@ -101,16 +101,18 @@ const Gallery = () => {
     return events.filter(ev => {
       const matchYear = yearFilter === 'all' || (ev.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter);
       const matchBranch = branchFilter === 'all' || ev.branch_id === branchFilter;
-      return matchYear && matchBranch;
+      const matchGroup = groupFilter === 'all' || ev.scout_group === groupFilter;
+      return matchYear && matchBranch && matchGroup;
     });
-  }, [events, yearFilter, branchFilter]);
+  }, [events, yearFilter, branchFilter, groupFilter]);
 
-  const hasActiveFilters = eventFilter !== 'all' || yearFilter !== 'all' || branchFilter !== 'all' || search !== '';
+  const hasActiveFilters = eventFilter !== 'all' || yearFilter !== 'all' || branchFilter !== 'all' || groupFilter !== 'all' || search !== '';
 
   const clearFilters = () => {
     setEventFilter('all');
     setYearFilter('all');
     setBranchFilter('all');
+    setGroupFilter('all');
     setSearch('');
   };
 
