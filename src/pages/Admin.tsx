@@ -389,7 +389,15 @@ const Admin = () => {
                   <TableBody>
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
-                        <TableCell className="font-medium">{u.name}</TableCell>
+                        <TableCell className="font-medium">
+                          <button
+                            className="text-left hover:text-primary hover:underline cursor-pointer transition-colors"
+                            onClick={() => openEditNameDialog(u.user_id, u.name)}
+                            title="Clique para editar o nome"
+                          >
+                            {u.name}
+                          </button>
+                        </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{u.role}</Badge></TableCell>
                         <TableCell>
