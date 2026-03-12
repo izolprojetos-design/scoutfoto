@@ -315,6 +315,15 @@ const Events = () => {
                           variant="outline"
                           size="sm"
                           className="gap-2"
+                          onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}
+                          title="Permissões do Evento"
+                        >
+                          <Shield className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="gap-2"
                           onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}
                         >
                           <Pencil className="h-3.5 w-3.5" />
