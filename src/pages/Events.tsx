@@ -54,6 +54,7 @@ const Events = () => {
   const [eventDate, setEventDate] = useState('');
   const [location, setLocation] = useState('');
   const [branchId, setBranchId] = useState('');
+  const [scoutGroup, setScoutGroup] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
