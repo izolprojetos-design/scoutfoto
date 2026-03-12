@@ -196,6 +196,10 @@ const Events = () => {
           </SelectContent>
         </Select>
       </div>
+      <div className="space-y-2">
+        <Label>Grupo Escoteiro (opcional)</Label>
+        <Input value={scoutGroup} onChange={e => setScoutGroup(e.target.value)} placeholder="Ex: GE 015" className="h-11" />
+      </div>
       <Button type="submit" className="w-full h-11 font-semibold">{submitLabel}</Button>
     </form>
   );
