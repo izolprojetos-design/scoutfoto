@@ -26,6 +26,7 @@ interface AuthContextType {
   hasRole: (role: AppRole) => boolean;
   isAdmin: boolean;
   isChefe: boolean;
+  isDirigente: boolean;
   canUpload: boolean;
   canViewMinors: boolean;
 }
