@@ -300,11 +300,6 @@ const Events = () => {
                         )}
                       </div>
                     </div>
-                      </h3>
-                      {event.description && (
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                      )}
-                    </div>
                     <div className="flex flex-wrap gap-2 mb-4">
                       {event.event_date && (
                         <Badge variant="secondary" className="gap-1 font-normal">
