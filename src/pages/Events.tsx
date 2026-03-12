@@ -19,6 +19,7 @@ import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
+import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 
 interface Branch {
   id: string;
