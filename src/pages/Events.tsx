@@ -322,6 +322,10 @@ const Events = () => {
                           {branchInfo.icon} {branchInfo.display_name}
                         </Badge>
                       )}
+                      <Badge variant="outline" className="gap-1 font-normal">
+                        <ImageIcon className="h-3 w-3" />
+                        {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
+                      </Badge>
                     </div>
                     {(isAdmin || isChefe || isDirigente) && (
                       <div className="flex justify-end">
