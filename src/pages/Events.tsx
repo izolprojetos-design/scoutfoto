@@ -82,6 +82,7 @@ const Events = () => {
     setEventDate('');
     setLocation('');
     setBranchId('');
+    setScoutGroup('');
   };
 
   const handleCreate = async (e: React.FormEvent) => {
