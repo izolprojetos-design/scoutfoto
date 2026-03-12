@@ -162,7 +162,7 @@ const Gallery = () => {
     const init = async () => {
       const [{ data: branchesData }, { data: evts }] = await Promise.all([
         supabase.from('branches').select('*').order('sort_order'),
-        supabase.from('events').select('id, name, event_date, branch_id').order('event_date', { ascending: false }),
+        supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
       ]);
 
       setBranches(branchesData || []);
