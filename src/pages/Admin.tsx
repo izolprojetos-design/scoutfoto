@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2 } from 'lucide-react';
+import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock } from 'lucide-react';
+import PermissionsManager from '@/components/PermissionsManager';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
@@ -260,6 +261,7 @@ const Admin = () => {
       <Tabs defaultValue="users">
         <TabsList className="mb-4">
           <TabsTrigger value="users">Usuários</TabsTrigger>
+          <TabsTrigger value="permissions" className="gap-1.5"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           <TabsTrigger value="stats">Estatísticas</TabsTrigger>
           <TabsTrigger value="audit">Auditoria</TabsTrigger>
         </TabsList>
@@ -397,6 +399,10 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="permissions">
+          <PermissionsManager />
         </TabsContent>
 
         <TabsContent value="stats">
