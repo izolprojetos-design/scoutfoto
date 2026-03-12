@@ -65,6 +65,7 @@ const Gallery = () => {
   const [eventFilter, setEventFilter] = useState('all');
   const [yearFilter, setYearFilter] = useState('all');
   const [branchFilter, setBranchFilter] = useState('all');
+  const [groupFilter, setGroupFilter] = useState('all');
   const [events, setEvents] = useState<EventData[]>([]);
 
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
