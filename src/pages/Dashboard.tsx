@@ -179,7 +179,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             {scouts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Cadastre jovens para ver a distribuição</p>
+              <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes para ver a distribuição</p>
             ) : (
               <div className="space-y-4">
                 <ResponsiveContainer width="100%" height={200}>
