@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Admin from "./pages/Admin";
 import EventPortal from "./pages/EventPortal";
 import Scouts from "./pages/Scouts";
