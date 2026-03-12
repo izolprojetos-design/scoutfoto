@@ -73,6 +73,47 @@ export type Database = {
         }
         Relationships: []
       }
+      event_permissions: {
+        Row: {
+          can_download: boolean
+          can_manage: boolean
+          can_upload: boolean
+          can_view: boolean
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          can_download?: boolean
+          can_manage?: boolean
+          can_upload?: boolean
+          can_view?: boolean
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          can_download?: boolean
+          can_manage?: boolean
+          can_upload?: boolean
+          can_view?: boolean
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_permissions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_share_links: {
         Row: {
           created_at: string
@@ -451,6 +492,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_event_permission: {
+        Args: { _event_id: string; _permission: string; _user_id: string }
+        Returns: boolean
+      }
       has_permission: {
         Args: { _permission_key: string; _user_id: string }
         Returns: boolean
