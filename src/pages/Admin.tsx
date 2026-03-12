@@ -433,18 +433,24 @@ const Admin = () => {
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{u.role}</Badge></TableCell>
                         <TableCell>
-                          <Badge variant={u.is_active ? 'default' : 'secondary'}>
-                            {u.is_active ? 'Ativo' : 'Inativo'}
-                          </Badge>
+                          {(() => {
+                            const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
+                            const isPending = pendingStatus[u.user_id] !== undefined;
+                            return (
+                              <Badge variant={currentActive ? 'default' : 'secondary'} className={isPending ? 'ring-2 ring-primary/50' : ''}>
+                                {currentActive ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-2">
                             <Select
-                              value={u.role}
-                              onValueChange={(v: AppRole) => handleRoleChange(u.user_id, v)}
+                              value={pendingRoles[u.user_id] || u.role}
+                              onValueChange={(v: AppRole) => stageRoleChange(u.user_id, v)}
                               disabled={u.user_id === user?.id}
                             >
-                              <SelectTrigger className="h-8 w-[120px]"><SelectValue /></SelectTrigger>
+                              <SelectTrigger className={`h-8 w-[120px] ${pendingRoles[u.user_id] ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="chefe">Chefe</SelectItem>
@@ -458,8 +464,16 @@ const Admin = () => {
                               <KeyRound className="h-3.5 w-3.5 mr-1" />
                               Senha
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => toggleActive(u.user_id, u.is_active)} disabled={u.user_id === user?.id}>
-                              {u.is_active ? 'Desativar' : 'Ativar'}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
+                                stageStatusToggle(u.user_id, !currentActive);
+                              }}
+                              disabled={u.user_id === user?.id}
+                            >
+                              {(pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active) ? 'Desativar' : 'Ativar'}
                             </Button>
                           </div>
                         </TableCell>
