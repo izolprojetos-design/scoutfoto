@@ -468,6 +468,7 @@ export type Database = {
         | "chefe"
         | "parent"
         | "dirigente"
+        | "dirigente_gestor"
       image_visibility: "private" | "group" | "public"
     }
     CompositeTypes: {
@@ -596,7 +597,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "uploader", "viewer", "chefe", "parent", "dirigente"],
+      app_role: [
+        "admin",
+        "uploader",
+        "viewer",
+        "chefe",
+        "parent",
+        "dirigente",
+        "dirigente_gestor",
+      ],
       image_visibility: ["private", "group", "public"],
     },
   },
