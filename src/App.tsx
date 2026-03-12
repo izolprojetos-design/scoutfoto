@@ -32,6 +32,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <ForceChangePassword />
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
