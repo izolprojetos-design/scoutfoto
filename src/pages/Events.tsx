@@ -132,6 +132,7 @@ const Events = () => {
         event_date: eventDate || null,
         location,
         branch_id: branchId || null,
+        scout_group: scoutGroup || '',
       })
       .eq('id', editingEvent.id);
 
