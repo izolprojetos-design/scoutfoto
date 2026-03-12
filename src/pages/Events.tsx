@@ -56,6 +56,7 @@ const Events = () => {
   const [branchId, setBranchId] = useState('');
   const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
+  const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
