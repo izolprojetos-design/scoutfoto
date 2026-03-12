@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Search, ArrowLeft, Calendar, Download, Eye, Trash2 } from 'lucide-react';
+import { Search, ArrowLeft, Calendar, Download, Eye, Trash2, X } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -28,6 +28,7 @@ interface ImageData {
   created_at: string;
   user_id: string;
   event_id: string | null;
+  branch_id: string;
   views: number;
   downloads: number;
 }
@@ -39,9 +40,11 @@ interface Branch {
   icon: string;
 }
 
-interface Event {
+interface EventData {
   id: string;
   name: string;
+  event_date: string | null;
+  branch_id: string | null;
 }
 
 const PAGE_SIZE = 24;
@@ -50,12 +53,19 @@ const Gallery = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const { user, canViewMinors } = useAuth();
   const navigate = useNavigate();
-  const [branch, setBranch] = useState<Branch | null>(null);
+
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [images, setImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  // Filters
   const [eventFilter, setEventFilter] = useState('all');
-  const [events, setEvents] = useState<Event[]>([]);
+  const [yearFilter, setYearFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all');
+  const [events, setEvents] = useState<EventData[]>([]);
+
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [thumbUrls, setThumbUrls] = useState<Record<string, string>>({});
@@ -64,20 +74,50 @@ const Gallery = () => {
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  // Derive available years from events
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    events.forEach(ev => {
+      if (ev.event_date) {
+        years.add(new Date(ev.event_date).getFullYear().toString());
+      }
+    });
+    return Array.from(years).sort((a, b) => Number(b) - Number(a));
+  }, [events]);
+
+  // Filter events shown in combobox based on year and branch filters
+  const filteredEvents = useMemo(() => {
+    return events.filter(ev => {
+      const matchYear = yearFilter === 'all' || (ev.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter);
+      const matchBranch = branchFilter === 'all' || ev.branch_id === branchFilter;
+      return matchYear && matchBranch;
+    });
+  }, [events, yearFilter, branchFilter]);
+
+  const hasActiveFilters = eventFilter !== 'all' || yearFilter !== 'all' || branchFilter !== 'all' || search !== '';
+
+  const clearFilters = () => {
+    setEventFilter('all');
+    setYearFilter('all');
+    setBranchFilter('all');
+    setSearch('');
+  };
+
   const fetchImages = useCallback(async (pageNum: number, append = false) => {
-    if (!branch) return;
-    
     let query = supabase
       .from('images')
       .select('*')
-      .eq('branch_id', branch.id)
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
+
+    // If branchKey is set from URL, scope to that branch
+    if (selectedBranch) {
+      query = query.eq('branch_id', selectedBranch.id);
+    }
 
     const { data } = await query;
     let filtered = data || [];
 
-    // Filter minor images if user can't view them
     if (!canViewMinors) {
       filtered = filtered.filter(img => img.minor_age === null);
     }
@@ -89,7 +129,7 @@ const Gallery = () => {
     }
     setHasMore(filtered.length === PAGE_SIZE);
 
-    // Get signed URLs for thumbnails and full images
+    // Get signed URLs
     const urls: Record<string, string> = {};
     const thumbs: Record<string, string> = {};
     for (const img of filtered) {
@@ -103,32 +143,38 @@ const Gallery = () => {
     setImageUrls(prev => ({ ...prev, ...urls }));
     setThumbUrls(prev => ({ ...prev, ...thumbs }));
     setLoading(false);
-  }, [branch, canViewMinors]);
+  }, [selectedBranch, canViewMinors]);
 
   useEffect(() => {
     const init = async () => {
-      const { data: branchData } = await supabase
-        .from('branches')
-        .select('*')
-        .eq('key', branchKey)
-        .single();
+      const [{ data: branchesData }, { data: evts }] = await Promise.all([
+        supabase.from('branches').select('*').order('sort_order'),
+        supabase.from('events').select('id, name, event_date, branch_id').order('event_date', { ascending: false }),
+      ]);
 
-      if (!branchData) { navigate('/dashboard'); return; }
-      setBranch(branchData);
-
-      const { data: evts } = await supabase.from('events').select('id, name').order('event_date', { ascending: false });
+      setBranches(branchesData || []);
       setEvents(evts || []);
+
+      if (branchKey && branchesData) {
+        const found = branchesData.find(b => b.key === branchKey);
+        if (found) {
+          setSelectedBranch(found);
+          setBranchFilter(found.id);
+        } else {
+          navigate('/dashboard');
+        }
+      }
     };
     init();
   }, [branchKey]);
 
   useEffect(() => {
-    if (branch) {
-      setPage(0);
-      setImages([]);
-      fetchImages(0);
-    }
-  }, [branch, fetchImages]);
+    setPage(0);
+    setImages([]);
+    setImageUrls({});
+    setThumbUrls({});
+    fetchImages(0);
+  }, [fetchImages]);
 
   // Infinite scroll
   useEffect(() => {
@@ -144,15 +190,33 @@ const Gallery = () => {
     return () => observerRef.current?.disconnect();
   }, [hasMore, loading, page, fetchImages]);
 
-  // Filtered images (client-side search + event filter)
-  const filteredImages = images.filter(img => {
-    const q = search.toLowerCase();
-    const matchSearch = !q || img.caption?.toLowerCase().includes(q) ||
-      img.tags?.some(t => t.toLowerCase().includes(q)) ||
-      img.filename.toLowerCase().includes(q);
-    const matchEvent = eventFilter === 'all' || img.event_id === eventFilter;
-    return matchSearch && matchEvent;
-  });
+  // Client-side filtering
+  const filteredImages = useMemo(() => {
+    return images.filter(img => {
+      const q = search.toLowerCase();
+      const matchSearch = !q || img.caption?.toLowerCase().includes(q) ||
+        img.tags?.some(t => t.toLowerCase().includes(q)) ||
+        img.filename.toLowerCase().includes(q);
+
+      const matchEvent = eventFilter === 'all' || img.event_id === eventFilter;
+
+      const matchBranch = branchFilter === 'all' || img.branch_id === branchFilter;
+
+      // Year filter: match images whose event has the selected year
+      let matchYear = true;
+      if (yearFilter !== 'all') {
+        if (img.event_id) {
+          const ev = events.find(e => e.id === img.event_id);
+          matchYear = !!ev?.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter;
+        } else {
+          // Images without event: match by created_at year
+          matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
+        }
+      }
+
+      return matchSearch && matchEvent && matchBranch && matchYear;
+    });
+  }, [images, search, eventFilter, branchFilter, yearFilter, events]);
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
@@ -167,12 +231,10 @@ const Gallery = () => {
   };
 
   const handleDeleteImage = async (img: ImageData) => {
-    // Delete from storage
     await supabase.storage.from('images').remove([img.storage_path]);
     if (img.thumbnail_path) {
       await supabase.storage.from('images').remove([img.thumbnail_path]);
     }
-    // Delete from DB
     const { error } = await supabase.from('images').delete().eq('id', img.id);
     if (error) {
       toast.error('Erro ao excluir: ' + error.message);
@@ -184,6 +246,10 @@ const Gallery = () => {
     }
   };
 
+  const pageTitle = selectedBranch
+    ? `${selectedBranch.icon} ${selectedBranch.display_name}`
+    : '📷 Galeria de Fotos';
+
   return (
     <AppLayout>
       <div className="mb-6 flex flex-col gap-4">
@@ -193,27 +259,71 @@ const Gallery = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
-              {branch?.icon} {branch?.display_name}
+              {pageTitle}
             </h1>
             <p className="text-sm text-muted-foreground">{filteredImages.length} fotos</p>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input placeholder="Buscar por nome, tag, descrição..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
-          </div>
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input placeholder="Buscar por nome, tag, descrição..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
+        </div>
+
+        {/* Filter bar */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+          {/* Event filter */}
           <Select value={eventFilter} onValueChange={setEventFilter}>
-            <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="Filtrar por evento" /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-[220px]">
+              <SelectValue placeholder="Evento" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos os eventos</SelectItem>
-              {events.map(ev => (
-                <SelectItem key={ev.id} value={ev.id}>{ev.name}</SelectItem>
+              {filteredEvents.map(ev => (
+                <SelectItem key={ev.id} value={ev.id}>
+                  {ev.name}
+                  {ev.event_date && ` — ${format(new Date(ev.event_date), 'dd/MM/yyyy')}`}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
+
+          {/* Year filter */}
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os anos</SelectItem>
+              {availableYears.map(y => (
+                <SelectItem key={y} value={y}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Branch/Ramo filter (only show if not already scoped by URL) */}
+          {!branchKey && (
+            <Select value={branchFilter} onValueChange={setBranchFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <SelectValue placeholder="Ramo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os ramos</SelectItem>
+                {branches.map(b => (
+                  <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {/* Clear filters */}
+          {hasActiveFilters && (
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground" onClick={clearFilters}>
+              <X className="h-4 w-4" />
+              Limpar filtros
+            </Button>
+          )}
         </div>
       </div>
 
@@ -227,6 +337,11 @@ const Gallery = () => {
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <span className="mb-2 text-4xl">📷</span>
           <p>Nenhuma foto encontrada</p>
+          {hasActiveFilters && (
+            <Button variant="link" className="mt-2" onClick={clearFilters}>
+              Limpar filtros
+            </Button>
+          )}
         </div>
       ) : (
         <>
