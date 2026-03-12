@@ -14,9 +14,9 @@ import { Camera, Save, Loader2, User } from 'lucide-react';
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
   chefe: 'Chefe Escoteiro',
+  dirigente: 'Dirigente',
   uploader: 'Uploader',
   viewer: 'Visualizador',
-  parent: 'Pai/Mãe',
 };
 
 const Profile = () => {
