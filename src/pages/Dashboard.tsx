@@ -53,6 +53,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
