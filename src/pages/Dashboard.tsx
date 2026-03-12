@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/components/AppLayout';
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -27,6 +28,7 @@ interface Scout {
   name: string;
   birth_date: string;
   scout_group: string;
+  photo_url: string | null;
 }
 
 const branchColors: Record<string, string> = {
@@ -52,6 +54,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -257,7 +260,18 @@ const Dashboard = () => {
                 return (
                   <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">🎂</span>
+                      {s.photo_url ? (
+                        <button
+                          onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })}
+                          className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer"
+                        >
+                          <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                        </button>
+                      ) : (
+                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
                       <div>
                         <p className="text-sm font-medium">{s.name}</p>
                         <p className="text-xs text-muted-foreground">
@@ -340,6 +354,22 @@ const Dashboard = () => {
           ))}
         </div>
       )}
+
+      {/* Photo Dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
+          {selectedPhoto && (
+            <>
+              <img
+                src={selectedPhoto.url}
+                alt={selectedPhoto.name}
+                className="w-64 h-64 rounded-xl object-cover shadow-lg"
+              />
+              <p className="text-lg font-semibold">{selectedPhoto.name}</p>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
