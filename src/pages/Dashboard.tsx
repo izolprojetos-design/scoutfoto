@@ -354,6 +354,22 @@ const Dashboard = () => {
           ))}
         </div>
       )}
+
+      {/* Photo Dialog */}
+      <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
+        <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
+          {selectedPhoto && (
+            <>
+              <img
+                src={selectedPhoto.url}
+                alt={selectedPhoto.name}
+                className="w-64 h-64 rounded-xl object-cover shadow-lg"
+              />
+              <p className="text-lg font-semibold">{selectedPhoto.name}</p>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
