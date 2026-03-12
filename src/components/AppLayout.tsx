@@ -31,7 +31,7 @@ const ThemeToggle = () => {
 };
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { profile, signOut, isAdmin, isChefe, canUpload, roles } = useAuth();
+  const { profile, signOut, isAdmin, isChefe, isDirigente, canUpload, roles } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,7 +46,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { to: '/scouts', label: 'Integrantes', icon: Users, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     
-    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe },
+    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe || isDirigente },
     { to: '/admin', label: 'Admin', icon: Settings, show: isAdmin },
   ];
 

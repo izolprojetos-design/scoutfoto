@@ -38,7 +38,7 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isChefe, canUpload } = useAuth();
+  const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -225,7 +225,7 @@ const Events = () => {
               </DropdownMenu>
             </>
           )}
-          {(isAdmin || isChefe) && (
+          {(isAdmin || isChefe || isDirigente) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 shadow-sm">
@@ -298,7 +298,7 @@ const Events = () => {
                         </Badge>
                       )}
                     </div>
-                    {(isAdmin || isChefe) && (
+                    {(isAdmin || isChefe || isDirigente) && (
                       <div className="flex gap-2">
                         <Button
                           variant="outline"

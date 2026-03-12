@@ -48,7 +48,7 @@ const PIE_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
-  const { profile, canUpload, isChefe } = useAuth();
+  const { profile, canUpload, isChefe, isDirigente } = useAuth();
   const [branches, setBranches] = useState<BranchWithCount[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);

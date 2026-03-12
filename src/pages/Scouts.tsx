@@ -53,7 +53,7 @@ const branchColorMap: Record<string, string> = {
 };
 
 const Scouts = () => {
-  const { user, isAdmin, isChefe, canUpload } = useAuth();
+  const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [loading, setLoading] = useState(true);
@@ -397,7 +397,7 @@ const Scouts = () => {
           <h1 className="text-3xl font-bold tracking-tight">Jovens e Integrantes</h1>
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
-        {(isAdmin || isChefe || canUpload) && (
+        {(isAdmin || isChefe || isDirigente || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
@@ -556,7 +556,7 @@ const Scouts = () => {
                                           ? <span className="text-amber-600">Sem responsável</span>
                                           : null}
                                     </span>
-                                    {(isAdmin || isChefe) && isMinor && (
+                                    {(isAdmin || isChefe || isDirigente) && isMinor && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -586,7 +586,7 @@ const Scouts = () => {
 
                             {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
                             <div className="flex gap-2 pt-1">
-                              {(isAdmin || isChefe) && (
+                              {(isAdmin || isChefe || isDirigente) && (
                                 <Button
                                   variant="outline"
                                   size="sm"
