@@ -150,7 +150,7 @@ const Dashboard = () => {
         {[
           { icon: ImageIcon, value: totalImages, label: 'Total de fotos', color: 'text-primary' },
           { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
-          { icon: Users, value: scouts.length, label: 'Jovens', color: 'text-emerald-600' },
+          { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
           { icon: TrendingUp, value: branches.length, label: 'Ramos ativos', color: 'text-primary' },
         ].map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.05 }}>
@@ -179,7 +179,7 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             {scouts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Cadastre jovens para ver a distribuição</p>
+              <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes para ver a distribuição</p>
             ) : (
               <div className="space-y-4">
                 <ResponsiveContainer width="100%" height={200}>
@@ -200,7 +200,7 @@ const Dashboard = () => {
                     </Pie>
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                      formatter={(value: number, name: string) => [`${value} jovens`, name]}
+                      formatter={(value: number, name: string) => [`${value} integrantes`, name]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
