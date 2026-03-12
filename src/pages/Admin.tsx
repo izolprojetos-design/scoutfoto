@@ -239,7 +239,6 @@ const Admin = () => {
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
   }).sort((a, b) => (ROLE_ORDER[a.role] ?? 99) - (ROLE_ORDER[b.role] ?? 99));
-  });
 
   const roleBadgeVariant = (role: AppRole) => {
     switch (role) {
