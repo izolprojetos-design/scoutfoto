@@ -69,7 +69,7 @@ const Events = () => {
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
-      supabase.from('events').select('*').order('event_date', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false }),
+      supabase.from('events').select('*').order('event_date', { ascending: false }),
       supabase.from('event_permissions').select('event_id'),
     ]);
     setEvents(data || []);
