@@ -226,13 +226,13 @@ const Upload = () => {
                 onClick={() => document.getElementById('file-input')?.click()}
               >
                 {preview ? (
-                  <div className="relative">
+                  <div className="relative inline-block">
                     <img src={preview} alt="Preview" className="max-h-64 rounded-lg object-contain" />
                     <Button
                       type="button"
                       variant="destructive"
                       size="icon"
-                      className="absolute -right-2 -top-2 h-7 w-7"
+                      className="absolute right-1 top-1 h-7 w-7 shadow-md"
                       onClick={e => { e.stopPropagation(); setFile(null); setPreview(null); }}
                     >
                       <X className="h-4 w-4" />
