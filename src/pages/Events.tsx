@@ -283,11 +283,23 @@ const Events = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
-                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md">
+                <Card className={`group border bg-card shadow-sm transition-all hover:shadow-md ${selectedEvents.has(event.id) ? 'ring-2 ring-primary' : ''}`}>
                   <CardContent className="p-5">
-                    <div className="mb-3">
-                      <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
-                        {event.name}
+                    <div className="mb-3 flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedEvents.has(event.id)}
+                        onCheckedChange={() => toggleSelectEvent(event.id)}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
+                          {event.name}
+                        </h3>
+                        {event.description && (
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+                        )}
+                      </div>
+                    </div>
                       </h3>
                       {event.description && (
                         <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
