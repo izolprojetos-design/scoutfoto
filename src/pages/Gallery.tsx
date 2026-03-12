@@ -87,6 +87,15 @@ const Gallery = () => {
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
   }, [events]);
 
+  // Derive available groups from events
+  const availableGroups = useMemo(() => {
+    const groups = new Set<string>();
+    events.forEach(ev => {
+      if (ev.scout_group) groups.add(ev.scout_group);
+    });
+    return Array.from(groups).sort();
+  }, [events]);
+
   // Filter events shown in combobox based on year and branch filters
   const filteredEvents = useMemo(() => {
     return events.filter(ev => {
