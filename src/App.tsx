@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/dashboard" element={<ProtectedRoute requiredPermission="view_photos"><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
+              <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
               <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute requiredPermission="manage_events"><Events /></ProtectedRoute>} />
               <Route path="/scouts" element={<ProtectedRoute requiredPermission="manage_scouts"><Scouts /></ProtectedRoute>} />
