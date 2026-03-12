@@ -76,8 +76,8 @@ const EventDetail = () => {
 
   // Upload state
   const [showUpload, setShowUpload] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [branchId, setBranchId] = useState('');
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
@@ -87,8 +87,7 @@ const EventDetail = () => {
   const [visibility, setVisibility] = useState<'private' | 'group' | 'public'>('group');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [cropperOpen, setCropperOpen] = useState(false);
-  const [rawPreview, setRawPreview] = useState<string | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState(0);
 
   const fetchEvent = async () => {
     if (!eventId) return;
