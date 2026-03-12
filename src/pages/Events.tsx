@@ -373,6 +373,15 @@ const Events = () => {
           eventName={shareEvent.name}
         />
       )}
+
+      {permEvent && (
+        <EventPermissionsDialog
+          open={!!permEvent}
+          onOpenChange={(open) => !open && setPermEvent(null)}
+          eventId={permEvent.id}
+          eventName={permEvent.name}
+        />
+      )}
     </AppLayout>
   );
 };

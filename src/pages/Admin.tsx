@@ -470,45 +470,7 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="audit">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Activity className="h-5 w-5" />
-                Logs de Auditoria (últimos 100)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Usuário</TableHead>
-                      <TableHead>Ação</TableHead>
-                      <TableHead>Imagem</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {auditLogs.map(log => (
-                      <TableRow key={log.id}>
-                        <TableCell className="text-sm">{format(new Date(log.created_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}</TableCell>
-                        <TableCell className="text-sm">{userNameById(log.user_id)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{log.action}</Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">{log.image_id?.slice(0, 8) || '—'}</TableCell>
-                      </TableRow>
-                    ))}
-                    {auditLogs.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">Nenhum log encontrado</TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
+          <ActivityLogsViewer />
         </TabsContent>
       </Tabs>
 
