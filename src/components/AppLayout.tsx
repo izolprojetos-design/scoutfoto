@@ -32,7 +32,8 @@ const ThemeToggle = () => {
 };
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { profile, signOut, isAdmin, isChefe, isDirigente, canUpload, roles } = useAuth();
+  const { profile, signOut, isAdmin, roles } = useAuth();
+  const { canViewPhotos, canUploadPhotos, canManageEvents, canManageScouts, canManageUsers } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -43,12 +44,11 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   };
 
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: Home, show: true },
-    { to: '/scouts', label: 'Integrantes', icon: Users, show: true },
+    { to: '/dashboard', label: 'Dashboard', icon: Home, show: canViewPhotos },
+    { to: '/scouts', label: 'Integrantes', icon: Users, show: canManageScouts },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
-    
-    { to: '/events', label: 'Eventos', icon: Calendar, show: canUpload || isChefe || isDirigente },
-    { to: '/admin', label: 'Admin', icon: Settings, show: isAdmin },
+    { to: '/events', label: 'Eventos', icon: Calendar, show: canManageEvents },
+    { to: '/admin', label: 'Admin', icon: Settings, show: canManageUsers },
   ];
 
   const initials = profile?.name
