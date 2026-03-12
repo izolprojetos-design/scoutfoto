@@ -167,6 +167,15 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   </Link>
                 );
               })}
+              <div className="my-1 h-px bg-border" />
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2 text-destructive hover:text-destructive"
+                onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
+              >
+                <LogOut className="h-4 w-4" />
+                Sair
+              </Button>
             </nav>
           </div>
         )}
