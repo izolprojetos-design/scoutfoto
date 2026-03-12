@@ -72,6 +72,12 @@ const EventPortal = () => {
 
       setExpiresAt(linkData.expires_at);
 
+      // Increment view count
+      await supabase
+        .from('event_share_links')
+        .update({ view_count: (linkData.view_count || 0) + 1 })
+        .eq('id', linkData.id);
+
       const { data: eventData } = await supabase
         .from('events')
         .select('id, name, description, event_date, location')
