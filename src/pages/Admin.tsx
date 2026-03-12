@@ -68,6 +68,12 @@ const Admin = () => {
   const [resetPassword, setResetPassword] = useState('');
   const [resetting, setResetting] = useState(false);
 
+  // Edit name form
+  const [editNameOpen, setEditNameOpen] = useState(false);
+  const [editNameUserId, setEditNameUserId] = useState('');
+  const [editNameValue, setEditNameValue] = useState('');
+  const [editingName, setEditingName] = useState(false);
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
