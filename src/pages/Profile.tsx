@@ -169,7 +169,7 @@ const Profile = () => {
               <Input value={roleLabel[primaryRole]} disabled className="h-11 bg-muted" />
               <p className="text-xs text-muted-foreground">O cargo é definido pelo administrador</p>
             </div>
-            <Button onClick={handleSaveName} disabled={saving} className="gap-2">
+            {isAdmin && <Button onClick={handleSaveName} disabled={saving} className="gap-2">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Salvar alterações
             </Button>
