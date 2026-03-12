@@ -31,7 +31,7 @@ const ThemeToggle = () => {
 };
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
-  const { profile, signOut, isAdmin, isChefe, canUpload, roles } = useAuth();
+  const { profile, signOut, isAdmin, isChefe, isDirigente, canUpload, roles } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
