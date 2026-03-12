@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard";
 import Upload from "./pages/Upload";
 import Gallery from "./pages/Gallery";
 import Events from "./pages/Events";
+import EventDetail from "./pages/EventDetail";
 import Admin from "./pages/Admin";
 import EventPortal from "./pages/EventPortal";
 import Scouts from "./pages/Scouts";
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
               <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute requiredPermission="manage_events"><Events /></ProtectedRoute>} />
+              <Route path="/events/:eventId" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
               <Route path="/scouts" element={<ProtectedRoute requiredPermission="manage_scouts"><Scouts /></ProtectedRoute>} />
               <Route path="/calendar" element={<ProtectedRoute><ScoutCalendar /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute requiredPermission="manage_users"><Admin /></ProtectedRoute>} />
