@@ -533,6 +533,29 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Name Dialog */}
+      <Dialog open={editNameOpen} onOpenChange={setEditNameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar nome do usuário</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label>Nome</Label>
+              <Input
+                value={editNameValue}
+                onChange={e => setEditNameValue(e.target.value)}
+                placeholder="Nome completo"
+              />
+            </div>
+            <Button onClick={handleEditName} disabled={editingName} className="w-full gap-2">
+              {editingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
+              Salvar Nome
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 };
