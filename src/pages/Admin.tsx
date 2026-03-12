@@ -401,6 +401,10 @@ const Admin = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="permissions">
+          <PermissionsManager />
+        </TabsContent>
+
         <TabsContent value="stats">
           <Card className="border-0 shadow-lg">
             <CardHeader>
