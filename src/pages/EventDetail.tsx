@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
-import ImageCropper from '@/components/ImageCropper';
+
 
 interface EventData {
   id: string;
@@ -76,8 +76,8 @@ const EventDetail = () => {
 
   // Upload state
   const [showUpload, setShowUpload] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [branchId, setBranchId] = useState('');
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
@@ -87,8 +87,7 @@ const EventDetail = () => {
   const [visibility, setVisibility] = useState<'private' | 'group' | 'public'>('group');
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [cropperOpen, setCropperOpen] = useState(false);
-  const [rawPreview, setRawPreview] = useState<string | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState(0);
 
   const fetchEvent = async () => {
     if (!eventId) return;
@@ -158,34 +157,35 @@ const EventDetail = () => {
   const branchInfo = event ? getBranchInfo(event.branch_id) : null;
 
   // Upload handlers
-  const handleFile = (f: File) => {
-    if (!ACCEPTED_TYPES.includes(f.type)) {
-      toast.error('Formato não aceito. Use JPG, PNG ou WebP.');
-      return;
+  const handleFiles = (fileList: FileList) => {
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+    Array.from(fileList).forEach(f => {
+      if (!ACCEPTED_TYPES.includes(f.type)) {
+        toast.error(`${f.name}: formato não aceito.`);
+        return;
+      }
+      if (f.size > MAX_SIZE) {
+        toast.error(`${f.name}: muito grande (máx 10MB).`);
+        return;
+      }
+      newFiles.push(f);
+      newPreviews.push(URL.createObjectURL(f));
+    });
+    if (newFiles.length > 0) {
+      setFiles(prev => [...prev, ...newFiles]);
+      setPreviews(prev => [...prev, ...newPreviews]);
     }
-    if (f.size > MAX_SIZE) {
-      toast.error('Arquivo muito grande. Máximo 10MB.');
-      return;
-    }
-    setRawPreview(URL.createObjectURL(f));
-    setCropperOpen(true);
   };
 
-  const handleCropComplete = useCallback((croppedFile: File) => {
-    setFile(croppedFile);
-    setPreview(URL.createObjectURL(croppedFile));
-    setCropperOpen(false);
-    setRawPreview(null);
-  }, []);
-
-  const handleCropCancel = useCallback(() => {
-    setCropperOpen(false);
-    setRawPreview(null);
-  }, []);
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+    setPreviews(prev => prev.filter((_, i) => i !== index));
+  };
 
   const resetUploadForm = () => {
-    setFile(null);
-    setPreview(null);
+    setFiles([]);
+    setPreviews([]);
     setBranchId('');
     setCaption('');
     setTags('');
@@ -194,6 +194,7 @@ const EventDetail = () => {
     setMinorAge('');
     setVisibility('group');
     setProgress(0);
+    setUploadingIndex(0);
   };
 
   useEffect(() => {
@@ -205,7 +206,7 @@ const EventDetail = () => {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !branchId || !user || !eventId) return;
+    if (files.length === 0 || !branchId || !user || !eventId) return;
 
     const hasMinor = minorAge && parseInt(minorAge) > 0;
     if (hasMinor && !consent) {
@@ -218,61 +219,63 @@ const EventDetail = () => {
     }
 
     setUploading(true);
-    setProgress(10);
-
-    const compressed = await compressImage(file);
-    setProgress(30);
-    const thumbnail = await createThumbnail(file);
-    setProgress(40);
-
-    const branch = branches.find(b => b.id === branchId);
-    const ext = file.name.split('.').pop();
-    const ts = Date.now();
-    const storagePath = `${branch?.key}/${ts}.${ext}`;
-    const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('images')
-      .upload(storagePath, compressed, { contentType: compressed.type });
-
-    if (uploadError) {
-      toast.error('Erro no upload: ' + uploadError.message);
-      setUploading(false);
-      return;
-    }
-    setProgress(60);
-
-    await supabase.storage
-      .from('images')
-      .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
-    setProgress(75);
-
+    const totalFiles = files.length;
     const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+    const branch = branches.find(b => b.id === branchId);
+    let successCount = 0;
 
-    const { data: imgData, error: dbError } = await supabase.from('images').insert({
-      user_id: user.id,
-      branch_id: branchId,
-      event_id: eventId,
-      filename: `${ts}.${ext}`,
-      storage_path: storagePath,
-      thumbnail_path: thumbPath,
-      caption,
-      tags: parsedTags,
-      consent,
-      responsible_name: responsibleName,
-      minor_age: hasMinor ? parseInt(minorAge) : null,
-      visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
-    }).select('id').single();
+    for (let i = 0; i < totalFiles; i++) {
+      setUploadingIndex(i + 1);
+      setProgress(Math.round(((i) / totalFiles) * 100));
 
-    if (dbError) {
-      toast.error('Erro ao salvar: ' + dbError.message);
-      setUploading(false);
-      return;
+      const currentFile = files[i];
+      const compressed = await compressImage(currentFile);
+      const thumbnail = await createThumbnail(currentFile);
+
+      const ext = currentFile.name.split('.').pop();
+      const ts = Date.now() + i;
+      const storagePath = `${branch?.key}/${ts}.${ext}`;
+      const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(storagePath, compressed, { contentType: compressed.type });
+
+      if (uploadError) {
+        toast.error(`Erro no upload (${i + 1}/${totalFiles}): ${uploadError.message}`);
+        continue;
+      }
+
+      await supabase.storage
+        .from('images')
+        .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
+
+      const { data: imgData, error: dbError } = await supabase.from('images').insert({
+        user_id: user.id,
+        branch_id: branchId,
+        event_id: eventId,
+        filename: `${ts}.${ext}`,
+        storage_path: storagePath,
+        thumbnail_path: thumbPath,
+        caption,
+        tags: parsedTags,
+        consent,
+        responsible_name: responsibleName,
+        minor_age: hasMinor ? parseInt(minorAge) : null,
+        visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
+      }).select('id').single();
+
+      if (dbError) {
+        toast.error(`Erro ao salvar (${i + 1}/${totalFiles}): ${dbError.message}`);
+        continue;
+      }
+
+      await logAudit(user.id, 'upload', imgData?.id);
+      successCount++;
     }
 
-    await logAudit(user.id, 'upload', imgData?.id);
     setProgress(100);
-    toast.success('Foto enviada com sucesso!');
+    toast.success(`${successCount} foto${successCount !== 1 ? 's' : ''} enviada${successCount !== 1 ? 's' : ''} com sucesso!`);
     resetUploadForm();
     setShowUpload(false);
     setUploading(false);
@@ -369,37 +372,48 @@ const EventDetail = () => {
           <Card className="mb-6 border shadow-sm">
             <CardContent className="p-5">
               <form onSubmit={handleUpload} className="space-y-4">
-                {/* Drop zone */}
+                {/* Drop zone / previews */}
                 <div
                   className="relative flex min-h-[150px] cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border hover:border-primary/50 transition-colors"
                   onClick={() => document.getElementById('event-file-input')?.click()}
                 >
-                  {preview ? (
-                    <div className="relative">
-                      <img src={preview} alt="Preview" className="max-h-48 rounded-lg object-contain" />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute -right-2 -top-2 h-7 w-7"
-                        onClick={e => { e.stopPropagation(); setFile(null); setPreview(null); }}
+                  {previews.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 p-3" onClick={e => e.stopPropagation()}>
+                      {previews.map((p, i) => (
+                        <div key={i} className="relative">
+                          <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute right-0.5 top-0.5 h-5 w-5"
+                            onClick={() => removeFile(i)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                      <div
+                        className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
+                        onClick={() => document.getElementById('event-file-input')?.click()}
                       >
-                        <X className="h-4 w-4" />
-                      </Button>
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                      </div>
                     </div>
                   ) : (
                     <>
                       <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
-                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB</p>
+                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB • Múltiplas fotos</p>
                     </>
                   )}
                   <input
                     id="event-file-input"
                     type="file"
                     accept=".jpg,.jpeg,.png,.webp"
+                    multiple
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                    onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
                   />
                   <input
                     id="event-camera-input"
@@ -407,7 +421,7 @@ const EventDetail = () => {
                     accept="image/*"
                     capture="environment"
                     className="hidden"
-                    onChange={e => e.target.files?.[0] && handleFile(e.target.files[0])}
+                    onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
                   />
                 </div>
 
@@ -479,7 +493,7 @@ const EventDetail = () => {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                     <Progress value={progress} className="h-2" />
                     <p className="mt-1 text-center text-xs text-muted-foreground">
-                      {progress < 30 ? 'Comprimindo...' : progress < 60 ? 'Enviando...' : progress < 90 ? 'Salvando...' : 'Concluído!'}
+                      Enviando foto {uploadingIndex} de {files.length}... {progress}%
                     </p>
                   </motion.div>
                 )}
@@ -488,9 +502,9 @@ const EventDetail = () => {
                   <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowUpload(false); resetUploadForm(); }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={!file || !branchId || !consent || uploading}>
+                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || !consent || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Enviar
+                    Enviar {files.length > 1 ? `${files.length} fotos` : ''}
                   </Button>
                 </div>
               </form>
@@ -631,15 +645,6 @@ const EventDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Cropper */}
-      {rawPreview && (
-        <ImageCropper
-          open={cropperOpen}
-          imageSrc={rawPreview}
-          onClose={handleCropCancel}
-          onCropComplete={handleCropComplete}
-        />
-      )}
     </AppLayout>
   );
 };
