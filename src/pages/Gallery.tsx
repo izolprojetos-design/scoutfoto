@@ -142,17 +142,33 @@ const Gallery = () => {
     }
     setHasMore(filtered.length === PAGE_SIZE);
 
-    // Get signed URLs
+    // Get signed URLs in batch
+    const allPaths = filtered.flatMap(img => {
+      const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
+      if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
+      paths.push({ path: img.storage_path, id: img.id, type: 'full' });
+      return paths;
+    });
+
+    // Process in parallel batches of 10
+    const batchSize = 10;
     const urls: Record<string, string> = {};
     const thumbs: Record<string, string> = {};
-    for (const img of filtered) {
-      if (img.thumbnail_path) {
-        const { data: td } = await supabase.storage.from('images').createSignedUrl(img.thumbnail_path, 3600);
-        if (td?.signedUrl) thumbs[img.id] = td.signedUrl;
-      }
-      const { data: d } = await supabase.storage.from('images').createSignedUrl(img.storage_path, 3600);
-      if (d?.signedUrl) urls[img.id] = d.signedUrl;
+
+    for (let i = 0; i < allPaths.length; i += batchSize) {
+      const batch = allPaths.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map(item => supabase.storage.from('images').createSignedUrl(item.path, 3600))
+      );
+      results.forEach((res, idx) => {
+        const item = batch[idx];
+        if (res.data?.signedUrl) {
+          if (item.type === 'thumb') thumbs[item.id] = res.data.signedUrl;
+          else urls[item.id] = res.data.signedUrl;
+        }
+      });
     }
+
     setImageUrls(prev => ({ ...prev, ...urls }));
     setThumbUrls(prev => ({ ...prev, ...thumbs }));
     setLoading(false);
