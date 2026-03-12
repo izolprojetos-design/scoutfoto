@@ -645,15 +645,6 @@ const EventDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Cropper */}
-      {rawPreview && (
-        <ImageCropper
-          open={cropperOpen}
-          imageSrc={rawPreview}
-          onClose={handleCropCancel}
-          onCropComplete={handleCropComplete}
-        />
-      )}
     </AppLayout>
   );
 };
