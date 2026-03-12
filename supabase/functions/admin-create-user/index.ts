@@ -75,7 +75,20 @@ Deno.serve(async (req) => {
 
       // Update role if provided and not default
       if (role && role !== "viewer" && newUser.user) {
-        await serviceClient.from("user_roles").update({ role }).eq("user_id", newUser.user.id);
+        // The trigger creates a 'viewer' role, so we update it
+        // Small delay to ensure trigger has completed
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const { error: roleError } = await serviceClient
+          .from("user_roles")
+          .update({ role })
+          .eq("user_id", newUser.user.id);
+        
+        // If update didn't affect any rows, insert instead
+        if (roleError) {
+          await serviceClient
+            .from("user_roles")
+            .upsert({ user_id: newUser.user.id, role }, { onConflict: "user_id" });
+        }
       }
 
       return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), { headers: resHeaders });
