@@ -206,7 +206,7 @@ const EventDetail = () => {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !branchId || !user || !eventId) return;
+    if (files.length === 0 || !branchId || !user || !eventId) return;
 
     const hasMinor = minorAge && parseInt(minorAge) > 0;
     if (hasMinor && !consent) {
@@ -219,61 +219,63 @@ const EventDetail = () => {
     }
 
     setUploading(true);
-    setProgress(10);
-
-    const compressed = await compressImage(file);
-    setProgress(30);
-    const thumbnail = await createThumbnail(file);
-    setProgress(40);
-
-    const branch = branches.find(b => b.id === branchId);
-    const ext = file.name.split('.').pop();
-    const ts = Date.now();
-    const storagePath = `${branch?.key}/${ts}.${ext}`;
-    const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('images')
-      .upload(storagePath, compressed, { contentType: compressed.type });
-
-    if (uploadError) {
-      toast.error('Erro no upload: ' + uploadError.message);
-      setUploading(false);
-      return;
-    }
-    setProgress(60);
-
-    await supabase.storage
-      .from('images')
-      .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
-    setProgress(75);
-
+    const totalFiles = files.length;
     const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
+    const branch = branches.find(b => b.id === branchId);
+    let successCount = 0;
 
-    const { data: imgData, error: dbError } = await supabase.from('images').insert({
-      user_id: user.id,
-      branch_id: branchId,
-      event_id: eventId,
-      filename: `${ts}.${ext}`,
-      storage_path: storagePath,
-      thumbnail_path: thumbPath,
-      caption,
-      tags: parsedTags,
-      consent,
-      responsible_name: responsibleName,
-      minor_age: hasMinor ? parseInt(minorAge) : null,
-      visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
-    }).select('id').single();
+    for (let i = 0; i < totalFiles; i++) {
+      setUploadingIndex(i + 1);
+      setProgress(Math.round(((i) / totalFiles) * 100));
 
-    if (dbError) {
-      toast.error('Erro ao salvar: ' + dbError.message);
-      setUploading(false);
-      return;
+      const currentFile = files[i];
+      const compressed = await compressImage(currentFile);
+      const thumbnail = await createThumbnail(currentFile);
+
+      const ext = currentFile.name.split('.').pop();
+      const ts = Date.now() + i;
+      const storagePath = `${branch?.key}/${ts}.${ext}`;
+      const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(storagePath, compressed, { contentType: compressed.type });
+
+      if (uploadError) {
+        toast.error(`Erro no upload (${i + 1}/${totalFiles}): ${uploadError.message}`);
+        continue;
+      }
+
+      await supabase.storage
+        .from('images')
+        .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
+
+      const { data: imgData, error: dbError } = await supabase.from('images').insert({
+        user_id: user.id,
+        branch_id: branchId,
+        event_id: eventId,
+        filename: `${ts}.${ext}`,
+        storage_path: storagePath,
+        thumbnail_path: thumbPath,
+        caption,
+        tags: parsedTags,
+        consent,
+        responsible_name: responsibleName,
+        minor_age: hasMinor ? parseInt(minorAge) : null,
+        visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
+      }).select('id').single();
+
+      if (dbError) {
+        toast.error(`Erro ao salvar (${i + 1}/${totalFiles}): ${dbError.message}`);
+        continue;
+      }
+
+      await logAudit(user.id, 'upload', imgData?.id);
+      successCount++;
     }
 
-    await logAudit(user.id, 'upload', imgData?.id);
     setProgress(100);
-    toast.success('Foto enviada com sucesso!');
+    toast.success(`${successCount} foto${successCount !== 1 ? 's' : ''} enviada${successCount !== 1 ? 's' : ''} com sucesso!`);
     resetUploadForm();
     setShowUpload(false);
     setUploading(false);
