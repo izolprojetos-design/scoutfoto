@@ -318,11 +318,11 @@ const Admin = () => {
                           <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="viewer">Visualizador</SelectItem>
-                              <SelectItem value="uploader">Uploader</SelectItem>
-                              <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
                               <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="parent">Pai/Mãe</SelectItem>
+                              <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
+                              <SelectItem value="dirigente">Dirigente</SelectItem>
+                              <SelectItem value="uploader">Uploader</SelectItem>
+                              <SelectItem value="viewer">Visualizador</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
