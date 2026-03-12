@@ -200,7 +200,7 @@ const Dashboard = () => {
                     </Pie>
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                      formatter={(value: number, name: string) => [`${value} jovens`, name]}
+                      formatter={(value: number, name: string) => [`${value} integrantes`, name]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
