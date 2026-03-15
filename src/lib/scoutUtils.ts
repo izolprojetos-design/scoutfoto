@@ -65,11 +65,13 @@ export function formatAge(birthDate: Date): string {
   return `${years} anos e ${months} ${months === 1 ? 'mês' : 'meses'}`;
 }
 
-export function formatMonthsLeft(months: number): string {
-  if (months <= 0) return 'Já pode mudar!';
+export function formatTimeLeft(months: number, days: number = 0): string {
+  if (months <= 0 && days <= 0) return 'Já pode mudar!';
   const y = Math.floor(months / 12);
   const m = months % 12;
-  if (y === 0) return `${m} ${m === 1 ? 'mês' : 'meses'}`;
-  if (m === 0) return `${y} ${y === 1 ? 'ano' : 'anos'}`;
-  return `${y}a ${m}m`;
+  const parts: string[] = [];
+  if (y > 0) parts.push(`${y} ${y === 1 ? 'ano' : 'anos'}`);
+  if (m > 0) parts.push(`${m} ${m === 1 ? 'mês' : 'meses'}`);
+  if (days > 0) parts.push(`${days} ${days === 1 ? 'dia' : 'dias'}`);
+  return parts.join(', ');
 }
