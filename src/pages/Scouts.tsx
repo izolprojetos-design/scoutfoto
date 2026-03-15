@@ -18,7 +18,7 @@ import {
   getCurrentBranch,
   getNextBranchChange,
   formatAge,
-  formatMonthsLeft,
+  formatTimeLeft,
   calculateAge,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
@@ -388,7 +388,7 @@ const Scouts = () => {
           )}
           {branchOverride === 'auto' && getNextBranchChange(new Date(birth)) && (
             <p className="text-sm text-muted-foreground">
-              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatMonthsLeft(getNextBranchChange(new Date(birth))!.monthsLeft)}
+              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatTimeLeft(getNextBranchChange(new Date(birth))!.monthsLeft, getNextBranchChange(new Date(birth))!.daysLeft)}
             </p>
           )}
         </div>
@@ -547,7 +547,7 @@ const Scouts = () => {
                                   <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
                                   <span className="text-muted-foreground">
                                     {nextChange.branch.icon} {nextChange.branch.name} em{' '}
-                                    <span className="font-medium text-foreground">{formatMonthsLeft(nextChange.monthsLeft)}</span>
+                                    <span className="font-medium text-foreground">{formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}</span>
                                   </span>
                                 </div>
                               </div>
@@ -774,7 +774,7 @@ const Scouts = () => {
                     <div className="flex justify-between py-2 border-b">
                       <span className="text-muted-foreground">Próximo ramo</span>
                       <span className="font-medium">
-                        {nextChange.branch.icon} {nextChange.branch.name} em {formatMonthsLeft(nextChange.monthsLeft)}
+                        {nextChange.branch.icon} {nextChange.branch.name} em {formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}
                       </span>
                     </div>
                   )}

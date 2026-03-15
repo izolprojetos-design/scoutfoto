@@ -42,7 +42,7 @@ export function getCurrentBranch(birthDate: Date): BranchInfo | null {
   return SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge) || null;
 }
 
-export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number } | null {
+export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number; daysLeft: number } | null {
   const currentBranch = getCurrentBranch(birthDate);
   if (!currentBranch) return null;
 
@@ -51,9 +51,12 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   if (!nextBranch) return null;
 
   const changeDate = addMonths(birthDate, currentBranch.maxAge);
-  const monthsLeft = differenceInMonths(changeDate, new Date());
+  const now = new Date();
+  const monthsLeft = differenceInMonths(changeDate, now);
+  const afterMonths = addMonths(now, monthsLeft);
+  const daysLeft = Math.max(0, Math.floor((changeDate.getTime() - afterMonths.getTime()) / (1000 * 60 * 60 * 24)));
 
-  return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft) };
+  return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
 }
 
 export function formatAge(birthDate: Date): string {
@@ -62,11 +65,13 @@ export function formatAge(birthDate: Date): string {
   return `${years} anos e ${months} ${months === 1 ? 'mês' : 'meses'}`;
 }
 
-export function formatMonthsLeft(months: number): string {
-  if (months <= 0) return 'Já pode mudar!';
+export function formatTimeLeft(months: number, days: number = 0): string {
+  if (months <= 0 && days <= 0) return 'Já pode mudar!';
   const y = Math.floor(months / 12);
   const m = months % 12;
-  if (y === 0) return `${m} ${m === 1 ? 'mês' : 'meses'}`;
-  if (m === 0) return `${y} ${y === 1 ? 'ano' : 'anos'}`;
-  return `${y}a ${m}m`;
+  const parts: string[] = [];
+  if (y > 0) parts.push(`${y} ${y === 1 ? 'ano' : 'anos'}`);
+  if (m > 0) parts.push(`${m} ${m === 1 ? 'mês' : 'meses'}`);
+  if (days > 0) parts.push(`${days} ${days === 1 ? 'dia' : 'dias'}`);
+  return parts.join(', ');
 }
