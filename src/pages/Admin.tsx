@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save } from 'lucide-react';
+import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
