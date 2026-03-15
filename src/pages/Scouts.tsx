@@ -472,7 +472,7 @@ const Scouts = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredScouts.map((scout, index) => {
-            const branch = getCurrentBranch(new Date(scout.birth_date));
+            const branch = getEffectiveBranch(scout);
             const nextChange = getNextBranchChange(new Date(scout.birth_date));
             const scoutGuardians = getGuardiansForScout(scout.id);
             const isExpanded = expandedScouts.has(scout.id);
