@@ -36,7 +36,7 @@ const branchColors: Record<string, string> = {
   escoteiro: 'from-emerald-500/15 to-emerald-600/5 border-emerald-200/50 hover:border-emerald-300',
   senior: 'from-red-500/15 to-red-600/5 border-red-200/50 hover:border-red-300',
   pioneiro: 'from-orange-500/15 to-orange-600/5 border-orange-200/50 hover:border-orange-300',
-  adulto: 'from-purple-500/15 to-purple-600/5 border-purple-200/50 hover:border-purple-300',
+  dirigente: 'from-purple-500/15 to-purple-600/5 border-purple-200/50 hover:border-purple-300',
   chefes: 'from-blue-500/15 to-blue-600/5 border-blue-200/50 hover:border-blue-300',
 };
 
