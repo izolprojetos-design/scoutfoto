@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ArrowLeft, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getCurrentBranch, formatAge, SCOUT_BRANCHES } from '@/lib/scoutUtils';
+import { getCurrentBranch, formatAge } from '@/lib/scoutUtils';
 
 interface Scout {
   id: string;
@@ -16,20 +16,37 @@ interface Scout {
   photo_url: string | null;
 }
 
+interface BranchData {
+  id: string;
+  key: string;
+  display_name: string;
+  icon: string;
+}
+
 const BranchScouts = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const navigate = useNavigate();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [branchData, setBranchData] = useState<BranchData | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
 
-  const branchInfo = SCOUT_BRANCHES.find(b => b.key === branchKey);
-
   useEffect(() => {
-    const fetchScouts = async () => {
-      const { data } = await supabase.from('scouts').select('*').order('name');
-      if (data) {
-        const filtered = data.filter(s => {
+    const fetchData = async () => {
+      const [{ data: branchRes }, { data: scoutRes }] = await Promise.all([
+        supabase.from('branches').select('*').eq('key', branchKey!).single(),
+        supabase.from('scouts').select('*').order('name'),
+      ]);
+
+      if (branchRes) {
+        setBranchData(branchRes);
+      } else {
+        navigate('/dashboard');
+        return;
+      }
+
+      if (scoutRes) {
+        const filtered = scoutRes.filter(s => {
           const branch = getCurrentBranch(new Date(s.birth_date));
           return branch?.key === branchKey;
         });
@@ -37,11 +54,10 @@ const BranchScouts = () => {
       }
       setLoading(false);
     };
-    fetchScouts();
+    fetchData();
   }, [branchKey]);
 
-  if (!branchInfo) {
-    navigate('/dashboard');
+  if (!branchData && !loading) {
     return null;
   }
 
@@ -53,7 +69,7 @@ const BranchScouts = () => {
         </Button>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {branchInfo.icon} {branchInfo.name}
+            {branchData?.icon} {branchData?.display_name}
           </h1>
           <p className="text-sm text-muted-foreground">{scouts.length} integrantes</p>
         </div>
@@ -67,7 +83,7 @@ const BranchScouts = () => {
         </div>
       ) : scouts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <span className="mb-2 text-4xl">{branchInfo.icon}</span>
+          <span className="mb-2 text-4xl">{branchData?.icon}</span>
           <p>Nenhum integrante cadastrado neste ramo</p>
         </div>
       ) : (
@@ -104,7 +120,6 @@ const BranchScouts = () => {
         </div>
       )}
 
-      {/* Photo Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
           {selectedPhoto && (
