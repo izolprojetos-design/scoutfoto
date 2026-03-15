@@ -1,4 +1,4 @@
-import { differenceInYears, differenceInMonths, addYears, addMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths } from 'date-fns';
 
 export interface BranchInfo {
   name: string;
@@ -60,9 +60,18 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
 }
 
 export function formatAge(birthDate: Date): string {
-  const { years, months } = calculateAge(birthDate);
-  if (months === 0) return `${years} anos`;
-  return `${years} anos e ${months} ${months === 1 ? 'mês' : 'meses'}`;
+  const now = new Date();
+  const years = differenceInYears(now, birthDate);
+  const afterYears = addYears(birthDate, years);
+  const months = differenceInMonths(now, afterYears);
+  const afterMonths = addMonths(afterYears, months);
+  const days = differenceInDays(now, afterMonths);
+  
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years} ${years === 1 ? 'ano' : 'anos'}`);
+  if (months > 0) parts.push(`${months} ${months === 1 ? 'mês' : 'meses'}`);
+  if (days > 0) parts.push(`${days} ${days === 1 ? 'dia' : 'dias'}`);
+  return parts.join(', ') || '0 dias';
 }
 
 export function formatTimeLeft(months: number, days: number = 0): string {
