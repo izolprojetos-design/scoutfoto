@@ -57,21 +57,34 @@ const Dashboard = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const navigate = useNavigate();
 
+  interface EventWithCount {
+    id: string;
+    name: string;
+    event_date: string | null;
+    branch_id: string | null;
+    scout_group: string | null;
+    imageCount: number;
+  }
+
+  const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
+
   useEffect(() => {
     const fetchData = async () => {
       const [branchRes, evtRes, scoutRes] = await Promise.all([
         supabase.from('branches').select('*').order('sort_order'),
-        supabase.from('events').select('*', { count: 'exact', head: true }),
+        supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
         supabase.from('scouts').select('*').order('name'),
       ]);
 
       if (branchRes.data) {
+        // Count only non-event images (member/integrante images) per branch
         const withCounts = await Promise.all(
           branchRes.data.map(async (branch) => {
             const { count } = await supabase
               .from('images')
               .select('*', { count: 'exact', head: true })
-              .eq('branch_id', branch.id);
+              .eq('branch_id', branch.id)
+              .is('event_id', null);
             return { ...branch, imageCount: count || 0 };
           })
         );
@@ -79,7 +92,22 @@ const Dashboard = () => {
         setTotalImages(withCounts.reduce((sum, b) => sum + b.imageCount, 0));
       }
 
-      setTotalEvents(evtRes.count || 0);
+      // Count images per event
+      if (evtRes.data) {
+        const evtsWithCounts = await Promise.all(
+          evtRes.data.map(async (evt) => {
+            const { count } = await supabase
+              .from('images')
+              .select('*', { count: 'exact', head: true })
+              .eq('event_id', evt.id);
+            return { ...evt, imageCount: count || 0 };
+          })
+        );
+        setEventsWithPhotos(evtsWithCounts);
+        setTotalEvents(evtRes.data.length);
+        setTotalImages(prev => prev + evtsWithCounts.reduce((sum, e) => sum + e.imageCount, 0));
+      }
+
       setScouts(scoutRes.data || []);
       setLoading(false);
     };
