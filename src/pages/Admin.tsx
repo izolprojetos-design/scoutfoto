@@ -411,6 +411,7 @@ const Admin = () => {
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           <TabsTrigger value="stats" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Estatísticas</TabsTrigger>
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
+          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Subgrupos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
