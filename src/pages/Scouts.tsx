@@ -320,6 +320,26 @@ const Scouts = () => {
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
 
+  const handleCreateSubgroup = async (branchKey: string) => {
+    if (!user || !newSubgroupName.trim()) return;
+    setCreatingSubgroup(true);
+    const { data, error } = await supabase.from('subgroups').insert({
+      name: newSubgroupName.trim(),
+      branch_key: branchKey,
+      created_by: user.id,
+    }).select('id').single();
+    if (error) {
+      toast.error('Erro ao criar subgrupo: ' + error.message);
+    } else if (data) {
+      toast.success('Subgrupo criado!');
+      setNewSubgroupName('');
+      await fetchData();
+      return data.id;
+    }
+    setCreatingSubgroup(false);
+    return null;
+  };
+
   const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
@@ -332,11 +352,14 @@ const Scouts = () => {
     submitLabel: string,
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
+    subgroupId: string, setSubgroupId: (v: string) => void,
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
       ? ALL_CATEGORIES.find(b => b.key === branchOverride) 
       : detectedBranch;
+    const effectiveBranchKey = effectiveBranch?.key || '';
+    const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
