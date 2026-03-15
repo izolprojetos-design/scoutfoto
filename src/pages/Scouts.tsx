@@ -418,6 +418,43 @@ const Scouts = () => {
           </SelectContent>
         </Select>
       </div>
+      {effectiveBranchKey && (
+        <div className="space-y-2">
+          <Label>Patrulha / Matilha</Label>
+          <Select value={subgroupId} onValueChange={setSubgroupId}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Selecione o subgrupo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
+              {filteredSubgroups.map(sg => (
+                <SelectItem key={sg.id} value={sg.id}>{sg.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Input
+              value={newSubgroupName}
+              onChange={e => setNewSubgroupName(e.target.value)}
+              placeholder="Novo subgrupo..."
+              className="h-9 text-sm"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!newSubgroupName.trim() || creatingSubgroup}
+              onClick={async () => {
+                const newId = await handleCreateSubgroup(effectiveBranchKey);
+                if (newId) setSubgroupId(newId);
+                setCreatingSubgroup(false);
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
       {birth && (
         <div className="rounded-lg bg-muted/50 p-3 space-y-1">
           <p className="text-sm font-medium">Idade: {formatAge(new Date(birth))}</p>
