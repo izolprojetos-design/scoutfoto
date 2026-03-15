@@ -18,7 +18,7 @@ import {
   getCurrentBranch,
   getNextBranchChange,
   formatAge,
-  formatMonthsLeft,
+  formatTimeLeft,
   calculateAge,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
