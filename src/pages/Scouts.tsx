@@ -200,6 +200,7 @@ const Scouts = () => {
       notes: scoutNotes,
       created_by: user.id,
       manual_branch: scoutBranch !== 'auto' ? scoutBranch : null,
+      subgroup_id: scoutSubgroup !== 'none' ? scoutSubgroup : null,
     }).select('id').single();
 
     if (error) {
