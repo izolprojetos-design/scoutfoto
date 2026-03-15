@@ -21,6 +21,7 @@ import EventPortal from "./pages/EventPortal";
 import Scouts from "./pages/Scouts";
 import ScoutCalendar from "./pages/ScoutCalendar";
 import Profile from "./pages/Profile";
+import BranchScouts from "./pages/BranchScouts";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
