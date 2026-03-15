@@ -9,7 +9,7 @@ import AppLayout from '@/components/AppLayout';
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
