@@ -116,12 +116,14 @@ const Scouts = () => {
 
 
   const fetchData = async () => {
-    const [{ data: scoutData }, { data: guardianData }] = await Promise.all([
+    const [{ data: scoutData }, { data: guardianData }, { data: subgroupData }] = await Promise.all([
       supabase.from('scouts').select('*').order('name'),
       supabase.from('guardians').select('*'),
+      supabase.from('subgroups').select('*').order('name'),
     ]);
     setScouts(scoutData || []);
     setGuardians(guardianData || []);
+    setSubgroups(subgroupData || []);
     setLoading(false);
   };
 
