@@ -361,9 +361,9 @@ const Dashboard = () => {
         </Card>
       )}
 
-      {/* Branch Cards */}
+      {/* Branch Cards - Member Images Only */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Galerias por Ramo</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Galerias de Integrantes por Ramo</h2>
       </div>
 
       {loading ? (
@@ -394,6 +394,57 @@ const Dashboard = () => {
               </Card>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Event Gallery */}
+      <div className="mt-8 mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold tracking-tight">Galerias de Eventos</h2>
+        <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/events')}>
+          Ver todos <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />)}
+        </div>
+      ) : eventsWithPhotos.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento cadastrado</p>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {eventsWithPhotos.slice(0, 6).map((evt, index) => {
+            const branch = branches.find(b => b.id === evt.branch_id);
+            return (
+              <motion.div key={evt.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
+                <Card
+                  className="group cursor-pointer border bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                  onClick={() => navigate(`/events/${evt.id}`)}
+                >
+                  <CardContent className="flex items-center justify-between p-6">
+                    <div className="flex items-center gap-4">
+                      <span className="text-4xl">{branch?.icon || '📅'}</span>
+                      <div>
+                        <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
+                        <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
+                          {evt.event_date && (
+                            <span className="text-xs">
+                              {format(new Date(evt.event_date), "dd/MM/yyyy")}
+                            </span>
+                          )}
+                          <div className="flex items-center gap-1.5">
+                            <ImageIcon className="h-3.5 w-3.5" />
+                            <span>{evt.imageCount} {evt.imageCount === 1 ? 'foto' : 'fotos'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       )}
 
