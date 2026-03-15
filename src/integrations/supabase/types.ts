@@ -415,6 +415,7 @@ export type Database = {
           notes: string | null
           photo_url: string | null
           scout_group: string
+          subgroup_id: string | null
           updated_at: string
         }
         Insert: {
@@ -427,6 +428,7 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           scout_group?: string
+          subgroup_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -439,7 +441,40 @@ export type Database = {
           notes?: string | null
           photo_url?: string | null
           scout_group?: string
+          subgroup_id?: string | null
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scouts_subgroup_id_fkey"
+            columns: ["subgroup_id"]
+            isOneToOne: false
+            referencedRelation: "subgroups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subgroups: {
+        Row: {
+          branch_key: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          branch_key: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          branch_key?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
