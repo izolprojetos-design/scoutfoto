@@ -283,7 +283,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                   <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs">
-                    {formatMonthsLeft(s.change.monthsLeft)}
+                    {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
                   </Badge>
                 </div>
               ))

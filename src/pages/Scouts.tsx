@@ -774,7 +774,7 @@ const Scouts = () => {
                     <div className="flex justify-between py-2 border-b">
                       <span className="text-muted-foreground">Próximo ramo</span>
                       <span className="font-medium">
-                        {nextChange.branch.icon} {nextChange.branch.name} em {formatMonthsLeft(nextChange.monthsLeft)}
+                        {nextChange.branch.icon} {nextChange.branch.name} em {formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}
                       </span>
                     </div>
                   )}
