@@ -490,7 +490,12 @@ const Scouts = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold tracking-tight truncate">{scout.name}</h3>
+                        <h3
+                          className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
+                          onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
+                        >
+                          {scout.name}
+                        </h3>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         <div className="flex gap-1.5 mt-1">
                           {branch && (
