@@ -66,6 +66,7 @@ const Scouts = () => {
   const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('all');
