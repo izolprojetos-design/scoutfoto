@@ -45,6 +45,8 @@ const PIE_COLORS: Record<string, string> = {
   escoteiro: '#10b981',
   senior: '#ef4444',
   pioneiro: '#f97316',
+  adulto: '#a855f7',
+  chefes: '#3b82f6',
 };
 
 const Dashboard = () => {
