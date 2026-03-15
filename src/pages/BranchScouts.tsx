@@ -14,6 +14,7 @@ interface Scout {
   birth_date: string;
   scout_group: string;
   photo_url: string | null;
+  manual_branch: string | null;
 }
 
 interface BranchData {
