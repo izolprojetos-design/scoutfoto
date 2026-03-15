@@ -92,6 +92,78 @@ const Admin = () => {
 
   const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0;
 
+  // Subgroups state
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
+  const [subgroupBranchFilter, setSubgroupBranchFilter] = useState('all');
+  const [editSubgroupId, setEditSubgroupId] = useState<string | null>(null);
+  const [editSubgroupName, setEditSubgroupName] = useState('');
+  const [editSubgroupBranch, setEditSubgroupBranch] = useState('');
+  const [newSubgroupName, setNewSubgroupName] = useState('');
+  const [newSubgroupBranch, setNewSubgroupBranch] = useState('');
+  const [savingSubgroup, setSavingSubgroup] = useState(false);
+
+  const fetchSubgroups = async () => {
+    const { data } = await supabase.from('subgroups').select('*').order('branch_key').order('name');
+    setSubgroups((data as Subgroup[]) || []);
+  };
+
+  const handleCreateSubgroup = async () => {
+    if (!user || !newSubgroupName.trim() || !newSubgroupBranch) {
+      toast.error('Preencha nome e ramo');
+      return;
+    }
+    setSavingSubgroup(true);
+    const { error } = await supabase.from('subgroups').insert({
+      name: newSubgroupName.trim(),
+      branch_key: newSubgroupBranch,
+      created_by: user.id,
+    });
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo criado!');
+      setNewSubgroupName('');
+      setNewSubgroupBranch('');
+      fetchSubgroups();
+    }
+    setSavingSubgroup(false);
+  };
+
+  const handleUpdateSubgroup = async () => {
+    if (!editSubgroupId || !editSubgroupName.trim() || !editSubgroupBranch) return;
+    setSavingSubgroup(true);
+    const { error } = await supabase.from('subgroups').update({
+      name: editSubgroupName.trim(),
+      branch_key: editSubgroupBranch,
+    }).eq('id', editSubgroupId);
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo atualizado!');
+      setEditSubgroupId(null);
+      fetchSubgroups();
+    }
+    setSavingSubgroup(false);
+  };
+
+  const handleDeleteSubgroup = async (id: string) => {
+    // First unlink scouts
+    await supabase.from('scouts').update({ subgroup_id: null }).eq('subgroup_id', id);
+    const { error } = await supabase.from('subgroups').delete().eq('id', id);
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo excluído!');
+      fetchSubgroups();
+    }
+  };
+
+  const filteredSubgroups = subgroups.filter(sg =>
+    subgroupBranchFilter === 'all' || sg.branch_key === subgroupBranchFilter
+  );
+
+  const branchLabel = (key: string) => {
+    const b = ALL_CATEGORIES.find(c => c.key === key);
+    return b ? `${b.icon} ${b.name}` : key;
+  };
+
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
     const { data: roles } = await supabase.from('user_roles').select('*');
