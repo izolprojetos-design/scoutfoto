@@ -34,6 +34,13 @@ interface Scout {
   notes: string;
   created_at: string;
   manual_branch: string | null;
+  subgroup_id: string | null;
+}
+
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
 }
 
 interface Guardian {
@@ -59,6 +66,7 @@ const Scouts = () => {
   const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('all');
@@ -77,6 +85,7 @@ const Scouts = () => {
   const [editGroup, setEditGroup] = useState('');
   const [editNotes, setEditNotes] = useState('');
   const [editBranch, setEditBranch] = useState('auto');
+  const [editSubgroup, setEditSubgroup] = useState('none');
   const [editPhoto, setEditPhoto] = useState<File | null>(null);
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [editUploading, setEditUploading] = useState(false);
@@ -87,6 +96,7 @@ const Scouts = () => {
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
   const [scoutBranch, setScoutBranch] = useState('auto');
+  const [scoutSubgroup, setScoutSubgroup] = useState('none');
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -101,14 +111,19 @@ const Scouts = () => {
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [guardianAuth, setGuardianAuth] = useState(false);
+  const [newSubgroupName, setNewSubgroupName] = useState('');
+  const [creatingSubgroup, setCreatingSubgroup] = useState(false);
+
 
   const fetchData = async () => {
-    const [{ data: scoutData }, { data: guardianData }] = await Promise.all([
+    const [{ data: scoutData }, { data: guardianData }, { data: subgroupData }] = await Promise.all([
       supabase.from('scouts').select('*').order('name'),
       supabase.from('guardians').select('*'),
+      supabase.from('subgroups').select('*').order('name'),
     ]);
     setScouts(scoutData || []);
     setGuardians(guardianData || []);
+    setSubgroups(subgroupData || []);
     setLoading(false);
   };
 
@@ -185,6 +200,7 @@ const Scouts = () => {
       notes: scoutNotes,
       created_by: user.id,
       manual_branch: scoutBranch !== 'auto' ? scoutBranch : null,
+      subgroup_id: scoutSubgroup !== 'none' ? scoutSubgroup : null,
     }).select('id').single();
 
     if (error) {
@@ -202,7 +218,7 @@ const Scouts = () => {
 
     toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
-    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto');
+    setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
     setUploading(false);
     fetchData();
@@ -215,6 +231,7 @@ const Scouts = () => {
     setEditGroup(scout.scout_group);
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
+    setEditSubgroup(scout.subgroup_id || 'none');
     setEditPhoto(null);
     setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
@@ -238,6 +255,7 @@ const Scouts = () => {
       notes: editNotes,
       photo_url: photoUrl,
       manual_branch: editBranch !== 'auto' ? editBranch : null,
+      subgroup_id: editSubgroup !== 'none' ? editSubgroup : null,
     }).eq('id', editingScout.id);
 
     if (error) {
@@ -302,6 +320,26 @@ const Scouts = () => {
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
 
+  const handleCreateSubgroup = async (branchKey: string) => {
+    if (!user || !newSubgroupName.trim()) return;
+    setCreatingSubgroup(true);
+    const { data, error } = await supabase.from('subgroups').insert({
+      name: newSubgroupName.trim(),
+      branch_key: branchKey,
+      created_by: user.id,
+    }).select('id').single();
+    if (error) {
+      toast.error('Erro ao criar subgrupo: ' + error.message);
+    } else if (data) {
+      toast.success('Subgrupo criado!');
+      setNewSubgroupName('');
+      await fetchData();
+      return data.id;
+    }
+    setCreatingSubgroup(false);
+    return null;
+  };
+
   const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
@@ -314,11 +352,14 @@ const Scouts = () => {
     submitLabel: string,
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
+    subgroupId: string, setSubgroupId: (v: string) => void,
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
       ? ALL_CATEGORIES.find(b => b.key === branchOverride) 
       : detectedBranch;
+    const effectiveBranchKey = effectiveBranch?.key || '';
+    const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -377,6 +418,43 @@ const Scouts = () => {
           </SelectContent>
         </Select>
       </div>
+      {effectiveBranchKey && (
+        <div className="space-y-2">
+          <Label>Patrulha / Matilha</Label>
+          <Select value={subgroupId} onValueChange={setSubgroupId}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Selecione o subgrupo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="none">Nenhum</SelectItem>
+              {filteredSubgroups.map(sg => (
+                <SelectItem key={sg.id} value={sg.id}>{sg.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex gap-2">
+            <Input
+              value={newSubgroupName}
+              onChange={e => setNewSubgroupName(e.target.value)}
+              placeholder="Novo subgrupo..."
+              className="h-9 text-sm"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={!newSubgroupName.trim() || creatingSubgroup}
+              onClick={async () => {
+                const newId = await handleCreateSubgroup(effectiveBranchKey);
+                if (newId) setSubgroupId(newId);
+                setCreatingSubgroup(false);
+              }}
+            >
+              <Plus className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
       {birth && (
         <div className="rounded-lg bg-muted/50 p-3 space-y-1">
           <p className="text-sm font-medium">Idade: {formatAge(new Date(birth))}</p>
@@ -434,6 +512,7 @@ const Scouts = () => {
                 'Cadastrar',
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
+                scoutSubgroup, setScoutSubgroup,
               )}
             </DialogContent>
           </Dialog>
@@ -666,6 +745,7 @@ const Scouts = () => {
             'Salvar Alterações',
             'scout-photo-edit',
             editBranch, setEditBranch,
+            editSubgroup, setEditSubgroup,
           )}
         </DialogContent>
       </Dialog>
