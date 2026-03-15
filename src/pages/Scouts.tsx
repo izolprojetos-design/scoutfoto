@@ -321,22 +321,25 @@ const Scouts = () => {
     guardians.filter(g => g.scout_id === scoutId);
 
   const handleCreateSubgroup = async (branchKey: string) => {
-    if (!user || !newSubgroupName.trim()) return;
+    if (!user || !newSubgroupName.trim()) return null;
     setCreatingSubgroup(true);
+    const name = newSubgroupName.trim();
     const { data, error } = await supabase.from('subgroups').insert({
-      name: newSubgroupName.trim(),
+      name,
       branch_key: branchKey,
       created_by: user.id,
-    }).select('id').single();
+    }).select('*').single();
+    setCreatingSubgroup(false);
     if (error) {
       toast.error('Erro ao criar subgrupo: ' + error.message);
-    } else if (data) {
+      return null;
+    }
+    if (data) {
       toast.success('Subgrupo criado!');
       setNewSubgroupName('');
-      await fetchData();
+      setSubgroups(prev => [...prev, data as Subgroup]);
       return data.id;
     }
-    setCreatingSubgroup(false);
     return null;
   };
 
