@@ -48,6 +48,13 @@ interface Stats {
   recentUploads: number;
 }
 
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
+  created_at: string;
+}
+
 const Admin = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
