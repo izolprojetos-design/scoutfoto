@@ -388,7 +388,7 @@ const Scouts = () => {
           )}
           {branchOverride === 'auto' && getNextBranchChange(new Date(birth)) && (
             <p className="text-sm text-muted-foreground">
-              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatMonthsLeft(getNextBranchChange(new Date(birth))!.monthsLeft)}
+              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatTimeLeft(getNextBranchChange(new Date(birth))!.monthsLeft, getNextBranchChange(new Date(birth))!.daysLeft)}
             </p>
           )}
         </div>
