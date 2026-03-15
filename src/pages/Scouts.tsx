@@ -317,7 +317,7 @@ const Scouts = () => {
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
-      ? SCOUT_BRANCHES.find(b => b.key === branchOverride) 
+      ? ALL_CATEGORIES.find(b => b.key === branchOverride) 
       : detectedBranch;
 
     return (
