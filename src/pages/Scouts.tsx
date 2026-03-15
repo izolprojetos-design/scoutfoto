@@ -34,6 +34,13 @@ interface Scout {
   notes: string;
   created_at: string;
   manual_branch: string | null;
+  subgroup_id: string | null;
+}
+
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
 }
 
 interface Guardian {
