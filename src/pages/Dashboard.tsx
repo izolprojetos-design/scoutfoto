@@ -29,7 +29,15 @@ interface Scout {
   birth_date: string;
   scout_group: string;
   photo_url: string | null;
+  manual_branch: string | null;
 }
+
+const getEffectiveBranchKey = (scout: Scout) => {
+  if (scout.manual_branch) {
+    return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+  }
+  return getCurrentBranch(new Date(scout.birth_date));
+};
 
 const branchColors: Record<string, string> = {
   lobinho: 'from-amber-500/15 to-amber-600/5 border-amber-200/50 hover:border-amber-300',
