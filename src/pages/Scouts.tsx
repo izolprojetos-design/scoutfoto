@@ -512,6 +512,7 @@ const Scouts = () => {
                 'Cadastrar',
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
+                scoutSubgroup, setScoutSubgroup,
               )}
             </DialogContent>
           </Dialog>
