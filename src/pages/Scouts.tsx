@@ -95,6 +95,7 @@ const Scouts = () => {
   const [scoutGroup, setScoutGroup] = useState('');
   const [scoutNotes, setScoutNotes] = useState('');
   const [scoutBranch, setScoutBranch] = useState('auto');
+  const [scoutSubgroup, setScoutSubgroup] = useState('none');
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
