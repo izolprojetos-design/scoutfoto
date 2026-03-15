@@ -120,6 +120,7 @@ const Gallery = () => {
     let query = supabase
       .from('images')
       .select('*')
+      .is('event_id', null)
       .order('created_at', { ascending: false })
       .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
 
