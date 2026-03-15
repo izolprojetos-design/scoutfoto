@@ -34,7 +34,7 @@ interface Scout {
 
 const getEffectiveBranchKey = (scout: Scout) => {
   if (scout.manual_branch) {
-    return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+    return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
   }
   return getCurrentBranch(new Date(scout.birth_date));
 };
