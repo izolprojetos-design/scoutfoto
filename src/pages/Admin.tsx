@@ -214,6 +214,7 @@ const Admin = () => {
     fetchUsers();
     fetchStats();
     fetchAuditLogs();
+    fetchSubgroups();
   }, []);
 
   const stageRoleChange = (userId: string, newRole: AppRole) => {
