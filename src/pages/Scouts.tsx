@@ -32,6 +32,7 @@ interface Scout {
   scout_group: string;
   notes: string;
   created_at: string;
+  manual_branch: string | null;
 }
 
 interface Guardian {
