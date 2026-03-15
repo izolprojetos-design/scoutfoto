@@ -236,6 +236,7 @@ const Scouts = () => {
       scout_group: editGroup,
       notes: editNotes,
       photo_url: photoUrl,
+      manual_branch: editBranch !== 'auto' ? editBranch : null,
     }).eq('id', editingScout.id);
 
     if (error) {
