@@ -9,14 +9,22 @@ export interface BranchInfo {
   color: string;
 }
 
+// Ramos escoteiros (classificação automática por idade)
 export const SCOUT_BRANCHES: BranchInfo[] = [
   { name: 'Lobinho', key: 'lobinho', icon: '🐺', minAge: 78, maxAge: 132, color: 'amber' },
   { name: 'Escoteiro', key: 'escoteiro', icon: '⚜️', minAge: 132, maxAge: 180, color: 'emerald' },
   { name: 'Sênior', key: 'senior', icon: '🏔️', minAge: 180, maxAge: 216, color: 'red' },
   { name: 'Pioneiro', key: 'pioneiro', icon: '🧭', minAge: 216, maxAge: 252, color: 'orange' },
+];
+
+// Categorias de adultos (atribuição somente manual)
+export const ADULT_CATEGORIES: BranchInfo[] = [
   { name: 'Dirigente', key: 'dirigente', icon: '🤝', minAge: 252, maxAge: 480, color: 'purple' },
   { name: 'Chefes', key: 'chefes', icon: '🎖️', minAge: 480, maxAge: 1200, color: 'blue' },
 ];
+
+// Todas as categorias combinadas (para filtros, UI, etc.)
+export const ALL_CATEGORIES: BranchInfo[] = [...SCOUT_BRANCHES, ...ADULT_CATEGORIES];
 
 export function calculateAge(birthDate: Date): { years: number; months: number } {
   const now = new Date();

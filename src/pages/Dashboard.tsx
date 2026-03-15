@@ -9,7 +9,7 @@ import AppLayout from '@/components/AppLayout';
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES } from '@/lib/scoutUtils';
+import { getCurrentBranch, getNextBranchChange, formatAge, formatMonthsLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -34,7 +34,7 @@ interface Scout {
 
 const getEffectiveBranchKey = (scout: Scout) => {
   if (scout.manual_branch) {
-    return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+    return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
   }
   return getCurrentBranch(new Date(scout.birth_date));
 };
@@ -149,7 +149,7 @@ const Dashboard = () => {
     .sort((a, b) => a.daysUntil - b.daysUntil);
 
   // Distribution by branch
-  const branchDistribution = SCOUT_BRANCHES.map(b => ({
+  const branchDistribution = ALL_CATEGORIES.map(b => ({
     ...b,
     count: scouts.filter(s => getEffectiveBranchKey(s)?.key === b.key).length,
   }));

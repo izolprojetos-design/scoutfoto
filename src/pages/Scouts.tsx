@@ -21,6 +21,7 @@ import {
   formatMonthsLeft,
   calculateAge,
   SCOUT_BRANCHES,
+  ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
 
@@ -285,7 +286,7 @@ const Scouts = () => {
 
   const getEffectiveBranch = (scout: Scout) => {
     if (scout.manual_branch) {
-      return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+      return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
     }
     return getCurrentBranch(new Date(scout.birth_date));
   };
@@ -316,7 +317,7 @@ const Scouts = () => {
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
-      ? SCOUT_BRANCHES.find(b => b.key === branchOverride) 
+      ? ALL_CATEGORIES.find(b => b.key === branchOverride) 
       : detectedBranch;
 
     return (
@@ -368,7 +369,7 @@ const Scouts = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="auto">Automático (por idade)</SelectItem>
-            {SCOUT_BRANCHES.map(b => (
+            {ALL_CATEGORIES.map(b => (
               <SelectItem key={b.key} value={b.key}>
                 {b.icon} {b.name}
               </SelectItem>
@@ -449,7 +450,7 @@ const Scouts = () => {
           <Button variant={branchFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter('all')}>
             Todos
           </Button>
-          {SCOUT_BRANCHES.map(b => (
+          {ALL_CATEGORIES.map(b => (
             <Button key={b.key} variant={branchFilter === b.key ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter(b.key)}>
               {b.icon} {b.name}
             </Button>

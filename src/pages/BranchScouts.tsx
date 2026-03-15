@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { ArrowLeft, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { getCurrentBranch, formatAge } from '@/lib/scoutUtils';
+import { getCurrentBranch, formatAge, ALL_CATEGORIES } from '@/lib/scoutUtils';
 
 interface Scout {
   id: string;
