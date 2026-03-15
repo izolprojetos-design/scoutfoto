@@ -450,7 +450,7 @@ const Scouts = () => {
           <Button variant={branchFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter('all')}>
             Todos
           </Button>
-          {SCOUT_BRANCHES.map(b => (
+          {ALL_CATEGORIES.map(b => (
             <Button key={b.key} variant={branchFilter === b.key ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter(b.key)}>
               {b.icon} {b.name}
             </Button>

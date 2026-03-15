@@ -149,7 +149,7 @@ const Dashboard = () => {
     .sort((a, b) => a.daysUntil - b.daysUntil);
 
   // Distribution by branch
-  const branchDistribution = SCOUT_BRANCHES.map(b => ({
+  const branchDistribution = ALL_CATEGORIES.map(b => ({
     ...b,
     count: scouts.filter(s => getEffectiveBranchKey(s)?.key === b.key).length,
   }));
