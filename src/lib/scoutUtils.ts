@@ -10,9 +10,9 @@ export interface BranchInfo {
 }
 
 export const SCOUT_BRANCHES: BranchInfo[] = [
-  { name: 'Lobinho', key: 'lobinho', icon: '🐺', minAge: 78, maxAge: 126, color: 'amber' },
-  { name: 'Escoteiro', key: 'escoteiro', icon: '⚜️', minAge: 120, maxAge: 168, color: 'emerald' },
-  { name: 'Sênior', key: 'senior', icon: '🏔️', minAge: 180, maxAge: 204, color: 'red' },
+  { name: 'Lobinho', key: 'lobinho', icon: '🐺', minAge: 78, maxAge: 132, color: 'amber' },
+  { name: 'Escoteiro', key: 'escoteiro', icon: '⚜️', minAge: 132, maxAge: 180, color: 'emerald' },
+  { name: 'Sênior', key: 'senior', icon: '🏔️', minAge: 180, maxAge: 216, color: 'red' },
   { name: 'Pioneiro', key: 'pioneiro', icon: '🧭', minAge: 216, maxAge: 252, color: 'orange' },
   { name: 'Dirigente', key: 'dirigente', icon: '🤝', minAge: 252, maxAge: 480, color: 'purple' },
   { name: 'Chefes', key: 'chefes', icon: '🎖️', minAge: 480, maxAge: 1200, color: 'blue' },
