@@ -621,6 +621,149 @@ const Admin = () => {
         <TabsContent value="audit">
           <ActivityLogsViewer />
         </TabsContent>
+
+        <TabsContent value="subgroups">
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FolderTree className="h-5 w-5" />
+                  Patrulhas / Matilhas ({subgroups.length})
+                </CardTitle>
+                <div className="flex gap-2 flex-wrap">
+                  <Select value={subgroupBranchFilter} onValueChange={setSubgroupBranchFilter}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Ramos</SelectItem>
+                      {ALL_CATEGORIES.map(b => (
+                        <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Create new subgroup */}
+              <div className="flex gap-2 items-end flex-wrap">
+                <div className="space-y-1 flex-1 min-w-[150px]">
+                  <Label className="text-xs">Nome</Label>
+                  <Input
+                    value={newSubgroupName}
+                    onChange={e => setNewSubgroupName(e.target.value)}
+                    placeholder="Ex: Patrulha Águia"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1 min-w-[140px]">
+                  <Label className="text-xs">Ramo</Label>
+                  <Select value={newSubgroupBranch} onValueChange={setNewSubgroupBranch}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Ramo" /></SelectTrigger>
+                    <SelectContent>
+                      {ALL_CATEGORIES.map(b => (
+                        <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button size="sm" className="gap-1.5 h-9" onClick={handleCreateSubgroup} disabled={savingSubgroup}>
+                  <Plus className="h-3.5 w-3.5" /> Criar
+                </Button>
+              </div>
+
+              {/* List */}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Ramo</TableHead>
+                      <TableHead className="w-[140px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubgroups.map(sg => (
+                      <TableRow key={sg.id}>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <Input
+                              value={editSubgroupName}
+                              onChange={e => setEditSubgroupName(e.target.value)}
+                              className="h-8 w-full max-w-[200px]"
+                            />
+                          ) : (
+                            <span className="font-medium">{sg.name}</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <Select value={editSubgroupBranch} onValueChange={setEditSubgroupBranch}>
+                              <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {ALL_CATEGORIES.map(b => (
+                                  <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant="outline">{branchLabel(sg.branch_key)}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <div className="flex gap-1.5">
+                              <Button size="sm" variant="default" className="h-7 gap-1" onClick={handleUpdateSubgroup} disabled={savingSubgroup}>
+                                <Save className="h-3 w-3" /> Salvar
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7" onClick={() => setEditSubgroupId(null)}>Cancelar</Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 gap-1"
+                                onClick={() => {
+                                  setEditSubgroupId(sg.id);
+                                  setEditSubgroupName(sg.name);
+                                  setEditSubgroupBranch(sg.branch_key);
+                                }}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="destructive" className="h-7 gap-1">
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir "{sg.name}"?</AlertDialogTitle>
+                                    <AlertDialogDescription>Os integrantes vinculados a este subgrupo serão desvinculados.</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteSubgroup(sg.id)}>Excluir</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredSubgroups.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhum subgrupo cadastrado</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Reset Password Dialog */}
