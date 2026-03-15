@@ -67,11 +67,7 @@ export function formatAge(birthDate: Date): string {
   const afterMonths = addMonths(afterYears, months);
   const days = differenceInDays(now, afterMonths);
   
-  const parts: string[] = [];
-  if (years > 0) parts.push(`${years} a`);
-  if (months > 0) parts.push(`${months} m`);
-  if (days > 0) parts.push(`${days} d`);
-  return parts.join(', ') || '0 d';
+  return `${years} a, ${months} m, ${days} d`;
 }
 
 export function formatTimeLeft(months: number, days: number = 0): string {
