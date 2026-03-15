@@ -369,7 +369,7 @@ const Scouts = () => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="auto">Automático (por idade)</SelectItem>
-            {SCOUT_BRANCHES.map(b => (
+            {ALL_CATEGORIES.map(b => (
               <SelectItem key={b.key} value={b.key}>
                 {b.icon} {b.name}
               </SelectItem>
