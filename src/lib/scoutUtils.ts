@@ -42,7 +42,7 @@ export function getCurrentBranch(birthDate: Date): BranchInfo | null {
   return SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge) || null;
 }
 
-export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number } | null {
+export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number; daysLeft: number } | null {
   const currentBranch = getCurrentBranch(birthDate);
   if (!currentBranch) return null;
 
@@ -51,9 +51,12 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   if (!nextBranch) return null;
 
   const changeDate = addMonths(birthDate, currentBranch.maxAge);
-  const monthsLeft = differenceInMonths(changeDate, new Date());
+  const now = new Date();
+  const monthsLeft = differenceInMonths(changeDate, now);
+  const afterMonths = addMonths(now, monthsLeft);
+  const daysLeft = Math.max(0, Math.floor((changeDate.getTime() - afterMonths.getTime()) / (1000 * 60 * 60 * 24)));
 
-  return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft) };
+  return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
 }
 
 export function formatAge(birthDate: Date): string {
