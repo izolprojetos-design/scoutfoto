@@ -151,7 +151,7 @@ const Dashboard = () => {
   // Distribution by branch
   const branchDistribution = SCOUT_BRANCHES.map(b => ({
     ...b,
-    count: scouts.filter(s => getCurrentBranch(new Date(s.birth_date))?.key === b.key).length,
+    count: scouts.filter(s => getEffectiveBranchKey(s)?.key === b.key).length,
   }));
 
   return (
