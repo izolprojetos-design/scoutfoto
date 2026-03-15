@@ -76,36 +76,31 @@ const Dashboard = () => {
         supabase.from('scouts').select('*').order('name'),
       ]);
 
+      // Fetch all image counts in two queries instead of N+1
+      const [memberImgRes, eventImgRes] = await Promise.all([
+        supabase.from('images').select('branch_id', { count: 'exact' }).is('event_id', null),
+        supabase.from('images').select('event_id', { count: 'exact' }).not('event_id', 'is', null),
+      ]);
+
+      const memberImages = memberImgRes.data || [];
+      const eventImages = eventImgRes.data || [];
+
       if (branchRes.data) {
-        // Count only non-event images (member/integrante images) per branch
-        const withCounts = await Promise.all(
-          branchRes.data.map(async (branch) => {
-            const { count } = await supabase
-              .from('images')
-              .select('*', { count: 'exact', head: true })
-              .eq('branch_id', branch.id)
-              .is('event_id', null);
-            return { ...branch, imageCount: count || 0 };
-          })
-        );
+        const withCounts = branchRes.data.map(branch => ({
+          ...branch,
+          imageCount: memberImages.filter(img => img.branch_id === branch.id).length,
+        }));
         setBranches(withCounts);
-        setTotalImages(withCounts.reduce((sum, b) => sum + b.imageCount, 0));
+        setTotalImages(memberImages.length + eventImages.length);
       }
 
-      // Count images per event
       if (evtRes.data) {
-        const evtsWithCounts = await Promise.all(
-          evtRes.data.map(async (evt) => {
-            const { count } = await supabase
-              .from('images')
-              .select('*', { count: 'exact', head: true })
-              .eq('event_id', evt.id);
-            return { ...evt, imageCount: count || 0 };
-          })
-        );
+        const evtsWithCounts = evtRes.data.map(evt => ({
+          ...evt,
+          imageCount: eventImages.filter(img => img.event_id === evt.id).length,
+        }));
         setEventsWithPhotos(evtsWithCounts);
         setTotalEvents(evtRes.data.length);
-        setTotalImages(prev => prev + evtsWithCounts.reduce((sum, e) => sum + e.imageCount, 0));
       }
 
       setScouts(scoutRes.data || []);
