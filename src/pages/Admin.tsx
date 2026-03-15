@@ -12,13 +12,15 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save } from 'lucide-react';
+import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
+import { ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -44,6 +46,13 @@ interface Stats {
   totalImages: number;
   branchCounts: { name: string; count: number }[];
   recentUploads: number;
+}
+
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
+  created_at: string;
 }
 
 const Admin = () => {
@@ -82,6 +91,78 @@ const Admin = () => {
   const [saving, setSaving] = useState(false);
 
   const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0;
+
+  // Subgroups state
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
+  const [subgroupBranchFilter, setSubgroupBranchFilter] = useState('all');
+  const [editSubgroupId, setEditSubgroupId] = useState<string | null>(null);
+  const [editSubgroupName, setEditSubgroupName] = useState('');
+  const [editSubgroupBranch, setEditSubgroupBranch] = useState('');
+  const [newSubgroupName, setNewSubgroupName] = useState('');
+  const [newSubgroupBranch, setNewSubgroupBranch] = useState('');
+  const [savingSubgroup, setSavingSubgroup] = useState(false);
+
+  const fetchSubgroups = async () => {
+    const { data } = await supabase.from('subgroups').select('*').order('branch_key').order('name');
+    setSubgroups((data as Subgroup[]) || []);
+  };
+
+  const handleCreateSubgroup = async () => {
+    if (!user || !newSubgroupName.trim() || !newSubgroupBranch) {
+      toast.error('Preencha nome e ramo');
+      return;
+    }
+    setSavingSubgroup(true);
+    const { error } = await supabase.from('subgroups').insert({
+      name: newSubgroupName.trim(),
+      branch_key: newSubgroupBranch,
+      created_by: user.id,
+    });
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo criado!');
+      setNewSubgroupName('');
+      setNewSubgroupBranch('');
+      fetchSubgroups();
+    }
+    setSavingSubgroup(false);
+  };
+
+  const handleUpdateSubgroup = async () => {
+    if (!editSubgroupId || !editSubgroupName.trim() || !editSubgroupBranch) return;
+    setSavingSubgroup(true);
+    const { error } = await supabase.from('subgroups').update({
+      name: editSubgroupName.trim(),
+      branch_key: editSubgroupBranch,
+    }).eq('id', editSubgroupId);
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo atualizado!');
+      setEditSubgroupId(null);
+      fetchSubgroups();
+    }
+    setSavingSubgroup(false);
+  };
+
+  const handleDeleteSubgroup = async (id: string) => {
+    // First unlink scouts
+    await supabase.from('scouts').update({ subgroup_id: null }).eq('subgroup_id', id);
+    const { error } = await supabase.from('subgroups').delete().eq('id', id);
+    if (error) toast.error('Erro: ' + error.message);
+    else {
+      toast.success('Subgrupo excluído!');
+      fetchSubgroups();
+    }
+  };
+
+  const filteredSubgroups = subgroups.filter(sg =>
+    subgroupBranchFilter === 'all' || sg.branch_key === subgroupBranchFilter
+  );
+
+  const branchLabel = (key: string) => {
+    const b = ALL_CATEGORIES.find(c => c.key === key);
+    return b ? `${b.icon} ${b.name}` : key;
+  };
 
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('*');
@@ -133,6 +214,7 @@ const Admin = () => {
     fetchUsers();
     fetchStats();
     fetchAuditLogs();
+    fetchSubgroups();
   }, []);
 
   const stageRoleChange = (userId: string, newRole: AppRole) => {
@@ -329,6 +411,7 @@ const Admin = () => {
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           <TabsTrigger value="stats" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Estatísticas</TabsTrigger>
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
+          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Subgrupos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
@@ -537,6 +620,149 @@ const Admin = () => {
 
         <TabsContent value="audit">
           <ActivityLogsViewer />
+        </TabsContent>
+
+        <TabsContent value="subgroups">
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FolderTree className="h-5 w-5" />
+                  Patrulhas / Matilhas ({subgroups.length})
+                </CardTitle>
+                <div className="flex gap-2 flex-wrap">
+                  <Select value={subgroupBranchFilter} onValueChange={setSubgroupBranchFilter}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos os Ramos</SelectItem>
+                      {ALL_CATEGORIES.map(b => (
+                        <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Create new subgroup */}
+              <div className="flex gap-2 items-end flex-wrap">
+                <div className="space-y-1 flex-1 min-w-[150px]">
+                  <Label className="text-xs">Nome</Label>
+                  <Input
+                    value={newSubgroupName}
+                    onChange={e => setNewSubgroupName(e.target.value)}
+                    placeholder="Ex: Patrulha Águia"
+                    className="h-9"
+                  />
+                </div>
+                <div className="space-y-1 min-w-[140px]">
+                  <Label className="text-xs">Ramo</Label>
+                  <Select value={newSubgroupBranch} onValueChange={setNewSubgroupBranch}>
+                    <SelectTrigger className="h-9"><SelectValue placeholder="Ramo" /></SelectTrigger>
+                    <SelectContent>
+                      {ALL_CATEGORIES.map(b => (
+                        <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button size="sm" className="gap-1.5 h-9" onClick={handleCreateSubgroup} disabled={savingSubgroup}>
+                  <Plus className="h-3.5 w-3.5" /> Criar
+                </Button>
+              </div>
+
+              {/* List */}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nome</TableHead>
+                      <TableHead>Ramo</TableHead>
+                      <TableHead className="w-[140px]">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubgroups.map(sg => (
+                      <TableRow key={sg.id}>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <Input
+                              value={editSubgroupName}
+                              onChange={e => setEditSubgroupName(e.target.value)}
+                              className="h-8 w-full max-w-[200px]"
+                            />
+                          ) : (
+                            <span className="font-medium">{sg.name}</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <Select value={editSubgroupBranch} onValueChange={setEditSubgroupBranch}>
+                              <SelectTrigger className="h-8 w-[140px]"><SelectValue /></SelectTrigger>
+                              <SelectContent>
+                                {ALL_CATEGORIES.map(b => (
+                                  <SelectItem key={b.key} value={b.key}>{b.icon} {b.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Badge variant="outline">{branchLabel(sg.branch_key)}</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {editSubgroupId === sg.id ? (
+                            <div className="flex gap-1.5">
+                              <Button size="sm" variant="default" className="h-7 gap-1" onClick={handleUpdateSubgroup} disabled={savingSubgroup}>
+                                <Save className="h-3 w-3" /> Salvar
+                              </Button>
+                              <Button size="sm" variant="ghost" className="h-7" onClick={() => setEditSubgroupId(null)}>Cancelar</Button>
+                            </div>
+                          ) : (
+                            <div className="flex gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="h-7 gap-1"
+                                onClick={() => {
+                                  setEditSubgroupId(sg.id);
+                                  setEditSubgroupName(sg.name);
+                                  setEditSubgroupBranch(sg.branch_key);
+                                }}
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </Button>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button size="sm" variant="destructive" className="h-7 gap-1">
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Excluir "{sg.name}"?</AlertDialogTitle>
+                                    <AlertDialogDescription>Os integrantes vinculados a este subgrupo serão desvinculados.</AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteSubgroup(sg.id)}>Excluir</AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {filteredSubgroups.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhum subgrupo cadastrado</TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 
