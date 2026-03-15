@@ -303,7 +303,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground text-center py-4">Nenhum aniversário nos próximos 30 dias</p>
             ) : (
               upcomingBirthdays.slice(0, 5).map(s => {
-                const branch = getCurrentBranch(new Date(s.birth_date));
+                const branch = getEffectiveBranchKey(s);
                 return (
                   <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
                     <div className="flex items-center gap-2">
