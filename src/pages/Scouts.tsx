@@ -547,7 +547,7 @@ const Scouts = () => {
                                   <ArrowRightLeft className="h-3.5 w-3.5 text-muted-foreground" />
                                   <span className="text-muted-foreground">
                                     {nextChange.branch.icon} {nextChange.branch.name} em{' '}
-                                    <span className="font-medium text-foreground">{formatMonthsLeft(nextChange.monthsLeft)}</span>
+                                    <span className="font-medium text-foreground">{formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}</span>
                                   </span>
                                 </div>
                               </div>
