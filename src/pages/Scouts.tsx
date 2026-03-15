@@ -283,11 +283,18 @@ const Scouts = () => {
     }
   };
 
+  const getEffectiveBranch = (scout: Scout) => {
+    if (scout.manual_branch) {
+      return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+    }
+    return getCurrentBranch(new Date(scout.birth_date));
+  };
+
   const filteredScouts = scouts.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.scout_group.toLowerCase().includes(search.toLowerCase());
     if (branchFilter === 'all') return matchSearch;
-    const branch = getCurrentBranch(new Date(s.birth_date));
+    const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
   });
 
