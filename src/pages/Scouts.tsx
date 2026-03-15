@@ -64,6 +64,7 @@ const Scouts = () => {
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
+  const [viewingScout, setViewingScout] = useState<Scout | null>(null);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -489,7 +490,12 @@ const Scouts = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold tracking-tight truncate">{scout.name}</h3>
+                        <h3
+                          className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
+                          onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
+                        >
+                          {scout.name}
+                        </h3>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         <div className="flex gap-1.5 mt-1">
                           {branch && (
@@ -696,6 +702,108 @@ const Scouts = () => {
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCropComplete}
       />
+
+      {/* Scout detail viewer dialog */}
+      <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Dados do Integrante</DialogTitle>
+          </DialogHeader>
+          {viewingScout && (() => {
+            const branch = getCurrentBranch(new Date(viewingScout.birth_date));
+            const nextChange = getNextBranchChange(new Date(viewingScout.birth_date));
+            const scoutGuardians = getGuardiansForScout(viewingScout.id);
+            const ageInYears = calculateAge(new Date(viewingScout.birth_date)).years;
+            return (
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  {viewingScout.photo_url ? (
+                    <img
+                      src={viewingScout.photo_url}
+                      alt={viewingScout.name}
+                      className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
+                      onClick={() => setViewingPhoto(viewingScout.photo_url)}
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
+                      {branch?.icon || '⚜️'}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                    <p className="text-sm text-muted-foreground">{formatAge(new Date(viewingScout.birth_date))}</p>
+                    <div className="flex gap-1.5 mt-1">
+                      {branch && (
+                        <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
+                          {branch.icon} {branch.name}
+                        </Badge>
+                      )}
+                      {viewingScout.scout_group && (
+                        <Badge variant="outline" className="font-normal text-xs">{viewingScout.scout_group}</Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between py-2 border-b">
+                    <span className="text-muted-foreground">Data de nascimento</span>
+                    <span className="font-medium">
+                      {new Date(viewingScout.birth_date).toLocaleDateString('pt-BR')}
+                    </span>
+                  </div>
+                  {viewingScout.scout_group && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Grupo Escoteiro</span>
+                      <span className="font-medium">{viewingScout.scout_group}</span>
+                    </div>
+                  )}
+                  {nextChange && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Próximo ramo</span>
+                      <span className="font-medium">
+                        {nextChange.branch.icon} {nextChange.branch.name} em {formatMonthsLeft(nextChange.monthsLeft)}
+                      </span>
+                    </div>
+                  )}
+                  {viewingScout.notes && (
+                    <div className="py-2 border-b">
+                      <span className="text-muted-foreground">Observações</span>
+                      <p className="mt-1 font-medium">{viewingScout.notes}</p>
+                    </div>
+                  )}
+                </div>
+
+                {scoutGuardians.length > 0 && (
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Responsáveis</h4>
+                    <div className="space-y-2">
+                      {scoutGuardians.map(g => (
+                        <div key={g.id} className="rounded-lg border p-3 text-sm space-y-1">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium">{g.name}</span>
+                            <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
+                              {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
+                            </Badge>
+                          </div>
+                          {g.email && <p className="text-muted-foreground">{g.email}</p>}
+                          {g.phone && <p className="text-muted-foreground">{g.phone}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {ageInYears < 18 && scoutGuardians.length === 0 && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                    ⚠️ Nenhum responsável cadastrado para este menor de idade.
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* Photo viewer dialog */}
       <Dialog open={!!viewingPhoto} onOpenChange={() => setViewingPhoto(null)}>
