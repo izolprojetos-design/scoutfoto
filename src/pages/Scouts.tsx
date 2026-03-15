@@ -324,9 +324,9 @@ const Scouts = () => {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
         <label htmlFor={photoInputId} className="cursor-pointer">
-          <div className="relative h-20 w-20 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+          <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
             {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="h-full w-full object-cover" />
+              <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
             ) : (
               <Camera className="h-6 w-6 text-muted-foreground" />
             )}
