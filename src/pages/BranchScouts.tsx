@@ -48,6 +48,7 @@ const BranchScouts = () => {
 
       if (scoutRes) {
         const filtered = scoutRes.filter(s => {
+          if (s.manual_branch) return s.manual_branch === branchKey;
           const branch = getCurrentBranch(new Date(s.birth_date));
           return branch?.key === branchKey;
         });
