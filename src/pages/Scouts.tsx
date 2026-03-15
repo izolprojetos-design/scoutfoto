@@ -231,6 +231,7 @@ const Scouts = () => {
     setEditGroup(scout.scout_group);
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
+    setEditSubgroup(scout.subgroup_id || 'none');
     setEditPhoto(null);
     setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
