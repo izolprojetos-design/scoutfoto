@@ -745,6 +745,7 @@ const Scouts = () => {
             'Salvar Alterações',
             'scout-photo-edit',
             editBranch, setEditBranch,
+            editSubgroup, setEditSubgroup,
           )}
         </DialogContent>
       </Dialog>
