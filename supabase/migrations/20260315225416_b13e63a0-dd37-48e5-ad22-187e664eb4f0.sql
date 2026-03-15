@@ -1,0 +1,1 @@
+ALTER TABLE public.scouts ADD COLUMN manual_branch text DEFAULT NULL;

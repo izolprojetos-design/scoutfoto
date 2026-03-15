@@ -32,6 +32,7 @@ interface Scout {
   scout_group: string;
   notes: string;
   created_at: string;
+  manual_branch: string | null;
 }
 
 interface Guardian {
@@ -182,6 +183,7 @@ const Scouts = () => {
       scout_group: scoutGroup,
       notes: scoutNotes,
       created_by: user.id,
+      manual_branch: scoutBranch !== 'auto' ? scoutBranch : null,
     }).select('id').single();
 
     if (error) {
@@ -211,7 +213,7 @@ const Scouts = () => {
     setEditBirth(scout.birth_date);
     setEditGroup(scout.scout_group);
     setEditNotes(scout.notes || '');
-    setEditBranch('auto');
+    setEditBranch(scout.manual_branch || 'auto');
     setEditPhoto(null);
     setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
@@ -234,6 +236,7 @@ const Scouts = () => {
       scout_group: editGroup,
       notes: editNotes,
       photo_url: photoUrl,
+      manual_branch: editBranch !== 'auto' ? editBranch : null,
     }).eq('id', editingScout.id);
 
     if (error) {
@@ -280,11 +283,18 @@ const Scouts = () => {
     }
   };
 
+  const getEffectiveBranch = (scout: Scout) => {
+    if (scout.manual_branch) {
+      return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+    }
+    return getCurrentBranch(new Date(scout.birth_date));
+  };
+
   const filteredScouts = scouts.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.scout_group.toLowerCase().includes(search.toLowerCase());
     if (branchFilter === 'all') return matchSearch;
-    const branch = getCurrentBranch(new Date(s.birth_date));
+    const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
   });
 
@@ -462,7 +472,7 @@ const Scouts = () => {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredScouts.map((scout, index) => {
-            const branch = getCurrentBranch(new Date(scout.birth_date));
+            const branch = getEffectiveBranch(scout);
             const nextChange = getNextBranchChange(new Date(scout.birth_date));
             const scoutGuardians = getGuardiansForScout(scout.id);
             const isExpanded = expandedScouts.has(scout.id);

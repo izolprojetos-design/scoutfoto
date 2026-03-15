@@ -14,6 +14,7 @@ interface Scout {
   birth_date: string;
   scout_group: string;
   photo_url: string | null;
+  manual_branch: string | null;
 }
 
 interface BranchData {
@@ -47,6 +48,7 @@ const BranchScouts = () => {
 
       if (scoutRes) {
         const filtered = scoutRes.filter(s => {
+          if (s.manual_branch) return s.manual_branch === branchKey;
           const branch = getCurrentBranch(new Date(s.birth_date));
           return branch?.key === branchKey;
         });

@@ -29,7 +29,15 @@ interface Scout {
   birth_date: string;
   scout_group: string;
   photo_url: string | null;
+  manual_branch: string | null;
 }
+
+const getEffectiveBranchKey = (scout: Scout) => {
+  if (scout.manual_branch) {
+    return SCOUT_BRANCHES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+  }
+  return getCurrentBranch(new Date(scout.birth_date));
+};
 
 const branchColors: Record<string, string> = {
   lobinho: 'from-amber-500/15 to-amber-600/5 border-amber-200/50 hover:border-amber-300',
@@ -143,7 +151,7 @@ const Dashboard = () => {
   // Distribution by branch
   const branchDistribution = SCOUT_BRANCHES.map(b => ({
     ...b,
-    count: scouts.filter(s => getCurrentBranch(new Date(s.birth_date))?.key === b.key).length,
+    count: scouts.filter(s => getEffectiveBranchKey(s)?.key === b.key).length,
   }));
 
   return (
@@ -295,7 +303,7 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground text-center py-4">Nenhum aniversário nos próximos 30 dias</p>
             ) : (
               upcomingBirthdays.slice(0, 5).map(s => {
-                const branch = getCurrentBranch(new Date(s.birth_date));
+                const branch = getEffectiveBranchKey(s);
                 return (
                   <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
                     <div className="flex items-center gap-2">
@@ -383,7 +391,7 @@ const Dashboard = () => {
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Users className="h-3.5 w-3.5" />
                         <span>
-                          {scouts.filter(s => getCurrentBranch(new Date(s.birth_date))?.key === branch.key).length} {scouts.filter(s => getCurrentBranch(new Date(s.birth_date))?.key === branch.key).length === 1 ? 'integrante' : 'integrantes'}
+                          {scouts.filter(s => getEffectiveBranchKey(s)?.key === branch.key).length} {scouts.filter(s => getEffectiveBranchKey(s)?.key === branch.key).length === 1 ? 'integrante' : 'integrantes'}
                         </span>
                       </div>
                     </div>
