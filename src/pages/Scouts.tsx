@@ -213,7 +213,7 @@ const Scouts = () => {
     setEditBirth(scout.birth_date);
     setEditGroup(scout.scout_group);
     setEditNotes(scout.notes || '');
-    setEditBranch('auto');
+    setEditBranch(scout.manual_branch || 'auto');
     setEditPhoto(null);
     setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
