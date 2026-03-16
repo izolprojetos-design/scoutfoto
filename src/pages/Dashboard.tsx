@@ -200,7 +200,7 @@ const Dashboard = () => {
             </Button>
             {(canUpload || isChefe) && (
               <Button variant="outline" onClick={() => navigate('/events')} className="gap-2">
-                <Calendar className="h-4 w-4" /> Eventos
+                <CalendarIcon className="h-4 w-4" /> Eventos
               </Button>
             )}
           </div>
