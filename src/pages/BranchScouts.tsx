@@ -129,7 +129,7 @@ const BranchScouts = () => {
                 <p className="text-xs text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                 {scout.subgroup_id && (() => {
                   const sg = subgroups.find(s => s.id === scout.subgroup_id);
-                  return sg ? <Badge variant="secondary" className="mt-1 font-normal text-xs">{sg.name}</Badge> : null;
+                  return sg ? <Badge className="mt-1.5 font-medium text-xs bg-accent text-accent-foreground">{sg.name}</Badge> : null;
                 })()}
               </div>
             </motion.div>
