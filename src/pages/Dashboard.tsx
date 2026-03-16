@@ -86,22 +86,22 @@ const Dashboard = () => {
         supabase.from('scouts').select('*').order('name'),
       ]);
 
-      // Fetch all image counts in two queries instead of N+1
-      const [memberImgRes, eventImgRes] = await Promise.all([
-        supabase.from('images').select('branch_id', { count: 'exact' }).is('event_id', null),
-        supabase.from('images').select('event_id', { count: 'exact' }).not('event_id', 'is', null),
+      // Fetch all images with branch_id for counting
+      const [allImgRes, eventImgRes] = await Promise.all([
+        supabase.from('images').select('branch_id, event_id'),
+        supabase.from('images').select('event_id').not('event_id', 'is', null),
       ]);
 
-      const memberImages = memberImgRes.data || [];
+      const allImages = allImgRes.data || [];
       const eventImages = eventImgRes.data || [];
 
       if (branchRes.data) {
         const withCounts = branchRes.data.map(branch => ({
           ...branch,
-          imageCount: memberImages.filter(img => img.branch_id === branch.id).length,
+          imageCount: allImages.filter(img => img.branch_id === branch.id).length,
         }));
         setBranches(withCounts);
-        setTotalImages(memberImages.length + eventImages.length);
+        setTotalImages(allImages.length);
       }
 
       if (evtRes.data) {
