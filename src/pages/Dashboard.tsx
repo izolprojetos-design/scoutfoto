@@ -12,7 +12,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface BranchWithCount {
   id: string;
@@ -339,33 +339,6 @@ const Dashboard = () => {
         </Card>
       </div>
 
-      {/* Photos per Branch Bar Chart */}
-      {branches.length > 0 && (
-        <Card className="border shadow-sm mb-8">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ImageIcon className="h-4 w-4" /> Fotos por Ramo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={branches.map(b => ({ name: b.display_name, fotos: b.imageCount, key: b.key }))}>
-                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-                <YAxis tick={{ fontSize: 12 }} allowDecimals={false} />
-                <Tooltip
-                  contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                  formatter={(value: number) => [`${value} fotos`]}
-                />
-                <Bar dataKey="fotos" radius={[6, 6, 0, 0]}>
-                  {branches.map((b, idx) => (
-                    <Cell key={idx} fill={PIE_COLORS[b.key] || 'hsl(var(--primary))'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Branch Cards - Member Images Only */}
       <div className="mb-4 flex items-center justify-between">
