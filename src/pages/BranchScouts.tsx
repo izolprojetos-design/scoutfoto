@@ -25,6 +25,12 @@ interface BranchData {
   icon: string;
 }
 
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
+}
+
 const BranchScouts = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const navigate = useNavigate();
