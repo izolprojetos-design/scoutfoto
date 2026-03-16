@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,14 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/components/AppLayout';
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar as CalendarIcon, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, CalendarDays, X } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar } from '@/components/ui/calendar';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface BranchWithCount {
@@ -68,9 +65,6 @@ const Dashboard = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [filteredImageCount, setFilteredImageCount] = useState<number | null>(null);
   const navigate = useNavigate();
 
   interface EventWithCount {
@@ -84,69 +78,46 @@ const Dashboard = () => {
 
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
 
-  const fetchData = useCallback(async () => {
-    const [branchRes, evtRes, scoutRes] = await Promise.all([
-      supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
-      supabase.from('scouts').select('*').order('name'),
-    ]);
-
-    // Fetch all images with branch_id for counting
-    const [allImgRes, eventImgRes] = await Promise.all([
-      supabase.from('images').select('branch_id, event_id'),
-      supabase.from('images').select('event_id').not('event_id', 'is', null),
-    ]);
-
-    const allImages = allImgRes.data || [];
-    const eventImages = eventImgRes.data || [];
-
-    if (branchRes.data) {
-      const withCounts = branchRes.data.map(branch => ({
-        ...branch,
-        imageCount: allImages.filter(img => img.branch_id === branch.id).length,
-      }));
-      setBranches(withCounts);
-      setTotalImages(allImages.length);
-    }
-
-    if (evtRes.data) {
-      const evtsWithCounts = evtRes.data.map(evt => ({
-        ...evt,
-        imageCount: eventImages.filter(img => img.event_id === evt.id).length,
-      }));
-      setEventsWithPhotos(evtsWithCounts);
-      setTotalEvents(evtRes.data.length);
-    }
-
-    setScouts(scoutRes.data || []);
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    const fetchData = async () => {
+      const [branchRes, evtRes, scoutRes] = await Promise.all([
+        supabase.from('branches').select('*').order('sort_order'),
+        supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
+        supabase.from('scouts').select('*').order('name'),
+      ]);
 
-  // Filter images by date range
-  useEffect(() => {
-    if (!dateFrom && !dateTo) {
-      setFilteredImageCount(null);
-      return;
-    }
-    const fetchFiltered = async () => {
-      let query = supabase.from('images').select('id', { count: 'exact', head: true });
-      if (dateFrom) {
-        query = query.gte('created_at', dateFrom.toISOString());
+      // Fetch all images with branch_id for counting
+      const [allImgRes, eventImgRes] = await Promise.all([
+        supabase.from('images').select('branch_id, event_id'),
+        supabase.from('images').select('event_id').not('event_id', 'is', null),
+      ]);
+
+      const allImages = allImgRes.data || [];
+      const eventImages = eventImgRes.data || [];
+
+      if (branchRes.data) {
+        const withCounts = branchRes.data.map(branch => ({
+          ...branch,
+          imageCount: allImages.filter(img => img.branch_id === branch.id).length,
+        }));
+        setBranches(withCounts);
+        setTotalImages(allImages.length);
       }
-      if (dateTo) {
-        const endOfDay = new Date(dateTo);
-        endOfDay.setHours(23, 59, 59, 999);
-        query = query.lte('created_at', endOfDay.toISOString());
+
+      if (evtRes.data) {
+        const evtsWithCounts = evtRes.data.map(evt => ({
+          ...evt,
+          imageCount: eventImages.filter(img => img.event_id === evt.id).length,
+        }));
+        setEventsWithPhotos(evtsWithCounts);
+        setTotalEvents(evtRes.data.length);
       }
-      const { count } = await query;
-      setFilteredImageCount(count ?? 0);
+
+      setScouts(scoutRes.data || []);
+      setLoading(false);
     };
-    fetchFiltered();
-  }, [dateFrom, dateTo]);
+    fetchData();
+  }, []);
 
   const greeting = () => {
     const hour = new Date().getHours();
@@ -200,53 +171,18 @@ const Dashboard = () => {
             </Button>
             {(canUpload || isChefe) && (
               <Button variant="outline" onClick={() => navigate('/events')} className="gap-2">
-                <CalendarIcon className="h-4 w-4" /> Eventos
+                <Calendar className="h-4 w-4" /> Eventos
               </Button>
             )}
           </div>
         </motion.div>
       </div>
 
-      {/* Date Filter for Photos */}
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <CalendarDays className="h-4 w-4 text-muted-foreground" />
-        <span className="text-sm text-muted-foreground">Filtrar fotos por período:</span>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("text-xs", !dateFrom && "text-muted-foreground")}>
-              {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data início"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" locale={ptBR} />
-          </PopoverContent>
-        </Popover>
-        <span className="text-sm text-muted-foreground">até</span>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("text-xs", !dateTo && "text-muted-foreground")}>
-              {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data fim"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" locale={ptBR} />
-          </PopoverContent>
-        </Popover>
-        {(dateFrom || dateTo) && (
-          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }} className="text-xs gap-1">
-            <X className="h-3 w-3" /> Limpar
-          </Button>
-        )}
-        {filteredImageCount !== null && (
-          <Badge className="bg-primary text-primary-foreground text-xs">{filteredImageCount} fotos no período</Badge>
-        )}
-      </div>
-
       {/* Quick Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { icon: ImageIcon, value: filteredImageCount !== null ? filteredImageCount : totalImages, label: filteredImageCount !== null ? 'Fotos no período' : 'Total de fotos', color: 'text-primary' },
-          { icon: CalendarIcon, value: totalEvents, label: 'Eventos', color: 'text-accent' },
+          { icon: ImageIcon, value: totalImages, label: 'Total de fotos', color: 'text-primary' },
+          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
           { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
           { icon: TrendingUp, value: branches.length, label: 'Ramos ativos', color: 'text-primary' },
         ].map((stat, i) => (
