@@ -68,6 +68,9 @@ const Dashboard = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [filteredImageCount, setFilteredImageCount] = useState<number | null>(null);
   const navigate = useNavigate();
 
   interface EventWithCount {
@@ -81,46 +84,69 @@ const Dashboard = () => {
 
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const [branchRes, evtRes, scoutRes] = await Promise.all([
-        supabase.from('branches').select('*').order('sort_order'),
-        supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
-        supabase.from('scouts').select('*').order('name'),
-      ]);
+  const fetchData = useCallback(async () => {
+    const [branchRes, evtRes, scoutRes] = await Promise.all([
+      supabase.from('branches').select('*').order('sort_order'),
+      supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
+      supabase.from('scouts').select('*').order('name'),
+    ]);
 
-      // Fetch all images with branch_id for counting
-      const [allImgRes, eventImgRes] = await Promise.all([
-        supabase.from('images').select('branch_id, event_id'),
-        supabase.from('images').select('event_id').not('event_id', 'is', null),
-      ]);
+    // Fetch all images with branch_id for counting
+    const [allImgRes, eventImgRes] = await Promise.all([
+      supabase.from('images').select('branch_id, event_id'),
+      supabase.from('images').select('event_id').not('event_id', 'is', null),
+    ]);
 
-      const allImages = allImgRes.data || [];
-      const eventImages = eventImgRes.data || [];
+    const allImages = allImgRes.data || [];
+    const eventImages = eventImgRes.data || [];
 
-      if (branchRes.data) {
-        const withCounts = branchRes.data.map(branch => ({
-          ...branch,
-          imageCount: allImages.filter(img => img.branch_id === branch.id).length,
-        }));
-        setBranches(withCounts);
-        setTotalImages(allImages.length);
-      }
+    if (branchRes.data) {
+      const withCounts = branchRes.data.map(branch => ({
+        ...branch,
+        imageCount: allImages.filter(img => img.branch_id === branch.id).length,
+      }));
+      setBranches(withCounts);
+      setTotalImages(allImages.length);
+    }
 
-      if (evtRes.data) {
-        const evtsWithCounts = evtRes.data.map(evt => ({
-          ...evt,
-          imageCount: eventImages.filter(img => img.event_id === evt.id).length,
-        }));
-        setEventsWithPhotos(evtsWithCounts);
-        setTotalEvents(evtRes.data.length);
-      }
+    if (evtRes.data) {
+      const evtsWithCounts = evtRes.data.map(evt => ({
+        ...evt,
+        imageCount: eventImages.filter(img => img.event_id === evt.id).length,
+      }));
+      setEventsWithPhotos(evtsWithCounts);
+      setTotalEvents(evtRes.data.length);
+    }
 
-      setScouts(scoutRes.data || []);
-      setLoading(false);
-    };
-    fetchData();
+    setScouts(scoutRes.data || []);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Filter images by date range
+  useEffect(() => {
+    if (!dateFrom && !dateTo) {
+      setFilteredImageCount(null);
+      return;
+    }
+    const fetchFiltered = async () => {
+      let query = supabase.from('images').select('id', { count: 'exact', head: true });
+      if (dateFrom) {
+        query = query.gte('created_at', dateFrom.toISOString());
+      }
+      if (dateTo) {
+        const endOfDay = new Date(dateTo);
+        endOfDay.setHours(23, 59, 59, 999);
+        query = query.lte('created_at', endOfDay.toISOString());
+      }
+      const { count } = await query;
+      setFilteredImageCount(count ?? 0);
+    };
+    fetchFiltered();
+  }, [dateFrom, dateTo]);
 
   const greeting = () => {
     const hour = new Date().getHours();
