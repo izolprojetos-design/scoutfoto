@@ -158,12 +158,23 @@ const Events = () => {
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    const { error } = await supabase.from('events').delete().eq('id', eventId);
-    if (error) {
-      toast.error('Erro ao excluir: ' + error.message);
-    } else {
-      toast.success('Evento excluído!');
-      fetchEvents();
+    try {
+      // Remove related records first to avoid FK constraint errors
+      await Promise.all([
+        supabase.from('images').delete().eq('event_id', eventId),
+        supabase.from('event_permissions').delete().eq('event_id', eventId),
+        supabase.from('event_share_links').delete().eq('event_id', eventId),
+      ]);
+
+      const { error } = await supabase.from('events').delete().eq('id', eventId);
+      if (error) {
+        toast.error('Erro ao excluir: ' + error.message);
+      } else {
+        toast.success('Evento excluído!');
+        fetchEvents();
+      }
+    } catch (err: any) {
+      toast.error('Erro ao excluir evento: ' + (err?.message || 'Erro desconhecido'));
     }
   };
 
