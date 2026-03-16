@@ -207,11 +207,46 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
+      {/* Date Filter for Photos */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <CalendarDays className="h-4 w-4 text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">Filtrar fotos por período:</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("text-xs", !dateFrom && "text-muted-foreground")}>
+              {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data início"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" locale={ptBR} />
+          </PopoverContent>
+        </Popover>
+        <span className="text-sm text-muted-foreground">até</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("text-xs", !dateTo && "text-muted-foreground")}>
+              {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data fim"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus className="p-3 pointer-events-auto" locale={ptBR} />
+          </PopoverContent>
+        </Popover>
+        {(dateFrom || dateTo) && (
+          <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }} className="text-xs gap-1">
+            <X className="h-3 w-3" /> Limpar
+          </Button>
+        )}
+        {filteredImageCount !== null && (
+          <Badge className="bg-primary text-primary-foreground text-xs">{filteredImageCount} fotos no período</Badge>
+        )}
+      </div>
+
       {/* Quick Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { icon: ImageIcon, value: totalImages, label: 'Total de fotos', color: 'text-primary' },
-          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
+          { icon: ImageIcon, value: filteredImageCount !== null ? filteredImageCount : totalImages, label: filteredImageCount !== null ? 'Fotos no período' : 'Total de fotos', color: 'text-primary' },
+          { icon: CalendarIcon, value: totalEvents, label: 'Eventos', color: 'text-accent' },
           { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
           { icon: TrendingUp, value: branches.length, label: 'Ramos ativos', color: 'text-primary' },
         ].map((stat, i) => (
