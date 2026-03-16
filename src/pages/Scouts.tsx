@@ -549,7 +549,7 @@ const Scouts = () => {
           </Button>
           {ALL_CATEGORIES.map(b => (
             <Button key={b.key} variant={branchFilter === b.key ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter(b.key)}>
-              {b.icon} {b.name}
+              {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
         </div>
