@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, ALL_CATEGORIES } from '@/lib/scoutUtils';
