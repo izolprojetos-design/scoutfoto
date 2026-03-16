@@ -182,9 +182,9 @@ const Dashboard = () => {
       {/* Quick Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-4">
         {[
-          { icon: ImageIcon, value: totalImages, label: 'Total de fotos', color: 'text-primary' },
-          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
           { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
+          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
+          { icon: ImageIcon, value: totalImages, label: 'Fotos de Integrantes', color: 'text-primary' },
           { icon: TrendingUp, value: branches.length, label: 'Ramos ativos', color: 'text-primary' },
         ].map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.05 }}>
