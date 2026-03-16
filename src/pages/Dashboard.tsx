@@ -240,10 +240,10 @@ const Dashboard = () => {
                 </ResponsiveContainer>
                 <div className="grid grid-cols-2 gap-2">
                   {branchDistribution.map(b => (
-                    <div key={b.key} className="flex items-center gap-2 text-xs">
-                      <div className="h-3 w-3 rounded-full" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                    <div key={b.key} className="flex items-center gap-1.5 text-xs">
+                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
                       <span className="text-muted-foreground">{b.icon} {b.name}</span>
-                      <span className="ml-auto font-semibold">{b.count}</span>
+                      <span className="font-semibold">{b.count}</span>
                     </div>
                   ))}
                 </div>
