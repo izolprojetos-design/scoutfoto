@@ -94,14 +94,15 @@ const Dashboard = () => {
 
       const allImages = allImgRes.data || [];
       const eventImages = eventImgRes.data || [];
+      const memberImages = allImages.filter(img => !img.event_id);
 
       if (branchRes.data) {
         const withCounts = branchRes.data.map(branch => ({
           ...branch,
-          imageCount: allImages.filter(img => img.branch_id === branch.id).length,
+          imageCount: memberImages.filter(img => img.branch_id === branch.id).length,
         }));
         setBranches(withCounts);
-        setTotalImages(allImages.length);
+        setTotalImages(memberImages.length);
       }
 
       if (evtRes.data) {
