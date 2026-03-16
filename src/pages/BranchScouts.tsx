@@ -38,12 +38,14 @@ const BranchScouts = () => {
   const [loading, setLoading] = useState(true);
   const [branchData, setBranchData] = useState<BranchData | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [{ data: branchRes }, { data: scoutRes }] = await Promise.all([
+      const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
         supabase.from('scouts').select('*').order('name'),
+        supabase.from('subgroups').select('*'),
       ]);
 
       if (branchRes) {
