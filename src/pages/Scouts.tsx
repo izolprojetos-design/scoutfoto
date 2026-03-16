@@ -309,13 +309,28 @@ const Scouts = () => {
     return getCurrentBranch(new Date(scout.birth_date));
   };
 
+  const branchOrder = ALL_CATEGORIES.map(b => b.key);
+
   const filteredScouts = scouts.filter(s => {
     const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
       s.scout_group.toLowerCase().includes(search.toLowerCase());
     if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
+  }).sort((a, b) => {
+    if (branchFilter !== 'all') return 0;
+    const branchA = getEffectiveBranch(a);
+    const branchB = getEffectiveBranch(b);
+    const idxA = branchA ? branchOrder.indexOf(branchA.key) : 999;
+    const idxB = branchB ? branchOrder.indexOf(branchB.key) : 999;
+    return idxA - idxB;
   });
+
+  const branchCounts = scouts.reduce((acc, s) => {
+    const branch = getEffectiveBranch(s);
+    if (branch) acc[branch.key] = (acc[branch.key] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
