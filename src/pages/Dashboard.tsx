@@ -208,7 +208,7 @@ const Dashboard = () => {
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
               <Users className="h-4 w-4" /> Integrantes por Ramo
-              <Badge variant="secondary" className="ml-auto text-xs font-semibold">{scouts.length} total</Badge>
+              <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length} total</Badge>
             </CardTitle>
           </CardHeader>
           <CardContent>
