@@ -597,6 +597,10 @@ const Scouts = () => {
                               {branch.icon} {branch.name}
                             </Badge>
                           )}
+                          {scout.subgroup_id && (() => {
+                            const sg = subgroups.find(s => s.id === scout.subgroup_id);
+                            return sg ? <Badge variant="secondary" className="font-normal text-xs">{sg.name}</Badge> : null;
+                          })()}
                           {scout.scout_group && (
                             <Badge variant="outline" className="font-normal text-xs">{scout.scout_group}</Badge>
                           )}

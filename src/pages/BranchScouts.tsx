@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -15,6 +16,7 @@ interface Scout {
   scout_group: string;
   photo_url: string | null;
   manual_branch: string | null;
+  subgroup_id: string | null;
 }
 
 interface BranchData {
@@ -24,6 +26,12 @@ interface BranchData {
   icon: string;
 }
 
+interface Subgroup {
+  id: string;
+  name: string;
+  branch_key: string;
+}
+
 const BranchScouts = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const navigate = useNavigate();
@@ -31,12 +39,14 @@ const BranchScouts = () => {
   const [loading, setLoading] = useState(true);
   const [branchData, setBranchData] = useState<BranchData | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
-      const [{ data: branchRes }, { data: scoutRes }] = await Promise.all([
+      const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
         supabase.from('scouts').select('*').order('name'),
+        supabase.from('subgroups').select('*'),
       ]);
 
       if (branchRes) {
@@ -54,6 +64,7 @@ const BranchScouts = () => {
         });
         setScouts(filtered);
       }
+      if (subgroupData) setSubgroups(subgroupData as Subgroup[]);
       setLoading(false);
     };
     fetchData();
@@ -116,6 +127,10 @@ const BranchScouts = () => {
               <div className="p-3">
                 <p className="text-sm font-semibold truncate">{scout.name}</p>
                 <p className="text-xs text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
+                {scout.subgroup_id && (() => {
+                  const sg = subgroups.find(s => s.id === scout.subgroup_id);
+                  return sg ? <Badge variant="secondary" className="mt-1 font-normal text-xs">{sg.name}</Badge> : null;
+                })()}
               </div>
             </motion.div>
           ))}
