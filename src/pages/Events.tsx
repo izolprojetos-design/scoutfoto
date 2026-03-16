@@ -320,11 +320,11 @@ const Events = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => setShareEvent({ id: event.id, name: event.name })}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
                               <Share2 className="h-4 w-4 mr-2" />
                               Compartilhar
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setPermEvent({ id: event.id, name: event.name })}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
                               <Shield className="h-4 w-4 mr-2" />
                               Permissões
                               {eventsWithPerms.has(event.id) && (
@@ -332,14 +332,14 @@ const Events = () => {
                               )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => openEditDialog(event)}>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
                               <Pencil className="h-4 w-4 mr-2" />
                               Editar
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               className="text-destructive focus:text-destructive"
-                              onClick={() => setDeleteEvent({ id: event.id, name: event.name })}
+                              onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Excluir
