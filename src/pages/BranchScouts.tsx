@@ -63,6 +63,7 @@ const BranchScouts = () => {
         });
         setScouts(filtered);
       }
+      if (subgroupData) setSubgroups(subgroupData as Subgroup[]);
       setLoading(false);
     };
     fetchData();
