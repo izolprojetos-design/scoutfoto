@@ -606,7 +606,7 @@ const Scouts = () => {
                           {scout.name}
                         </h3>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
-                        <div className="flex gap-1.5 mt-1">
+                        <div className="flex flex-wrap gap-1.5 mt-1">
                           {branch && (
                             <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
                               {branch.icon} {branch.name}
