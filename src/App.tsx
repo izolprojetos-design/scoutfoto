@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useState, useCallback } from "react";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ForceChangePassword from "@/components/ForceChangePassword";
+import SplashScreen from "@/components/SplashScreen";
 import { Loader2 } from "lucide-react";
 
 // Lazy-loaded pages for code splitting
@@ -36,42 +37,54 @@ const PageLoader = () => (
   </div>
 );
 
+// Check if running as installed PWA (standalone mode)
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+  || (navigator as any).standalone === true;
+
 // App root component
-const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <ForceChangePassword />
-            <Suspense fallback={<PageLoader />}>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/dashboard" element={<ProtectedRoute requiredPermission="view_photos"><Dashboard /></ProtectedRoute>} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
-                <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
-                <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
-                <Route path="/branch/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><BranchScouts /></ProtectedRoute>} />
-                <Route path="/events" element={<ProtectedRoute requiredPermission="manage_events"><Events /></ProtectedRoute>} />
-                <Route path="/events/:eventId" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
-                <Route path="/scouts" element={<ProtectedRoute requiredPermission="manage_scouts"><Scouts /></ProtectedRoute>} />
-                <Route path="/calendar" element={<ProtectedRoute><ScoutCalendar /></ProtectedRoute>} />
-                <Route path="/admin" element={<ProtectedRoute requiredPermission="manage_users"><Admin /></ProtectedRoute>} />
-                <Route path="/evento/:token" element={<EventPortal />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+const App = () => {
+  const [splashDone, setSplashDone] = useState(!isStandalone);
+  const handleSplashFinished = useCallback(() => setSplashDone(true), []);
+
+  return (
+    <>
+      {!splashDone && <SplashScreen onFinished={handleSplashFinished} />}
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AuthProvider>
+                <ForceChangePassword />
+                <Suspense fallback={<PageLoader />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/dashboard" element={<ProtectedRoute requiredPermission="view_photos"><Dashboard /></ProtectedRoute>} />
+                    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                    <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
+                    <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
+                    <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
+                    <Route path="/branch/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><BranchScouts /></ProtectedRoute>} />
+                    <Route path="/events" element={<ProtectedRoute requiredPermission="manage_events"><Events /></ProtectedRoute>} />
+                    <Route path="/events/:eventId" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
+                    <Route path="/scouts" element={<ProtectedRoute requiredPermission="manage_scouts"><Scouts /></ProtectedRoute>} />
+                    <Route path="/calendar" element={<ProtectedRoute><ScoutCalendar /></ProtectedRoute>} />
+                    <Route path="/admin" element={<ProtectedRoute requiredPermission="manage_users"><Admin /></ProtectedRoute>} />
+                    <Route path="/evento/:token" element={<EventPortal />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </AuthProvider>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </>
+  );
+};
 
 export default App;
