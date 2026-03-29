@@ -63,8 +63,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (!user) return;
 
-    const INACTIVITY_LIMIT = 1 * 60 * 1000; // TEMP: 1 min para teste
-    const WARNING_BEFORE = 30 * 1000; // TEMP: 30s antes
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
+    const WARNING_BEFORE = 5 * 60 * 1000; // 5 min antes
     let logoutTimer: ReturnType<typeof setTimeout>;
     let warningTimer: ReturnType<typeof setTimeout>;
     let warningToastId: string | number | undefined;
