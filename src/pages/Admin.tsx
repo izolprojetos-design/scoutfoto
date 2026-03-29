@@ -180,35 +180,6 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const fetchStats = async () => {
-    const { count: totalImages } = await supabase.from('images').select('*', { count: 'exact', head: true });
-
-    // Fotos por Evento (vinculadas a eventos)
-    const { data: events } = await supabase.from('events').select('id, name');
-    const eventCounts: { name: string; count: number }[] = [];
-    if (events) {
-      for (const ev of events) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('event_id', ev.id);
-        eventCounts.push({ name: ev.name, count: count || 0 });
-      }
-      eventCounts.sort((a, b) => b.count - a.count);
-    }
-
-    // Fotos por Ramo (vinculadas a integrantes, sem evento)
-    const { data: branches } = await supabase.from('branches').select('id, display_name');
-    const memberBranchCounts: { name: string; count: number }[] = [];
-    if (branches) {
-      for (const b of branches) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).is('event_id', null);
-        memberBranchCounts.push({ name: b.display_name, count: count || 0 });
-      }
-    }
-
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const { count: recentUploads } = await supabase.from('images').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-    setStats({ totalImages: totalImages || 0, eventCounts, memberBranchCounts, recentUploads: recentUploads || 0 });
-  };
 
   const fetchAuditLogs = async () => {
     const { data } = await supabase
