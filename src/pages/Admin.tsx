@@ -354,14 +354,7 @@ const Admin = () => {
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="border-0 shadow-md">
-          <CardContent className="flex flex-col items-center p-4">
-            <ImageIcon className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{stats.totalImages}</p>
-            <p className="text-xs text-muted-foreground">Total de {stats.totalImages === 1 ? 'foto' : 'fotos'}</p>
-          </CardContent>
-        </Card>
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
             <Users className="mb-1 h-6 w-6 text-primary" />
@@ -371,16 +364,16 @@ const Admin = () => {
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
-            <Activity className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{stats.recentUploads}</p>
-            <p className="text-xs text-muted-foreground">Uploads (7 dias)</p>
+            <Shield className="mb-1 h-6 w-6 text-primary" />
+            <p className="text-2xl font-bold">{auditLogs.length}</p>
+            <p className="text-xs text-muted-foreground">Logs de auditoria</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
-            <Shield className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{auditLogs.length}</p>
-            <p className="text-xs text-muted-foreground">Logs de auditoria</p>
+            <FolderTree className="mb-1 h-6 w-6 text-primary" />
+            <p className="text-2xl font-bold">{subgroups.length}</p>
+            <p className="text-xs text-muted-foreground">Subgrupos</p>
           </CardContent>
         </Card>
       </div>
