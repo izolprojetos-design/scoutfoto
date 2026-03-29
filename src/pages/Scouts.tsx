@@ -483,7 +483,40 @@ const Scouts = () => {
     return null;
   };
 
-  const renderScoutForm = (
+  const handleExportCSV = () => {
+    const csvRows: string[] = [];
+    csvRows.push('ID,Nome,Ramo,Seção,Equipe,Celular,Data de Nascimento,Idade,Responsável');
+    filteredScouts.forEach(scout => {
+      const branch = getEffectiveBranch(scout);
+      const sg = subgroups.find(s => s.id === scout.subgroup_id);
+      const scoutGuards = getGuardiansForScout(scout.id);
+      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      const row = [
+        scout.registration_id || '',
+        scout.name,
+        branch?.name || '',
+        scout.section || '',
+        sg?.name || '',
+        scout.phone || '',
+        new Date(scout.birth_date).toLocaleDateString('pt-BR'),
+        formatAge(new Date(scout.birth_date)),
+        responsavel,
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      csvRows.push(row);
+    });
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const filterLabel = branchFilter === 'all' ? 'todos' : branchFilter;
+    a.href = url;
+    a.download = `integrantes_${filterLabel}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filteredScouts.length} integrantes exportados!`);
+  };
+
+
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
     birth: string, setBirth: (v: string) => void,
