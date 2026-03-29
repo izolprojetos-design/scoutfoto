@@ -10,53 +10,53 @@
 
 @layer base {
   :root {
-    --background: 40 20% 97%;
-    --foreground: 220 20% 15%;
+    --background: 45 25% 97%;
+    --foreground: 200 18% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 15%;
+    --card-foreground: 200 18% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 15%;
+    --popover-foreground: 200 18% 12%;
 
-    --primary: 152 45% 32%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 145 40% 28%;
+    --primary-foreground: 45 30% 96%;
 
-    --secondary: 40 18% 93%;
-    --secondary-foreground: 220 20% 18%;
+    --secondary: 45 20% 93%;
+    --secondary-foreground: 200 15% 18%;
 
-    --muted: 40 12% 94%;
-    --muted-foreground: 220 12% 40%;
+    --muted: 45 14% 93%;
+    --muted-foreground: 200 10% 42%;
 
-    --accent: 38 75% 50%;
+    --accent: 35 70% 48%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 0 60% 48%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 10% 88%;
-    --input: 40 10% 88%;
-    --ring: 152 45% 32%;
+    --border: 45 12% 86%;
+    --input: 45 12% 86%;
+    --ring: 145 40% 28%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 152 30% 14%;
-    --sidebar-foreground: 140 8% 90%;
-    --sidebar-primary: 152 40% 48%;
+    --sidebar-background: 150 35% 12%;
+    --sidebar-foreground: 45 15% 92%;
+    --sidebar-primary: 145 38% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 152 20% 20%;
-    --sidebar-accent-foreground: 140 8% 90%;
-    --sidebar-border: 152 15% 24%;
-    --sidebar-ring: 152 40% 48%;
+    --sidebar-accent: 150 25% 18%;
+    --sidebar-accent-foreground: 45 15% 92%;
+    --sidebar-border: 150 18% 22%;
+    --sidebar-ring: 145 38% 45%;
 
-    --scout-green: 152 45% 32%;
-    --scout-gold: 38 75% 50%;
-    --scout-brown: 25 35% 35%;
-    --scout-cream: 40 18% 94%;
+    --scout-green: 145 40% 28%;
+    --scout-gold: 35 70% 48%;
+    --scout-brown: 20 30% 32%;
+    --scout-cream: 45 22% 94%;
 
-    --gradient-hero: linear-gradient(135deg, hsl(152 60% 30%), hsl(152 45% 22%));
-    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
-    --shadow-card-hover: 0 10px 15px -3px rgb(0 0 0 / 0.06), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+    --gradient-hero: linear-gradient(135deg, hsl(145 50% 26%), hsl(150 40% 18%));
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.04);
+    --shadow-card-hover: 0 10px 20px -5px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
   }
 
   .dark {
