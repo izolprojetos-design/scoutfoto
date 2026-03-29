@@ -1045,9 +1045,20 @@ const Scouts = () => {
             <div className="relative">
               <img
                 src={viewingPhoto}
-                alt="Foto do jovem"
+                alt="Foto do integrante"
                 className="w-full h-auto rounded-lg object-contain max-h-[75vh]"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
+              <div className="hidden flex-col items-center justify-center py-16 text-muted-foreground">
+                <ImageIcon className="h-16 w-16 mb-3 opacity-40" />
+                <p className="text-sm font-medium">Foto não disponível</p>
+                <p className="text-xs mt-1">A imagem foi removida do armazenamento</p>
+              </div>
               <div className="flex justify-center mt-3 pb-2">
                 <Button
                   variant="outline"
@@ -1055,6 +1066,7 @@ const Scouts = () => {
                   onClick={async () => {
                     try {
                       const response = await fetch(viewingPhoto);
+                      if (!response.ok) throw new Error('Not found');
                       const blob = await response.blob();
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
@@ -1063,7 +1075,7 @@ const Scouts = () => {
                       a.click();
                       URL.revokeObjectURL(url);
                     } catch {
-                      toast.error('Erro ao baixar a foto');
+                      toast.error('Foto não disponível para download');
                     }
                   }}
                 >
