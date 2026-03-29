@@ -307,6 +307,38 @@ const Scouts = () => {
     }
   };
 
+  const renamePhotoInStorage = async (scoutId: string, newName: string, currentPhotoUrl: string): Promise<string | null> => {
+    try {
+      const idPrefix = scoutId.slice(0, 8);
+      // Build new filename
+      const ext = currentPhotoUrl.split('.').pop()?.split('?')[0] || 'jpg';
+      const safeName = newName
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_\-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      const newPath = `${safeName}_${idPrefix}.${ext}`;
+
+      // Find old file
+      const { data: files } = await supabase.storage.from('scout-photos').list('', { search: idPrefix });
+      const oldFile = files?.find(f => f.name.includes(idPrefix));
+      if (!oldFile || oldFile.name === newPath) return null; // already correct or not found
+
+      // Download old file, upload with new name, delete old
+      const { data: downloaded } = await supabase.storage.from('scout-photos').download(oldFile.name);
+      if (!downloaded) return null;
+
+      await supabase.storage.from('scout-photos').upload(newPath, downloaded, { upsert: true });
+      await supabase.storage.from('scout-photos').remove([oldFile.name]);
+
+      const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(newPath);
+      return `${publicUrl}?t=${Date.now()}`;
+    } catch (err) {
+      console.error('Error renaming photo in storage:', err);
+      return null;
+    }
+  };
+
   const handleEditScout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingScout) return;
@@ -316,6 +348,10 @@ const Scouts = () => {
     if (editPhoto) {
       const uploaded = await uploadPhoto(editingScout.id, editPhoto, editName);
       if (uploaded) photoUrl = uploaded;
+    } else if (photoUrl && editName !== editingScout.name) {
+      // Name changed but no new photo — rename file in storage
+      const renamed = await renamePhotoInStorage(editingScout.id, editName, photoUrl);
+      if (renamed) photoUrl = renamed;
     }
 
     const { error } = await supabase.from('scouts').update({
