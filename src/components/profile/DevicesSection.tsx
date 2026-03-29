@@ -102,6 +102,7 @@ const DevicesSection = () => {
   const logoutAllDevices = async () => {
     if (!user) return;
     setLoggingOutAll(true);
+    const otherDevices = devices.filter(d => d.device_fingerprint !== currentFingerprint);
     // Remove all devices except current
     await supabase
       .from('user_devices')
@@ -109,8 +110,14 @@ const DevicesSection = () => {
       .eq('user_id', user.id)
       .neq('device_fingerprint', currentFingerprint);
 
+    try {
+      await logAudit(user.id, 'logout_all_sessions', undefined, {
+        devices_removed: otherDevices.length,
+        devices: otherDevices.map(d => ({ name: d.device_name, browser: d.browser, os: d.os })),
+      });
+    } catch {}
+
     toast.success('Todas as outras sessões foram encerradas.');
-    // Global sign out will force re-auth on other devices
     await supabase.auth.signOut({ scope: 'global' });
   };
 
