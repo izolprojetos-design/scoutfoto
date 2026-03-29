@@ -1026,7 +1026,6 @@ const Scouts = () => {
             handleEditScout,
             editName, setEditName,
             editBirth, setEditBirth,
-            editGroup, setEditGroup,
             editNotes, setEditNotes,
             editPhotoPreview,
             handleEditPhotoSelect,
