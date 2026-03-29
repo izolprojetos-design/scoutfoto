@@ -104,6 +104,9 @@ const Scouts = () => {
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [scoutRegistrationId, setScoutRegistrationId] = useState('');
+  const [scoutPhone, setScoutPhone] = useState('');
+  const [scoutSection, setScoutSection] = useState('');
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
