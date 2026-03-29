@@ -44,7 +44,7 @@ interface AuditLog {
 
 interface Stats {
   totalImages: number;
-  eventBranchCounts: { name: string; count: number }[];
+  eventCounts: { name: string; count: number }[];
   memberBranchCounts: { name: string; count: number }[];
   recentUploads: number;
 }
