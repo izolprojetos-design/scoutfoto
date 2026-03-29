@@ -44,7 +44,8 @@ interface AuditLog {
 
 interface Stats {
   totalImages: number;
-  branchCounts: { name: string; count: number }[];
+  eventBranchCounts: { name: string; count: number }[];
+  memberBranchCounts: { name: string; count: number }[];
   recentUploads: number;
 }
 
@@ -59,7 +60,7 @@ const Admin = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalImages: 0, branchCounts: [], recentUploads: 0 });
+  const [stats, setStats] = useState<Stats>({ totalImages: 0, eventBranchCounts: [], memberBranchCounts: [], recentUploads: 0 });
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
@@ -188,17 +189,20 @@ const Admin = () => {
   const fetchStats = async () => {
     const { count: totalImages } = await supabase.from('images').select('*', { count: 'exact', head: true });
     const { data: branches } = await supabase.from('branches').select('id, display_name');
-    const branchCounts: { name: string; count: number }[] = [];
+    const eventBranchCounts: { name: string; count: number }[] = [];
+    const memberBranchCounts: { name: string; count: number }[] = [];
     if (branches) {
       for (const b of branches) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id);
-        branchCounts.push({ name: b.display_name, count: count || 0 });
+        const { count: eventCount } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).not('event_id', 'is', null);
+        eventBranchCounts.push({ name: b.display_name, count: eventCount || 0 });
+        const { count: memberCount } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).is('event_id', null);
+        memberBranchCounts.push({ name: b.display_name, count: memberCount || 0 });
       }
     }
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { count: recentUploads } = await supabase.from('images').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-    setStats({ totalImages: totalImages || 0, branchCounts, recentUploads: recentUploads || 0 });
+    setStats({ totalImages: totalImages || 0, eventBranchCounts, memberBranchCounts, recentUploads: recentUploads || 0 });
   };
 
   const fetchAuditLogs = async () => {
@@ -601,21 +605,54 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="stats">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle>Fotos por Ramo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats.branchCounts.map(bc => (
-                  <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                    <span className="font-medium">{bc.name}</span>
-                    <Badge variant="secondary">{bc.count} fotos</Badge>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-primary" />
+                  Fotos Eventos
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Fotos vinculadas a eventos</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {stats.eventBranchCounts.map(bc => (
+                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                      <span className="font-medium">{bc.name}</span>
+                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
+                    <span>Total</span>
+                    <Badge>{stats.eventBranchCounts.reduce((s, b) => s + b.count, 0)} fotos</Badge>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Fotos Integrantes
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Fotos não vinculadas a eventos</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {stats.memberBranchCounts.map(bc => (
+                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                      <span className="font-medium">{bc.name}</span>
+                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
+                    <span>Total</span>
+                    <Badge>{stats.memberBranchCounts.reduce((s, b) => s + b.count, 0)} fotos</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="audit">
