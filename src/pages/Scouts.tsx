@@ -520,7 +520,6 @@ const Scouts = () => {
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
     birth: string, setBirth: (v: string) => void,
-    group: string, setGroup: (v: string) => void,
     notes: string, setNotes: (v: string) => void,
     photoPreview: string | null,
     onPhotoSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
