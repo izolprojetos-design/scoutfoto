@@ -540,7 +540,7 @@ const Admin = () => {
                                 <SelectItem value="dirigente">Dirigente</SelectItem>
                                 <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                                 
-                                <SelectItem value="viewer">Viewer</SelectItem>
+                                <SelectItem value="viewer">Visitante</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>
