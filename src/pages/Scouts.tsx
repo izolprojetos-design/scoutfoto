@@ -809,6 +809,10 @@ const Scouts = () => {
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportCSV} disabled={filteredScouts.length === 0}>
+            <FileDown className="h-4 w-4" />
+            Exportar CSV
+          </Button>
         </div>
       </div>
 
