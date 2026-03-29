@@ -34,12 +34,36 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
   const loadImages = async () => {
     setLoading(true);
     try {
-      // Load scouts to map IDs to names
+      // Load scouts to map IDs and names
       const { data: scoutsData } = await supabase.from('scouts').select('id, name');
-      const scoutMap = new Map<string, string>();
+      const scoutIdMap = new Map<string, string>();
+      const scoutNames: string[] = [];
       scoutsData?.forEach(s => {
-        scoutMap.set(s.id, s.name);
+        scoutIdMap.set(s.id, s.name);
+        scoutNames.push(s.name);
       });
+
+      // Fuzzy match: normalize filename to compare with scout names
+      const normalizeName = (str: string) =>
+        str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z]/g, '');
+
+      const findScoutByFilename = (filename: string): string | undefined => {
+        const baseName = filename.split('.')[0];
+        // First try UUID match
+        const byId = scoutIdMap.get(baseName);
+        if (byId) return byId;
+        // Then try approximate name match
+        const normalized = normalizeName(baseName);
+        for (const name of scoutNames) {
+          if (normalizeName(name) === normalized) return name;
+        }
+        // Partial match: check if normalized filename contains a scout name or vice versa
+        for (const name of scoutNames) {
+          const nn = normalizeName(name);
+          if (normalized.includes(nn) || nn.includes(normalized)) return name;
+        }
+        return undefined;
+      };
 
       // List files from scout-photos bucket
       const { data: scoutPhotos } = await supabase.storage.from('scout-photos').list('', {
@@ -54,8 +78,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
           // Skip folders (like 'avatars') and hidden files
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
           const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
-          const scoutId = file.name.split('.')[0];
-          items.push({ name: file.name, url: publicUrl, scoutName: scoutMap.get(scoutId) });
+          items.push({ name: file.name, url: publicUrl, scoutName: findScoutByFilename(file.name) });
         }
       }
 
