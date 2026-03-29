@@ -427,16 +427,31 @@ const Scouts = () => {
         <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
         <input id={`${photoInputId}-camera`} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhotoSelect} />
         <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
-        >
-          <Camera className="h-4 w-4" />
-          Tirar Foto com Câmera
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
+          >
+            <Camera className="h-4 w-4" />
+            Câmera
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              setCloudPickerTarget(formTarget);
+              setCloudPickerOpen(true);
+            }}
+          >
+            <Cloud className="h-4 w-4" />
+            Galeria da Nuvem
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2">
