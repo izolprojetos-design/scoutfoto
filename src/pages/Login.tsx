@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Loader2, Shield, Camera, Users, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { motion } from 'framer-motion';
 
 const Login = () => {
