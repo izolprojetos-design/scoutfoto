@@ -5,6 +5,7 @@ import AppLayout from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { logAudit } from '@/lib/auditLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -311,11 +312,18 @@ const Profile = () => {
                 if (error) {
                   toast.error('Erro ao alterar senha: ' + error.message);
                 } else {
+                  try {
+                    await logAudit(user!.id, 'session_revoked_password_change', undefined, {
+                      email: profile?.email,
+                    });
+                    await logAudit(user!.id, 'password_changed', undefined, {
+                      email: profile?.email,
+                    });
+                  } catch {}
                   toast.success('Senha alterada! Todas as sessões foram encerradas. Faça login novamente.');
                   setCurrentPassword('');
                   setNewPassword('');
                   setConfirmNewPassword('');
-                  // Revoke all sessions after password change
                   setTimeout(() => {
                     supabase.auth.signOut({ scope: 'global' });
                   }, 2000);

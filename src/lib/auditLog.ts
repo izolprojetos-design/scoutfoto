@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-export type AuditAction = 'upload' | 'view' | 'download' | 'edit' | 'delete' | 'login' | 'login_failed' | 'password_changed' | 'password_reset' | 'account_locked';
+export type AuditAction = 'upload' | 'view' | 'download' | 'edit' | 'delete' | 'login' | 'login_failed' | 'password_changed' | 'password_reset' | 'account_locked' | 'logout_all_sessions' | 'remote_device_removed' | 'session_revoked_password_change';
 
 export const logAudit = async (
   userId: string,

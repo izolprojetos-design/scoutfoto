@@ -9,6 +9,7 @@ import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck, LogOut } fro
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getDeviceFingerprint } from '@/lib/deviceDetection';
+import { logAudit } from '@/lib/auditLog';
 
 interface Device {
   id: string;
@@ -62,8 +63,16 @@ const DevicesSection = () => {
     if (error) {
       toast.error('Erro ao remover dispositivo');
     } else {
+      const removed = devices.find(d => d.id === deviceId);
       toast.success('Dispositivo removido');
       setDevices(prev => prev.filter(d => d.id !== deviceId));
+      try {
+        await logAudit(user!.id, 'remote_device_removed', undefined, {
+          device_name: removed?.device_name,
+          browser: removed?.browser,
+          os: removed?.os,
+        });
+      } catch {}
     }
     setRemoving(null);
   };
@@ -93,6 +102,7 @@ const DevicesSection = () => {
   const logoutAllDevices = async () => {
     if (!user) return;
     setLoggingOutAll(true);
+    const otherDevices = devices.filter(d => d.device_fingerprint !== currentFingerprint);
     // Remove all devices except current
     await supabase
       .from('user_devices')
@@ -100,8 +110,14 @@ const DevicesSection = () => {
       .eq('user_id', user.id)
       .neq('device_fingerprint', currentFingerprint);
 
+    try {
+      await logAudit(user.id, 'logout_all_sessions', undefined, {
+        devices_removed: otherDevices.length,
+        devices: otherDevices.map(d => ({ name: d.device_name, browser: d.browser, os: d.os })),
+      });
+    } catch {}
+
     toast.success('Todas as outras sessões foram encerradas.');
-    // Global sign out will force re-auth on other devices
     await supabase.auth.signOut({ scope: 'global' });
   };
 
