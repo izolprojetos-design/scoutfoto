@@ -222,10 +222,24 @@ const Scouts = () => {
       }
     }
 
+    // Save inline guardian if minor and guardian name provided
+    if (data && inlineGuardianName.trim()) {
+      await supabase.from('guardians').insert({
+        name: inlineGuardianName,
+        email: inlineGuardianEmail,
+        phone: inlineGuardianPhone,
+        scout_id: data.id,
+        image_authorization: inlineGuardianAuth,
+        authorization_date: inlineGuardianAuth ? new Date().toISOString() : null,
+        created_by: user.id,
+      });
+    }
+
     toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
+    setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
   };
