@@ -16,13 +16,15 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error('E-mail ou senha incorretos. Por favor, tente novamente.');
+      setLoginError('E-mail ou senha incorretos. Por favor, tente novamente.');
     } else {
       navigate('/dashboard');
     }
