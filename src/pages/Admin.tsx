@@ -189,17 +189,20 @@ const Admin = () => {
   const fetchStats = async () => {
     const { count: totalImages } = await supabase.from('images').select('*', { count: 'exact', head: true });
     const { data: branches } = await supabase.from('branches').select('id, display_name');
-    const branchCounts: { name: string; count: number }[] = [];
+    const eventBranchCounts: { name: string; count: number }[] = [];
+    const memberBranchCounts: { name: string; count: number }[] = [];
     if (branches) {
       for (const b of branches) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id);
-        branchCounts.push({ name: b.display_name, count: count || 0 });
+        const { count: eventCount } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).not('event_id', 'is', null);
+        eventBranchCounts.push({ name: b.display_name, count: eventCount || 0 });
+        const { count: memberCount } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).is('event_id', null);
+        memberBranchCounts.push({ name: b.display_name, count: memberCount || 0 });
       }
     }
     const weekAgo = new Date();
     weekAgo.setDate(weekAgo.getDate() - 7);
     const { count: recentUploads } = await supabase.from('images').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-    setStats({ totalImages: totalImages || 0, branchCounts, recentUploads: recentUploads || 0 });
+    setStats({ totalImages: totalImages || 0, eventBranchCounts, memberBranchCounts, recentUploads: recentUploads || 0 });
   };
 
   const fetchAuditLogs = async () => {
