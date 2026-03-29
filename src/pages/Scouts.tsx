@@ -247,7 +247,7 @@ const Scouts = () => {
     }
 
     if (scoutPhoto && data) {
-      const photoUrl = await uploadPhoto(data.id, scoutPhoto);
+      const photoUrl = await uploadPhoto(data.id, scoutPhoto, scoutName);
       if (photoUrl) {
         await supabase.from('scouts').update({ photo_url: photoUrl }).eq('id', data.id);
       }
