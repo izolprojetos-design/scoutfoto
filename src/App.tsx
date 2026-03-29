@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useCallback } from "react";
+import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -46,6 +47,10 @@ const isStandalone = window.matchMedia("(display-mode: standalone)").matches
 const App = () => {
   const [splashDone, setSplashDone] = useState(!isStandalone);
   const handleSplashFinished = useCallback(() => setSplashDone(true), []);
+
+  // Auto-update: detect new versions and reload
+  useAppUpdate();
+  usePeriodicUpdateCheck(5 * 60 * 1000); // check every 5 min
 
   return (
     <>
