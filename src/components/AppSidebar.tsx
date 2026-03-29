@@ -3,14 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, ChevronUp, Sun, Moon } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import {
@@ -132,40 +125,36 @@ const AppSidebar = () => {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton size="lg" className="w-full">
-                  <Avatar className="h-7 w-7 shrink-0">
-                    <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  {!collapsed && (
-                    <div className="flex flex-1 flex-col items-start text-left leading-tight">
-                      <span className="text-sm font-medium truncate max-w-[140px]">{profile?.name}</span>
-                      <span className="text-xs text-sidebar-foreground/60">{roleLabel[primaryRole]}</span>
-                    </div>
-                  )}
-                  {!collapsed && <ChevronUp className="ml-auto h-4 w-4 text-sidebar-foreground/60" />}
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent side="top" align="start" className="w-56">
-                <div className="px-2 py-2">
-                  <p className="text-sm font-medium">{profile?.name}</p>
-                  <p className="text-xs text-muted-foreground">{profile?.email}</p>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem className="gap-2" onClick={() => navigate('/profile')}>
-                  <User className="h-4 w-4" />
-                  Perfil
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut} className="gap-2 text-destructive focus:text-destructive">
-                  <LogOut className="h-4 w-4" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton
+              asChild
+              tooltip="Perfil"
+              onClick={() => navigate('/profile')}
+            >
+              <button className="flex items-center gap-2 w-full">
+                <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                {!collapsed && (
+                  <div className="flex flex-1 flex-col items-start text-left leading-tight">
+                    <span className="text-sm font-medium truncate max-w-[140px]">{profile?.name}</span>
+                    <span className="text-xs text-sidebar-foreground/60">{roleLabel[primaryRole]}</span>
+                  </div>
+                )}
+              </button>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              size="sm"
+              onClick={handleSignOut}
+              tooltip="Sair"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span>Sair</span>}
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
