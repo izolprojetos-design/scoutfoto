@@ -999,6 +999,9 @@ const Scouts = () => {
             editBranch, setEditBranch,
             editSubgroup, setEditSubgroup,
             'edit',
+            editRegistrationId, setEditRegistrationId,
+            editPhone, setEditPhone,
+            editSection, setEditSection,
           )}
         </DialogContent>
       </Dialog>
