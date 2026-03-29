@@ -475,7 +475,7 @@ const Admin = () => {
                               <SelectItem value="dirigente">Dirigente</SelectItem>
                               <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
                               
-                              <SelectItem value="viewer">Visualizador</SelectItem>
+                              <SelectItem value="viewer">Visitante</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
