@@ -520,6 +520,32 @@ const Scouts = () => {
         <Label>Observações</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas adicionais..." />
       </div>
+      {isMinor && guardianFields && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-primary" />
+            <Label className="text-sm font-semibold text-primary">Responsável (menor de idade)</Label>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Nome do responsável *</Label>
+            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value)} placeholder="Nome completo do responsável" className="h-10" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs">E-mail</Label>
+              <Input type="email" value={guardianFields.email} onChange={e => guardianFields.setEmail(e.target.value)} placeholder="email@exemplo.com" className="h-10" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Telefone</Label>
+              <Input value={guardianFields.phone} onChange={e => guardianFields.setPhone(e.target.value)} placeholder="(00) 00000-0000" className="h-10" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="inline-guardian-auth" checked={guardianFields.auth} onChange={e => guardianFields.setAuth(e.target.checked)} className="rounded border-input" />
+            <Label htmlFor="inline-guardian-auth" className="text-xs cursor-pointer">Autorização de imagem concedida</Label>
+          </div>
+        </div>
+      )}
       <Button type="submit" className="w-full h-11 font-semibold" disabled={isUploading}>
         {isUploading ? 'Salvando...' : submitLabel}
       </Button>
