@@ -383,7 +383,7 @@ const Admin = () => {
           <CardContent className="flex flex-col items-center p-4">
             <ImageIcon className="mb-1 h-6 w-6 text-primary" />
             <p className="text-2xl font-bold">{stats.totalImages}</p>
-            <p className="text-xs text-muted-foreground">Total de fotos</p>
+            <p className="text-xs text-muted-foreground">Total de {stats.totalImages === 1 ? 'foto' : 'fotos'}</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
