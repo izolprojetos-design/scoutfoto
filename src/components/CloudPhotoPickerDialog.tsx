@@ -16,6 +16,7 @@ interface CloudPhotoPickerDialogProps {
 interface StorageImage {
   name: string;
   url: string;
+  scoutName?: string;
 }
 
 const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDialogProps) => {
