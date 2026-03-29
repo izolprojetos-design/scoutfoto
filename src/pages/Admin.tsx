@@ -514,7 +514,7 @@ const Admin = () => {
                           </button>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell><Badge variant={roleBadgeVariant(u.role)}>{u.role}</Badge></TableCell>
+                        <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', chefe: 'Chefe', dirigente: 'Dirigente', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
                           {(() => {
                             const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
