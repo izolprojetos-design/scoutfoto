@@ -314,7 +314,7 @@ const Scouts = () => {
 
     let photoUrl = editingScout.photo_url;
     if (editPhoto) {
-      const uploaded = await uploadPhoto(editingScout.id, editPhoto);
+      const uploaded = await uploadPhoto(editingScout.id, editPhoto, editName);
       if (uploaded) photoUrl = uploaded;
     }
 
