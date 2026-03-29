@@ -899,6 +899,17 @@ const Scouts = () => {
         onCropComplete={handleCropComplete}
       />
 
+      <CloudPhotoPickerDialog
+        open={cloudPickerOpen}
+        onClose={() => setCloudPickerOpen(false)}
+        onSelect={(file) => {
+          setCropperImage(URL.createObjectURL(file));
+          setCropperTarget(cloudPickerTarget);
+          setCropperOpen(true);
+          setCloudPickerOpen(false);
+        }}
+      />
+
       {/* Scout detail viewer dialog */}
       <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
         <DialogContent className="max-w-md">
