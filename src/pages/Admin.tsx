@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, ImageIcon, Activity, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
@@ -42,12 +42,6 @@ interface AuditLog {
   details: Record<string, unknown>;
 }
 
-interface Stats {
-  totalImages: number;
-  eventCounts: { name: string; count: number }[];
-  memberBranchCounts: { name: string; count: number }[];
-  recentUploads: number;
-}
 
 interface Subgroup {
   id: string;
@@ -60,7 +54,7 @@ const Admin = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalImages: 0, eventCounts: [], memberBranchCounts: [], recentUploads: 0 });
+  
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
@@ -186,35 +180,6 @@ const Admin = () => {
     setLoading(false);
   };
 
-  const fetchStats = async () => {
-    const { count: totalImages } = await supabase.from('images').select('*', { count: 'exact', head: true });
-
-    // Fotos por Evento (vinculadas a eventos)
-    const { data: events } = await supabase.from('events').select('id, name');
-    const eventCounts: { name: string; count: number }[] = [];
-    if (events) {
-      for (const ev of events) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('event_id', ev.id);
-        eventCounts.push({ name: ev.name, count: count || 0 });
-      }
-      eventCounts.sort((a, b) => b.count - a.count);
-    }
-
-    // Fotos por Ramo (vinculadas a integrantes, sem evento)
-    const { data: branches } = await supabase.from('branches').select('id, display_name');
-    const memberBranchCounts: { name: string; count: number }[] = [];
-    if (branches) {
-      for (const b of branches) {
-        const { count } = await supabase.from('images').select('*', { count: 'exact', head: true }).eq('branch_id', b.id).is('event_id', null);
-        memberBranchCounts.push({ name: b.display_name, count: count || 0 });
-      }
-    }
-
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    const { count: recentUploads } = await supabase.from('images').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo.toISOString());
-    setStats({ totalImages: totalImages || 0, eventCounts, memberBranchCounts, recentUploads: recentUploads || 0 });
-  };
 
   const fetchAuditLogs = async () => {
     const { data } = await supabase
@@ -227,7 +192,7 @@ const Admin = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchStats();
+    
     fetchAuditLogs();
     fetchSubgroups();
   }, []);
@@ -389,14 +354,7 @@ const Admin = () => {
       </div>
 
       {/* Stats */}
-      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="border-0 shadow-md">
-          <CardContent className="flex flex-col items-center p-4">
-            <ImageIcon className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{stats.totalImages}</p>
-            <p className="text-xs text-muted-foreground">Total de {stats.totalImages === 1 ? 'foto' : 'fotos'}</p>
-          </CardContent>
-        </Card>
+      <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-3">
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
             <Users className="mb-1 h-6 w-6 text-primary" />
@@ -406,16 +364,16 @@ const Admin = () => {
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
-            <Activity className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{stats.recentUploads}</p>
-            <p className="text-xs text-muted-foreground">Uploads (7 dias)</p>
+            <Shield className="mb-1 h-6 w-6 text-primary" />
+            <p className="text-2xl font-bold">{auditLogs.length}</p>
+            <p className="text-xs text-muted-foreground">Logs de auditoria</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-md">
           <CardContent className="flex flex-col items-center p-4">
-            <Shield className="mb-1 h-6 w-6 text-primary" />
-            <p className="text-2xl font-bold">{auditLogs.length}</p>
-            <p className="text-xs text-muted-foreground">Logs de auditoria</p>
+            <FolderTree className="mb-1 h-6 w-6 text-primary" />
+            <p className="text-2xl font-bold">{subgroups.length}</p>
+            <p className="text-xs text-muted-foreground">Subgrupos</p>
           </CardContent>
         </Card>
       </div>
@@ -424,7 +382,7 @@ const Admin = () => {
         <TabsList className="mb-4 bg-muted/60">
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
-          <TabsTrigger value="stats" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Estatísticas</TabsTrigger>
+          
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
           <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Subgrupos</TabsTrigger>
         </TabsList>
@@ -615,62 +573,6 @@ const Admin = () => {
           <PermissionsManager />
         </TabsContent>
 
-        <TabsContent value="stats">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-primary" />
-                  Fotos Eventos
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">Fotos vinculadas a cada evento</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.eventCounts.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento cadastrado</p>
-                  ) : (
-                    <>
-                      {stats.eventCounts.map(ec => (
-                        <div key={ec.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                          <span className="font-medium text-sm">{ec.name}</span>
-                          <Badge variant="secondary">{ec.count} {ec.count === 1 ? 'foto' : 'fotos'}</Badge>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
-                        <span>Total</span>
-                        <Badge>{(() => { const t = stats.eventCounts.reduce((s, b) => s + b.count, 0); return `${t} ${t === 1 ? 'foto' : 'fotos'}`; })()}</Badge>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  Fotos Integrantes
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">Fotos vinculadas a integrantes (por ramo)</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.memberBranchCounts.map(bc => (
-                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                      <span className="font-medium">{bc.name}</span>
-                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
-                    <span>Total</span>
-                    <Badge>{(() => { const t = stats.memberBranchCounts.reduce((s, b) => s + b.count, 0); return `${t} ${t === 1 ? 'foto' : 'fotos'}`; })()}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         <TabsContent value="audit">
           <ActivityLogsViewer />
