@@ -370,9 +370,10 @@ const Dashboard = () => {
                       <h3 className="text-lg font-semibold tracking-tight">{branch.display_name}</h3>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
                         <Users className="h-3.5 w-3.5" />
-                        <span>
-                          {scouts.filter(s => getEffectiveBranchKey(s)?.key === branch.key).length} {scouts.filter(s => getEffectiveBranchKey(s)?.key === branch.key).length === 1 ? 'integrante' : 'integrantes'}
-                        </span>
+                        {(() => {
+                          const count = scouts.filter(s => scoutBranchMap.get(s.id)?.key === branch.key).length;
+                          return <span>{count} {count === 1 ? 'integrante' : 'integrantes'}</span>;
+                        })()}
                       </div>
                     </div>
                   </div>
