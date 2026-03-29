@@ -391,6 +391,12 @@ const Scouts = () => {
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
+    guardianFields?: {
+      name: string; setName: (v: string) => void;
+      email: string; setEmail: (v: string) => void;
+      phone: string; setPhone: (v: string) => void;
+      auth: boolean; setAuth: (v: boolean) => void;
+    },
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
