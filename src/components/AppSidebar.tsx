@@ -59,7 +59,7 @@ const AppSidebar = () => {
   const roleLabel: Record<string, string> = {
     admin: 'Administrador',
     chefe: 'Chefe Escoteiro',
-    viewer: 'Visualizador',
+    viewer: 'Visitante',
     parent: 'Pai/Mãe',
   };
 

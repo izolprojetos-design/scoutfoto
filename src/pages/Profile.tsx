@@ -16,7 +16,7 @@ const roleLabel: Record<string, string> = {
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
   
-  viewer: 'Visualizador',
+  viewer: 'Visitante',
 };
 
 const Profile = () => {
