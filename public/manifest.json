@@ -4,8 +4,8 @@
   "description": "Sistema profissional de banco de imagens para grupos escoteiros",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#f7f5f0",
-  "theme_color": "#1f7a4a",
+  "background_color": "#14532d",
+  "theme_color": "#14532d",
   "orientation": "any",
   "icons": [
     {
