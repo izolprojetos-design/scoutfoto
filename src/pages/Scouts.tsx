@@ -971,11 +971,7 @@ const Scouts = () => {
                         alt={viewingScout.name}
                         className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
                         onClick={() => setViewingPhoto(viewingScout.photo_url)}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
+                        onError={(e) => handleBrokenPhoto(viewingScout.id, e.currentTarget)}
                       />
                       <div className="hidden h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
                         {branch?.icon || '⚜️'}
