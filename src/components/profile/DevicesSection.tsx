@@ -9,6 +9,7 @@ import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck, LogOut } fro
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getDeviceFingerprint } from '@/lib/deviceDetection';
+import { logAudit } from '@/lib/auditLog';
 
 interface Device {
   id: string;
