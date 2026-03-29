@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,6 +24,7 @@ import {
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
+import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 
 interface Scout {
   id: string;
@@ -105,6 +106,10 @@ const Scouts = () => {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
+
+  // Cloud picker state
+  const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
+  const [cloudPickerTarget, setCloudPickerTarget] = useState<'new' | 'edit'>('new');
 
   // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
@@ -391,6 +396,7 @@ const Scouts = () => {
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
+    formTarget: 'new' | 'edit',
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
@@ -421,16 +427,31 @@ const Scouts = () => {
         <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
         <input id={`${photoInputId}-camera`} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhotoSelect} />
         <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
-        >
-          <Camera className="h-4 w-4" />
-          Tirar Foto com Câmera
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
+          >
+            <Camera className="h-4 w-4" />
+            Câmera
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              setCloudPickerTarget(formTarget);
+              setCloudPickerOpen(true);
+            }}
+          >
+            <Cloud className="h-4 w-4" />
+            Galeria da Nuvem
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-2">
@@ -584,6 +605,7 @@ const Scouts = () => {
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
+                'new',
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
@@ -827,6 +849,7 @@ const Scouts = () => {
             'scout-photo-edit',
             editBranch, setEditBranch,
             editSubgroup, setEditSubgroup,
+            'edit',
           )}
         </DialogContent>
       </Dialog>
@@ -874,6 +897,17 @@ const Scouts = () => {
         imageSrc={cropperImage}
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCropComplete}
+      />
+
+      <CloudPhotoPickerDialog
+        open={cloudPickerOpen}
+        onClose={() => setCloudPickerOpen(false)}
+        onSelect={(file) => {
+          setCropperImage(URL.createObjectURL(file));
+          setCropperTarget(cloudPickerTarget);
+          setCropperOpen(true);
+          setCloudPickerOpen(false);
+        }}
       />
 
       {/* Scout detail viewer dialog */}
