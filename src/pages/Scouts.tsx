@@ -497,6 +497,9 @@ const Scouts = () => {
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
     formTarget: 'new' | 'edit',
+    registrationId: string, setRegistrationId: (v: string) => void,
+    phoneVal: string, setPhoneVal: (v: string) => void,
+    sectionVal: string, setSectionVal: (v: string) => void,
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
