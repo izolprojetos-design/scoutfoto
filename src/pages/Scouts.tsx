@@ -378,6 +378,9 @@ const Scouts = () => {
       photo_url: photoUrl,
       manual_branch: editBranch !== 'auto' ? editBranch : null,
       subgroup_id: editSubgroup !== 'none' ? editSubgroup : null,
+      registration_id: editRegistrationId,
+      phone: editPhone,
+      section: editSection,
     }).eq('id', editingScout.id);
 
     if (error) {
