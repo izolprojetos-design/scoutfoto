@@ -691,20 +691,22 @@ const Scouts = () => {
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
                       {scout.photo_url ? (
-                        <img
-                          src={scout.photo_url}
-                          alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
-                          onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                            if (fallback) fallback.style.display = 'flex';
-                          }}
-                        />
-                        <div className="hidden h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                          {branch?.icon || '⚜️'}
-                        </div>
+                        <>
+                          <img
+                            src={scout.photo_url}
+                            alt={scout.name}
+                            className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
+                            onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                              if (fallback) fallback.style.display = 'flex';
+                            }}
+                          />
+                          <div className="hidden h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
+                            {branch?.icon || '⚜️'}
+                          </div>
+                        </>
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
                           {branch?.icon || '⚜️'}
