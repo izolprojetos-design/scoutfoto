@@ -107,6 +107,10 @@ const Scouts = () => {
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
 
+  // Cloud picker state
+  const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
+  const [cloudPickerTarget, setCloudPickerTarget] = useState<'new' | 'edit'>('new');
+
   // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
