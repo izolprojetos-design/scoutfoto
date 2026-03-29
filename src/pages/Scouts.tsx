@@ -125,8 +125,18 @@ const Scouts = () => {
   const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
 
+  // Auto-clear broken photo URLs from the database
+  const clearedPhotoIds = React.useRef(new Set<string>());
+  const handleBrokenPhoto = async (scoutId: string, imgEl: HTMLImageElement) => {
+    imgEl.style.display = 'none';
+    const fallback = imgEl.nextElementSibling as HTMLElement;
+    if (fallback) fallback.style.display = 'flex';
+    if (clearedPhotoIds.current.has(scoutId)) return;
+    clearedPhotoIds.current.add(scoutId);
+    await supabase.from('scouts').update({ photo_url: null }).eq('id', scoutId);
+    setScouts(prev => prev.map(s => s.id === scoutId ? { ...s, photo_url: null } : s));
+  };
 
-  const fetchData = async () => {
     const [{ data: scoutData }, { data: guardianData }, { data: subgroupData }] = await Promise.all([
       supabase.from('scouts').select('*').order('name'),
       supabase.from('guardians').select('*'),
