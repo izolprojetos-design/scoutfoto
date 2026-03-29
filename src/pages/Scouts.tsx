@@ -36,6 +36,9 @@ interface Scout {
   created_at: string;
   manual_branch: string | null;
   subgroup_id: string | null;
+  registration_id: string;
+  phone: string;
+  section: string;
 }
 
 interface Subgroup {
