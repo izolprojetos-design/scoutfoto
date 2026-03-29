@@ -58,6 +58,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRoles(data?.map(r => r.role) || []);
   };
 
+  // Inactivity timeout: 30 minutes
+  useEffect(() => {
+    if (!user) return;
+
+    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
+    let timer: ReturnType<typeof setTimeout>;
+
+    const resetTimer = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        supabase.auth.signOut();
+      }, INACTIVITY_LIMIT);
+    };
+
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
+    events.forEach(ev => window.addEventListener(ev, resetTimer));
+    resetTimer();
+
+    return () => {
+      clearTimeout(timer);
+      events.forEach(ev => window.removeEventListener(ev, resetTimer));
+    };
+  }, [user]);
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
