@@ -78,7 +78,7 @@ const Login = () => {
           </div>
 
           <p className="text-sm text-white/50">
-            © {new Date().getFullYear()} ScoutFoto — Feito com ❤️ para o escotismo
+            © {new Date().getFullYear()} ScoutFoto — Sempre Alerta!
           </p>
         </div>
 
