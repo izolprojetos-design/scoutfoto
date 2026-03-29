@@ -192,7 +192,7 @@ const Admin = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchStats();
+    
     fetchAuditLogs();
     fetchSubgroups();
   }, []);
