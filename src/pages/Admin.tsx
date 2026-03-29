@@ -539,7 +539,7 @@ const Admin = () => {
                                 <SelectItem value="chefe">Chefe</SelectItem>
                                 <SelectItem value="dirigente">Dirigente</SelectItem>
                                 <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
-                                
+                                <SelectItem value="parent">Pai/Mãe</SelectItem>
                                 <SelectItem value="viewer">Visitante</SelectItem>
                               </SelectContent>
                             </Select>
