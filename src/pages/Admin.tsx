@@ -777,6 +777,77 @@ const Admin = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="maintenance">
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Wrench className="h-5 w-5" />
+                Manutenção
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Broken Photos Cleanup */}
+              <div className="rounded-lg border p-4 space-y-4">
+                <div className="flex items-start gap-3">
+                  <ImageOff className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">Fotos de Integrantes Órfãs</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Detecta e limpa URLs de fotos que apontam para arquivos removidos do armazenamento.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleScanBrokenPhotos}
+                    disabled={cleaningPhotos}
+                    variant="outline"
+                    className="gap-2"
+                  >
+                    {cleaningPhotos ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                    Verificar
+                  </Button>
+                </div>
+
+                {photoScanDone && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-md border bg-muted/30 p-3"
+                  >
+                    {brokenPhotos.length === 0 ? (
+                      <p className="text-sm text-muted-foreground text-center py-2">
+                        ✅ Nenhuma foto órfã encontrada. Tudo limpo!
+                      </p>
+                    ) : (
+                      <div className="space-y-3">
+                        <p className="text-sm font-medium">
+                          Encontrada(s) <span className="text-destructive font-bold">{brokenPhotos.length}</span> foto(s) com URL inválida:
+                        </p>
+                        <div className="max-h-48 overflow-auto space-y-1">
+                          {brokenPhotos.map((bp) => (
+                            <div key={bp.id} className="flex items-center gap-2 text-sm py-1 px-2 rounded bg-background">
+                              <ImageOff className="h-3.5 w-3.5 text-destructive shrink-0" />
+                              <span className="truncate">{bp.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <Button
+                          onClick={handleCleanBrokenPhotos}
+                          disabled={cleaningPhotos}
+                          variant="destructive"
+                          className="w-full gap-2"
+                        >
+                          {cleaningPhotos ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                          Limpar {brokenPhotos.length} URL(s) inválida(s)
+                        </Button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       {/* Reset Password Dialog */}
