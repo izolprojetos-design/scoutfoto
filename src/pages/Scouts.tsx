@@ -580,6 +580,16 @@ const Scouts = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>ID do Associado</Label>
+          <Input value={registrationId} onChange={e => setRegistrationId(e.target.value)} placeholder="Nº de registro" className="h-11" />
+        </div>
+        <div className="space-y-2">
+          <Label>Celular</Label>
+          <Input value={phoneVal} onChange={e => setPhoneVal(e.target.value)} placeholder="(00) 00000-0000" className="h-11" />
+        </div>
+      </div>
       <div className="space-y-2">
         <Label>Nome completo *</Label>
         <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
@@ -593,6 +603,10 @@ const Scouts = () => {
           <Label>Grupo escoteiro</Label>
           <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 12º GEMC" className="h-11" />
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Seção</Label>
+        <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
       </div>
       <div className="space-y-2">
         <Label>Ramo</Label>
