@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { logAudit } from '@/lib/auditLog';
+import { checkAndRegisterDevice } from '@/lib/deviceDetection';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
