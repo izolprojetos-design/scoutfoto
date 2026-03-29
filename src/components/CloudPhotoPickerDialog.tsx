@@ -98,9 +98,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
     setConfirming(false);
   };
 
-  const filtered = images.filter(img =>
-    img.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = images.filter(img => {
+    const q = search.toLowerCase();
+    return img.name.toLowerCase().includes(q) || (img.scoutName?.toLowerCase().includes(q) ?? false);
+  });
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
