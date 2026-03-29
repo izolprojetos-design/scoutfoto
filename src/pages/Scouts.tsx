@@ -201,9 +201,24 @@ const Scouts = () => {
     setCropperOpen(false);
   };
 
-  const uploadPhoto = async (scoutId: string, photo: File): Promise<string | null> => {
-    const ext = photo.name.split('.').pop();
-    const path = `${scoutId}.${ext}`;
+  const uploadPhoto = async (scoutId: string, photo: File, scoutNameForFile?: string): Promise<string | null> => {
+    const ext = photo.name.split('.').pop() || 'jpg';
+    // Use scout name as filename: normalize accents, replace spaces with underscores
+    const safeName = (scoutNameForFile || scoutId)
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_\-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '');
+    const path = `${safeName}_${scoutId.slice(0, 8)}.${ext}`;
+    // Remove old file if exists (different name pattern)
+    const { data: existingFiles } = await supabase.storage.from('scout-photos').list('', { search: scoutId.slice(0, 8) });
+    if (existingFiles) {
+      for (const f of existingFiles) {
+        if (f.name.includes(scoutId.slice(0, 8)) && f.name !== path) {
+          await supabase.storage.from('scout-photos').remove([f.name]);
+        }
+      }
+    }
     const { error } = await supabase.storage.from('scout-photos').upload(path, photo, { upsert: true });
     if (error) { console.error('Upload error:', error); return null; }
     const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
