@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import AppLayout from '@/components/AppLayout';
@@ -125,6 +125,17 @@ const Scouts = () => {
   const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
 
+  // Auto-clear broken photo URLs from the database
+  const clearedPhotoIds = useRef(new Set<string>());
+  const handleBrokenPhoto = async (scoutId: string, imgEl: HTMLImageElement) => {
+    imgEl.style.display = 'none';
+    const fallback = imgEl.nextElementSibling as HTMLElement;
+    if (fallback) fallback.style.display = 'flex';
+    if (clearedPhotoIds.current.has(scoutId)) return;
+    clearedPhotoIds.current.add(scoutId);
+    await supabase.from('scouts').update({ photo_url: null }).eq('id', scoutId);
+    setScouts(prev => prev.map(s => s.id === scoutId ? { ...s, photo_url: null } : s));
+  };
 
   const fetchData = async () => {
     const [{ data: scoutData }, { data: guardianData }, { data: subgroupData }] = await Promise.all([
@@ -697,11 +708,7 @@ const Scouts = () => {
                             alt={scout.name}
                             className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
                             onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
-                            onError={(e) => {
-                              e.currentTarget.style.display = 'none';
-                              const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                              if (fallback) fallback.style.display = 'flex';
-                            }}
+                            onError={(e) => handleBrokenPhoto(scout.id, e.currentTarget)}
                           />
                           <div className="hidden h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
                             {branch?.icon || '⚜️'}
@@ -964,11 +971,7 @@ const Scouts = () => {
                         alt={viewingScout.name}
                         className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
                         onClick={() => setViewingPhoto(viewingScout.photo_url)}
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                          const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                          if (fallback) fallback.style.display = 'flex';
-                        }}
+                        onError={(e) => handleBrokenPhoto(viewingScout.id, e.currentTarget)}
                       />
                       <div className="hidden h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
                         {branch?.icon || '⚜️'}
