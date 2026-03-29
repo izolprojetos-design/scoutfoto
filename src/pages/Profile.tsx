@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucide-react';
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
+import DevicesSection from '@/components/profile/DevicesSection';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
@@ -325,6 +326,9 @@ const Profile = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Connected Devices */}
+        <DevicesSection />
       </div>
     </AppLayout>
   );
