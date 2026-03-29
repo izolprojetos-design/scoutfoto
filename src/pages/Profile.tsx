@@ -326,6 +326,9 @@ const Profile = () => {
             </Button>
           </CardContent>
         </Card>
+
+        {/* Connected Devices */}
+        <DevicesSection />
       </div>
     </AppLayout>
   );

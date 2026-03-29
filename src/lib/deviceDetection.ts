@@ -55,7 +55,7 @@ export const getDeviceFingerprint = (): string => {
 export const getDeviceInfo = (): DeviceInfo => {
   const ua = navigator.userAgent;
   return {
-    fingerprint: generateFingerprint(),
+    fingerprint: getDeviceFingerprint(),
     deviceName: getDeviceName(ua),
     browser: getBrowser(ua),
     os: getOS(ua),
