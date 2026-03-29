@@ -26,6 +26,7 @@ const DevicesSection = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [loggingOutAll, setLoggingOutAll] = useState(false);
   const [currentFingerprint, setCurrentFingerprint] = useState('');
 
   useEffect(() => {
