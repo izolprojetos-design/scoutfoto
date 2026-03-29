@@ -7,6 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { ShieldAlert, Loader2, Eye, EyeOff } from 'lucide-react';
+import { validatePassword } from '@/lib/passwordValidation';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
 const ForceChangePassword = () => {
   const { profile, user } = useAuth();
@@ -17,10 +19,11 @@ const ForceChangePassword = () => {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const mustChange = profile?.must_change_password === true;
+  const validation = validatePassword(password);
 
   const handleChangePassword = async () => {
-    if (!password || password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
+    if (!validation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos');
       return;
     }
     if (password !== confirmPassword) {
@@ -35,7 +38,6 @@ const ForceChangePassword = () => {
     } else {
       await supabase.from('profiles').update({ must_change_password: false }).eq('user_id', user!.id);
       toast.success('Senha alterada com sucesso!');
-      // Force profile reload
       window.location.reload();
     }
     setSaving(false);
@@ -63,7 +65,7 @@ const ForceChangePassword = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres"
               />
               <button
                 type="button"
@@ -73,6 +75,7 @@ const ForceChangePassword = () => {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+            <PasswordStrengthIndicator password={password} />
           </div>
           <div className="space-y-2">
             <Label>Confirmar nova senha</Label>
@@ -92,7 +95,7 @@ const ForceChangePassword = () => {
               </button>
             </div>
           </div>
-          <Button onClick={handleChangePassword} disabled={saving} className="w-full gap-2">
+          <Button onClick={handleChangePassword} disabled={saving || !validation.isValid} className="w-full gap-2">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldAlert className="h-4 w-4" />}
             Alterar Senha
           </Button>

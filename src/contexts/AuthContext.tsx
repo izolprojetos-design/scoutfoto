@@ -3,6 +3,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
+import { logAudit } from '@/lib/auditLog';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -144,7 +145,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error && data.user) {
+      // Log successful login
+      try {
+        await logAudit(data.user.id, 'login' as any, undefined, { email });
+      } catch {}
+    }
     return { error: error as Error | null };
   };
 
