@@ -40,19 +40,19 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 152 35% 12%;
-    --sidebar-foreground: 152 10% 92%;
-    --sidebar-primary: 152 55% 45%;
+    --sidebar-background: 152 30% 14%;
+    --sidebar-foreground: 140 8% 90%;
+    --sidebar-primary: 152 40% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 152 25% 18%;
-    --sidebar-accent-foreground: 152 10% 92%;
-    --sidebar-border: 152 20% 22%;
-    --sidebar-ring: 152 55% 45%;
+    --sidebar-accent: 152 20% 20%;
+    --sidebar-accent-foreground: 140 8% 90%;
+    --sidebar-border: 152 15% 24%;
+    --sidebar-ring: 152 40% 48%;
 
-    --scout-green: 152 60% 30%;
-    --scout-gold: 38 92% 50%;
-    --scout-brown: 25 45% 32%;
-    --scout-cream: 42 30% 95%;
+    --scout-green: 152 45% 32%;
+    --scout-gold: 38 75% 50%;
+    --scout-brown: 25 35% 35%;
+    --scout-cream: 40 18% 94%;
 
     --gradient-hero: linear-gradient(135deg, hsl(152 60% 30%), hsl(152 45% 22%));
     --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04);
