@@ -97,6 +97,62 @@ const Admin = () => {
   const [newSubgroupBranch, setNewSubgroupBranch] = useState('');
   const [savingSubgroup, setSavingSubgroup] = useState(false);
 
+  // Maintenance - broken photos
+  const [cleaningPhotos, setCleaningPhotos] = useState(false);
+  const [brokenPhotos, setBrokenPhotos] = useState<{ id: string; name: string; photo_url: string }[]>([]);
+  const [photoScanDone, setPhotoScanDone] = useState(false);
+
+  const handleScanBrokenPhotos = async () => {
+    setCleaningPhotos(true);
+    setBrokenPhotos([]);
+    setPhotoScanDone(false);
+    try {
+      const { data: scouts } = await supabase.from('scouts').select('id, name, photo_url').not('photo_url', 'is', null);
+      if (!scouts || scouts.length === 0) {
+        setPhotoScanDone(true);
+        setCleaningPhotos(false);
+        return;
+      }
+
+      const broken: { id: string; name: string; photo_url: string }[] = [];
+      await Promise.all(
+        scouts.map(
+          (scout) =>
+            new Promise<void>((resolve) => {
+              const img = new Image();
+              img.onload = () => resolve();
+              img.onerror = () => {
+                broken.push({ id: scout.id, name: scout.name, photo_url: scout.photo_url! });
+                resolve();
+              };
+              img.src = scout.photo_url!;
+            })
+        )
+      );
+
+      setBrokenPhotos(broken);
+      setPhotoScanDone(true);
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao verificar fotos');
+    }
+    setCleaningPhotos(false);
+  };
+
+  const handleCleanBrokenPhotos = async () => {
+    if (brokenPhotos.length === 0) return;
+    setCleaningPhotos(true);
+    let cleaned = 0;
+    for (const scout of brokenPhotos) {
+      const { error } = await supabase.from('scouts').update({ photo_url: null }).eq('id', scout.id);
+      if (!error) cleaned++;
+    }
+    toast.success(`${cleaned} URL(s) de foto limpa(s) com sucesso`);
+    setBrokenPhotos([]);
+    setPhotoScanDone(false);
+    setCleaningPhotos(false);
+  };
+
   const fetchSubgroups = async () => {
     const { data } = await supabase.from('subgroups').select('*').order('branch_key').order('name');
     setSubgroups((data as Subgroup[]) || []);
