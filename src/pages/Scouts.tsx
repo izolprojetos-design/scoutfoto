@@ -93,6 +93,9 @@ const Scouts = () => {
   const [editPhoto, setEditPhoto] = useState<File | null>(null);
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [editUploading, setEditUploading] = useState(false);
+  const [editRegistrationId, setEditRegistrationId] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editSection, setEditSection] = useState('');
 
   // Scout form
   const [scoutName, setScoutName] = useState('');
