@@ -520,7 +520,6 @@ const Scouts = () => {
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
     birth: string, setBirth: (v: string) => void,
-    group: string, setGroup: (v: string) => void,
     notes: string, setNotes: (v: string) => void,
     photoPreview: string | null,
     onPhotoSelect: (e: React.ChangeEvent<HTMLInputElement>) => void,
@@ -627,15 +626,9 @@ const Scouts = () => {
         <Label>Nome completo *</Label>
         <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Data de nascimento *</Label>
-          <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
-        </div>
-        <div className="space-y-2">
-          <Label>Grupo escoteiro</Label>
-          <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 12º GEMC" className="h-11" />
-        </div>
+      <div className="space-y-2">
+        <Label>Data de nascimento *</Label>
+        <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
       </div>
       <div className="space-y-2">
         <Label>Seção</Label>
@@ -769,7 +762,6 @@ const Scouts = () => {
                 handleCreateScout,
                 scoutName, setScoutName,
                 scoutBirth, setScoutBirth,
-                scoutGroup, setScoutGroup,
                 scoutNotes, setScoutNotes,
                 scoutPhotoPreview,
                 handlePhotoSelect,
@@ -1034,7 +1026,6 @@ const Scouts = () => {
             handleEditScout,
             editName, setEditName,
             editBirth, setEditBirth,
-            editGroup, setEditGroup,
             editNotes, setEditNotes,
             editPhotoPreview,
             handleEditPhotoSelect,
