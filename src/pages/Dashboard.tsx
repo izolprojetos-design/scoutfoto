@@ -127,33 +127,49 @@ const Dashboard = () => {
     return 'Boa noite';
   };
 
+  // Memoize scout branch mapping to avoid repeated computation
+  const scoutBranchMap = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof getEffectiveBranchKey>>();
+    scouts.forEach(s => map.set(s.id, getEffectiveBranchKey(s)));
+    return map;
+  }, [scouts]);
+
   // Scouts changing branch soon (< 6 months)
-  const upcomingChanges = scouts
-    .map(s => {
-      const change = getNextBranchChange(new Date(s.birth_date));
-      return change ? { ...s, change } : null;
-    })
-    .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 6)
-    .sort((a, b) => a.change.monthsLeft - b.change.monthsLeft);
+  const upcomingChanges = useMemo(() =>
+    scouts
+      .map(s => {
+        const change = getNextBranchChange(new Date(s.birth_date));
+        return change ? { ...s, change } : null;
+      })
+      .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 6)
+      .sort((a, b) => a.change.monthsLeft - b.change.monthsLeft),
+    [scouts]
+  );
 
   // Upcoming birthdays (next 30 days)
   const now = new Date();
-  const upcomingBirthdays = scouts
-    .map(s => {
-      const birth = new Date(s.birth_date);
-      let nextBday = setYear(birth, now.getFullYear());
-      if (nextBday < now) nextBday = setYear(birth, now.getFullYear() + 1);
-      const daysUntil = differenceInDays(nextBday, now);
-      return { ...s, nextBday, daysUntil };
-    })
-    .filter(s => s.daysUntil >= 0 && s.daysUntil <= 30)
-    .sort((a, b) => a.daysUntil - b.daysUntil);
+  const upcomingBirthdays = useMemo(() => {
+    const today = new Date();
+    return scouts
+      .map(s => {
+        const birth = new Date(s.birth_date);
+        let nextBday = setYear(birth, today.getFullYear());
+        if (nextBday < today) nextBday = setYear(birth, today.getFullYear() + 1);
+        const daysUntil = differenceInDays(nextBday, today);
+        return { ...s, nextBday, daysUntil };
+      })
+      .filter(s => s.daysUntil >= 0 && s.daysUntil <= 30)
+      .sort((a, b) => a.daysUntil - b.daysUntil);
+  }, [scouts]);
 
   // Distribution by branch
-  const branchDistribution = ALL_CATEGORIES.map(b => ({
-    ...b,
-    count: scouts.filter(s => getEffectiveBranchKey(s)?.key === b.key).length,
-  }));
+  const branchDistribution = useMemo(() =>
+    ALL_CATEGORIES.map(b => ({
+      ...b,
+      count: scouts.filter(s => scoutBranchMap.get(s.id)?.key === b.key).length,
+    })),
+    [scouts, scoutBranchMap]
+  );
 
   return (
     <AppLayout>
