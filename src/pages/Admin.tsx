@@ -605,21 +605,54 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="stats">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle>Fotos por Ramo</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {stats.branchCounts.map(bc => (
-                  <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                    <span className="font-medium">{bc.name}</span>
-                    <Badge variant="secondary">{bc.count} fotos</Badge>
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5 text-primary" />
+                  Fotos Eventos
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Fotos vinculadas a eventos</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {stats.eventBranchCounts.map(bc => (
+                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                      <span className="font-medium">{bc.name}</span>
+                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
+                    <span>Total</span>
+                    <Badge>{stats.eventBranchCounts.reduce((s, b) => s + b.count, 0)} fotos</Badge>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  Fotos Integrantes
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">Fotos não vinculadas a eventos</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {stats.memberBranchCounts.map(bc => (
+                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                      <span className="font-medium">{bc.name}</span>
+                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
+                    <span>Total</span>
+                    <Badge>{stats.memberBranchCounts.reduce((s, b) => s + b.count, 0)} fotos</Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="audit">
