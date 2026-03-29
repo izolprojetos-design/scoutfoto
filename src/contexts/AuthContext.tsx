@@ -65,11 +65,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
     const WARNING_BEFORE = 5 * 60 * 1000; // 5 min antes
+    const THROTTLE_MS = 2000; // throttle events to avoid excessive resets
     let logoutTimer: ReturnType<typeof setTimeout>;
     let warningTimer: ReturnType<typeof setTimeout>;
     let warningToastId: string | number | undefined;
+    let lastReset = 0;
 
-    const resetTimer = () => {
+    const resetTimerCore = () => {
       clearTimeout(logoutTimer);
       clearTimeout(warningTimer);
       if (warningToastId) {
@@ -91,9 +93,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }, INACTIVITY_LIMIT);
     };
 
+    const resetTimer = () => {
+      const now = Date.now();
+      if (now - lastReset < THROTTLE_MS) return;
+      lastReset = now;
+      resetTimerCore();
+    };
+
     const events = ['mousedown', 'keydown', 'scroll', 'touchstart', 'mousemove'];
-    events.forEach(ev => window.addEventListener(ev, resetTimer));
-    resetTimer();
+    events.forEach(ev => window.addEventListener(ev, resetTimer, { passive: true }));
+    resetTimerCore();
 
     return () => {
       clearTimeout(logoutTimer);
