@@ -34,6 +34,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
   const loadImages = async () => {
     setLoading(true);
     try {
+      // Load scouts to map IDs to names
+      const { data: scoutsData } = await supabase.from('scouts').select('id, name');
+      const scoutMap = new Map<string, string>();
+      scoutsData?.forEach(s => {
+        scoutMap.set(s.id, s.name);
+      });
+
       // List files from scout-photos bucket
       const { data: scoutPhotos } = await supabase.storage.from('scout-photos').list('', {
         limit: 200,
@@ -44,10 +51,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
-          if (file.name && !file.name.startsWith('.')) {
-            const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
-            items.push({ name: file.name, url: publicUrl });
-          }
+          // Skip folders (like 'avatars') and hidden files
+          if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
+          const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
+          const scoutId = file.name.split('.')[0];
+          items.push({ name: file.name, url: publicUrl, scoutName: scoutMap.get(scoutId) });
         }
       }
 
@@ -59,11 +67,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
 
       if (privateImages) {
         for (const file of privateImages) {
-          if (file.name && !file.name.startsWith('.') && file.metadata) {
-            const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
-            if (data?.signedUrl) {
-              items.push({ name: file.name, url: data.signedUrl });
-            }
+          if (!file.name || file.name.startsWith('.') || !file.metadata) continue;
+          const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
+          if (data?.signedUrl) {
+            items.push({ name: file.name, url: data.signedUrl });
           }
         }
       }
