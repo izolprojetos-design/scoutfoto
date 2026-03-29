@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Loader2, Lock } from 'lucide-react';
+import { Loader2, Lock, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { validatePassword } from '@/lib/passwordValidation';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -15,14 +17,16 @@ const ResetPassword = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [ready, setReady] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const validation = validatePassword(password);
 
   useEffect(() => {
-    // Check if we have a recovery token in the URL hash
     const hash = window.location.hash;
     if (hash && hash.includes('type=recovery')) {
       setReady(true);
     } else {
-      // Also check for session with recovery event
       supabase.auth.onAuthStateChange((event) => {
         if (event === 'PASSWORD_RECOVERY') {
           setReady(true);
@@ -34,8 +38,8 @@ const ResetPassword = () => {
   const handleReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password.length < 6) {
-      toast.error('A senha deve ter pelo menos 6 caracteres');
+    if (!validation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos');
       return;
     }
 
@@ -69,7 +73,7 @@ const ResetPassword = () => {
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Redefinir Senha</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Digite sua nova senha
+            Crie uma nova senha segura
           </p>
         </div>
 
@@ -79,31 +83,48 @@ const ResetPassword = () => {
               <form onSubmit={handleReset} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Nova senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Mínimo 6 caracteres"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="h-11"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Mínimo 8 caracteres"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                      className="h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <PasswordStrengthIndicator password={password} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirm-password">Confirmar nova senha</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    placeholder="Repita a senha"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                    minLength={6}
-                    className="h-11"
-                  />
+                  <div className="relative">
+                    <Input
+                      id="confirm-password"
+                      type={showConfirm ? 'text' : 'password'}
+                      placeholder="Repita a senha"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                      className="h-11 pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm(!showConfirm)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </div>
-                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading || !validation.isValid}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
                     <>
                       <Lock className="h-4 w-4 mr-2" />

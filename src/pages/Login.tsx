@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isLockedOut, recordFailedAttempt, clearLoginAttempts, formatLockoutTime, getLoginAttempts } from '@/lib/loginRateLimit';
+import { logAudit } from '@/lib/auditLog';
 
 const Login = () => {
   const { signIn } = useAuth();
@@ -16,15 +18,45 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
+  const [lockoutRemaining, setLockoutRemaining] = useState(0);
+
+  // Check lockout on mount and update countdown
+  useEffect(() => {
+    const check = () => {
+      const { locked, remainingMs } = isLockedOut();
+      setLockoutRemaining(locked ? remainingMs : 0);
+    };
+    check();
+    const interval = setInterval(check, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const isLocked = lockoutRemaining > 0;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError('');
+
+    if (isLocked) return;
+
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      setLoginError('E-mail ou senha incorretos. Por favor, tente novamente.');
+      const { locked, attemptsLeft } = recordFailedAttempt();
+
+      // Log failed login attempt (anonymous - no user_id available)
+      try {
+        await logAudit('00000000-0000-0000-0000-000000000000', 'login_failed' as any, undefined, { email, reason: 'invalid_credentials' });
+      } catch {}
+
+      if (locked) {
+        setLockoutRemaining(15 * 60 * 1000);
+        setLoginError(`Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${formatLockoutTime(15 * 60 * 1000)}.`);
+      } else {
+        setLoginError(`E-mail ou senha incorretos. ${attemptsLeft} tentativa${attemptsLeft === 1 ? '' : 's'} restante${attemptsLeft === 1 ? '' : 's'}.`);
+      }
     } else {
+      clearLoginAttempts();
       navigate('/dashboard');
     }
     setLoading(false);
@@ -128,6 +160,7 @@ const Login = () => {
                     required
                     className="h-11"
                     tabIndex={1}
+                    disabled={isLocked}
                   />
                 </div>
                 <div className="space-y-2">
@@ -142,6 +175,7 @@ const Login = () => {
                       required
                       className="h-11 pr-10"
                       tabIndex={2}
+                      disabled={isLocked}
                     />
                     <button
                       type="button"
@@ -154,20 +188,26 @@ const Login = () => {
                   </div>
                 </div>
                 <AnimatePresence>
-                  {loginError && (
+                  {(loginError || isLocked) && (
                     <motion.div
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
                       className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
                     >
-                      <AlertCircle className="h-4 w-4 shrink-0" />
-                      {loginError}
+                      {isLocked ? (
+                        <Lock className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                      )}
+                      {isLocked
+                        ? `Conta bloqueada. Tente novamente em ${formatLockoutTime(lockoutRemaining)}.`
+                        : loginError}
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading} tabIndex={4}>
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading || isLocked} tabIndex={4}>
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isLocked ? 'Bloqueado' : 'Entrar'}
                 </Button>
               </form>
 
