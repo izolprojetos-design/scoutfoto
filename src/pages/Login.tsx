@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { motion } from 'framer-motion';
 
 const Login = () => {
   const { signIn } = useAuth();
