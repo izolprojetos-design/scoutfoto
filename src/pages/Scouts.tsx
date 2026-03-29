@@ -584,6 +584,12 @@ const Scouts = () => {
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
+                {
+                  name: inlineGuardianName, setName: setInlineGuardianName,
+                  email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
+                  phone: inlineGuardianPhone, setPhone: setInlineGuardianPhone,
+                  auth: inlineGuardianAuth, setAuth: setInlineGuardianAuth,
+                },
               )}
             </DialogContent>
           </Dialog>
