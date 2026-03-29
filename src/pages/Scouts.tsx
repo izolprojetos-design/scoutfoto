@@ -404,6 +404,7 @@ const Scouts = () => {
       : detectedBranch;
     const effectiveBranchKey = effectiveBranch?.key || '';
     const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
+    const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
