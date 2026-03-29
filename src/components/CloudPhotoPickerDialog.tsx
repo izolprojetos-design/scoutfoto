@@ -1,0 +1,178 @@
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Search, ImageIcon, Cloud, Check } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface CloudPhotoPickerDialogProps {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (file: File) => void;
+}
+
+interface StorageImage {
+  name: string;
+  url: string;
+}
+
+const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDialogProps) => {
+  const [images, setImages] = useState<StorageImage[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState('');
+  const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    loadImages();
+  }, [open]);
+
+  const loadImages = async () => {
+    setLoading(true);
+    try {
+      // List files from scout-photos bucket
+      const { data: scoutPhotos } = await supabase.storage.from('scout-photos').list('', {
+        limit: 200,
+        sortBy: { column: 'created_at', order: 'desc' },
+      });
+
+      const items: StorageImage[] = [];
+
+      if (scoutPhotos) {
+        for (const file of scoutPhotos) {
+          if (file.name && !file.name.startsWith('.')) {
+            const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
+            items.push({ name: file.name, url: publicUrl });
+          }
+        }
+      }
+
+      // Also list from images bucket (signed URLs since it's private)
+      const { data: privateImages } = await supabase.storage.from('images').list('', {
+        limit: 200,
+        sortBy: { column: 'created_at', order: 'desc' },
+      });
+
+      if (privateImages) {
+        for (const file of privateImages) {
+          if (file.name && !file.name.startsWith('.') && file.metadata) {
+            const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
+            if (data?.signedUrl) {
+              items.push({ name: file.name, url: data.signedUrl });
+            }
+          }
+        }
+      }
+
+      setImages(items);
+    } catch (err) {
+      console.error('Error loading cloud images:', err);
+    }
+    setLoading(false);
+  };
+
+  const handleConfirm = async () => {
+    if (!selectedUrl) return;
+    setConfirming(true);
+    try {
+      const response = await fetch(selectedUrl);
+      const blob = await response.blob();
+      const ext = selectedUrl.split('.').pop()?.split('?')[0] || 'jpg';
+      const file = new File([blob], `cloud-photo.${ext}`, { type: blob.type || 'image/jpeg' });
+      onSelect(file);
+      onClose();
+    } catch (err) {
+      console.error('Error fetching image:', err);
+    }
+    setConfirming(false);
+  };
+
+  const filtered = images.filter(img =>
+    img.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-2xl w-[95vw] max-h-[85vh] flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Cloud className="h-5 w-5" />
+            Escolher Foto da Nuvem
+          </DialogTitle>
+        </DialogHeader>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Buscar por nome..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+
+        <ScrollArea className="flex-1 min-h-0" style={{ maxHeight: '50vh' }}>
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+              <ImageIcon className="h-10 w-10 mb-3" />
+              <p className="text-sm font-medium">Nenhuma foto encontrada</p>
+              <p className="text-xs mt-1">O armazenamento ainda não possui fotos</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 p-1">
+              {filtered.map((img) => (
+                <button
+                  key={img.url}
+                  type="button"
+                  onClick={() => setSelectedUrl(selectedUrl === img.url ? null : img.url)}
+                  className={cn(
+                    "relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:opacity-90",
+                    selectedUrl === img.url
+                      ? "border-primary ring-2 ring-primary/30"
+                      : "border-transparent"
+                  )}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.name}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                  {selectedUrl === img.url && (
+                    <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                      <div className="bg-primary text-primary-foreground rounded-full p-1">
+                        <Check className="h-4 w-4" />
+                      </div>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+
+        <div className="flex justify-end gap-2 pt-2 border-t">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!selectedUrl || confirming}
+          >
+            {confirming ? 'Carregando...' : 'Usar esta foto'}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default CloudPhotoPickerDialog;
