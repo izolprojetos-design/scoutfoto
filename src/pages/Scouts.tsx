@@ -24,6 +24,7 @@ import {
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
+import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 
 interface Scout {
   id: string;
