@@ -148,9 +148,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error && data.user) {
-      // Log successful login
       try {
         await logAudit(data.user.id, 'login' as any, undefined, { email });
+      } catch {}
+
+      // Check for new device
+      try {
+        const { isNewDevice, deviceInfo } = await checkAndRegisterDevice(data.user.id);
+        if (isNewDevice) {
+          toast.warning(
+            `Novo dispositivo detectado: ${deviceInfo.deviceName} (${deviceInfo.browser}). Se não foi você, altere sua senha imediatamente.`,
+            { duration: 10000, id: 'new-device-alert' }
+          );
+          await logAudit(data.user.id, 'login' as any, undefined, {
+            email,
+            new_device: true,
+            device: deviceInfo.deviceName,
+            browser: deviceInfo.browser,
+            os: deviceInfo.os,
+          });
+        }
       } catch {}
     }
     return { error: error as Error | null };
