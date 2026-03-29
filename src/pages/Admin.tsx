@@ -652,7 +652,7 @@ const Admin = () => {
                   <Users className="h-5 w-5 text-primary" />
                   Fotos Integrantes
                 </CardTitle>
-                <p className="text-xs text-muted-foreground">Fotos não vinculadas a eventos</p>
+                <p className="text-xs text-muted-foreground">Fotos vinculadas a integrantes (por ramo)</p>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
