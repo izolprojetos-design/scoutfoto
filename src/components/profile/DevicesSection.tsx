@@ -31,7 +31,7 @@ const DevicesSection = () => {
   useEffect(() => {
     if (!user) return;
     fetchDevices();
-    getDeviceFingerprint().then(setCurrentFingerprint);
+    setCurrentFingerprint(getDeviceFingerprint());
   }, [user]);
 
   const fetchDevices = async () => {
