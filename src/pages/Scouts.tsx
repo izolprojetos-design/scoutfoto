@@ -746,6 +746,9 @@ const Scouts = () => {
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
                 'new',
+                scoutRegistrationId, setScoutRegistrationId,
+                scoutPhone, setScoutPhone,
+                scoutSection, setScoutSection,
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
