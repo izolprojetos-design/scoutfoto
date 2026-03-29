@@ -829,18 +829,26 @@ const Scouts = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3
-                          className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
-                          onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
-                        >
-                          {scout.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3
+                            className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
+                          >
+                            {scout.name}
+                          </h3>
+                          {scout.registration_id && (
+                            <span className="text-xs text-muted-foreground font-mono">#{scout.registration_id}</span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           {branch && (
                             <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
                               {branch.icon} {branch.name}
                             </Badge>
+                          )}
+                          {scout.section && (
+                            <Badge variant="outline" className="font-normal text-xs">{scout.section}</Badge>
                           )}
                           {scout.subgroup_id && (() => {
                             const sg = subgroups.find(s => s.id === scout.subgroup_id);
