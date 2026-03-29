@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import ForceChangePassword from "@/components/ForceChangePassword";
 import SplashScreen from "@/components/SplashScreen";
+import InstallPrompt from "@/components/InstallPrompt";
 import { Loader2 } from "lucide-react";
 
 // Lazy-loaded pages for code splitting
