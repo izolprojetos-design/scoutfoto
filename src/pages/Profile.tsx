@@ -312,11 +312,18 @@ const Profile = () => {
                 if (error) {
                   toast.error('Erro ao alterar senha: ' + error.message);
                 } else {
+                  try {
+                    await logAudit(user!.id, 'session_revoked_password_change', undefined, {
+                      email: profile?.email,
+                    });
+                    await logAudit(user!.id, 'password_changed', undefined, {
+                      email: profile?.email,
+                    });
+                  } catch {}
                   toast.success('Senha alterada! Todas as sessões foram encerradas. Faça login novamente.');
                   setCurrentPassword('');
                   setNewPassword('');
                   setConfirmNewPassword('');
-                  // Revoke all sessions after password change
                   setTimeout(() => {
                     supabase.auth.signOut({ scope: 'global' });
                   }, 2000);
