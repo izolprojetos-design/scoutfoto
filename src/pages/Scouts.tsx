@@ -296,6 +296,9 @@ const Scouts = () => {
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
     setEditSubgroup(scout.subgroup_id || 'none');
+    setEditRegistrationId(scout.registration_id || '');
+    setEditPhone(scout.phone || '');
+    setEditSection(scout.section || '');
     setEditPhoto(null);
     setEditDialogOpen(true);
 
