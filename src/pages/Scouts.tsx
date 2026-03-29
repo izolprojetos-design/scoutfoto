@@ -415,15 +415,38 @@ const Scouts = () => {
     return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
-        <label htmlFor={photoInputId} className="cursor-pointer">
-          <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
-            {photoPreview ? (
-              <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
-            ) : (
-              <Camera className="h-6 w-6 text-muted-foreground" />
-            )}
-          </div>
-        </label>
+        <div className="relative">
+          <label htmlFor={photoInputId} className="cursor-pointer">
+            <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+              {photoPreview ? (
+                <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
+              ) : (
+                <Camera className="h-6 w-6 text-muted-foreground" />
+              )}
+            </div>
+          </label>
+          {photoPreview && (
+            <button
+              type="button"
+              className="absolute -top-1 -right-1 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center shadow-sm hover:bg-destructive/90 transition-colors"
+              onClick={() => {
+                if (formTarget === 'new') {
+                  setScoutPhoto(null);
+                  setScoutPhotoPreview(null);
+                } else {
+                  setEditPhoto(null);
+                  setEditPhotoPreview(null);
+                  if (editingScout) {
+                    setEditingScout({ ...editingScout, photo_url: null });
+                  }
+                }
+              }}
+              title="Remover foto"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
         <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
         <input id={`${photoInputId}-camera`} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhotoSelect} />
         <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
