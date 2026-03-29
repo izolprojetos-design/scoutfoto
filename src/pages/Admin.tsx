@@ -624,7 +624,7 @@ const Admin = () => {
                   ))}
                   <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
                     <span>Total</span>
-                    <Badge>{stats.eventBranchCounts.reduce((s, b) => s + b.count, 0)} fotos</Badge>
+                    <Badge>{(() => { const t = stats.eventBranchCounts.reduce((s, b) => s + b.count, 0); return `${t} ${t === 1 ? 'foto' : 'fotos'}`; })()}</Badge>
                   </div>
                 </div>
               </CardContent>
