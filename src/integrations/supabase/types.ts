@@ -413,8 +413,11 @@ export type Database = {
           manual_branch: string | null
           name: string
           notes: string | null
+          phone: string | null
           photo_url: string | null
+          registration_id: string | null
           scout_group: string
+          section: string | null
           subgroup_id: string | null
           updated_at: string
         }
@@ -426,8 +429,11 @@ export type Database = {
           manual_branch?: string | null
           name: string
           notes?: string | null
+          phone?: string | null
           photo_url?: string | null
+          registration_id?: string | null
           scout_group?: string
+          section?: string | null
           subgroup_id?: string | null
           updated_at?: string
         }
@@ -439,8 +445,11 @@ export type Database = {
           manual_branch?: string | null
           name?: string
           notes?: string | null
+          phone?: string | null
           photo_url?: string | null
+          registration_id?: string | null
           scout_group?: string
+          section?: string | null
           subgroup_id?: string | null
           updated_at?: string
         }
