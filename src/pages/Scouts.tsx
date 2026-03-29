@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -483,6 +483,39 @@ const Scouts = () => {
     return null;
   };
 
+  const handleExportCSV = () => {
+    const csvRows: string[] = [];
+    csvRows.push('ID,Nome,Ramo,Seção,Equipe,Celular,Data de Nascimento,Idade,Responsável');
+    filteredScouts.forEach(scout => {
+      const branch = getEffectiveBranch(scout);
+      const sg = subgroups.find(s => s.id === scout.subgroup_id);
+      const scoutGuards = getGuardiansForScout(scout.id);
+      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      const row = [
+        scout.registration_id || '',
+        scout.name,
+        branch?.name || '',
+        scout.section || '',
+        sg?.name || '',
+        scout.phone || '',
+        new Date(scout.birth_date).toLocaleDateString('pt-BR'),
+        formatAge(new Date(scout.birth_date)),
+        responsavel,
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
+      csvRows.push(row);
+    });
+    const bom = '\uFEFF';
+    const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const filterLabel = branchFilter === 'all' ? 'todos' : branchFilter;
+    a.href = url;
+    a.download = `integrantes_${filterLabel}_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${filteredScouts.length} integrantes exportados!`);
+  };
+
   const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
@@ -776,6 +809,10 @@ const Scouts = () => {
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportCSV} disabled={filteredScouts.length === 0}>
+            <FileDown className="h-4 w-4" />
+            Exportar CSV
+          </Button>
         </div>
       </div>
 
