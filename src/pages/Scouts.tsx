@@ -126,7 +126,7 @@ const Scouts = () => {
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
 
   // Auto-clear broken photo URLs from the database
-  const clearedPhotoIds = React.useRef(new Set<string>());
+  const clearedPhotoIds = useRef(new Set<string>());
   const handleBrokenPhoto = async (scoutId: string, imgEl: HTMLImageElement) => {
     imgEl.style.display = 'none';
     const fallback = imgEl.nextElementSibling as HTMLElement;
