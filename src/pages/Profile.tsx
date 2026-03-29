@@ -311,10 +311,14 @@ const Profile = () => {
                 if (error) {
                   toast.error('Erro ao alterar senha: ' + error.message);
                 } else {
-                  toast.success('Senha alterada com sucesso!');
+                  toast.success('Senha alterada! Todas as sessões foram encerradas. Faça login novamente.');
                   setCurrentPassword('');
                   setNewPassword('');
                   setConfirmNewPassword('');
+                  // Revoke all sessions after password change
+                  setTimeout(() => {
+                    supabase.auth.signOut({ scope: 'global' });
+                  }, 2000);
                 }
                 setChangingPassword(false);
               }}
