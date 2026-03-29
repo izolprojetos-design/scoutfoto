@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
@@ -63,12 +64,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!user) return;
 
     const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
-    let timer: ReturnType<typeof setTimeout>;
+    const WARNING_BEFORE = 5 * 60 * 1000; // 5 min antes
+    let logoutTimer: ReturnType<typeof setTimeout>;
+    let warningTimer: ReturnType<typeof setTimeout>;
+    let warningToastId: string | number | undefined;
 
     const resetTimer = () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
+      clearTimeout(logoutTimer);
+      clearTimeout(warningTimer);
+      if (warningToastId) {
+        toast.dismiss(warningToastId);
+        warningToastId = undefined;
+      }
+
+      warningTimer = setTimeout(() => {
+        warningToastId = toast.warning('Sua sessão expira em 5 minutos por inatividade. Mova o mouse ou pressione uma tecla para continuar.', {
+          duration: WARNING_BEFORE,
+          id: 'session-warning',
+        });
+      }, INACTIVITY_LIMIT - WARNING_BEFORE);
+
+      logoutTimer = setTimeout(() => {
+        toast.dismiss('session-warning');
         supabase.auth.signOut();
+        toast.info('Sessão encerrada por inatividade.');
       }, INACTIVITY_LIMIT);
     };
 
@@ -77,7 +96,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     resetTimer();
 
     return () => {
-      clearTimeout(timer);
+      clearTimeout(logoutTimer);
+      clearTimeout(warningTimer);
+      toast.dismiss('session-warning');
       events.forEach(ev => window.removeEventListener(ev, resetTimer));
     };
   }, [user]);
