@@ -137,6 +137,7 @@ const Scouts = () => {
     setScouts(prev => prev.map(s => s.id === scoutId ? { ...s, photo_url: null } : s));
   };
 
+  const fetchData = async () => {
     const [{ data: scoutData }, { data: guardianData }, { data: subgroupData }] = await Promise.all([
       supabase.from('scouts').select('*').order('name'),
       supabase.from('guardians').select('*'),
