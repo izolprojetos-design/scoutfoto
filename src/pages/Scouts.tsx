@@ -106,13 +106,19 @@ const Scouts = () => {
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
 
-  // Guardian form
+  // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [guardianAuth, setGuardianAuth] = useState(false);
   const [newSubgroupName, setNewSubgroupName] = useState('');
   const [creatingSubgroup, setCreatingSubgroup] = useState(false);
+
+  // Inline guardian for new scout (minor)
+  const [inlineGuardianName, setInlineGuardianName] = useState('');
+  const [inlineGuardianEmail, setInlineGuardianEmail] = useState('');
+  const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
+  const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
 
 
   const fetchData = async () => {
