@@ -54,7 +54,7 @@ const Admin = () => {
   const { user } = useAuth();
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [stats, setStats] = useState<Stats>({ totalImages: 0, eventCounts: [], memberBranchCounts: [], recentUploads: 0 });
+  
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
