@@ -230,7 +230,7 @@ const Events = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Eventos</h1>
-          <p className="mt-1 text-muted-foreground">Atividades e acampamentos escoteiros</p>
+          <p className="mt-1 text-muted-foreground"><p className="mt-1 text-muted-foreground">Gerencie atividades, acampamentos e encontros do seu grupo</p></p>
         </div>
 
         <div className="flex flex-wrap gap-2">
