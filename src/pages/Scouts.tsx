@@ -36,6 +36,9 @@ interface Scout {
   created_at: string;
   manual_branch: string | null;
   subgroup_id: string | null;
+  registration_id: string;
+  phone: string;
+  section: string;
 }
 
 interface Subgroup {
@@ -90,6 +93,9 @@ const Scouts = () => {
   const [editPhoto, setEditPhoto] = useState<File | null>(null);
   const [editPhotoPreview, setEditPhotoPreview] = useState<string | null>(null);
   const [editUploading, setEditUploading] = useState(false);
+  const [editRegistrationId, setEditRegistrationId] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editSection, setEditSection] = useState('');
 
   // Scout form
   const [scoutName, setScoutName] = useState('');
@@ -101,6 +107,9 @@ const Scouts = () => {
   const [scoutPhoto, setScoutPhoto] = useState<File | null>(null);
   const [scoutPhotoPreview, setScoutPhotoPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [scoutRegistrationId, setScoutRegistrationId] = useState('');
+  const [scoutPhone, setScoutPhone] = useState('');
+  const [scoutSection, setScoutSection] = useState('');
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -238,6 +247,9 @@ const Scouts = () => {
       created_by: user.id,
       manual_branch: scoutBranch !== 'auto' ? scoutBranch : null,
       subgroup_id: scoutSubgroup !== 'none' ? scoutSubgroup : null,
+      registration_id: scoutRegistrationId,
+      phone: scoutPhone,
+      section: scoutSection,
     }).select('id').single();
 
     if (error) {
@@ -270,6 +282,7 @@ const Scouts = () => {
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
+    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection('');
     setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
@@ -283,6 +296,9 @@ const Scouts = () => {
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
     setEditSubgroup(scout.subgroup_id || 'none');
+    setEditRegistrationId(scout.registration_id || '');
+    setEditPhone(scout.phone || '');
+    setEditSection(scout.section || '');
     setEditPhoto(null);
     setEditDialogOpen(true);
 
@@ -362,6 +378,9 @@ const Scouts = () => {
       photo_url: photoUrl,
       manual_branch: editBranch !== 'auto' ? editBranch : null,
       subgroup_id: editSubgroup !== 'none' ? editSubgroup : null,
+      registration_id: editRegistrationId,
+      phone: editPhone,
+      section: editSection,
     }).eq('id', editingScout.id);
 
     if (error) {
@@ -478,6 +497,9 @@ const Scouts = () => {
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
     formTarget: 'new' | 'edit',
+    registrationId: string, setRegistrationId: (v: string) => void,
+    phoneVal: string, setPhoneVal: (v: string) => void,
+    sectionVal: string, setSectionVal: (v: string) => void,
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
@@ -558,6 +580,16 @@ const Scouts = () => {
         </div>
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>ID do Associado</Label>
+          <Input value={registrationId} onChange={e => setRegistrationId(e.target.value)} placeholder="Nº de registro" className="h-11" />
+        </div>
+        <div className="space-y-2">
+          <Label>Celular</Label>
+          <Input value={phoneVal} onChange={e => setPhoneVal(e.target.value)} placeholder="(00) 00000-0000" className="h-11" />
+        </div>
+      </div>
       <div className="space-y-2">
         <Label>Nome completo *</Label>
         <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
@@ -571,6 +603,10 @@ const Scouts = () => {
           <Label>Grupo escoteiro</Label>
           <Input value={group} onChange={e => setGroup(e.target.value)} placeholder="Ex: 12º GEMC" className="h-11" />
         </div>
+      </div>
+      <div className="space-y-2">
+        <Label>Seção</Label>
+        <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
       </div>
       <div className="space-y-2">
         <Label>Ramo</Label>
@@ -710,6 +746,9 @@ const Scouts = () => {
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
                 'new',
+                scoutRegistrationId, setScoutRegistrationId,
+                scoutPhone, setScoutPhone,
+                scoutSection, setScoutSection,
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
@@ -790,18 +829,26 @@ const Scouts = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <h3
-                          className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
-                          onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
-                        >
-                          {scout.name}
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <h3
+                            className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
+                            onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
+                          >
+                            {scout.name}
+                          </h3>
+                          {scout.registration_id && (
+                            <span className="text-xs text-muted-foreground font-mono">#{scout.registration_id}</span>
+                          )}
+                        </div>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           {branch && (
                             <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
                               {branch.icon} {branch.name}
                             </Badge>
+                          )}
+                          {scout.section && (
+                            <Badge variant="outline" className="font-normal text-xs">{scout.section}</Badge>
                           )}
                           {scout.subgroup_id && (() => {
                             const sg = subgroups.find(s => s.id === scout.subgroup_id);
@@ -960,6 +1007,9 @@ const Scouts = () => {
             editBranch, setEditBranch,
             editSubgroup, setEditSubgroup,
             'edit',
+            editRegistrationId, setEditRegistrationId,
+            editPhone, setEditPhone,
+            editSection, setEditSection,
           )}
         </DialogContent>
       </Dialog>
@@ -1053,13 +1103,21 @@ const Scouts = () => {
                     </div>
                   )}
                   <div>
-                    <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                      {viewingScout.registration_id && (
+                        <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{formatAge(new Date(viewingScout.birth_date))}</p>
-                    <div className="flex gap-1.5 mt-1">
+                    <div className="flex flex-wrap gap-1.5 mt-1">
                       {branch && (
                         <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
                           {branch.icon} {branch.name}
                         </Badge>
+                      )}
+                      {viewingScout.section && (
+                        <Badge variant="outline" className="font-normal text-xs">{viewingScout.section}</Badge>
                       )}
                       {viewingScout.scout_group && (
                         <Badge variant="outline" className="font-normal text-xs">{viewingScout.scout_group}</Badge>
@@ -1069,6 +1127,18 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-2 text-sm">
+                  {viewingScout.registration_id && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">ID do Associado</span>
+                      <span className="font-medium font-mono">{viewingScout.registration_id}</span>
+                    </div>
+                  )}
+                  {viewingScout.phone && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Celular</span>
+                      <span className="font-medium">{viewingScout.phone}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Data de nascimento</span>
                     <span className="font-medium">
@@ -1079,6 +1149,12 @@ const Scouts = () => {
                     <div className="flex justify-between py-2 border-b">
                       <span className="text-muted-foreground">Grupo Escoteiro</span>
                       <span className="font-medium">{viewingScout.scout_group}</span>
+                    </div>
+                  )}
+                  {viewingScout.section && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Seção</span>
+                      <span className="font-medium">{viewingScout.section}</span>
                     </div>
                   )}
                   {nextChange && (
