@@ -28,7 +28,17 @@
 </head>
 
   <body style="background-color:#14532d">
-    <div id="root" style="background-color:#14532d; min-height:100vh"></div>
+    <div id="root" style="min-height:100vh"></div>
+    <script>
+      document.getElementById('root').style.backgroundColor = '#14532d';
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          document.getElementById('root').style.backgroundColor = '';
+          document.body.style.backgroundColor = '';
+          document.documentElement.style.backgroundColor = '';
+        }, 1500);
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
