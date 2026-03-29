@@ -542,7 +542,7 @@ const Scouts = () => {
           </div>
           <div className="flex items-center gap-2">
             <input type="checkbox" id="inline-guardian-auth" checked={guardianFields.auth} onChange={e => guardianFields.setAuth(e.target.checked)} className="rounded border-input" />
-            <Label htmlFor="inline-guardian-auth" className="text-xs cursor-pointer">Autorização de imagem concedida</Label>
+            <Label htmlFor="inline-guardian-auth" className="text-xs cursor-pointer">Autorização de imagem concedida (art. 240-A, ECA Digital — Lei nº 15.211/2025)</Label>
           </div>
         </div>
       )}
