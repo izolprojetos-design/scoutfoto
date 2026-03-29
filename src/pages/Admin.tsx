@@ -42,12 +42,6 @@ interface AuditLog {
   details: Record<string, unknown>;
 }
 
-interface Stats {
-  totalImages: number;
-  eventCounts: { name: string; count: number }[];
-  memberBranchCounts: { name: string; count: number }[];
-  recentUploads: number;
-}
 
 interface Subgroup {
   id: string;
