@@ -130,16 +130,7 @@ const Login = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="login-password">Senha</Label>
-                    <Link
-                      to="/forgot-password"
-                      className="text-xs text-primary hover:underline"
-                      tabIndex={-1}
-                    >
-                      Esqueci minha senha
-                    </Link>
-                  </div>
+                  <Label htmlFor="login-password">Senha</Label>
                   <div className="relative">
                     <Input
                       id="login-password"
@@ -149,10 +140,11 @@ const Login = () => {
                       onChange={e => setPassword(e.target.value)}
                       required
                       className="h-11 pr-10"
+                      tabIndex={2}
                     />
                     <button
                       type="button"
-                      tabIndex={-1}
+                      tabIndex={3}
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                     >
@@ -173,12 +165,22 @@ const Login = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
+                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading} tabIndex={4}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
                 </Button>
               </form>
 
-              <p className="mt-4 text-center text-xs text-muted-foreground">
+              <div className="mt-3 text-center">
+                <Link
+                  to="/forgot-password"
+                  className="text-xs text-primary hover:underline"
+                  tabIndex={5}
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
+
+              <p className="mt-3 text-center text-xs text-muted-foreground">
                 Não tem conta? Solicite ao administrador do sistema.
               </p>
             </CardContent>
