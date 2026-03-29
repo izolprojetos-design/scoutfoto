@@ -48,6 +48,10 @@ const App = () => {
   const [splashDone, setSplashDone] = useState(!isStandalone);
   const handleSplashFinished = useCallback(() => setSplashDone(true), []);
 
+  // Auto-update: detect new versions and reload
+  useAppUpdate();
+  usePeriodicUpdateCheck(5 * 60 * 1000); // check every 5 min
+
   return (
     <>
       {!splashDone && <SplashScreen onFinished={handleSplashFinished} />}
