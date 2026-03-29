@@ -1,4 +1,5 @@
 import { lazy, Suspense, useState, useCallback } from "react";
+import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
