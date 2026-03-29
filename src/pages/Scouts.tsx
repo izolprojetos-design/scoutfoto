@@ -615,11 +615,20 @@ const Scouts = () => {
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>ID do Associado</Label>
-          <Input value={registrationId} onChange={e => setRegistrationId(e.target.value)} placeholder="Nº de registro" className="h-11" />
+          <Input value={registrationId} onChange={e => {
+            const v = e.target.value.replace(/\D/g, '').slice(0, 10);
+            setRegistrationId(v);
+          }} placeholder="Nº de registro" className="h-11" inputMode="numeric" />
         </div>
         <div className="space-y-2">
           <Label>Celular</Label>
-          <Input value={phoneVal} onChange={e => setPhoneVal(e.target.value)} placeholder="(00) 00000-0000" className="h-11" />
+          <Input value={phoneVal} onChange={e => {
+            const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+            let formatted = digits;
+            if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+            if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+            setPhoneVal(formatted);
+          }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
         </div>
       </div>
       <div className="space-y-2">
@@ -724,7 +733,13 @@ const Scouts = () => {
             </div>
             <div className="space-y-2">
               <Label className="text-xs">Telefone</Label>
-              <Input value={guardianFields.phone} onChange={e => guardianFields.setPhone(e.target.value)} placeholder="(00) 00000-0000" className="h-10" />
+              <Input value={guardianFields.phone} onChange={e => {
+                const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+                let formatted = digits;
+                if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+                if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                guardianFields.setPhone(formatted);
+              }} placeholder="(00) 00000-0000" className="h-10" inputMode="tel" />
             </div>
           </div>
           <div className="flex items-center gap-2">
