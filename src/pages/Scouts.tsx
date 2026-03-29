@@ -590,6 +590,7 @@ const Scouts = () => {
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
+                'new',
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
