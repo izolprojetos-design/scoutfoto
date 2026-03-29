@@ -269,8 +269,27 @@ const Scouts = () => {
     setEditBranch(scout.manual_branch || 'auto');
     setEditSubgroup(scout.subgroup_id || 'none');
     setEditPhoto(null);
-    setEditPhotoPreview(scout.photo_url);
     setEditDialogOpen(true);
+
+    // Validate photo_url still exists before showing preview
+    if (scout.photo_url) {
+      const img = new Image();
+      img.onload = () => setEditPhotoPreview(scout.photo_url);
+      img.onerror = () => {
+        setEditPhotoPreview(null);
+        // Auto-clear broken URL from DB
+        if (!clearedPhotoIds.current.has(scout.id)) {
+          clearedPhotoIds.current.add(scout.id);
+          supabase.from('scouts').update({ photo_url: null }).eq('id', scout.id).then(() => {
+            setScouts(prev => prev.map(s => s.id === scout.id ? { ...s, photo_url: null } : s));
+            setEditingScout(prev => prev ? { ...prev, photo_url: null } : prev);
+          });
+        }
+      };
+      img.src = scout.photo_url;
+    } else {
+      setEditPhotoPreview(null);
+    }
   };
 
   const handleEditScout = async (e: React.FormEvent) => {
