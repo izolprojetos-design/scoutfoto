@@ -22,7 +22,7 @@ const Login = () => {
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error('Erro ao entrar: ' + error.message);
+      toast.error('E-mail ou senha incorretos. Por favor, tente novamente.');
     } else {
       navigate('/dashboard');
     }
