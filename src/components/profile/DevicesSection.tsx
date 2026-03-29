@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck } from 'lucide-react';
+import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getDeviceFingerprint } from '@/lib/deviceDetection';
@@ -26,6 +26,7 @@ const DevicesSection = () => {
   const [devices, setDevices] = useState<Device[]>([]);
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState<string | null>(null);
+  const [loggingOutAll, setLoggingOutAll] = useState(false);
   const [currentFingerprint, setCurrentFingerprint] = useState('');
 
   useEffect(() => {
@@ -89,13 +90,40 @@ const DevicesSection = () => {
   const isCurrentDevice = (fingerprint: string) =>
     fingerprint === currentFingerprint;
 
+  const logoutAllDevices = async () => {
+    if (!user) return;
+    setLoggingOutAll(true);
+    // Remove all devices except current
+    await supabase
+      .from('user_devices')
+      .delete()
+      .eq('user_id', user.id)
+      .neq('device_fingerprint', currentFingerprint);
+
+    toast.success('Todas as outras sessões foram encerradas.');
+    // Global sign out will force re-auth on other devices
+    await supabase.auth.signOut({ scope: 'global' });
+  };
+
   return (
     <Card className="border-0 shadow-lg">
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Smartphone className="h-5 w-5" />
           Dispositivos Conectados
         </CardTitle>
+        {devices.length > 1 && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={logoutAllDevices}
+            disabled={loggingOutAll}
+            className="gap-2"
+          >
+            {loggingOutAll ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+            Encerrar todas as sessões
+          </Button>
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (
