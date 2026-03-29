@@ -158,6 +158,19 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
+                <AnimatePresence>
+                  {loginError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+                    >
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {loginError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
                 </Button>
