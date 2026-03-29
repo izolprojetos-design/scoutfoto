@@ -106,13 +106,19 @@ const Scouts = () => {
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
 
-  // Guardian form
+  // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [guardianAuth, setGuardianAuth] = useState(false);
   const [newSubgroupName, setNewSubgroupName] = useState('');
   const [creatingSubgroup, setCreatingSubgroup] = useState(false);
+
+  // Inline guardian for new scout (minor)
+  const [inlineGuardianName, setInlineGuardianName] = useState('');
+  const [inlineGuardianEmail, setInlineGuardianEmail] = useState('');
+  const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
+  const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
 
 
   const fetchData = async () => {
@@ -216,10 +222,24 @@ const Scouts = () => {
       }
     }
 
+    // Save inline guardian if minor and guardian name provided
+    if (data && inlineGuardianName.trim()) {
+      await supabase.from('guardians').insert({
+        name: inlineGuardianName,
+        email: inlineGuardianEmail,
+        phone: inlineGuardianPhone,
+        scout_id: data.id,
+        image_authorization: inlineGuardianAuth,
+        authorization_date: inlineGuardianAuth ? new Date().toISOString() : null,
+        created_by: user.id,
+      });
+    }
+
     toast.success('Membro cadastrado com sucesso!');
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
+    setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
   };
@@ -371,6 +391,12 @@ const Scouts = () => {
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
+    guardianFields?: {
+      name: string; setName: (v: string) => void;
+      email: string; setEmail: (v: string) => void;
+      phone: string; setPhone: (v: string) => void;
+      auth: boolean; setAuth: (v: boolean) => void;
+    },
   ) => {
     const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
@@ -378,6 +404,7 @@ const Scouts = () => {
       : detectedBranch;
     const effectiveBranchKey = effectiveBranch?.key || '';
     const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
+    const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -493,6 +520,32 @@ const Scouts = () => {
         <Label>Observações</Label>
         <Textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notas adicionais..." />
       </div>
+      {isMinor && guardianFields && (
+        <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <UserPlus className="h-4 w-4 text-primary" />
+            <Label className="text-sm font-semibold text-primary">Responsável (menor de idade)</Label>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Nome do responsável *</Label>
+            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value)} placeholder="Nome completo do responsável" className="h-10" required />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs">E-mail</Label>
+              <Input type="email" value={guardianFields.email} onChange={e => guardianFields.setEmail(e.target.value)} placeholder="email@exemplo.com" className="h-10" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Telefone</Label>
+              <Input value={guardianFields.phone} onChange={e => guardianFields.setPhone(e.target.value)} placeholder="(00) 00000-0000" className="h-10" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="inline-guardian-auth" checked={guardianFields.auth} onChange={e => guardianFields.setAuth(e.target.checked)} className="rounded border-input" />
+            <Label htmlFor="inline-guardian-auth" className="text-xs cursor-pointer">Autorização de imagem concedida</Label>
+          </div>
+        </div>
+      )}
       <Button type="submit" className="w-full h-11 font-semibold" disabled={isUploading}>
         {isUploading ? 'Salvando...' : submitLabel}
       </Button>
@@ -531,6 +584,12 @@ const Scouts = () => {
                 'scout-photo-create',
                 scoutBranch, setScoutBranch,
                 scoutSubgroup, setScoutSubgroup,
+                {
+                  name: inlineGuardianName, setName: setInlineGuardianName,
+                  email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
+                  phone: inlineGuardianPhone, setPhone: setInlineGuardianPhone,
+                  auth: inlineGuardianAuth, setAuth: setInlineGuardianAuth,
+                },
               )}
             </DialogContent>
           </Dialog>
