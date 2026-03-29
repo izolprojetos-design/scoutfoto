@@ -510,6 +510,42 @@ export type Database = {
           },
         ]
       }
+      user_devices: {
+        Row: {
+          browser: string
+          created_at: string
+          device_fingerprint: string
+          device_name: string
+          id: string
+          is_trusted: boolean
+          last_login_at: string
+          os: string
+          user_id: string
+        }
+        Insert: {
+          browser?: string
+          created_at?: string
+          device_fingerprint: string
+          device_name?: string
+          id?: string
+          is_trusted?: boolean
+          last_login_at?: string
+          os?: string
+          user_id: string
+        }
+        Update: {
+          browser?: string
+          created_at?: string
+          device_fingerprint?: string
+          device_name?: string
+          id?: string
+          is_trusted?: boolean
+          last_login_at?: string
+          os?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
