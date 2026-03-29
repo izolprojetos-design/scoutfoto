@@ -396,6 +396,7 @@ const Scouts = () => {
     photoInputId: string,
     branchOverride: string, setBranchOverride: (v: string) => void,
     subgroupId: string, setSubgroupId: (v: string) => void,
+    formTarget: 'new' | 'edit',
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
