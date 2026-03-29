@@ -516,7 +516,7 @@ const Scouts = () => {
     toast.success(`${filteredScouts.length} integrantes exportados!`);
   };
 
-
+  const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
     birth: string, setBirth: (v: string) => void,
