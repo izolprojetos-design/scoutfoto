@@ -63,8 +63,16 @@ const DevicesSection = () => {
     if (error) {
       toast.error('Erro ao remover dispositivo');
     } else {
+      const removed = devices.find(d => d.id === deviceId);
       toast.success('Dispositivo removido');
       setDevices(prev => prev.filter(d => d.id !== deviceId));
+      try {
+        await logAudit(user!.id, 'remote_device_removed', undefined, {
+          device_name: removed?.device_name,
+          browser: removed?.browser,
+          os: removed?.os,
+        });
+      } catch {}
     }
     setRemoving(null);
   };
