@@ -19,8 +19,7 @@ export const SCOUT_BRANCHES: BranchInfo[] = [
 
 // Categorias de adultos (atribuição somente manual)
 export const ADULT_CATEGORIES: BranchInfo[] = [
-  { name: 'Dirigente', key: 'dirigente', icon: '🤝', minAge: 252, maxAge: 480, color: 'purple' },
-  { name: 'Chefes', key: 'chefes', icon: '🎖️', minAge: 480, maxAge: 1200, color: 'blue' },
+  { name: 'Voluntário', key: 'voluntario', icon: '🤝', minAge: 252, maxAge: 1200, color: 'purple' },
 ];
 
 // Todas as categorias combinadas (para filtros, UI, etc.)
