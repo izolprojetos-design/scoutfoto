@@ -834,6 +834,7 @@ const Scouts = () => {
             'scout-photo-edit',
             editBranch, setEditBranch,
             editSubgroup, setEditSubgroup,
+            'edit',
           )}
         </DialogContent>
       </Dialog>
