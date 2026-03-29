@@ -16,6 +16,7 @@ interface CloudPhotoPickerDialogProps {
 interface StorageImage {
   name: string;
   url: string;
+  scoutName?: string;
 }
 
 const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDialogProps) => {
@@ -33,6 +34,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
   const loadImages = async () => {
     setLoading(true);
     try {
+      // Load scouts to map IDs to names
+      const { data: scoutsData } = await supabase.from('scouts').select('id, name');
+      const scoutMap = new Map<string, string>();
+      scoutsData?.forEach(s => {
+        scoutMap.set(s.id, s.name);
+      });
+
       // List files from scout-photos bucket
       const { data: scoutPhotos } = await supabase.storage.from('scout-photos').list('', {
         limit: 200,
@@ -43,10 +51,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
-          if (file.name && !file.name.startsWith('.')) {
-            const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
-            items.push({ name: file.name, url: publicUrl });
-          }
+          // Skip folders (like 'avatars') and hidden files
+          if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
+          const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
+          const scoutId = file.name.split('.')[0];
+          items.push({ name: file.name, url: publicUrl, scoutName: scoutMap.get(scoutId) });
         }
       }
 
@@ -58,11 +67,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
 
       if (privateImages) {
         for (const file of privateImages) {
-          if (file.name && !file.name.startsWith('.') && file.metadata) {
-            const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
-            if (data?.signedUrl) {
-              items.push({ name: file.name, url: data.signedUrl });
-            }
+          if (!file.name || file.name.startsWith('.') || !file.metadata) continue;
+          const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
+          if (data?.signedUrl) {
+            items.push({ name: file.name, url: data.signedUrl });
           }
         }
       }
@@ -90,9 +98,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
     setConfirming(false);
   };
 
-  const filtered = images.filter(img =>
-    img.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = images.filter(img => {
+    const q = search.toLowerCase();
+    return img.name.toLowerCase().includes(q) || (img.scoutName?.toLowerCase().includes(q) ?? false);
+  });
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -133,7 +142,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
                   type="button"
                   onClick={() => setSelectedUrl(selectedUrl === img.url ? null : img.url)}
                   className={cn(
-                    "relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:opacity-90",
+                    "relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:opacity-90 group",
                     selectedUrl === img.url
                       ? "border-primary ring-2 ring-primary/30"
                       : "border-transparent"
@@ -141,10 +150,15 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
                 >
                   <img
                     src={img.url}
-                    alt={img.name}
+                    alt={img.scoutName || img.name}
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
+                  {img.scoutName && (
+                    <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-0.5 truncate text-center">
+                      {img.scoutName}
+                    </div>
+                  )}
                   {selectedUrl === img.url && (
                     <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                       <div className="bg-primary text-primary-foreground rounded-full p-1">
