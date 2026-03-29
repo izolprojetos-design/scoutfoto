@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { toast } from 'sonner';
-import { Loader2, Shield, Camera, Users, Eye, EyeOff } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Login = () => {
   const { signIn } = useAuth();
@@ -16,13 +15,15 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      toast.error('E-mail ou senha incorretos. Por favor, tente novamente.');
+      setLoginError('E-mail ou senha incorretos. Por favor, tente novamente.');
     } else {
       navigate('/dashboard');
     }
@@ -157,6 +158,19 @@ const Login = () => {
                     </button>
                   </div>
                 </div>
+                <AnimatePresence>
+                  {loginError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+                    >
+                      <AlertCircle className="h-4 w-4 shrink-0" />
+                      {loginError}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 <Button type="submit" className="w-full h-11 font-semibold" disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Entrar'}
                 </Button>
