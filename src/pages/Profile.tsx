@@ -9,7 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Camera, Save, Loader2, User, ImagePlus } from 'lucide-react';
+import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucide-react';
+import { validatePassword } from '@/lib/passwordValidation';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
@@ -27,6 +29,17 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+
+  // Change password state
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+
+  const passwordValidation = validatePassword(newPassword);
 
   const initials = profile?.name
     ?.split(' ')
@@ -195,6 +208,121 @@ const Profile = () => {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Salvar alterações
             </Button>}
+          </CardContent>
+        </Card>
+
+        {/* Change Password */}
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Alterar Senha
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password">Senha atual</Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showCurrentPw ? 'text' : 'password'}
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  placeholder="Digite sua senha atual"
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPw(!showCurrentPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showCurrentPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Nova senha</Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPw ? 'text' : 'password'}
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  placeholder="Mínimo 8 caracteres"
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPw(!showNewPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showNewPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+              <PasswordStrengthIndicator password={newPassword} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-new-password">Confirmar nova senha</Label>
+              <div className="relative">
+                <Input
+                  id="confirm-new-password"
+                  type={showConfirmPw ? 'text' : 'password'}
+                  value={confirmNewPassword}
+                  onChange={e => setConfirmNewPassword(e.target.value)}
+                  placeholder="Repita a nova senha"
+                  className="h-11 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(!showConfirmPw)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showConfirmPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <Button
+              onClick={async () => {
+                if (!currentPassword) {
+                  toast.error('Digite sua senha atual');
+                  return;
+                }
+                if (!passwordValidation.isValid) {
+                  toast.error('A nova senha não atende aos requisitos mínimos');
+                  return;
+                }
+                if (newPassword !== confirmNewPassword) {
+                  toast.error('As senhas não coincidem');
+                  return;
+                }
+                setChangingPassword(true);
+                // Verify current password by attempting sign in
+                const { error: verifyError } = await supabase.auth.signInWithPassword({
+                  email: profile?.email || '',
+                  password: currentPassword,
+                });
+                if (verifyError) {
+                  toast.error('Senha atual incorreta');
+                  setChangingPassword(false);
+                  return;
+                }
+                const { error } = await supabase.auth.updateUser({ password: newPassword });
+                if (error) {
+                  toast.error('Erro ao alterar senha: ' + error.message);
+                } else {
+                  toast.success('Senha alterada com sucesso!');
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmNewPassword('');
+                }
+                setChangingPassword(false);
+              }}
+              disabled={changingPassword || !passwordValidation.isValid || !currentPassword || newPassword !== confirmNewPassword}
+              className="gap-2"
+            >
+              {changingPassword ? <Loader2 className="h-4 w-4 animate-spin" /> : <Lock className="h-4 w-4" />}
+              Alterar Senha
+            </Button>
           </CardContent>
         </Card>
       </div>
