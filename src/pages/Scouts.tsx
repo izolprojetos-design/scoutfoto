@@ -1151,6 +1151,11 @@ const Scouts = () => {
                       <span className="font-medium">{viewingScout.scout_group}</span>
                     </div>
                   )}
+                  {viewingScout.section && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Seção</span>
+                      <span className="font-medium">{viewingScout.section}</span>
+                    </div>
                   {nextChange && (
                     <div className="flex justify-between py-2 border-b">
                       <span className="text-muted-foreground">Próximo ramo</span>
