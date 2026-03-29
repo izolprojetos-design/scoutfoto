@@ -247,6 +247,9 @@ const Scouts = () => {
       created_by: user.id,
       manual_branch: scoutBranch !== 'auto' ? scoutBranch : null,
       subgroup_id: scoutSubgroup !== 'none' ? scoutSubgroup : null,
+      registration_id: scoutRegistrationId,
+      phone: scoutPhone,
+      section: scoutSection,
     }).select('id').single();
 
     if (error) {
