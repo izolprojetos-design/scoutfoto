@@ -861,7 +861,7 @@ const Scouts = () => {
                 className="h-4 w-4 rounded border-border"
               />
               <Label htmlFor="img-auth" className="text-sm leading-snug">
-                Autorizo o uso de imagem do jovem em atividades escoteiras
+                Autorizo o uso de imagem do jovem em atividades escoteiras, conforme o art. 240-A do ECA Digital (Lei nº 15.211/2025)
               </Label>
             </div>
             <Button type="submit" className="w-full h-11 font-semibold">Adicionar Responsável</Button>
