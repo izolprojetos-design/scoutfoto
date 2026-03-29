@@ -762,7 +762,6 @@ const Scouts = () => {
                 handleCreateScout,
                 scoutName, setScoutName,
                 scoutBirth, setScoutBirth,
-                scoutGroup, setScoutGroup,
                 scoutNotes, setScoutNotes,
                 scoutPhotoPreview,
                 handlePhotoSelect,
