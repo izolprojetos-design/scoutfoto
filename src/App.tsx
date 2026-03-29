@@ -37,8 +37,16 @@ const PageLoader = () => (
   </div>
 );
 
+// Check if running as installed PWA (standalone mode)
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+  || (navigator as any).standalone === true;
+
 // App root component
-const App = () => (
+const App = () => {
+  const [splashDone, setSplashDone] = useState(!isStandalone);
+  const handleSplashFinished = useCallback(() => setSplashDone(true), []);
+
+  return (
   <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
