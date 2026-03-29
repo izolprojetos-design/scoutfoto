@@ -135,6 +135,7 @@ const Login = () => {
                     <Link
                       to="/forgot-password"
                       className="text-xs text-primary hover:underline"
+                      tabIndex={-1}
                     >
                       Esqueci minha senha
                     </Link>
