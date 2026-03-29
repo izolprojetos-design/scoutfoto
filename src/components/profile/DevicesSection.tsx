@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck } from 'lucide-react';
+import { Smartphone, Monitor, Trash2, Loader2, Shield, ShieldCheck, LogOut } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { getDeviceFingerprint } from '@/lib/deviceDetection';
