@@ -485,7 +485,7 @@ const EventDetail = () => {
                 <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
                   <Checkbox id="event-consent" checked={consent} onCheckedChange={(checked) => setConsent(checked === true)} />
                   <Label htmlFor="event-consent" className="text-xs leading-snug">
-                    Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram.
+                    Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram, nos termos do art. 240-A do ECA Digital (Lei nº 15.211/2025).
                   </Label>
                 </div>
 

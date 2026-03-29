@@ -333,7 +333,7 @@ const Upload = () => {
               <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
                 <Checkbox id="consent" checked={consent} onCheckedChange={(checked) => setConsent(checked === true)} />
                 <Label htmlFor="consent" className="text-sm leading-snug">
-                  Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram com sua publicação.
+                  Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram com sua publicação, nos termos do art. 240-A do ECA Digital (Lei nº 15.211/2025).
                 </Label>
               </div>
 
