@@ -183,7 +183,7 @@ const Login = () => {
           </Card>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} ScoutFoto
+            © {new Date().getFullYear()} ScoutFoto — Sempre Alerta!
           </p>
         </motion.div>
       </div>
