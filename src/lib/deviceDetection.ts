@@ -32,7 +32,7 @@ const getDeviceName = (ua: string): string => {
   return `${type} — ${os}`;
 };
 
-const generateFingerprint = (): string => {
+export const getDeviceFingerprint = (): string => {
   const ua = navigator.userAgent;
   const screen = `${window.screen.width}x${window.screen.height}`;
   const colorDepth = String(window.screen.colorDepth);
