@@ -640,10 +640,6 @@ const Scouts = () => {
         <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
       </div>
       <div className="space-y-2">
-        <Label>Seção</Label>
-        <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
-      </div>
-      <div className="space-y-2">
         <Label>Ramo</Label>
         <Select value={branchOverride} onValueChange={setBranchOverride}>
           <SelectTrigger className="h-11">
@@ -658,6 +654,10 @@ const Scouts = () => {
             ))}
           </SelectContent>
         </Select>
+      </div>
+      <div className="space-y-2">
+        <Label>Seção</Label>
+        <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
       </div>
       {effectiveBranchKey && (
         <div className="space-y-2">
