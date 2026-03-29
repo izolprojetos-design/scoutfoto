@@ -1103,13 +1103,21 @@ const Scouts = () => {
                     </div>
                   )}
                   <div>
-                    <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                      {viewingScout.registration_id && (
+                        <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
+                      )}
+                    </div>
                     <p className="text-sm text-muted-foreground">{formatAge(new Date(viewingScout.birth_date))}</p>
-                    <div className="flex gap-1.5 mt-1">
+                    <div className="flex flex-wrap gap-1.5 mt-1">
                       {branch && (
                         <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
                           {branch.icon} {branch.name}
                         </Badge>
+                      )}
+                      {viewingScout.section && (
+                        <Badge variant="outline" className="font-normal text-xs">{viewingScout.section}</Badge>
                       )}
                       {viewingScout.scout_group && (
                         <Badge variant="outline" className="font-normal text-xs">{viewingScout.scout_group}</Badge>
@@ -1119,6 +1127,18 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-2 text-sm">
+                  {viewingScout.registration_id && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">ID do Associado</span>
+                      <span className="font-medium font-mono">{viewingScout.registration_id}</span>
+                    </div>
+                  )}
+                  {viewingScout.phone && (
+                    <div className="flex justify-between py-2 border-b">
+                      <span className="text-muted-foreground">Celular</span>
+                      <span className="font-medium">{viewingScout.phone}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Data de nascimento</span>
                     <span className="font-medium">
