@@ -580,62 +580,6 @@ const Admin = () => {
           <PermissionsManager />
         </TabsContent>
 
-        <TabsContent value="stats">
-          <div className="grid gap-6 md:grid-cols-2">
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <ImageIcon className="h-5 w-5 text-primary" />
-                  Fotos Eventos
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">Fotos vinculadas a cada evento</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.eventCounts.length === 0 ? (
-                    <p className="text-sm text-muted-foreground text-center py-4">Nenhum evento cadastrado</p>
-                  ) : (
-                    <>
-                      {stats.eventCounts.map(ec => (
-                        <div key={ec.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                          <span className="font-medium text-sm">{ec.name}</span>
-                          <Badge variant="secondary">{ec.count} {ec.count === 1 ? 'foto' : 'fotos'}</Badge>
-                        </div>
-                      ))}
-                      <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
-                        <span>Total</span>
-                        <Badge>{(() => { const t = stats.eventCounts.reduce((s, b) => s + b.count, 0); return `${t} ${t === 1 ? 'foto' : 'fotos'}`; })()}</Badge>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-primary" />
-                  Fotos Integrantes
-                </CardTitle>
-                <p className="text-xs text-muted-foreground">Fotos vinculadas a integrantes (por ramo)</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.memberBranchCounts.map(bc => (
-                    <div key={bc.name} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                      <span className="font-medium">{bc.name}</span>
-                      <Badge variant="secondary">{bc.count} {bc.count === 1 ? 'foto' : 'fotos'}</Badge>
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between rounded-lg bg-primary/10 p-3 font-semibold">
-                    <span>Total</span>
-                    <Badge>{(() => { const t = stats.memberBranchCounts.reduce((s, b) => s + b.count, 0); return `${t} ${t === 1 ? 'foto' : 'fotos'}`; })()}</Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
 
         <TabsContent value="audit">
           <ActivityLogsViewer />
