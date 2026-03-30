@@ -289,7 +289,7 @@ const Gallery = () => {
     : '📷 Galeria de Fotos';
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
