@@ -606,6 +606,9 @@ const Scouts = () => {
       : detectedBranch;
     const effectiveBranchKey = effectiveBranch?.key || '';
     const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
+    const sectionsForBranch = effectiveBranchKey
+      ? [...new Set(scouts.filter(s => (s.manual_branch || '') === effectiveBranchKey && s.section).map(s => s.section))].sort()
+      : [];
     const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
 
     return (
@@ -718,7 +721,21 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Seção</Label>
-        <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
+        {sectionsForBranch.length > 0 ? (
+          <Select value={sectionVal} onValueChange={setSectionVal}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Selecione a seção" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Nenhuma</SelectItem>
+              {sectionsForBranch.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
+        )}
       </div>
       {effectiveBranchKey && (
         <div className="space-y-2">
