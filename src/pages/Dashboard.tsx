@@ -65,7 +65,26 @@ const Dashboard = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
+    setTransitioningId(scoutId);
+    const today = new Date().toISOString().split('T')[0];
+    const { error } = await supabase.from('scouts').update({
+      manual_branch: targetBranchKey,
+      transition_date: today,
+    }).eq('id', scoutId);
+    if (error) {
+      toast.error('Erro ao realizar transição: ' + error.message);
+    } else {
+      toast.success(`${scoutName} transferido(a) com sucesso!`);
+      // Refresh scouts
+      const { data } = await supabase.from('scouts').select('*').order('name');
+      if (data) setScouts(data);
+    }
+    setTransitioningId(null);
+  };
 
   interface EventWithCount {
     id: string;
