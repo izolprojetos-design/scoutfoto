@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import AppLayout from '@/components/AppLayout';
+
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -313,7 +313,7 @@ const EventDetail = () => {
   if (!event && !loading) return null;
 
   return (
-    <AppLayout>
+    <>
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
@@ -645,7 +645,7 @@ const EventDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-    </AppLayout>
+    </>
   );
 };
 

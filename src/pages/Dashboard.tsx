@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import AppLayout from '@/components/AppLayout';
+
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -210,7 +210,7 @@ const Dashboard = () => {
   );
 
   return (
-    <AppLayout>
+    <>
       {/* Welcome Section */}
       <div className="mb-8">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -549,7 +549,7 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import AppLayout from '@/components/AppLayout';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -403,7 +403,7 @@ const Admin = () => {
   const userNameById = (uid: string) => users.find(u => u.user_id === uid)?.name || uid.slice(0, 8);
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
           <Shield className="mr-2 inline h-7 w-7" />
@@ -940,7 +940,7 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

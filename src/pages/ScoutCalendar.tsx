@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import AppLayout from '@/components/AppLayout';
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -75,7 +75,7 @@ const ScoutCalendar = () => {
     bId ? branches.find(b => b.id === bId) : null;
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Calendário Escoteiro</h1>
         <p className="mt-1 text-muted-foreground">Atividades e eventos do grupo</p>
@@ -224,7 +224,7 @@ const ScoutCalendar = () => {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </>
   );
 };
 

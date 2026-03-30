@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import AppLayout from '@/components/AppLayout';
+
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -206,7 +206,7 @@ const Upload = () => {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-6 text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
           Upload de Fotos
@@ -363,7 +363,7 @@ const Upload = () => {
           onCropComplete={handleCropComplete}
         />
       )}
-    </AppLayout>
+    </>
   );
 };
 
