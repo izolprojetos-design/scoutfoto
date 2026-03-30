@@ -500,29 +500,42 @@ const Scouts = () => {
 
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
     // Load logo
+    let logoBase64: string | null = null;
     try {
       const logoResponse = await fetch('/images/logo-grupo.png');
       const logoBlob = await logoResponse.blob();
-      const logoBase64 = await new Promise<string>((resolve) => {
+      logoBase64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onloadend = () => resolve(reader.result as string);
         reader.readAsDataURL(logoBlob);
       });
-      doc.addImage(logoBase64, 'PNG', 14, 5, 20, 20);
     } catch (e) {
       console.warn('Logo não carregado:', e);
     }
 
-    doc.setFontSize(16);
-    doc.text(`Integrantes - ${filterLabel}`, 38, 13);
-    doc.setFontSize(9);
-    doc.text('12º Grupo Escoteiro Monte Caburaí - 12GEMC', 38, 19);
-    doc.setFontSize(8);
-    doc.setTextColor(120);
-    doc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 38, 24);
-    doc.setTextColor(0);
+    const drawHeader = (pageDoc: any) => {
+      if (logoBase64) {
+        pageDoc.addImage(logoBase64, 'PNG', 14, 5, 20, 20);
+      }
+      pageDoc.setFontSize(18);
+      pageDoc.setFont('helvetica', 'bold');
+      pageDoc.setTextColor(30, 60, 35);
+      pageDoc.text(`Integrantes - ${filterLabel}`, 38, 14);
+      pageDoc.setFontSize(11);
+      pageDoc.setFont('helvetica', 'normal');
+      pageDoc.setTextColor(60);
+      pageDoc.text('12º Grupo Escoteiro Monte Caburaí - 12GEMC', 38, 20);
+      pageDoc.setFontSize(9);
+      pageDoc.setTextColor(120);
+      pageDoc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 38, 25);
+      pageDoc.setTextColor(0);
+    };
+
+    drawHeader(doc);
 
     const headers = ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
     const rows = filteredScouts.map(scout => {
@@ -546,11 +559,45 @@ const Scouts = () => {
     autoTable(doc, {
       head: [headers],
       body: rows,
-      startY: 28,
-      styles: { fontSize: 8, cellPadding: 2 },
-      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold' },
+      startY: 30,
+      styles: { fontSize: 10, cellPadding: 3, textColor: [20, 20, 20] },
+      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 10 },
       alternateRowStyles: { fillColor: [245, 245, 240] },
+      margin: { top: 30 },
+      didDrawPage: (data: any) => {
+        // Draw header on every new page (except first, already drawn)
+        if (data.pageNumber > 1) {
+          drawHeader(doc);
+        }
+        // Page number footer
+        const totalPages = doc.getNumberOfPages();
+        doc.setFontSize(9);
+        doc.setTextColor(120);
+        doc.text(
+          `Página ${data.pageNumber} de ${totalPages}`,
+          pageWidth / 2,
+          pageHeight - 8,
+          { align: 'center' }
+        );
+      },
     });
+
+    // Fix page numbers (totalPages is only accurate after all pages are drawn)
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      // White rect to clear previous footer text
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, pageHeight - 14, pageWidth, 14, 'F');
+      doc.text(
+        `Página ${i} de ${totalPages}`,
+        pageWidth / 2,
+        pageHeight - 8,
+        { align: 'center' }
+      );
+    }
 
     doc.save(`integrantes_${filterLabel.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.pdf`);
     toast.success(`${filteredScouts.length} integrantes exportados em PDF!`);
