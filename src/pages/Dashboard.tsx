@@ -210,7 +210,7 @@ const Dashboard = () => {
   );
 
   return (
-    <AppLayout>
+    <>
       {/* Welcome Section */}
       <div className="mb-8">
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
