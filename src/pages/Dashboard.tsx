@@ -7,12 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AppLayout from '@/components/AppLayout';
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { toast } from 'sonner';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface BranchWithCount {
   id: string;
@@ -63,7 +65,26 @@ const Dashboard = () => {
   const [totalImages, setTotalImages] = useState(0);
   const [totalEvents, setTotalEvents] = useState(0);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
+    setTransitioningId(scoutId);
+    const today = new Date().toISOString().split('T')[0];
+    const { error } = await supabase.from('scouts').update({
+      manual_branch: targetBranchKey,
+      transition_date: today,
+    }).eq('id', scoutId);
+    if (error) {
+      toast.error('Erro ao realizar transição: ' + error.message);
+    } else {
+      toast.success(`${scoutName} transferido(a) com sucesso!`);
+      // Refresh scouts
+      const { data } = await supabase.from('scouts').select('*').order('name');
+      if (data) setScouts(data);
+    }
+    setTransitioningId(null);
+  };
 
   interface EventWithCount {
     id: string;
@@ -310,7 +331,30 @@ const Dashboard = () => {
                           </p>
                         </div>
                       </div>
-                      <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={transitioningId === s.id}>
+                              <Check className="h-3 w-3" /> Transferir
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar transição de ramo</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Deseja transferir <strong>{s.name}</strong> de {currentBranch?.icon} {currentBranch?.name} para {s.targetBranch.icon} {s.targetBranch.name}? A data de passagem será registrada como hoje.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleTransition(s.id, s.targetBranch.key, s.name)}>
+                                Confirmar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
                   );
                 })}
