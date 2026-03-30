@@ -476,7 +476,7 @@ const Scouts = () => {
     }).select('*').single();
     setCreatingSubgroup(false);
     if (error) {
-      toast.error('Erro ao criar subgrupo: ' + error.message);
+      toast.error('Erro ao criar equipe: ' + error.message);
       return null;
     }
     if (data) {
