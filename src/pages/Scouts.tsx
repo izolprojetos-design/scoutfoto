@@ -493,8 +493,10 @@ const Scouts = () => {
   };
 
   const handleExportPDF = async () => {
-    const { default: jsPDF } = await import('jspdf');
-    await import('jspdf-autotable');
+    const jsPDFModule = await import('jspdf');
+    const jsPDF = jsPDFModule.default;
+    const autoTableModule = await import('jspdf-autotable');
+    const autoTable = autoTableModule.default;
 
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
@@ -541,7 +543,7 @@ const Scouts = () => {
       ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [headers],
       body: rows,
       startY: 28,
