@@ -618,6 +618,19 @@ const Scouts = () => {
       : [];
     const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
 
+    // Determine if transition date field should show
+    const nextBranchChange = birth ? getNextBranchChange(new Date(birth)) : null;
+    const ageBranch = birth ? getCurrentBranch(new Date(birth)) : null;
+    const currentBranchIdx = effectiveBranch ? SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key) : -1;
+    const ageBranchIdx = ageBranch ? SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key) : -1;
+    const showTransitionDate = birth && effectiveBranchKey !== 'voluntario' && (
+      (nextBranchChange && nextBranchChange.monthsLeft <= 0 && nextBranchChange.daysLeft <= 0) ||
+      (ageBranchIdx > currentBranchIdx && currentBranchIdx >= 0)
+    );
+    const nextBranch = showTransitionDate
+      ? (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null))
+      : null;
+
     return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
