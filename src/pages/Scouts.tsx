@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -527,6 +527,38 @@ const Scouts = () => {
     toast.success(`${filteredScouts.length} integrantes exportados em PDF!`);
   };
 
+  const handleExportExcel = async () => {
+    const XLSX = await import('xlsx');
+    const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
+
+    const rows = filteredScouts.map(scout => {
+      const branch = getEffectiveBranch(scout);
+      const sg = subgroups.find(s => s.id === scout.subgroup_id);
+      const scoutGuards = getGuardiansForScout(scout.id);
+      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      return {
+        'ID': scout.registration_id || '',
+        'Nome': scout.name,
+        'Ramo': branch?.name || '',
+        'Seção': scout.section || '',
+        'Equipe': sg?.name || '',
+        'Celular': scout.phone || '',
+        'Data de Nascimento': new Date(scout.birth_date).toLocaleDateString('pt-BR'),
+        'Idade': formatAge(new Date(scout.birth_date)),
+        'Responsável': responsavel,
+      };
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const colWidths = [10, 30, 12, 18, 18, 16, 16, 14, 30];
+    ws['!cols'] = colWidths.map(w => ({ wch: w }));
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, filterLabel);
+    XLSX.writeFile(wb, `integrantes_${filterLabel.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    toast.success(`${filteredScouts.length} integrantes exportados em Excel!`);
+  };
+
   const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
@@ -830,6 +862,10 @@ const Scouts = () => {
           <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportPDF} disabled={filteredScouts.length === 0}>
             <FileDown className="h-4 w-4" />
             Exportar PDF
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportExcel} disabled={filteredScouts.length === 0}>
+            <FileSpreadsheet className="h-4 w-4" />
+            Exportar Excel
           </Button>
         </div>
       </div>
