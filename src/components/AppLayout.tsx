@@ -1,7 +1,17 @@
+import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
+import { Loader2 } from 'lucide-react';
+import { Suspense } from 'react';
 
-const AppLayout = ({ children }: { children: React.ReactNode }) => {
+const PageLoader = () => (
+  <div className="flex flex-1 items-center justify-center">
+    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
+
+/** Persistent layout – sidebar stays mounted across route changes. */
+const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -11,7 +21,11 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <SidebarTrigger />
           </header>
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
-            {children}
+            {children ?? (
+              <Suspense fallback={<PageLoader />}>
+                <Outlet />
+              </Suspense>
+            )}
           </main>
         </div>
       </div>
