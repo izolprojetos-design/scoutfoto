@@ -483,15 +483,25 @@ const Scouts = () => {
     return null;
   };
 
-  const handleExportCSV = () => {
-    const csvRows: string[] = [];
-    csvRows.push('ID,Nome,Ramo,Seção,Equipe,Celular,Data de Nascimento,Idade,Responsável');
-    filteredScouts.forEach(scout => {
+  const handleExportPDF = async () => {
+    const { default: jsPDF } = await import('jspdf');
+    await import('jspdf-autotable');
+
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
+
+    doc.setFontSize(16);
+    doc.text(`Integrantes - ${filterLabel}`, 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 14, 22);
+
+    const headers = ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
+    const rows = filteredScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
       const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
-      const row = [
+      return [
         scout.registration_id || '',
         scout.name,
         branch?.name || '',
@@ -501,19 +511,20 @@ const Scouts = () => {
         new Date(scout.birth_date).toLocaleDateString('pt-BR'),
         formatAge(new Date(scout.birth_date)),
         responsavel,
-      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',');
-      csvRows.push(row);
+      ];
     });
-    const bom = '\uFEFF';
-    const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const filterLabel = branchFilter === 'all' ? 'todos' : branchFilter;
-    a.href = url;
-    a.download = `integrantes_${filterLabel}_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(`${filteredScouts.length} integrantes exportados!`);
+
+    (doc as any).autoTable({
+      head: [headers],
+      body: rows,
+      startY: 28,
+      styles: { fontSize: 8, cellPadding: 2 },
+      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 245, 240] },
+    });
+
+    doc.save(`integrantes_${filterLabel.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.pdf`);
+    toast.success(`${filteredScouts.length} integrantes exportados em PDF!`);
   };
 
   const renderScoutForm = (
@@ -816,9 +827,9 @@ const Scouts = () => {
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportCSV} disabled={filteredScouts.length === 0}>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportPDF} disabled={filteredScouts.length === 0}>
             <FileDown className="h-4 w-4" />
-            Exportar CSV
+            Exportar PDF
           </Button>
         </div>
       </div>
