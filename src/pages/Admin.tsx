@@ -429,7 +429,7 @@ const Admin = () => {
           <CardContent className="flex flex-col items-center p-4">
             <FolderTree className="mb-1 h-6 w-6 text-primary" />
             <p className="text-2xl font-bold">{subgroups.length}</p>
-            <p className="text-xs text-muted-foreground">Subgrupos</p>
+            <p className="text-xs text-muted-foreground">Equipes</p>
           </CardContent>
         </Card>
       </div>
