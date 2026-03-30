@@ -799,7 +799,7 @@ const Scouts = () => {
             <Input
               value={newSubgroupName}
               onChange={e => setNewSubgroupName(e.target.value)}
-              placeholder="Novo subgrupo..."
+              placeholder="Nova equipe..."
               className="h-9 text-sm"
             />
             <Button
