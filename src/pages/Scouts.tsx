@@ -721,38 +721,35 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Seção</Label>
-        {sectionsForBranch.length > 0 ? (
-          <>
-            <Select value={sectionVal && !sectionsForBranch.includes(sectionVal) ? '__custom__' : (sectionVal || '__none__')} onValueChange={v => {
-              if (v === '__custom__') {
-                setSectionVal('');
-                setTimeout(() => {
-                  const input = document.getElementById('custom-section-input');
-                  if (input) input.focus();
-                }, 100);
-              } else {
-                setSectionVal(v === '__none__' ? '' : v);
-              }
-            }}>
-              <SelectTrigger className="h-11">
-                <SelectValue placeholder="Selecione a seção" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__none__">Nenhuma</SelectItem>
-                {sectionsForBranch.map(s => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-                <SelectItem value="__custom__">✏️ Digitar outra...</SelectItem>
-              </SelectContent>
-            </Select>
-            {(sectionVal && !sectionsForBranch.includes(sectionVal)) || sectionVal === '' && document.getElementById('custom-section-input') ? null : null}
-            {(!sectionVal && sectionsForBranch.length > 0) ? null : null}
-          </>
+        {sectionsForBranch.length > 0 && !(sectionVal && !sectionsForBranch.includes(sectionVal)) ? (
+          <Select value={sectionVal || '__none__'} onValueChange={v => {
+            if (v === '__custom__') {
+              setSectionVal(' ');
+              setTimeout(() => setSectionVal(''), 0);
+            } else {
+              setSectionVal(v === '__none__' ? '' : v);
+            }
+          }}>
+            <SelectTrigger className="h-11">
+              <SelectValue placeholder="Selecione a seção" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__none__">Nenhuma</SelectItem>
+              {sectionsForBranch.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+              <SelectItem value="__custom__">✏️ Digitar outra...</SelectItem>
+            </SelectContent>
+          </Select>
         ) : (
-          <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Ex: Tropa Sabiá" className="h-11" />
-        )}
-        {sectionsForBranch.length > 0 && (sectionVal === '' || (sectionVal && !sectionsForBranch.includes(sectionVal))) && (
-          <Input id="custom-section-input" value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Digite o nome da seção" className="h-11" />
+          <div className="flex gap-2">
+            <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Digite o nome da seção" className="h-11 flex-1" autoFocus={sectionsForBranch.length > 0} />
+            {sectionsForBranch.length > 0 && (
+              <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => setSectionVal('')} title="Voltar para lista">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         )}
       </div>
       {effectiveBranchKey && (
