@@ -206,7 +206,7 @@ const Upload = () => {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="mx-auto max-w-2xl">
         <h1 className="mb-6 text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
           Upload de Fotos
