@@ -201,7 +201,7 @@ const Admin = () => {
     const { error } = await supabase.from('subgroups').delete().eq('id', id);
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo excluído!');
+      toast.success('Equipe excluída!');
       fetchSubgroups();
     }
   };
