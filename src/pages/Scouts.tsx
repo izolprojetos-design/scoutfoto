@@ -727,7 +727,7 @@ const Scouts = () => {
               <SelectValue placeholder="Selecione a seção" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Nenhuma</SelectItem>
+              <SelectItem value="__none__">Nenhuma</SelectItem>
               {sectionsForBranch.map(s => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
