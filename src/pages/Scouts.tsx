@@ -739,6 +739,44 @@ const Scouts = () => {
           </SelectContent>
         </Select>
       </div>
+      {showTransitionDate && nextBranch && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <ArrowRightLeft className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <Label className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+              Passagem para {nextBranch.icon} {nextBranch.name}
+            </Label>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Integrante atingiu a idade para o próximo ramo. Informe a data da passagem para confirmar a transição.
+          </p>
+          <Input
+            type="date"
+            value={transitionDate}
+            onChange={e => {
+              setTransitionDate(e.target.value);
+              if (e.target.value) {
+                setBranchOverride(nextBranch.key);
+              }
+            }}
+            className="h-11"
+          />
+          {transitionDate && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setTransitionDate('');
+                setBranchOverride('auto');
+              }}
+            >
+              <X className="h-3 w-3 mr-1" /> Cancelar passagem
+            </Button>
+          )}
+        </div>
+      )}
       <div className="space-y-2">
         <Label>Seção</Label>
         {sectionsForBranch.length > 0 && !customSectionMode ? (
