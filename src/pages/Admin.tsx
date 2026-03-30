@@ -403,7 +403,7 @@ const Admin = () => {
   const userNameById = (uid: string) => users.find(u => u.user_id === uid)?.name || uid.slice(0, 8);
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
           <Shield className="mr-2 inline h-7 w-7" />
