@@ -633,10 +633,8 @@ const Scouts = () => {
     // Also keep showing when transitionDate is already filled (branch was overridden)
     const showTransitionDate = needsTransition || (!!transitionDate && birth && effectiveBranchKey !== 'voluntario');
 
-    // Determine the previous branch (before transition) to show in the label
-    const detectedBranchIdx = detectedBranch ? SCOUT_BRANCHES.findIndex(b => b.key === detectedBranch.key) : -1;
-    const previousBranch = transitionDate && branchOverride !== 'auto'
-      ? SCOUT_BRANCHES[detectedBranchIdx >= 1 ? detectedBranchIdx - 1 : 0]
+    const nextBranch = showTransitionDate
+      ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
       : null;
     const nextBranch = showTransitionDate
       ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
