@@ -39,6 +39,7 @@ interface Scout {
   registration_id: string;
   phone: string;
   section: string;
+  transition_date: string | null;
 }
 
 interface Subgroup {
@@ -96,7 +97,7 @@ const Scouts = () => {
   const [editRegistrationId, setEditRegistrationId] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editSection, setEditSection] = useState('');
-
+  const [editTransitionDate, setEditTransitionDate] = useState('');
   // Scout form
   const [scoutName, setScoutName] = useState('');
   const [scoutBirth, setScoutBirth] = useState('');
@@ -110,7 +111,7 @@ const Scouts = () => {
   const [scoutRegistrationId, setScoutRegistrationId] = useState('');
   const [scoutPhone, setScoutPhone] = useState('');
   const [scoutSection, setScoutSection] = useState('');
-
+  const [scoutTransitionDate, setScoutTransitionDate] = useState('');
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState('');
@@ -252,6 +253,7 @@ const Scouts = () => {
       registration_id: scoutRegistrationId,
       phone: scoutPhone,
       section: scoutSection,
+      transition_date: scoutTransitionDate || null,
     }).select('id').single();
 
     if (error) {
@@ -284,7 +286,7 @@ const Scouts = () => {
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
-    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection('');
+    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection(''); setScoutTransitionDate('');
     setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
@@ -301,6 +303,7 @@ const Scouts = () => {
     setEditRegistrationId(scout.registration_id || '');
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
+    setEditTransitionDate(scout.transition_date || '');
     const branchKey = scout.manual_branch || '';
     const knownSections = branchKey ? [...new Set(scouts.filter(s => (s.manual_branch || '') === branchKey && s.section).map(s => s.section))] : [];
     setCustomSectionMode(!!scout.section && !knownSections.includes(scout.section));
@@ -386,6 +389,7 @@ const Scouts = () => {
       registration_id: editRegistrationId,
       phone: editPhone,
       section: editSection,
+      transition_date: editTransitionDate || null,
     }).eq('id', editingScout.id);
 
     if (error) {
@@ -598,6 +602,7 @@ const Scouts = () => {
     registrationId: string, setRegistrationId: (v: string) => void,
     phoneVal: string, setPhoneVal: (v: string) => void,
     sectionVal: string, setSectionVal: (v: string) => void,
+    transitionDate: string, setTransitionDate: (v: string) => void,
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
@@ -615,6 +620,19 @@ const Scouts = () => {
       ? [...new Set(scouts.filter(s => (s.manual_branch || '') === effectiveBranchKey && s.section).map(s => s.section))].sort()
       : [];
     const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
+
+    // Determine if transition date field should show
+    const nextBranchChange = birth ? getNextBranchChange(new Date(birth)) : null;
+    const ageBranch = birth ? getCurrentBranch(new Date(birth)) : null;
+    const currentBranchIdx = effectiveBranch ? SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key) : -1;
+    const ageBranchIdx = ageBranch ? SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key) : -1;
+    const showTransitionDate = birth && effectiveBranchKey !== 'voluntario' && (
+      (nextBranchChange && nextBranchChange.monthsLeft <= 0 && nextBranchChange.daysLeft <= 0) ||
+      (ageBranchIdx > currentBranchIdx && currentBranchIdx >= 0)
+    );
+    const nextBranch = showTransitionDate
+      ? (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null))
+      : null;
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -724,6 +742,44 @@ const Scouts = () => {
           </SelectContent>
         </Select>
       </div>
+      {showTransitionDate && nextBranch && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 space-y-2">
+          <div className="flex items-center gap-2">
+            <ArrowRightLeft className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <Label className="text-sm font-semibold text-amber-700 dark:text-amber-300">
+              Passagem para {nextBranch.icon} {nextBranch.name}
+            </Label>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400">
+            Integrante atingiu a idade para o próximo ramo. Informe a data da passagem para confirmar a transição.
+          </p>
+          <Input
+            type="date"
+            value={transitionDate}
+            onChange={e => {
+              setTransitionDate(e.target.value);
+              if (e.target.value) {
+                setBranchOverride(nextBranch.key);
+              }
+            }}
+            className="h-11"
+          />
+          {transitionDate && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="text-xs"
+              onClick={() => {
+                setTransitionDate('');
+                setBranchOverride('auto');
+              }}
+            >
+              <X className="h-3 w-3 mr-1" /> Cancelar passagem
+            </Button>
+          )}
+        </div>
+      )}
       <div className="space-y-2">
         <Label>Seção</Label>
         {sectionsForBranch.length > 0 && !customSectionMode ? (
@@ -938,6 +994,7 @@ const Scouts = () => {
                 scoutRegistrationId, setScoutRegistrationId,
                 scoutPhone, setScoutPhone,
                 scoutSection, setScoutSection,
+                scoutTransitionDate, setScoutTransitionDate,
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
@@ -1206,6 +1263,7 @@ const Scouts = () => {
             editRegistrationId, setEditRegistrationId,
             editPhone, setEditPhone,
             editSection, setEditSection,
+            editTransitionDate, setEditTransitionDate,
           )}
         </DialogContent>
       </Dialog>

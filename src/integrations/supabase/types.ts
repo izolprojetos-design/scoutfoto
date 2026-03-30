@@ -419,6 +419,7 @@ export type Database = {
           scout_group: string
           section: string | null
           subgroup_id: string | null
+          transition_date: string | null
           updated_at: string
         }
         Insert: {
@@ -435,6 +436,7 @@ export type Database = {
           scout_group?: string
           section?: string | null
           subgroup_id?: string | null
+          transition_date?: string | null
           updated_at?: string
         }
         Update: {
@@ -451,6 +453,7 @@ export type Database = {
           scout_group?: string
           section?: string | null
           subgroup_id?: string | null
+          transition_date?: string | null
           updated_at?: string
         }
         Relationships: [
