@@ -253,6 +253,7 @@ const Scouts = () => {
       registration_id: scoutRegistrationId,
       phone: scoutPhone,
       section: scoutSection,
+      transition_date: scoutTransitionDate || null,
     }).select('id').single();
 
     if (error) {
