@@ -706,7 +706,7 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Ramo</Label>
-        <Select value={branchOverride} onValueChange={setBranchOverride}>
+        <Select value={branchOverride} onValueChange={v => { setBranchOverride(v); setCustomSectionMode(false); }}>
           <SelectTrigger className="h-11">
             <SelectValue placeholder="Selecione o ramo" />
           </SelectTrigger>
