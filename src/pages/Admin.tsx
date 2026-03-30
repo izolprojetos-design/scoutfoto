@@ -188,7 +188,7 @@ const Admin = () => {
     }).eq('id', editSubgroupId);
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo atualizado!');
+      toast.success('Equipe atualizada!');
       setEditSubgroupId(null);
       fetchSubgroups();
     }
