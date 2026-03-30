@@ -863,6 +863,10 @@ const Scouts = () => {
             <FileDown className="h-4 w-4" />
             Exportar PDF
           </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportExcel} disabled={filteredScouts.length === 0}>
+            <FileSpreadsheet className="h-4 w-4" />
+            Exportar Excel
+          </Button>
         </div>
       </div>
 
