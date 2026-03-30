@@ -56,6 +56,7 @@ const Admin = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   
   const [search, setSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
