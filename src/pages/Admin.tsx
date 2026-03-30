@@ -753,7 +753,7 @@ const Admin = () => {
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Excluir "{sg.name}"?</AlertDialogTitle>
-                                    <AlertDialogDescription>Os integrantes vinculados a este subgrupo serão desvinculados.</AlertDialogDescription>
+                                    <AlertDialogDescription>Os integrantes vinculados a esta equipe serão desvinculados.</AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
