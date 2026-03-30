@@ -67,6 +67,8 @@ const Admin = () => {
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('viewer');
   const [creating, setCreating] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   // Reset password form
   const [resetOpen, setResetOpen] = useState(false);
