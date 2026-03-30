@@ -300,6 +300,9 @@ const Scouts = () => {
     setEditRegistrationId(scout.registration_id || '');
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
+    const branchKey = scout.manual_branch || '';
+    const knownSections = branchKey ? [...new Set(scouts.filter(s => (s.manual_branch || '') === branchKey && s.section).map(s => s.section))] : [];
+    setCustomSectionMode(!!scout.section && !knownSections.includes(scout.section));
     setEditPhoto(null);
     setEditDialogOpen(true);
 
@@ -856,7 +859,7 @@ const Scouts = () => {
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
         {(isAdmin || isChefe || isDirigente || canUpload) && (
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={v => { setDialogOpen(v); if (v) setCustomSectionMode(false); }}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
