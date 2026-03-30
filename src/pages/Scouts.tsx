@@ -490,10 +490,28 @@ const Scouts = () => {
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
 
+    // Load logo
+    try {
+      const logoResponse = await fetch('/images/logo-grupo.png');
+      const logoBlob = await logoResponse.blob();
+      const logoBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(logoBlob);
+      });
+      doc.addImage(logoBase64, 'PNG', 14, 5, 20, 20);
+    } catch (e) {
+      console.warn('Logo não carregado:', e);
+    }
+
     doc.setFontSize(16);
-    doc.text(`Integrantes - ${filterLabel}`, 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 14, 22);
+    doc.text(`Integrantes - ${filterLabel}`, 38, 13);
+    doc.setFontSize(9);
+    doc.text('12º Grupo Escoteiro Monte Caburaí - 12GEMC', 38, 19);
+    doc.setFontSize(8);
+    doc.setTextColor(120);
+    doc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 38, 24);
+    doc.setTextColor(0);
 
     const headers = ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
     const rows = filteredScouts.map(scout => {
