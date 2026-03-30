@@ -1209,6 +1209,7 @@ const Scouts = () => {
             editRegistrationId, setEditRegistrationId,
             editPhone, setEditPhone,
             editSection, setEditSection,
+            editTransitionDate, setEditTransitionDate,
           )}
         </DialogContent>
       </Dialog>
