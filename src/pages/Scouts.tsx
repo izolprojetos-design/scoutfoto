@@ -437,18 +437,7 @@ const Scouts = () => {
     if (scout.manual_branch) {
       return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
     }
-    const ageBranch = getCurrentBranch(new Date(scout.birth_date));
-    // If age says next branch but no transition_date, stay in previous branch
-    if (ageBranch && !scout.transition_date) {
-      // Find if there's a previous branch they should still be in
-      const idx = SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key);
-      if (idx > 0) {
-        // Check if they recently crossed the boundary (within the same branch transition)
-        // We keep them in the age-based branch if no manual override exists
-        // The transition_date logic only applies when explicitly managed
-      }
-    }
-    return ageBranch;
+    return getCurrentBranch(new Date(scout.birth_date));
   };
 
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
