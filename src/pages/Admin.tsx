@@ -316,7 +316,7 @@ const Admin = () => {
     if (error || data?.error) {
       toast.error('Erro ao criar usuário: ' + (data?.error || error?.message));
     } else {
-      toast.success('Usuário criado com sucesso!');
+      toast.success('Usuário criado com sucesso! Ao fazer login, será solicitado a trocar a senha imediatamente.', { duration: 6000 });
       setCreateOpen(false);
       setNewName('');
       setNewEmail('');
