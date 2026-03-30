@@ -641,7 +641,7 @@ const Admin = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FolderTree className="h-5 w-5" />
-                  Patrulhas / Matilhas ({subgroups.length})
+                  Equipes ({subgroups.length})
                 </CardTitle>
                 <div className="flex gap-2 flex-wrap">
                   <Select value={subgroupBranchFilter} onValueChange={setSubgroupBranchFilter}>
