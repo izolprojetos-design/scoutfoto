@@ -132,6 +132,25 @@ const Dashboard = () => {
     return map;
   }, [scouts]);
 
+  // Scouts whose age-based branch is ahead of their effective branch (overdue transition)
+  const overdueChanges = useMemo(() =>
+    scouts
+      .filter(s => {
+        const effectiveBranch = getEffectiveBranchKey(s);
+        const ageBranch = getCurrentBranch(new Date(s.birth_date));
+        if (!effectiveBranch || !ageBranch) return false;
+        const effectiveIdx = SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key);
+        const ageIdx = SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key);
+        // Overdue: age says they should be in a higher branch than their effective one
+        return effectiveIdx >= 0 && ageIdx >= 0 && ageIdx > effectiveIdx;
+      })
+      .map(s => {
+        const ageBranch = getCurrentBranch(new Date(s.birth_date))!;
+        return { ...s, targetBranch: ageBranch };
+      }),
+    [scouts]
+  );
+
   // Scouts changing branch soon (< 6 months)
   const upcomingChanges = useMemo(() =>
     scouts
@@ -264,34 +283,71 @@ const Dashboard = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {upcomingChanges.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma mudança nos próximos 6 meses</p>
-            ) : (
-              upcomingChanges.slice(0, 5).map(s => (
-                <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                  <div className="flex items-center gap-2">
-                    {s.photo_url ? (
-                      <button
-                        onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })}
-                        className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer"
-                      >
-                        <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
-                      </button>
-                    ) : (
-                      <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        <User className="h-4 w-4 text-muted-foreground" />
+            {overdueChanges.length > 0 && (
+              <>
+                <p className="text-xs font-semibold text-destructive uppercase tracking-wide">Já completaram a idade</p>
+                {overdueChanges.slice(0, 5).map(s => {
+                  const currentBranch = getEffectiveBranchKey(s);
+                  return (
+                    <div key={s.id} className="flex items-center justify-between rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                      <div className="flex items-center gap-2">
+                        {s.photo_url ? (
+                          <button
+                            onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })}
+                            className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer"
+                          >
+                            <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                          </button>
+                        ) : (
+                          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium">{s.name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            {currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}
+                          </p>
+                        </div>
                       </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">→ {s.change.branch.icon} {s.change.branch.name}</p>
+                      <Badge variant="destructive" className="text-xs">Pendente</Badge>
                     </div>
+                  );
+                })}
+              </>
+            )}
+            {upcomingChanges.length > 0 && (
+              <>
+                {overdueChanges.length > 0 && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Próximos 6 meses</p>}
+                {upcomingChanges.slice(0, 5).map(s => (
+                  <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                    <div className="flex items-center gap-2">
+                      {s.photo_url ? (
+                        <button
+                          onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })}
+                          className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer"
+                        >
+                          <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                        </button>
+                      ) : (
+                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{s.name}</p>
+                        <p className="text-xs text-muted-foreground">→ {s.change.branch.icon} {s.change.branch.name}</p>
+                      </div>
+                    </div>
+                    <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs">
+                      {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
+                    </Badge>
                   </div>
-                  <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs">
-                    {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
-                  </Badge>
-                </div>
-              ))
+                ))}
+              </>
+            )}
+            {overdueChanges.length === 0 && upcomingChanges.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-4">Nenhuma mudança nos próximos 6 meses</p>
             )}
           </CardContent>
         </Card>
