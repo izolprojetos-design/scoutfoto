@@ -524,7 +524,12 @@ const Admin = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Senha</Label>
-                          <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" />
+                          <div className="relative">
+                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="pr-10" />
+                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo</Label>
