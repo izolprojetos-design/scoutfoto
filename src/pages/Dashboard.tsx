@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import AppLayout from '@/components/AppLayout';
+
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
