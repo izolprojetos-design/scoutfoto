@@ -132,6 +132,25 @@ const Dashboard = () => {
     return map;
   }, [scouts]);
 
+  // Scouts whose age-based branch is ahead of their effective branch (overdue transition)
+  const overdueChanges = useMemo(() =>
+    scouts
+      .filter(s => {
+        const effectiveBranch = getEffectiveBranchKey(s);
+        const ageBranch = getCurrentBranch(new Date(s.birth_date));
+        if (!effectiveBranch || !ageBranch) return false;
+        const effectiveIdx = SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key);
+        const ageIdx = SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key);
+        // Overdue: age says they should be in a higher branch than their effective one
+        return effectiveIdx >= 0 && ageIdx >= 0 && ageIdx > effectiveIdx;
+      })
+      .map(s => {
+        const ageBranch = getCurrentBranch(new Date(s.birth_date))!;
+        return { ...s, targetBranch: ageBranch };
+      }),
+    [scouts]
+  );
+
   // Scouts changing branch soon (< 6 months)
   const upcomingChanges = useMemo(() =>
     scouts
