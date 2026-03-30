@@ -626,12 +626,15 @@ const Scouts = () => {
     const ageBranch = birth ? getCurrentBranch(new Date(birth)) : null;
     const currentBranchIdx = effectiveBranch ? SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key) : -1;
     const ageBranchIdx = ageBranch ? SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key) : -1;
-    const showTransitionDate = birth && effectiveBranchKey !== 'voluntario' && (
+    const needsTransition = birth && effectiveBranchKey !== 'voluntario' && (
       (nextBranchChange && nextBranchChange.monthsLeft <= 0 && nextBranchChange.daysLeft <= 0) ||
       (ageBranchIdx > currentBranchIdx && currentBranchIdx >= 0)
     );
+    // Also keep showing when transitionDate is already filled (branch was overridden)
+    const showTransitionDate = needsTransition || (!!transitionDate && birth && effectiveBranchKey !== 'voluntario');
+
     const nextBranch = showTransitionDate
-      ? (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null))
+      ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
       : null;
 
     return (
