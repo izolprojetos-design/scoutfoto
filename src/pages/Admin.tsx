@@ -171,7 +171,7 @@ const Admin = () => {
     });
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo criado!');
+      toast.success('Equipe criada!');
       setNewSubgroupName('');
       setNewSubgroupBranch('');
       fetchSubgroups();
