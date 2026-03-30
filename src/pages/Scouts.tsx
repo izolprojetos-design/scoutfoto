@@ -783,7 +783,7 @@ const Scouts = () => {
       </div>
       {effectiveBranchKey && (
         <div className="space-y-2">
-          <Label>Patrulha / Matilha</Label>
+          <Label>Equipe</Label>
           <Select value={subgroupId} onValueChange={setSubgroupId}>
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Selecione o subgrupo" />
