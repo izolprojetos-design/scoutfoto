@@ -722,7 +722,7 @@ const Scouts = () => {
       <div className="space-y-2">
         <Label>Seção</Label>
         {sectionsForBranch.length > 0 ? (
-          <Select value={sectionVal} onValueChange={setSectionVal}>
+          <Select value={sectionVal || '__none__'} onValueChange={v => setSectionVal(v === '__none__' ? '' : v)}>
             <SelectTrigger className="h-11">
               <SelectValue placeholder="Selecione a seção" />
             </SelectTrigger>
