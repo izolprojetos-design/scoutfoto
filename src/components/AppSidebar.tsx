@@ -34,7 +34,7 @@ const AppSidebar = () => {
   };
 
   const navItems = [
-    { to: '/dashboard', label: 'Dashboard', icon: Home, show: canViewPhotos },
+    { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
     { to: '/scouts', label: 'Integrantes', icon: Users, show: canManageScouts },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canManageEvents },
