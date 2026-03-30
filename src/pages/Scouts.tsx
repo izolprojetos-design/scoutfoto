@@ -756,6 +756,30 @@ const Scouts = () => {
             )}
           </div>
         )}
+        {effectiveBranchKey && (
+          <div className="flex gap-2">
+            <Input
+              value={newSectionName}
+              onChange={e => setNewSectionName(e.target.value)}
+              placeholder="Nova seção..."
+              className="h-9 text-sm"
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="h-9 px-3 text-sm whitespace-nowrap"
+              disabled={!newSectionName.trim()}
+              onClick={() => {
+                setSectionVal(newSectionName.trim());
+                setNewSectionName('');
+                setCustomSectionMode(false);
+              }}
+            >
+              <Plus className="h-3 w-3 mr-1" /> Criar
+            </Button>
+          </div>
+        )}
       </div>
       {effectiveBranchKey && (
         <div className="space-y-2">
