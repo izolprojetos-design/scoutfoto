@@ -111,7 +111,7 @@ const Scouts = () => {
   const [scoutRegistrationId, setScoutRegistrationId] = useState('');
   const [scoutPhone, setScoutPhone] = useState('');
   const [scoutSection, setScoutSection] = useState('');
-
+  const [scoutTransitionDate, setScoutTransitionDate] = useState('');
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState('');
