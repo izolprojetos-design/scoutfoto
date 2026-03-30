@@ -56,6 +56,7 @@ const Admin = () => {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   
   const [search, setSearch] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
@@ -455,7 +456,37 @@ const Admin = () => {
                 <div className="flex flex-wrap gap-2">
                   <div className="relative flex-1 min-w-[160px]">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
+                    <Input
+                      placeholder="Buscar..."
+                      value={search}
+                      onChange={e => setSearch(e.target.value)}
+                      onFocus={() => setShowSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                      className="pl-10"
+                      autoComplete="off"
+                    />
+                    {showSuggestions && search.length >= 1 && (() => {
+                      const suggestions = users.filter(u =>
+                        u.name.toLowerCase().includes(search.toLowerCase()) ||
+                        u.email.toLowerCase().includes(search.toLowerCase())
+                      ).slice(0, 8);
+                      if (suggestions.length === 0) return null;
+                      return (
+                        <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-lg max-h-60 overflow-y-auto">
+                          {suggestions.map(s => (
+                            <button
+                              key={s.user_id}
+                              type="button"
+                              className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent text-left"
+                              onMouseDown={() => { setSearch(s.name); setShowSuggestions(false); }}
+                            >
+                              <span className="font-medium truncate">{s.name}</span>
+                              <Badge variant={roleBadgeVariant(s.role)} className="ml-auto text-xs shrink-0">{s.role}</Badge>
+                            </button>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   </div>
                   <Select value={roleFilter} onValueChange={setRoleFilter}>
                     <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
