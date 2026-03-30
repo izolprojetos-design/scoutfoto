@@ -786,7 +786,7 @@ const Scouts = () => {
           <Label>Equipe</Label>
           <Select value={subgroupId} onValueChange={setSubgroupId}>
             <SelectTrigger className="h-11">
-              <SelectValue placeholder="Selecione o subgrupo" />
+              <SelectValue placeholder="Selecione a equipe" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Nenhum</SelectItem>
