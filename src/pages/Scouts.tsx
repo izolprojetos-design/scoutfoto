@@ -97,7 +97,7 @@ const Scouts = () => {
   const [editRegistrationId, setEditRegistrationId] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editSection, setEditSection] = useState('');
-
+  const [editTransitionDate, setEditTransitionDate] = useState('');
   // Scout form
   const [scoutName, setScoutName] = useState('');
   const [scoutBirth, setScoutBirth] = useState('');
