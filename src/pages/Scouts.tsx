@@ -476,11 +476,11 @@ const Scouts = () => {
     }).select('*').single();
     setCreatingSubgroup(false);
     if (error) {
-      toast.error('Erro ao criar subgrupo: ' + error.message);
+      toast.error('Erro ao criar equipe: ' + error.message);
       return null;
     }
     if (data) {
-      toast.success('Subgrupo criado!');
+      toast.success('Equipe criada!');
       setNewSubgroupName('');
       setSubgroups(prev => [...prev, data as Subgroup]);
       return data.id;
@@ -783,10 +783,10 @@ const Scouts = () => {
       </div>
       {effectiveBranchKey && (
         <div className="space-y-2">
-          <Label>Patrulha / Matilha</Label>
+          <Label>Equipe</Label>
           <Select value={subgroupId} onValueChange={setSubgroupId}>
             <SelectTrigger className="h-11">
-              <SelectValue placeholder="Selecione o subgrupo" />
+              <SelectValue placeholder="Selecione a equipe" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="none">Nenhum</SelectItem>
@@ -799,7 +799,7 @@ const Scouts = () => {
             <Input
               value={newSubgroupName}
               onChange={e => setNewSubgroupName(e.target.value)}
-              placeholder="Novo subgrupo..."
+              placeholder="Nova equipe..."
               className="h-9 text-sm"
             />
             <Button

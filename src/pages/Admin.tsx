@@ -171,7 +171,7 @@ const Admin = () => {
     });
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo criado!');
+      toast.success('Equipe criada!');
       setNewSubgroupName('');
       setNewSubgroupBranch('');
       fetchSubgroups();
@@ -188,7 +188,7 @@ const Admin = () => {
     }).eq('id', editSubgroupId);
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo atualizado!');
+      toast.success('Equipe atualizada!');
       setEditSubgroupId(null);
       fetchSubgroups();
     }
@@ -201,7 +201,7 @@ const Admin = () => {
     const { error } = await supabase.from('subgroups').delete().eq('id', id);
     if (error) toast.error('Erro: ' + error.message);
     else {
-      toast.success('Subgrupo excluído!');
+      toast.success('Equipe excluída!');
       fetchSubgroups();
     }
   };
@@ -429,7 +429,7 @@ const Admin = () => {
           <CardContent className="flex flex-col items-center p-4">
             <FolderTree className="mb-1 h-6 w-6 text-primary" />
             <p className="text-2xl font-bold">{subgroups.length}</p>
-            <p className="text-xs text-muted-foreground">Subgrupos</p>
+            <p className="text-xs text-muted-foreground">Equipes</p>
           </CardContent>
         </Card>
       </div>
@@ -440,7 +440,7 @@ const Admin = () => {
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
-          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Subgrupos</TabsTrigger>
+          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Equipes</TabsTrigger>
           <TabsTrigger value="maintenance" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Wrench className="h-3.5 w-3.5" />Manutenção</TabsTrigger>
         </TabsList>
 
@@ -641,7 +641,7 @@ const Admin = () => {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <CardTitle className="flex items-center gap-2">
                   <FolderTree className="h-5 w-5" />
-                  Patrulhas / Matilhas ({subgroups.length})
+                  Equipes ({subgroups.length})
                 </CardTitle>
                 <div className="flex gap-2 flex-wrap">
                   <Select value={subgroupBranchFilter} onValueChange={setSubgroupBranchFilter}>
@@ -664,7 +664,7 @@ const Admin = () => {
                   <Input
                     value={newSubgroupName}
                     onChange={e => setNewSubgroupName(e.target.value)}
-                    placeholder="Ex: Patrulha Águia"
+                    placeholder="Ex: Equipe Águia"
                     className="h-9"
                   />
                 </div>
@@ -753,7 +753,7 @@ const Admin = () => {
                                 <AlertDialogContent>
                                   <AlertDialogHeader>
                                     <AlertDialogTitle>Excluir "{sg.name}"?</AlertDialogTitle>
-                                    <AlertDialogDescription>Os integrantes vinculados a este subgrupo serão desvinculados.</AlertDialogDescription>
+                                    <AlertDialogDescription>Os integrantes vinculados a esta equipe serão desvinculados.</AlertDialogDescription>
                                   </AlertDialogHeader>
                                   <AlertDialogFooter>
                                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
@@ -768,7 +768,7 @@ const Admin = () => {
                     ))}
                     {filteredSubgroups.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhum subgrupo cadastrado</TableCell>
+                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhuma equipe cadastrada</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
