@@ -768,7 +768,7 @@ const Admin = () => {
                     ))}
                     {filteredSubgroups.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhum subgrupo cadastrado</TableCell>
+                        <TableCell colSpan={3} className="py-8 text-center text-muted-foreground">Nenhuma equipe cadastrada</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
