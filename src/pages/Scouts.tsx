@@ -480,7 +480,7 @@ const Scouts = () => {
       return null;
     }
     if (data) {
-      toast.success('Subgrupo criado!');
+      toast.success('Equipe criada!');
       setNewSubgroupName('');
       setSubgroups(prev => [...prev, data as Subgroup]);
       return data.id;
