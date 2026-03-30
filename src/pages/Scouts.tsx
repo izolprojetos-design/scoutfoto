@@ -389,6 +389,7 @@ const Scouts = () => {
       registration_id: editRegistrationId,
       phone: editPhone,
       section: editSection,
+      transition_date: editTransitionDate || null,
     }).eq('id', editingScout.id);
 
     if (error) {
