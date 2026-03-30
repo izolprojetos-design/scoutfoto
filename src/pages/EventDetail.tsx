@@ -313,7 +313,7 @@ const EventDetail = () => {
   if (!event && !loading) return null;
 
   return (
-    <AppLayout>
+    <>
       {/* Header */}
       <div className="mb-6 flex flex-col gap-4">
         <div className="flex items-center gap-3">
