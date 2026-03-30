@@ -746,6 +746,7 @@ const Scouts = () => {
                   'Escotistas - Assistentes de Seção': [],
                   'Dirigentes - Diretoria': [],
                   'Comissão Fiscal': [],
+                  'Pais/Responsáveis': [],
                   'Outros': [],
                 };
                 sectionsForBranch.forEach(s => {
@@ -753,6 +754,7 @@ const Scouts = () => {
                   else if (/assistente de se[çc][ãa]o/i.test(s)) categories['Escotistas - Assistentes de Seção'].push(s);
                   else if (/diretor|diretora|presidente/i.test(s)) categories['Dirigentes - Diretoria'].push(s);
                   else if (/comiss[ãa]o fiscal/i.test(s)) categories['Comissão Fiscal'].push(s);
+                  else if (/pais|respons[áa]ve/i.test(s)) categories['Pais/Responsáveis'].push(s);
                   else categories['Outros'].push(s);
                 });
                 return Object.entries(categories)
