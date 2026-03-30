@@ -286,7 +286,7 @@ const Scouts = () => {
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
-    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection('');
+    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection(''); setScoutTransitionDate('');
     setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
