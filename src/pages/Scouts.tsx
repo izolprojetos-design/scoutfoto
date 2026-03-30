@@ -940,6 +940,7 @@ const Scouts = () => {
                 scoutRegistrationId, setScoutRegistrationId,
                 scoutPhone, setScoutPhone,
                 scoutSection, setScoutSection,
+                scoutTransitionDate, setScoutTransitionDate,
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
