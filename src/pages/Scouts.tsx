@@ -128,6 +128,7 @@ const Scouts = () => {
   const [newSubgroupName, setNewSubgroupName] = useState('');
   const [creatingSubgroup, setCreatingSubgroup] = useState(false);
   const [customSectionMode, setCustomSectionMode] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
 
   // Inline guardian for new scout (minor)
   const [inlineGuardianName, setInlineGuardianName] = useState('');
