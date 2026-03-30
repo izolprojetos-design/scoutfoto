@@ -39,7 +39,7 @@ const PageLoader = () => (
   </div>
 );
 
-const AppLayout = lazy(() => import("@/components/AppLayout"));
+import AppLayout from "@/components/AppLayout";
 
 // Check if running as installed PWA (standalone mode)
 const isStandalone = window.matchMedia("(display-mode: standalone)").matches

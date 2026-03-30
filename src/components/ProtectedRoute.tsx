@@ -1,10 +1,10 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, PermissionKey } from '@/hooks/usePermissions';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   requiredRole?: 'admin' | 'viewer' | 'chefe' | 'dirigente' | 'dirigente_gestor';
   requiredPermission?: PermissionKey;
 }
@@ -31,7 +31,7 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     return <Navigate to="/dashboard" replace />;
   }
 
-  return <>{children}</>;
+  return <>{children ?? <Outlet />}</>;
 };
 
 export default ProtectedRoute;
