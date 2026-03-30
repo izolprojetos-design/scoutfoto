@@ -722,11 +722,11 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Seção</Label>
-        {sectionsForBranch.length > 0 && !(sectionVal && !sectionsForBranch.includes(sectionVal)) ? (
+        {sectionsForBranch.length > 0 && !customSectionMode ? (
           <Select value={sectionVal || '__none__'} onValueChange={v => {
             if (v === '__custom__') {
-              setSectionVal(' ');
-              setTimeout(() => setSectionVal(''), 0);
+              setCustomSectionMode(true);
+              setSectionVal('');
             } else {
               setSectionVal(v === '__none__' ? '' : v);
             }
@@ -744,9 +744,9 @@ const Scouts = () => {
           </Select>
         ) : (
           <div className="flex gap-2">
-            <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Digite o nome da seção" className="h-11 flex-1" autoFocus={sectionsForBranch.length > 0} />
+            <Input value={sectionVal} onChange={e => setSectionVal(e.target.value)} placeholder="Digite o nome da seção" className="h-11 flex-1" autoFocus={customSectionMode} />
             {sectionsForBranch.length > 0 && (
-              <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => setSectionVal('')} title="Voltar para lista">
+              <Button type="button" variant="outline" size="icon" className="h-11 w-11 shrink-0" onClick={() => { setCustomSectionMode(false); setSectionVal(''); }} title="Voltar para lista">
                 <X className="h-4 w-4" />
               </Button>
             )}
