@@ -39,6 +39,7 @@ interface Scout {
   registration_id: string;
   phone: string;
   section: string;
+  transition_date: string | null;
 }
 
 interface Subgroup {
