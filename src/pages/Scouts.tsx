@@ -300,6 +300,9 @@ const Scouts = () => {
     setEditRegistrationId(scout.registration_id || '');
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
+    const branchKey = scout.manual_branch || '';
+    const knownSections = branchKey ? [...new Set(scouts.filter(s => (s.manual_branch || '') === branchKey && s.section).map(s => s.section))] : [];
+    setCustomSectionMode(!!scout.section && !knownSections.includes(scout.section));
     setEditPhoto(null);
     setEditDialogOpen(true);
 
