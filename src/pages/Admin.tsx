@@ -940,7 +940,7 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

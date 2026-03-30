@@ -498,7 +498,7 @@ const Gallery = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

@@ -154,7 +154,7 @@ const BranchScouts = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

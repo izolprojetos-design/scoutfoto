@@ -224,7 +224,7 @@ const ScoutCalendar = () => {
           </CardContent>
         </Card>
       </div>
-    </AppLayout>
+    </>
   );
 };
 

@@ -549,7 +549,7 @@ const Dashboard = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

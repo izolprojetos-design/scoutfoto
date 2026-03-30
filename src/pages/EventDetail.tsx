@@ -645,7 +645,7 @@ const EventDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
-    </AppLayout>
+    </>
   );
 };
 

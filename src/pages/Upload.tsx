@@ -363,7 +363,7 @@ const Upload = () => {
           onCropComplete={handleCropComplete}
         />
       )}
-    </AppLayout>
+    </>
   );
 };
 

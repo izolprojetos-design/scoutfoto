@@ -1583,7 +1583,7 @@ const Scouts = () => {
           )}
         </DialogContent>
       </Dialog>
-    </AppLayout>
+    </>
   );
 };
 

@@ -396,7 +396,7 @@ const Events = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </AppLayout>
+    </>
   );
 };
 

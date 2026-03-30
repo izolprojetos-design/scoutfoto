@@ -342,7 +342,7 @@ const Profile = () => {
         {/* Connected Devices */}
         <DevicesSection />
       </div>
-    </AppLayout>
+    </>
   );
 };
 
