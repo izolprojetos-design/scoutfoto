@@ -740,7 +740,32 @@ const Scouts = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">Nenhuma</SelectItem>
-              {sectionsForBranch.map(s => (
+              {effectiveBranchKey === 'voluntario' ? (() => {
+                const categories: Record<string, string[]> = {
+                  'Escotistas - Chefes de Seção': [],
+                  'Escotistas - Assistentes de Seção': [],
+                  'Dirigentes - Diretoria': [],
+                  'Comissão Fiscal': [],
+                  'Outros': [],
+                };
+                sectionsForBranch.forEach(s => {
+                  if (/chefe de se[çc][ãa]o/i.test(s)) categories['Escotistas - Chefes de Seção'].push(s);
+                  else if (/assistente de se[çc][ãa]o/i.test(s)) categories['Escotistas - Assistentes de Seção'].push(s);
+                  else if (/diretor|diretora|presidente/i.test(s)) categories['Dirigentes - Diretoria'].push(s);
+                  else if (/comiss[ãa]o fiscal/i.test(s)) categories['Comissão Fiscal'].push(s);
+                  else categories['Outros'].push(s);
+                });
+                return Object.entries(categories)
+                  .filter(([, items]) => items.length > 0)
+                  .map(([cat, items]) => (
+                    <SelectGroup key={cat}>
+                      <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">{cat}</SelectLabel>
+                      {items.map(s => (
+                        <SelectItem key={s} value={s}>{s}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ));
+              })() : sectionsForBranch.map(s => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
               <SelectItem value="__custom__">✏️ Digitar outra...</SelectItem>
