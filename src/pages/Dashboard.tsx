@@ -355,6 +355,11 @@ const Dashboard = () => {
                           </AlertDialogContent>
                         </AlertDialog>
                       </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
             {upcomingChanges.length > 0 && (
               <>
                 {overdueChanges.length > 0 && <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Próximos 6 meses</p>}
