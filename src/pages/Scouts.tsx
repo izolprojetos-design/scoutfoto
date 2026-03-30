@@ -606,6 +606,9 @@ const Scouts = () => {
       : detectedBranch;
     const effectiveBranchKey = effectiveBranch?.key || '';
     const filteredSubgroups = subgroups.filter(sg => sg.branch_key === effectiveBranchKey);
+    const sectionsForBranch = effectiveBranchKey
+      ? [...new Set(scouts.filter(s => (s.manual_branch || '') === effectiveBranchKey && s.section).map(s => s.section))].sort()
+      : [];
     const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
 
     return (
