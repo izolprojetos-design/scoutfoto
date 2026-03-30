@@ -543,7 +543,7 @@ const Scouts = () => {
       ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
       head: [headers],
       body: rows,
       startY: 28,
