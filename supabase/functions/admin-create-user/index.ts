@@ -74,6 +74,16 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: resHeaders });
       }
 
+      // Set must_change_password flag so user is forced to change on first login
+      if (newUser.user) {
+        // Small delay to ensure profile trigger has completed
+        await new Promise(resolve => setTimeout(resolve, 500));
+        await serviceClient
+          .from("profiles")
+          .update({ must_change_password: true })
+          .eq("user_id", newUser.user.id);
+      }
+
       // Update role if provided and not default
       if (role && role !== "viewer" && newUser.user) {
         // The trigger creates a 'viewer' role, so we update it
