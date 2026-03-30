@@ -793,6 +793,28 @@ const Scouts = () => {
             ))}
           </SelectContent>
         </Select>
+        {(() => {
+          if (!birth || branchOverride === 'auto' || branchOverride === 'voluntario') return null;
+          const selectedBranchInfo = SCOUT_BRANCHES.find(b => b.key === branchOverride);
+          if (!selectedBranchInfo) return null;
+          const ageInMonths = Math.floor((new Date().getTime() - new Date(birth).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+          const expectedBranch = getCurrentBranch(new Date(birth));
+          if (expectedBranch && expectedBranch.key === branchOverride) return null;
+          const minYears = (selectedBranchInfo.minAge / 12).toFixed(1).replace('.0', '');
+          const maxYears = (selectedBranchInfo.maxAge / 12).toFixed(1).replace('.0', '');
+          return (
+            <div className="mt-2 rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/40 p-3 flex items-start gap-2">
+              <span className="text-amber-600 dark:text-amber-400 mt-0.5">⚠️</span>
+              <div className="text-xs text-amber-700 dark:text-amber-300">
+                <p className="font-semibold">Idade não corresponde ao ramo selecionado</p>
+                <p>A idade deste integrante ({formatAge(new Date(birth))}) não está na faixa etária do ramo {selectedBranchInfo.icon} {selectedBranchInfo.name} ({minYears} a {maxYears} anos).
+                  {expectedBranch && <> O ramo esperado por idade é <strong>{expectedBranch.icon} {expectedBranch.name}</strong>.</>}
+                  {!expectedBranch && <> Nenhum ramo juvenil corresponde a esta idade.</>}
+                </p>
+              </div>
+            </div>
+          );
+        })()}
       </div>
       {showTransitionDate && nextBranch && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 space-y-2">
