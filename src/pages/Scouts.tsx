@@ -636,9 +636,6 @@ const Scouts = () => {
     const nextBranch = showTransitionDate
       ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
       : null;
-    const nextBranch = showTransitionDate
-      ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
-      : null;
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
