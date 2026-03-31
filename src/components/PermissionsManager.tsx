@@ -144,7 +144,7 @@ const PermissionsManager = () => {
                       {MANAGED_ROLES.map(role => (
                         <td key={role} className="px-3 py-3 text-center">
                           <Checkbox
-                            checked={hasPermission(role, perm.id)}
+                            checked={role === 'admin' ? true : hasPermission(role, perm.id)}
                             onCheckedChange={() => togglePermission(role, perm.id)}
                             disabled={role === 'admin'}
                           />
