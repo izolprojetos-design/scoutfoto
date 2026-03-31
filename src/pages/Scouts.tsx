@@ -233,8 +233,8 @@ const Scouts = () => {
     }
     const { error } = await supabase.storage.from('scout-photos').upload(path, photo, { upsert: true });
     if (error) { console.error('Upload error:', error); return null; }
-    const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
-    return `${publicUrl}?t=${Date.now()}`;
+    const { data } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
+    return data?.signedUrl || path;
   };
 
   const handleCreateScout = async (e: React.FormEvent) => {
