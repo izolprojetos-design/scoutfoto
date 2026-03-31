@@ -22,14 +22,18 @@ const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
           className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
           style={{ backgroundColor: "#14532d" }}
         >
-          <motion.img
-            src="/icon-512.png"
-            alt="ScoutFoto"
-            className="w-32 h-32 rounded-3xl shadow-2xl"
+          <motion.div
+            className="w-36 h-36 rounded-full bg-white p-3 shadow-2xl flex items-center justify-center"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-          />
+          >
+            <img
+              src="/icon-512.png"
+              alt="12º Grupo Escoteiro Monte Caburaí"
+              className="w-full h-full object-contain rounded-full"
+            />
+          </motion.div>
           <motion.h1
             className="mt-6 text-3xl font-bold tracking-wide"
             style={{ color: "#d4a843" }}
