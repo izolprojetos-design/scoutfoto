@@ -581,6 +581,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_share_link_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          event_id: string
+          expires_at: string
+          is_active: boolean
+          max_views: number
+          view_count: number
+        }[]
+      }
       has_event_permission: {
         Args: { _event_id: string; _permission: string; _user_id: string }
         Returns: boolean
