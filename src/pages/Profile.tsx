@@ -14,6 +14,7 @@ import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucid
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import DevicesSection from '@/components/profile/DevicesSection';
+import MFASetup from '@/components/MFASetup';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
