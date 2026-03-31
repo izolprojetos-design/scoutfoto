@@ -17,26 +17,35 @@ export type Database = {
       audit_logs: {
         Row: {
           action: string
+          after_data: Json | null
+          before_data: Json | null
           created_at: string
           details: Json | null
           id: string
           image_id: string | null
+          ip_address: string | null
           user_id: string
         }
         Insert: {
           action: string
+          after_data?: Json | null
+          before_data?: Json | null
           created_at?: string
           details?: Json | null
           id?: string
           image_id?: string | null
+          ip_address?: string | null
           user_id: string
         }
         Update: {
           action?: string
+          after_data?: Json | null
+          before_data?: Json | null
           created_at?: string
           details?: Json | null
           id?: string
           image_id?: string | null
+          ip_address?: string | null
           user_id?: string
         }
         Relationships: [
