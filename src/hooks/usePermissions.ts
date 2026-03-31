@@ -8,7 +8,8 @@ export type PermissionKey =
   | 'download_photos'
   | 'manage_events'
   | 'manage_scouts'
-  | 'manage_users';
+  | 'manage_users'
+  | 'view_guardians';
 
 export interface Permission {
   id: string;
