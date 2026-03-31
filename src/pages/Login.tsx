@@ -180,10 +180,11 @@ const Login = () => {
                     <button
                       type="button"
                       tabIndex={3}
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onPointerDown={(e) => { e.preventDefault(); setShowPassword(!showPassword); }}
+                      className="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-muted-foreground hover:text-foreground touch-manipulation"
                     >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      <Eye className={`h-4 w-4 absolute transition-opacity duration-150 ${showPassword ? 'opacity-0' : 'opacity-100'}`} />
+                      <EyeOff className={`h-4 w-4 absolute transition-opacity duration-150 ${showPassword ? 'opacity-100' : 'opacity-0'}`} />
                     </button>
                   </div>
                 </div>
