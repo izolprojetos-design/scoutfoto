@@ -116,11 +116,16 @@ const BranchScouts = () => {
             >
               <div className="aspect-square overflow-hidden bg-muted">
                 {scout.photo_url ? (
-                  <img
-                    src={scout.photo_url}
+                  <ScoutPhoto
+                    photoUrl={scout.photo_url}
                     alt={scout.name}
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
+                    fallback={
+                      <div className="flex h-full items-center justify-center">
+                        <User className="h-12 w-12 text-muted-foreground/30" />
+                      </div>
+                    }
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
