@@ -150,8 +150,8 @@ const BranchScouts = () => {
         <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
           {selectedPhoto && (
             <>
-              <img
-                src={selectedPhoto.url}
+              <ScoutPhoto
+                photoUrl={selectedPhoto.url}
                 alt={selectedPhoto.name}
                 className="w-64 h-64 rounded-xl object-cover shadow-lg"
               />
