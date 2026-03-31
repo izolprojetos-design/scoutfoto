@@ -42,7 +42,7 @@ const BranchScouts = () => {
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
   const [branchData, setBranchData] = useState<BranchData | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
+  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null); // url is already signed
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
 
   useEffect(() => {
