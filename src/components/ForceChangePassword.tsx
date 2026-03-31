@@ -89,10 +89,11 @@ const ForceChangePassword = () => {
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                onClick={() => setShowConfirm(!showConfirm)}
+                onPointerDown={(e) => { e.preventDefault(); setShowConfirm(!showConfirm); }}
+                className="absolute right-0 top-0 h-full w-11 flex items-center justify-center text-muted-foreground hover:text-foreground touch-manipulation"
               >
-                {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                <Eye className={`h-4 w-4 absolute transition-opacity duration-150 ${showConfirm ? 'opacity-0' : 'opacity-100'}`} />
+                <EyeOff className={`h-4 w-4 absolute transition-opacity duration-150 ${showConfirm ? 'opacity-100' : 'opacity-0'}`} />
               </button>
             </div>
           </div>
