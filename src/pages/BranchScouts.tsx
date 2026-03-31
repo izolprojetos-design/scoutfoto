@@ -112,7 +112,13 @@ const BranchScouts = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: Math.min(index * 0.03, 0.5) }}
               className="group cursor-pointer overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5"
-              onClick={() => scout.photo_url && setSelectedPhoto({ name: scout.name, url: scout.photo_url })}
+              onClick={async () => {
+                if (scout.photo_url) {
+                  const { getSignedPhotoUrl } = await import('@/lib/storageUtils');
+                  const signed = await getSignedPhotoUrl(scout.photo_url);
+                  if (signed) setSelectedPhoto({ name: scout.name, url: signed });
+                }
+              }}
             >
               <div className="aspect-square overflow-hidden bg-muted">
                 {scout.photo_url ? (
