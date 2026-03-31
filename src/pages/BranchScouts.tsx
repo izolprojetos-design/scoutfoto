@@ -156,12 +156,33 @@ const BranchScouts = () => {
         <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
           {selectedPhoto && (
             <>
-              <ScoutPhoto
-                photoUrl={selectedPhoto.url}
+              <img
+                src={selectedPhoto.url}
                 alt={selectedPhoto.name}
                 className="w-64 h-64 rounded-xl object-cover shadow-lg"
               />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const response = await fetch(selectedPhoto.url);
+                    if (!response.ok) throw new Error('Not found');
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${selectedPhoto.name}.jpg`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  } catch {
+                    toast.error('Foto não disponível para download');
+                  }
+                }}
+              >
+                <Download className="h-4 w-4 mr-1" /> Baixar foto
+              </Button>
             </>
           )}
         </DialogContent>
