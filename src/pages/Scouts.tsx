@@ -1145,7 +1145,14 @@ const Scouts = () => {
                           photoUrl={scout.photo_url}
                           alt={scout.name}
                           className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
-                          onClick={(e) => { e.stopPropagation(); }}
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (scout.photo_url) {
+                              const signed = await getSignedPhotoUrl(scout.photo_url);
+                              if (signed) setViewingPhoto(signed);
+                              else toast.error('Foto não disponível');
+                            }
+                          }}
                           onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
                           fallback={
                             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
