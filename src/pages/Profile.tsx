@@ -340,8 +340,12 @@ const Profile = () => {
           </CardContent>
         </Card>
 
+        {/* 2FA Setup */}
+        <MFASetup />
+
         {/* Connected Devices */}
         <DevicesSection />
+      </div>
       </div>
     </>
   );
