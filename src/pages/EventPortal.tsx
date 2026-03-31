@@ -45,27 +45,14 @@ const EventPortal = () => {
         return;
       }
 
-      const { data: linkData, error: linkError } = await supabase
-        .from('event_share_links')
-        .select('*')
-        .eq('token', token)
-        .eq('is_active', true)
-        .single();
+      // Use secure RPC function to validate token (prevents enumeration)
+      const { data: linkRows, error: linkError } = await supabase
+        .rpc('get_share_link_by_token', { p_token: token });
+
+      const linkData = linkRows?.[0];
 
       if (linkError || !linkData) {
         setError('Link inválido ou expirado.');
-        setLoading(false);
-        return;
-      }
-
-      if (new Date(linkData.expires_at) < new Date()) {
-        setError('Este link expirou.');
-        setLoading(false);
-        return;
-      }
-
-      if (linkData.max_views && linkData.view_count >= linkData.max_views) {
-        setError('Este link atingiu o limite de visualizações.');
         setLoading(false);
         return;
       }
