@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check } from 'lucide-react';
+import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, setYear } from 'date-fns';
@@ -218,12 +219,13 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-muted-foreground"><p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p></p>
+            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
           </div>
         </motion.div>
       </div>
 
       {/* Quick Stats */}
+      {loading ? <StatsSkeleton /> : (
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
         {[
           { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
@@ -245,7 +247,15 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
+      )}
 
+      {loading ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
+          <PieChartSkeleton />
+          <ListCardSkeleton />
+          <ListCardSkeleton />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
         {/* Branch Distribution - Pie Chart */}
         <Card className="border shadow-sm">
@@ -442,6 +452,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
 
       {/* Branch Cards - Member Images Only */}
@@ -450,9 +461,7 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(6)].map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />)}
-        </div>
+        <GalleryCardsSkeleton count={6} />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {branches.map((branch, index) => (
@@ -492,9 +501,7 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />)}
-        </div>
+        <GalleryCardsSkeleton count={3} />
       ) : eventsWithPhotos.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento cadastrado</p>
       ) : (
