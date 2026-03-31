@@ -77,8 +77,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
         for (const file of scoutPhotos) {
           // Skip folders (like 'avatars') and hidden files
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
-          const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(file.name);
-          items.push({ name: file.name, url: publicUrl, scoutName: findScoutByFilename(file.name) });
+          const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(file.name, 3600);
+          if (signedData?.signedUrl) {
+            items.push({ name: file.name, url: signedData.signedUrl, scoutName: findScoutByFilename(file.name) });
+          }
         }
       }
 

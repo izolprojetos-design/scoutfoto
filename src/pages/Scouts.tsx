@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getSignedPhotoUrl } from '@/lib/storageUtils';
+import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/button';
@@ -233,8 +235,8 @@ const Scouts = () => {
     }
     const { error } = await supabase.storage.from('scout-photos').upload(path, photo, { upsert: true });
     if (error) { console.error('Upload error:', error); return null; }
-    const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(path);
-    return `${publicUrl}?t=${Date.now()}`;
+    const { data } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
+    return data?.signedUrl || path;
   };
 
   const handleCreateScout = async (e: React.FormEvent) => {
@@ -312,20 +314,20 @@ const Scouts = () => {
 
     // Validate photo_url still exists before showing preview
     if (scout.photo_url) {
-      const img = new Image();
-      img.onload = () => setEditPhotoPreview(scout.photo_url);
-      img.onerror = () => {
-        setEditPhotoPreview(null);
-        // Auto-clear broken URL from DB
-        if (!clearedPhotoIds.current.has(scout.id)) {
-          clearedPhotoIds.current.add(scout.id);
-          supabase.from('scouts').update({ photo_url: null }).eq('id', scout.id).then(() => {
-            setScouts(prev => prev.map(s => s.id === scout.id ? { ...s, photo_url: null } : s));
-            setEditingScout(prev => prev ? { ...prev, photo_url: null } : prev);
-          });
+      getSignedPhotoUrl(scout.photo_url).then(signedUrl => {
+        if (signedUrl) {
+          setEditPhotoPreview(signedUrl);
+        } else {
+          setEditPhotoPreview(null);
+          if (!clearedPhotoIds.current.has(scout.id)) {
+            clearedPhotoIds.current.add(scout.id);
+            supabase.from('scouts').update({ photo_url: null }).eq('id', scout.id).then(() => {
+              setScouts(prev => prev.map(s => s.id === scout.id ? { ...s, photo_url: null } : s));
+              setEditingScout(prev => prev ? { ...prev, photo_url: null } : prev);
+            });
+          }
         }
-      };
-      img.src = scout.photo_url;
+      });
     } else {
       setEditPhotoPreview(null);
     }
@@ -355,8 +357,8 @@ const Scouts = () => {
       await supabase.storage.from('scout-photos').upload(newPath, downloaded, { upsert: true });
       await supabase.storage.from('scout-photos').remove([oldFile.name]);
 
-      const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(newPath);
-      return `${publicUrl}?t=${Date.now()}`;
+      const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(newPath, 3600);
+      return signedData?.signedUrl || newPath;
     } catch (err) {
       console.error('Error renaming photo in storage:', err);
       return null;
@@ -1139,18 +1141,18 @@ const Scouts = () => {
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
                       {scout.photo_url ? (
-                        <>
-                          <img
-                            src={scout.photo_url}
-                            alt={scout.name}
-                            className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
-                            onClick={(e) => { e.stopPropagation(); setViewingPhoto(scout.photo_url); }}
-                            onError={(e) => handleBrokenPhoto(scout.id, e.currentTarget)}
-                          />
-                          <div className="hidden h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                            {branch?.icon || '⚜️'}
-                          </div>
-                        </>
+                        <ScoutPhoto
+                          photoUrl={scout.photo_url}
+                          alt={scout.name}
+                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
+                          onClick={(e) => { e.stopPropagation(); }}
+                          onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
+                          fallback={
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
+                              {branch?.icon || '⚜️'}
+                            </div>
+                          }
+                        />
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
                           {branch?.icon || '⚜️'}
@@ -1413,18 +1415,17 @@ const Scouts = () => {
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   {viewingScout.photo_url ? (
-                    <>
-                      <img
-                        src={viewingScout.photo_url}
-                        alt={viewingScout.name}
-                        className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
-                        onClick={() => setViewingPhoto(viewingScout.photo_url)}
-                        onError={(e) => handleBrokenPhoto(viewingScout.id, e.currentTarget)}
-                      />
-                      <div className="hidden h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                        {branch?.icon || '⚜️'}
-                      </div>
-                    </>
+                    <ScoutPhoto
+                      photoUrl={viewingScout.photo_url}
+                      alt={viewingScout.name}
+                      className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
+                      onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
+                      fallback={
+                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
+                          {branch?.icon || '⚜️'}
+                        </div>
+                      }
+                    />
                   ) : (
                     <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
                       {branch?.icon || '⚜️'}
