@@ -249,6 +249,13 @@ const Dashboard = () => {
       </div>
       )}
 
+      {loading ? (
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
+          <PieChartSkeleton />
+          <ListCardSkeleton />
+          <ListCardSkeleton />
+        </div>
+      ) : (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
         {/* Branch Distribution - Pie Chart */}
         <Card className="border shadow-sm">
