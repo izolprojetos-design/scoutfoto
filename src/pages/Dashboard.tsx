@@ -501,9 +501,7 @@ const Dashboard = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-36 animate-pulse rounded-xl bg-muted" />)}
-        </div>
+        <GalleryCardsSkeleton count={3} />
       ) : eventsWithPhotos.length === 0 ? (
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento cadastrado</p>
       ) : (
