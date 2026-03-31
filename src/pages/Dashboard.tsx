@@ -452,6 +452,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+      )}
 
 
       {/* Branch Cards - Member Images Only */}
