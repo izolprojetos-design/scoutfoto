@@ -219,12 +219,13 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-muted-foreground"><p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p></p>
+            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
           </div>
         </motion.div>
       </div>
 
       {/* Quick Stats */}
+      {loading ? <StatsSkeleton /> : (
       <div className="mb-8 grid grid-cols-2 gap-4 lg:grid-cols-3">
         {[
           { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
@@ -246,6 +247,7 @@ const Dashboard = () => {
           </motion.div>
         ))}
       </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-8">
         {/* Branch Distribution - Pie Chart */}
