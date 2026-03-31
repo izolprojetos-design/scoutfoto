@@ -355,8 +355,8 @@ const Scouts = () => {
       await supabase.storage.from('scout-photos').upload(newPath, downloaded, { upsert: true });
       await supabase.storage.from('scout-photos').remove([oldFile.name]);
 
-      const { data: { publicUrl } } = supabase.storage.from('scout-photos').getPublicUrl(newPath);
-      return `${publicUrl}?t=${Date.now()}`;
+      const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(newPath, 3600);
+      return signedData?.signedUrl || newPath;
     } catch (err) {
       console.error('Error renaming photo in storage:', err);
       return null;

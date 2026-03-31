@@ -89,8 +89,8 @@ const Profile = () => {
       return;
     }
 
-    const { data: urlData } = supabase.storage.from('scout-photos').getPublicUrl(path);
-    const newUrl = urlData.publicUrl + '?t=' + Date.now();
+    const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
+    const newUrl = signedData?.signedUrl || path;
 
     const { error: updateError } = await supabase
       .from('profiles')
