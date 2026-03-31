@@ -596,6 +596,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_share_link_view: {
+        Args: { p_token: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
