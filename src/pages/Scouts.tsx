@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getSignedPhotoUrl } from '@/lib/storageUtils';
+import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/button';
