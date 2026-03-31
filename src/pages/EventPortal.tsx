@@ -26,6 +26,25 @@ interface ImageData {
   created_at: string;
 }
 
+const getSharedImageUrl = async (token: string, path: string): Promise<string | null> => {
+  try {
+    const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+    const res = await fetch(
+      `https://${projectId}.supabase.co/functions/v1/serve-shared-image?token=${encodeURIComponent(token)}&path=${encodeURIComponent(path)}`,
+      {
+        headers: {
+          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.url || null;
+  } catch {
+    return null;
+  }
+};
+
 const EventPortal = () => {
   const { token } = useParams<{ token: string }>();
   const [event, setEvent] = useState<EventData | null>(null);
@@ -45,7 +64,7 @@ const EventPortal = () => {
         return;
       }
 
-      // Use secure RPC function to validate token (prevents enumeration)
+      // Use secure RPC function to validate token
       const { data: linkRows, error: linkError } = await supabase
         .rpc('get_share_link_by_token', { p_token: token });
 
@@ -87,16 +106,19 @@ const EventPortal = () => {
       const filtered = imgs || [];
       setImages(filtered);
 
+      // Use edge function to get signed URLs for anonymous access
       const urls: Record<string, string> = {};
       const thumbs: Record<string, string> = {};
-      for (const img of filtered) {
+      
+      await Promise.all(filtered.map(async (img) => {
         if (img.thumbnail_path) {
-          const { data: td } = await supabase.storage.from('images').createSignedUrl(img.thumbnail_path, 3600);
-          if (td?.signedUrl) thumbs[img.id] = td.signedUrl;
+          const thumbUrl = await getSharedImageUrl(token, img.thumbnail_path);
+          if (thumbUrl) thumbs[img.id] = thumbUrl;
         }
-        const { data: d } = await supabase.storage.from('images').createSignedUrl(img.storage_path, 3600);
-        if (d?.signedUrl) urls[img.id] = d.signedUrl;
-      }
+        const fullUrl = await getSharedImageUrl(token, img.storage_path);
+        if (fullUrl) urls[img.id] = fullUrl;
+      }));
+
       setImageUrls(urls);
       setThumbUrls(thumbs);
       setLoading(false);
@@ -122,9 +144,7 @@ const EventPortal = () => {
         <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-muted mb-6">
           <Lock className="h-10 w-10 text-muted-foreground" />
         </div>
-        <h1 className="mb-2 text-2xl font-bold tracking-tight">
-          Acesso Indisponível
-        </h1>
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">Acesso Indisponível</h1>
         <p className="text-center text-muted-foreground max-w-sm">{error}</p>
       </div>
     );
@@ -132,16 +152,11 @@ const EventPortal = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b bg-card/95 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg scout-gradient text-sm">
-              ⚜️
-            </div>
-            <span className="font-bold text-foreground tracking-tight">
-              ScoutFoto
-            </span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg scout-gradient text-sm">⚜️</div>
+            <span className="font-bold text-foreground tracking-tight">ScoutFoto</span>
           </div>
           {expiresAt && (
             <Badge variant="outline" className="gap-1.5 text-xs font-normal">
@@ -153,11 +168,8 @@ const EventPortal = () => {
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-        {/* Event Info */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">
-            {event?.name}
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">{event?.name}</h1>
           {event?.description && (
             <p className="mt-2 text-muted-foreground max-w-2xl">{event.description}</p>
           )}
@@ -181,7 +193,6 @@ const EventPortal = () => {
           </div>
         </div>
 
-        {/* Gallery */}
         {images.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
@@ -220,7 +231,6 @@ const EventPortal = () => {
           </div>
         )}
 
-        {/* Footer */}
         <div className="mt-16 border-t py-8 text-center">
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <span>⚜️</span>
@@ -232,7 +242,6 @@ const EventPortal = () => {
         </div>
       </main>
 
-      {/* Image Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden bg-card">
           {selectedImage && (
