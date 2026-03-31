@@ -24,6 +24,9 @@ interface AuthContextType {
   profile: Profile | null;
   roles: AppRole[];
   loading: boolean;
+  mfaRequired: boolean;
+  mfaVerified: boolean;
+  setMfaVerified: (v: boolean) => void;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -43,6 +46,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaVerified, setMfaVerified] = useState(false);
 
   const fetchProfile = async (userId: string) => {
     const { data } = await supabase
@@ -61,13 +66,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setRoles(data?.map(r => r.role) || []);
   };
 
+  const checkMfaStatus = async () => {
+    try {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const verified = data?.totp?.filter(f => f.status === 'verified') || [];
+      if (verified.length > 0) {
+        // Check current AAL level
+        const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
+          setMfaRequired(true);
+          setMfaVerified(false);
+        } else {
+          setMfaRequired(false);
+          setMfaVerified(true);
+        }
+      } else {
+        setMfaRequired(false);
+        setMfaVerified(false);
+      }
+    } catch {
+      setMfaRequired(false);
+    }
+  };
+
   // Inactivity timeout: 30 minutes
   useEffect(() => {
     if (!user) return;
 
-    const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
-    const WARNING_BEFORE = 5 * 60 * 1000; // 5 min antes
-    const THROTTLE_MS = 2000; // throttle events to avoid excessive resets
+    const INACTIVITY_LIMIT = 30 * 60 * 1000;
+    const WARNING_BEFORE = 5 * 60 * 1000;
+    const THROTTLE_MS = 2000;
     let logoutTimer: ReturnType<typeof setTimeout>;
     let warningTimer: ReturnType<typeof setTimeout>;
     let warningToastId: string | number | undefined;
@@ -123,10 +151,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             fetchProfile(session.user.id);
             fetchRoles(session.user.id);
+            checkMfaStatus();
           }, 0);
         } else {
           setProfile(null);
           setRoles([]);
+          setMfaRequired(false);
+          setMfaVerified(false);
         }
         setLoading(false);
       }
@@ -138,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.user) {
         fetchProfile(session.user.id);
         fetchRoles(session.user.id);
+        checkMfaStatus();
       }
       setLoading(false);
     });
@@ -149,10 +181,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (!error && data.user) {
       try {
-        await logAudit(data.user.id, 'login' as any, undefined, { email });
+        await logAudit(data.user.id, 'login', undefined, { email });
       } catch {}
 
-      // Check for new device
       try {
         const { isNewDevice, deviceInfo } = await checkAndRegisterDevice(data.user.id);
         if (isNewDevice) {
@@ -160,7 +191,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             `Novo dispositivo detectado: ${deviceInfo.deviceName} (${deviceInfo.browser}). Se não foi você, altere sua senha imediatamente.`,
             { duration: 10000, id: 'new-device-alert' }
           );
-          await logAudit(data.user.id, 'login' as any, undefined, {
+          await logAudit(data.user.id, 'login', undefined, {
             email,
             new_device: true,
             device: deviceInfo.deviceName,
@@ -169,6 +200,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
         }
       } catch {}
+
+      // Check MFA
+      await checkMfaStatus();
     }
     return { error: error as Error | null };
   };
@@ -197,7 +231,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const canViewMinors = isAdmin || isChefe || isDirigente;
 
   return (
-    <AuthContext.Provider value={{ user, session, profile, roles, loading, signIn, signUp, signOut, hasRole, isAdmin, isChefe, isDirigente, canUpload, canViewMinors }}>
+    <AuthContext.Provider value={{
+      user, session, profile, roles, loading,
+      mfaRequired, mfaVerified, setMfaVerified,
+      signIn, signUp, signOut, hasRole,
+      isAdmin, isChefe, isDirigente, canUpload, canViewMinors,
+    }}>
       {children}
     </AuthContext.Provider>
   );

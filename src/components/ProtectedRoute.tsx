@@ -2,6 +2,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, PermissionKey } from '@/hooks/usePermissions';
 import { Loader2 } from 'lucide-react';
+import MFAVerify from '@/components/MFAVerify';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
@@ -10,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole, requiredPermission }: ProtectedRouteProps) => {
-  const { user, loading, hasRole } = useAuth();
+  const { user, loading, hasRole, mfaRequired, mfaVerified, setMfaVerified } = useAuth();
   const { hasPermission, loading: permLoading } = usePermissions();
 
   if (loading || permLoading) {
@@ -22,6 +23,11 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // MFA challenge required
+  if (mfaRequired && !mfaVerified) {
+    return <MFAVerify onVerified={() => setMfaVerified(true)} />;
+  }
 
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     return <Navigate to="/dashboard" replace />;
