@@ -346,7 +346,6 @@ const Profile = () => {
         {/* Connected Devices */}
         <DevicesSection />
       </div>
-      </div>
     </>
   );
 };
