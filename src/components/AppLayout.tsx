@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import NotificationBell from '@/components/NotificationBell';
+import SectionIndicator from '@/components/SectionIndicator';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
