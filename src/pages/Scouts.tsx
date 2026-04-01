@@ -773,7 +773,6 @@ const Scouts = () => {
           setPhoneVal(formatted);
         }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
       </div>
-      </div>
       <div className="space-y-2">
         <Label>Data de nascimento *</Label>
         <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
