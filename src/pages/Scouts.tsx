@@ -544,7 +544,7 @@ const Scouts = () => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
-      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
       return [
         scout.registration_id || '',
         scout.name.toUpperCase(),
