@@ -1173,10 +1173,10 @@ const Scouts = () => {
                           {branch?.icon || '⚜️'}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 overflow-hidden">
                         <div className="flex flex-col items-start gap-0.5">
                           <h3
-                            className="w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary"
+                            className="max-w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary" style={{ overflowWrap: 'anywhere' }}
                             onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
                           >
                             {scout.name}
