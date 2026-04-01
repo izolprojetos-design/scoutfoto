@@ -1275,7 +1275,7 @@ const Scouts = () => {
                                           ? <span className="text-amber-600">Sem responsável</span>
                                           : null}
                                     </span>
-                                    {(isAdmin || isChefe || isDirigente) && isMinor && (
+                                    {(isAdmin || isVoluntario) && isMinor && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
