@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Bell, Check, CheckCheck, ShieldAlert, ShieldCheck, Info, X } from 'lucide-react';
+import { Bell, Check, CheckCheck, ShieldAlert, ShieldCheck, Info, X, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
