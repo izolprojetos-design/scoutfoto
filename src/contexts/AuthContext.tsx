@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -216,6 +216,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: window.location.origin,
       },
     });
+
+    // Send welcome email (fire-and-forget)
+    if (!error && data.user) {
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'welcome',
+          recipientEmail: email,
+          idempotencyKey: `welcome-${data.user.id}`,
+          templateData: { name },
+        },
+      }).catch(() => {});
+    }
+
     return { error: error as Error | null };
   };
 
