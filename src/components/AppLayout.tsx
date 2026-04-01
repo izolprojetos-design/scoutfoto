@@ -7,8 +7,8 @@ import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
 const PageLoader = () => (
-  <div className="flex flex-1 items-center justify-center">
-    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+  <div className="flex flex-1 items-center justify-center py-12">
+    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
   </div>
 );
 
