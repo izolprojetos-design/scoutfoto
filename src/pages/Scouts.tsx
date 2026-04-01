@@ -448,8 +448,11 @@ const Scouts = () => {
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
 
   const filteredScouts = scouts.filter(s => {
-    const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.scout_group.toLowerCase().includes(search.toLowerCase());
+    const term = search.toLowerCase();
+    const subgroupName = s.subgroup_id ? subgroups.find(sg => sg.id === s.subgroup_id)?.name || '' : '';
+    const matchSearch = s.name.toLowerCase().includes(term) ||
+      (s.section || '').toLowerCase().includes(term) ||
+      subgroupName.toLowerCase().includes(term);
     if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
@@ -1095,7 +1098,7 @@ const Scouts = () => {
       <div className="mb-6 flex flex-col gap-3 sm:flex-row">
         <div className="relative w-full sm:w-auto sm:min-w-[220px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar por nome ou grupo..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
+          <Input placeholder="Buscar por nome, seção ou equipe..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant={branchFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter('all')}>
