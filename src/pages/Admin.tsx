@@ -390,7 +390,8 @@ const Admin = () => {
   };
 
   const filtered = users.filter(u => {
-    const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.section || '').toLowerCase().includes(q);
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
   }).sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
