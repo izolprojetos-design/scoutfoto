@@ -709,7 +709,7 @@ const Admin = () => {
                   disabled={saving}
                 >
                   {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                  Salvar alterações ({Object.keys(pendingRoles).length + Object.keys(pendingStatus).length})
+                  Salvar alterações ({Object.keys(pendingRoles).length + Object.keys(pendingStatus).length + Object.keys(pendingSections).length})
                 </Button>
               </motion.div>
             )}
