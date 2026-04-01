@@ -602,6 +602,7 @@ const Admin = () => {
                           </button>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{u.section || '—'}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
                           {(() => {
