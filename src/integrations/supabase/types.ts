@@ -447,6 +447,7 @@ export type Database = {
           is_active: boolean
           must_change_password: boolean
           name: string
+          section: string | null
           updated_at: string
           user_id: string
         }
@@ -458,6 +459,7 @@ export type Database = {
           is_active?: boolean
           must_change_password?: boolean
           name?: string
+          section?: string | null
           updated_at?: string
           user_id: string
         }
@@ -469,6 +471,7 @@ export type Database = {
           is_active?: boolean
           must_change_password?: boolean
           name?: string
+          section?: string | null
           updated_at?: string
           user_id?: string
         }
