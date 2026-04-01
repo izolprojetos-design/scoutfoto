@@ -663,6 +663,10 @@ const Admin = () => {
           </AnimatePresence>
         </TabsContent>
 
+        <TabsContent value="roles">
+          <RolesManager />
+        </TabsContent>
+
         <TabsContent value="permissions">
           <PermissionsManager />
         </TabsContent>
