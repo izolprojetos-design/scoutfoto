@@ -72,7 +72,7 @@ const branchColorMap: Record<string, string> = {
 
 const Scouts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
+  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
