@@ -343,27 +343,9 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" disabled={transitioningId === s.id}>
-                              <Check className="h-3 w-3" /> Transferir
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirmar transição de ramo</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Deseja transferir <strong>{s.name}</strong> de {currentBranch?.icon} {currentBranch?.name} para {s.targetBranch.icon} {s.targetBranch.name}? A data de passagem será registrada como hoje.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleTransition(s.id, s.targetBranch.key, s.name)}>
-                                Confirmar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                              <ArrowRightLeft className="h-3 w-3" /> Transferir
+                        </Button>
                       </div>
                     </div>
                   );
