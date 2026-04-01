@@ -98,6 +98,7 @@ const AppSidebar = () => {
                         to={item.to}
                         end
                         className="flex items-center gap-2"
+                        onClick={() => isMobile && setOpenMobile(false)}
                       >
                         <item.icon className="h-4 w-4" />
                         <span>{item.label}</span>
