@@ -888,6 +888,10 @@ const Admin = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="security">
+          <SecurityDashboard />
+        </TabsContent>
       </Tabs>
 
       {/* Reset Password Dialog */}
