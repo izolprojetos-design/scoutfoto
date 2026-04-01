@@ -29,6 +29,7 @@ const Scouts = lazy(() => import("./pages/Scouts"));
 const ScoutCalendar = lazy(() => import("./pages/ScoutCalendar"));
 const Profile = lazy(() => import("./pages/Profile"));
 const BranchScouts = lazy(() => import("./pages/BranchScouts"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
