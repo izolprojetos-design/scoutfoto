@@ -380,8 +380,9 @@ const Admin = () => {
   };
 
   const handleResetPassword = async () => {
-    if (!resetPassword || resetPassword.length < 6) {
-      toast.error('Senha deve ter pelo menos 6 caracteres');
+    const pwValidation = validatePassword(resetPassword);
+    if (!pwValidation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos de segurança');
       return;
     }
     setResetting(true);
