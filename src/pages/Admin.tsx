@@ -638,18 +638,43 @@ const Admin = () => {
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell>
-                          <Select
-                            value={pendingSections[u.user_id] !== undefined ? (pendingSections[u.user_id] || 'none') : (u.section || 'none')}
-                            onValueChange={(v) => stageSectionChange(u.user_id, v === 'none' ? '' : v)}
-                          >
-                            <SelectTrigger className={`h-8 w-[200px] text-xs ${pendingSections[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="none">—</SelectItem>
-                              {SECTION_OPTIONS.map(s => (
-                                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          {(() => {
+                            const currentSection = pendingSections[u.user_id] !== undefined ? pendingSections[u.user_id] : (u.section || '');
+                            const isPending = pendingSections[u.user_id] !== undefined;
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button
+                                    className={`h-8 px-3 rounded-md border text-xs text-left truncate max-w-[220px] hover:bg-accent transition-colors ${isPending ? 'ring-2 ring-primary/50' : ''}`}
+                                  >
+                                    {currentSection || '— Nenhuma —'}
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-base">Selecionar Seção — {u.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
+                                    <button
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                      onClick={() => stageSectionChange(u.user_id, '')}
+                                    >
+                                      — Nenhuma —
+                                    </button>
+                                    {SECTION_OPTIONS.map(s => (
+                                      <button
+                                        key={s}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === s ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageSectionChange(u.user_id, s)}
+                                      >
+                                        {s}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
