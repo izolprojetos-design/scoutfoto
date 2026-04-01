@@ -315,7 +315,7 @@ const Admin = () => {
     setCreating(true);
 
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
-      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole },
+      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole, section: newSection },
     });
 
     if (error || data?.error) {
