@@ -29,6 +29,7 @@ const Scouts = lazy(() => import("./pages/Scouts"));
 const ScoutCalendar = lazy(() => import("./pages/ScoutCalendar"));
 const Profile = lazy(() => import("./pages/Profile"));
 const BranchScouts = lazy(() => import("./pages/BranchScouts"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/evento/:token" element={<EventPortal />} />
+                    <Route path="/unsubscribe" element={<Unsubscribe />} />
                     
                     {/* All app routes share persistent sidebar layout */}
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
