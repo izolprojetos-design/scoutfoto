@@ -199,6 +199,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             browser: deviceInfo.browser,
             os: deviceInfo.os,
           });
+          notifyNewDevice(data.user.id, deviceInfo.deviceName, deviceInfo.browser);
+        } else {
+          notifyLoginSuccess(data.user.id);
         }
       } catch {}
 

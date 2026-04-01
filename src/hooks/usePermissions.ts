@@ -9,7 +9,11 @@ export type PermissionKey =
   | 'manage_events'
   | 'manage_scouts'
   | 'manage_users'
-  | 'view_guardians';
+  | 'view_guardians'
+  | 'view_users'
+  | 'edit_users'
+  | 'delete_data'
+  | 'access_admin';
 
 export interface Permission {
   id: string;
