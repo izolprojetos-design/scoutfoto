@@ -589,23 +589,18 @@ const Admin = () => {
                             <SelectContent>
                               <SelectItem value="admin">Administrador</SelectItem>
                               <SelectItem value="voluntario">Voluntário</SelectItem>
-                              <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                              <SelectItem value="parent">Pai/Mãe</SelectItem>
-                              <SelectItem value="viewer">Visitante</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Seção (opcional)</Label>
+                          <Label>Seção</Label>
                           <Select value={newSection || 'none'} onValueChange={(v) => setNewSection(v === 'none' ? '' : v)}>
                             <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">Nenhuma</SelectItem>
-                              <SelectItem value="Lobinho">Lobinho</SelectItem>
-                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
-                              <SelectItem value="Sênior">Sênior</SelectItem>
-                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
-                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                              {SECTION_OPTIONS.map(s => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
