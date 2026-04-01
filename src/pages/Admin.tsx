@@ -353,8 +353,9 @@ const Admin = () => {
       toast.error('Preencha todos os campos');
       return;
     }
-    if (newPassword.length < 6) {
-      toast.error('Senha deve ter pelo menos 6 caracteres');
+    const pwValidation = validatePassword(newPassword);
+    if (!pwValidation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos de segurança');
       return;
     }
     setCreating(true);
