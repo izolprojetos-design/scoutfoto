@@ -104,7 +104,7 @@ const Unsubscribe = () => {
 
           {status === "success" && (
             <div className="flex flex-col items-center gap-2">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
+              <CheckCircle2 className="h-10 w-10 text-primary" />
               <p className="text-foreground font-medium">
                 Inscrição cancelada com sucesso.
               </p>
