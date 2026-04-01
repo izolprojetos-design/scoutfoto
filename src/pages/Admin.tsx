@@ -602,8 +602,7 @@ const Admin = () => {
                               <SelectTrigger className={`h-8 w-[120px] ${pendingRoles[u.user_id] ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="chefe">Chefe</SelectItem>
-                                <SelectItem value="dirigente">Dirigente</SelectItem>
+                                <SelectItem value="voluntario">Voluntário</SelectItem>
                                 <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                                 <SelectItem value="parent">Pai/Mãe</SelectItem>
                                 <SelectItem value="viewer">Visitante</SelectItem>
