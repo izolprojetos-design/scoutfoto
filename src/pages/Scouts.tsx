@@ -547,7 +547,7 @@ const Scouts = () => {
       const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
       return [
         scout.registration_id || '',
-        scout.name,
+        scout.name.toUpperCase(),
         branch?.name || '',
         scout.section || '',
         sg?.name || '',
