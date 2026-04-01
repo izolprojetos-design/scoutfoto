@@ -1174,15 +1174,15 @@ const Scouts = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col items-start gap-0.5">
                           <h3
-                            className="font-semibold tracking-tight break-words leading-tight cursor-pointer hover:text-primary transition-colors"
+                            className="w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary"
                             onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
                           >
                             {scout.name}
                           </h3>
                           {scout.registration_id && (
-                            <span className="text-xs text-muted-foreground font-mono">#{scout.registration_id}</span>
+                            <span className="text-xs font-mono text-muted-foreground">#{scout.registration_id}</span>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
