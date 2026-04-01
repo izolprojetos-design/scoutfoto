@@ -17,12 +17,11 @@ interface RoleDescription {
   description: string;
 }
 
+const ACTIVE_ROLES: AppRole[] = ['admin', 'voluntario'];
+
 const ROLE_BADGE_VARIANT: Record<string, 'destructive' | 'default' | 'secondary'> = {
   admin: 'destructive',
   voluntario: 'default',
-  dirigente_gestor: 'default',
-  parent: 'secondary',
-  viewer: 'secondary',
 };
 
 const RolesManager = () => {
