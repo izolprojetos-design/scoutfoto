@@ -33,6 +33,7 @@ interface UserWithRole {
   is_active: boolean;
   created_at: string;
   role: AppRole;
+  section: string;
 }
 
 interface AuditLog {
