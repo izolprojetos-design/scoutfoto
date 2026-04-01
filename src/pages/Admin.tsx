@@ -619,7 +619,22 @@ const Admin = () => {
                           </button>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell className="text-muted-foreground">{u.section || '—'}</TableCell>
+                        <TableCell>
+                          <Select
+                            value={pendingSections[u.user_id] !== undefined ? (pendingSections[u.user_id] || 'none') : (u.section || 'none')}
+                            onValueChange={(v) => stageSectionChange(u.user_id, v === 'none' ? '' : v)}
+                          >
+                            <SelectTrigger className={`h-8 w-[120px] ${pendingSections[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">—</SelectItem>
+                              <SelectItem value="Lobinho">Lobinho</SelectItem>
+                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
+                              <SelectItem value="Sênior">Sênior</SelectItem>
+                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
+                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
                           {(() => {
