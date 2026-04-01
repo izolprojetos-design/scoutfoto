@@ -1056,7 +1056,7 @@ const Scouts = () => {
           <h1 className="text-3xl font-bold tracking-tight">Integrantes</h1>
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
-        {(isAdmin || isChefe || isDirigente || canUpload) && (
+        {(isAdmin || isVoluntario || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
