@@ -760,7 +760,7 @@ const Scouts = () => {
         </div>
         <div className="space-y-2">
           <Label>Nome completo *</Label>
-          <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
+          <Input value={name} onChange={e => setName(e.target.value.toUpperCase())} required placeholder="Nome completo" className="h-11 uppercase" />
         </div>
       </div>
       <div className="space-y-2">
