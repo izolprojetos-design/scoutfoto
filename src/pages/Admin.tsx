@@ -23,6 +23,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
 import { ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { SECTION_OPTIONS } from '@/lib/sectionOptions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 type AppRole = Database['public']['Enums']['app_role'];
@@ -545,9 +546,6 @@ const Admin = () => {
                       <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
                       <SelectItem value="voluntario">Voluntário</SelectItem>
-                      <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
-                      <SelectItem value="parent">Pai/Mãe</SelectItem>
-                      <SelectItem value="viewer">Visitante</SelectItem>
                     </SelectContent>
                   </Select>
 
@@ -588,23 +586,18 @@ const Admin = () => {
                             <SelectContent>
                               <SelectItem value="admin">Administrador</SelectItem>
                               <SelectItem value="voluntario">Voluntário</SelectItem>
-                              <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                              <SelectItem value="parent">Pai/Mãe</SelectItem>
-                              <SelectItem value="viewer">Visitante</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
                         <div className="space-y-2">
-                          <Label>Seção (opcional)</Label>
+                          <Label>Seção</Label>
                           <Select value={newSection || 'none'} onValueChange={(v) => setNewSection(v === 'none' ? '' : v)}>
                             <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">Nenhuma</SelectItem>
-                              <SelectItem value="Lobinho">Lobinho</SelectItem>
-                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
-                              <SelectItem value="Sênior">Sênior</SelectItem>
-                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
-                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                              {SECTION_OPTIONS.map(s => (
+                                <SelectItem key={s} value={s}>{s}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -649,14 +642,12 @@ const Admin = () => {
                             value={pendingSections[u.user_id] !== undefined ? (pendingSections[u.user_id] || 'none') : (u.section || 'none')}
                             onValueChange={(v) => stageSectionChange(u.user_id, v === 'none' ? '' : v)}
                           >
-                            <SelectTrigger className={`h-8 w-[120px] ${pendingSections[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
+                            <SelectTrigger className={`h-8 w-[200px] text-xs ${pendingSections[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="none">—</SelectItem>
-                              <SelectItem value="Lobinho">Lobinho</SelectItem>
-                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
-                              <SelectItem value="Sênior">Sênior</SelectItem>
-                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
-                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                              {SECTION_OPTIONS.map(s => (
+                                <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </TableCell>
@@ -683,9 +674,6 @@ const Admin = () => {
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
                                 <SelectItem value="voluntario">Voluntário</SelectItem>
-                                <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
-                                <SelectItem value="parent">Pai/Mãe</SelectItem>
-                                <SelectItem value="viewer">Visitante</SelectItem>
                               </SelectContent>
                             </Select>
                             <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>

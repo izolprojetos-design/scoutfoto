@@ -37,15 +37,27 @@ export const usePermissions = () => {
     }
 
     const fetchPermissions = async () => {
-      // Fetch permissions for the user's role(s)
+      // Admins have all permissions
+      if (roles.includes('admin')) {
+        const { data: allPerms } = await supabase
+          .from('permissions')
+          .select('key');
+        if (allPerms) {
+          setPermissions(allPerms.map((p: any) => p.key));
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Fetch individual user permissions
       const { data } = await supabase
-        .from('role_permissions')
+        .from('user_permissions')
         .select('permission_id, permissions(key)')
-        .in('role', roles);
+        .eq('user_id', user.id);
 
       if (data) {
         const keys = data
-          .map((rp: any) => rp.permissions?.key)
+          .map((up: any) => up.permissions?.key)
           .filter(Boolean) as string[];
         setPermissions([...new Set(keys)]);
       }
