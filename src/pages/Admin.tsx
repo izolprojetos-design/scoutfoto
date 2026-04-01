@@ -19,6 +19,8 @@ import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
+import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
+import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
@@ -351,8 +353,9 @@ const Admin = () => {
       toast.error('Preencha todos os campos');
       return;
     }
-    if (newPassword.length < 6) {
-      toast.error('Senha deve ter pelo menos 6 caracteres');
+    const pwValidation = validatePassword(newPassword);
+    if (!pwValidation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos de segurança');
       return;
     }
     setCreating(true);
@@ -377,8 +380,9 @@ const Admin = () => {
   };
 
   const handleResetPassword = async () => {
-    if (!resetPassword || resetPassword.length < 6) {
-      toast.error('Senha deve ter pelo menos 6 caracteres');
+    const pwValidation = validatePassword(resetPassword);
+    if (!pwValidation.isValid) {
+      toast.error('A senha não atende aos requisitos mínimos de segurança');
       return;
     }
     setResetting(true);
@@ -573,11 +577,12 @@ const Admin = () => {
                         <div className="space-y-2">
                           <Label>Senha</Label>
                           <div className="relative">
-                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 6 caracteres" className="pr-10" />
+                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="pr-10" />
                             <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                               {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                             </button>
                           </div>
+                          <PasswordStrengthIndicator password={newPassword} />
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo</Label>
@@ -1000,13 +1005,14 @@ const Admin = () => {
                   type={showResetPassword ? 'text' : 'password'}
                   value={resetPassword}
                   onChange={e => setResetPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   className="pr-10"
                 />
                 <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <PasswordStrengthIndicator password={resetPassword} />
             </div>
             <Button onClick={handleResetPassword} disabled={resetting} className="w-full gap-2">
               {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
