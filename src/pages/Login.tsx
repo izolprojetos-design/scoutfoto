@@ -9,6 +9,7 @@ import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle, Lock } from '
 import { motion, AnimatePresence } from 'framer-motion';
 import { isLockedOut, recordFailedAttempt, clearLoginAttempts, formatLockoutTime, getLoginAttempts } from '@/lib/loginRateLimit';
 import { logAudit } from '@/lib/auditLog';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const { signIn } = useAuth();
