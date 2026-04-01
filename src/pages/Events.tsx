@@ -274,9 +274,9 @@ const Events = () => {
             return (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.04 }}
+                transition={{ delay: Math.min(index * 0.02, 0.15), duration: 0.2 }}
               >
                 <Card className="group border bg-card shadow-sm transition-all hover:shadow-md cursor-pointer" onClick={() => navigate(`/events/${event.id}`)}>
                   <CardContent className="p-5">
