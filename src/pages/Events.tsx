@@ -234,7 +234,7 @@ const Events = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(isAdmin || isChefe || isDirigente) && (
+          {(isAdmin || isVoluntario) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 shadow-sm">
