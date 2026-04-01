@@ -393,9 +393,7 @@ const Admin = () => {
   const roleBadgeVariant = (role: AppRole) => {
     switch (role) {
       case 'admin': return 'destructive' as const;
-      case 'chefe': return 'default' as const;
-      
-      case 'dirigente': return 'default' as const;
+      case 'voluntario': return 'default' as const;
       case 'dirigente_gestor': return 'default' as const;
       default: return 'secondary' as const;
     }
