@@ -1176,7 +1176,7 @@ const Scouts = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3
-                            className="font-semibold tracking-tight truncate cursor-pointer hover:text-primary transition-colors"
+                            className="font-semibold tracking-tight break-words leading-tight cursor-pointer hover:text-primary transition-colors"
                             onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
                           >
                             {scout.name}
