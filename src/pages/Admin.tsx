@@ -583,6 +583,7 @@ const Admin = () => {
                     <TableRow>
                       <TableHead>Nome</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Seção</TableHead>
                       <TableHead>Papel</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Ações</TableHead>
