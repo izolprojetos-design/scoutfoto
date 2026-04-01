@@ -33,8 +33,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   isAdmin: boolean;
-  isChefe: boolean;
-  isDirigente: boolean;
+  isVoluntario: boolean;
   canUpload: boolean;
   canViewMinors: boolean;
 }
