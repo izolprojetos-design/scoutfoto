@@ -34,20 +34,9 @@ export const useNotifications = () => {
     if (!user) { setNotifications([]); setLoading(false); return; }
     fetchNotifications();
 
-    // Realtime subscription
-    const channel = supabase
-      .channel('security-notifications')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'security_notifications',
-        filter: `user_id=eq.${user.id}`,
-      }, (payload) => {
-        setNotifications(prev => [payload.new as SecurityNotification, ...prev]);
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    // Poll every 30 seconds (realtime removed for security)
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
   }, [user, fetchNotifications]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;
