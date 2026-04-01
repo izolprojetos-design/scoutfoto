@@ -296,21 +296,45 @@ const Admin = () => {
 
     // Save role changes
     for (const [userId, role] of Object.entries(pendingRoles)) {
+      const original = users.find(u => u.user_id === userId);
       await supabase.from('user_roles').delete().eq('user_id', userId);
       const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
       if (error) { toast.error('Erro ao alterar papel: ' + error.message); hasError = true; }
+      else if (user) {
+        logAudit(user.id, 'role_change', undefined,
+          { target_user_id: userId, target_name: original?.name },
+          { role: original?.role },
+          { role }
+        );
+      }
     }
 
     // Save status changes
     for (const [userId, isActive] of Object.entries(pendingStatus)) {
+      const original = users.find(u => u.user_id === userId);
       const { error } = await supabase.from('profiles').update({ is_active: isActive }).eq('user_id', userId);
       if (error) { toast.error('Erro: ' + error.message); hasError = true; }
+      else if (user) {
+        logAudit(user.id, 'status_change', undefined,
+          { target_user_id: userId, target_name: original?.name },
+          { is_active: original?.is_active },
+          { is_active: isActive }
+        );
+      }
     }
 
     // Save section changes
     for (const [userId, section] of Object.entries(pendingSections)) {
+      const original = users.find(u => u.user_id === userId);
       const { error } = await supabase.from('profiles').update({ section }).eq('user_id', userId);
       if (error) { toast.error('Erro ao alterar seção: ' + error.message); hasError = true; }
+      else if (user) {
+        logAudit(user.id, 'section_change', undefined,
+          { target_user_id: userId, target_name: original?.name },
+          { section: original?.section || '' },
+          { section }
+        );
+      }
     }
 
     if (!hasError) toast.success('Alterações salvas com sucesso!');
