@@ -26,7 +26,7 @@ const TYPE_FILTER: Record<string, string> = {
   login_success: 'Login',
 };
 
-const NotificationItem = ({ n, onRead }: { n: SecurityNotification; onRead: (id: string) => void }) => {
+const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; onRead: (id: string) => void; onDelete: (id: string) => void }) => {
   const cfg = PRIORITY_CONFIG[n.priority];
   const Icon = cfg.icon;
 
@@ -34,6 +34,8 @@ const NotificationItem = ({ n, onRead }: { n: SecurityNotification; onRead: (id:
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0 }}
+      layout
       className={cn(
         'flex gap-3 rounded-lg border p-3 transition-colors',
         n.is_read ? 'bg-muted/30 border-transparent opacity-60' : `${cfg.bg} ${cfg.border}`,
@@ -45,15 +47,24 @@ const NotificationItem = ({ n, onRead }: { n: SecurityNotification; onRead: (id:
           <p className={cn('text-sm font-medium leading-tight', !n.is_read && 'text-foreground')}>
             {n.title}
           </p>
-          {!n.is_read && (
+          <div className="flex items-center gap-0.5 shrink-0">
+            {!n.is_read && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onRead(n.id); }}
+                className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                title="Marcar como lido"
+              >
+                <Check className="h-3.5 w-3.5" />
+              </button>
+            )}
             <button
-              onClick={(e) => { e.stopPropagation(); onRead(n.id); }}
-              className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-              title="Marcar como lido"
+              onClick={(e) => { e.stopPropagation(); onDelete(n.id); }}
+              className="rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              title="Excluir notificação"
             >
-              <Check className="h-3.5 w-3.5" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
-          )}
+          </div>
         </div>
         <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{n.message}</p>
         <p className="text-[11px] text-muted-foreground/70 mt-1">
