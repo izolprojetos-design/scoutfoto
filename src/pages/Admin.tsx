@@ -554,10 +554,10 @@ const Admin = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Seção (opcional)</Label>
-                          <Select value={newSection} onValueChange={setNewSection}>
+                          <Select value={newSection || 'none'} onValueChange={(v) => setNewSection(v === 'none' ? '' : v)}>
                             <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="">Nenhuma</SelectItem>
+                              <SelectItem value="none">Nenhuma</SelectItem>
                               <SelectItem value="Lobinho">Lobinho</SelectItem>
                               <SelectItem value="Escoteiro">Escoteiro</SelectItem>
                               <SelectItem value="Sênior">Sênior</SelectItem>
