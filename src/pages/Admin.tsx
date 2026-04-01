@@ -495,8 +495,7 @@ const Admin = () => {
                     <SelectContent>
                       <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="chefe">Chefe</SelectItem>
-                      <SelectItem value="dirigente">Dirigente</SelectItem>
+                      <SelectItem value="voluntario">Voluntário</SelectItem>
                       <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                       <SelectItem value="parent">Pai/Mãe</SelectItem>
                       <SelectItem value="viewer">Visitante</SelectItem>
