@@ -1002,7 +1002,7 @@ const Scouts = () => {
           </div>
           <div className="space-y-2">
             <Label className="text-xs">Nome do responsável *</Label>
-            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value)} placeholder="Nome completo do responsável" className="h-10" required />
+            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value.toUpperCase())} placeholder="Nome completo do responsável" className="h-10 uppercase" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
