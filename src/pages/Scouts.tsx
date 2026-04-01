@@ -72,7 +72,7 @@ const branchColorMap: Record<string, string> = {
 
 const Scouts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
+  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -1056,7 +1056,7 @@ const Scouts = () => {
           <h1 className="text-3xl font-bold tracking-tight">Integrantes</h1>
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
-        {(isAdmin || isChefe || isDirigente || canUpload) && (
+        {(isAdmin || isVoluntario || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
@@ -1275,7 +1275,7 @@ const Scouts = () => {
                                           ? <span className="text-amber-600">Sem responsável</span>
                                           : null}
                                     </span>
-                                    {(isAdmin || isChefe || isDirigente) && isMinor && (
+                                    {(isAdmin || isVoluntario) && isMinor && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -1305,7 +1305,7 @@ const Scouts = () => {
 
                             {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
                             <div className="flex gap-2 pt-1">
-                              {(isAdmin || isChefe || isDirigente) && (
+                              {(isAdmin || isVoluntario) && (
                                 <Button
                                   variant="outline"
                                   size="sm"

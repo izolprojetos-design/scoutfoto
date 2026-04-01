@@ -25,15 +25,15 @@ interface RolePermission {
 
 const ROLE_LABELS: Record<AppRole, string> = {
   admin: 'Administrador',
-  chefe: 'Chefe Escoteiro',
-  dirigente: 'Dirigente',
+  voluntario: 'Voluntário',
   dirigente_gestor: 'Dirigente Gestor',
-  
-  viewer: 'Visualizador',
+  viewer: 'Visitante',
   parent: 'Pai/Mãe',
+  chefe: 'Chefe (legado)',
+  dirigente: 'Dirigente (legado)',
 };
 
-const MANAGED_ROLES: AppRole[] = ['admin', 'chefe', 'dirigente', 'dirigente_gestor', 'viewer'];
+const MANAGED_ROLES: AppRole[] = ['admin', 'voluntario', 'dirigente_gestor', 'viewer'];
 
 const PermissionsManager = () => {
   const [permissions, setPermissions] = useState<Permission[]>([]);

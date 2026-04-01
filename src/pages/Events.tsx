@@ -40,7 +40,7 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
+  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
   const navigate = useNavigate();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -234,7 +234,7 @@ const Events = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(isAdmin || isChefe || isDirigente) && (
+          {(isAdmin || isVoluntario) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 shadow-sm">
@@ -311,7 +311,7 @@ const Events = () => {
                         {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </div>
-                    {(isAdmin || isChefe || isDirigente) && (
+                    {(isAdmin || isVoluntario) && (
                       <div className="flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

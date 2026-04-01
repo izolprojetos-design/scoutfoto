@@ -60,7 +60,7 @@ const PIE_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
-  const { profile, canUpload, isChefe, isDirigente, isAdmin } = useAuth();
+  const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
   const { hasPermission } = usePermissions();
   const canTransfer = isAdmin || hasPermission('transfer_branch');
   const [branches, setBranches] = useState<BranchWithCount[]>([]);

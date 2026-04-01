@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
+import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
 import { format } from 'date-fns';
@@ -393,9 +394,7 @@ const Admin = () => {
   const roleBadgeVariant = (role: AppRole) => {
     switch (role) {
       case 'admin': return 'destructive' as const;
-      case 'chefe': return 'default' as const;
-      
-      case 'dirigente': return 'default' as const;
+      case 'voluntario': return 'default' as const;
       case 'dirigente_gestor': return 'default' as const;
       default: return 'secondary' as const;
     }
@@ -441,6 +440,7 @@ const Admin = () => {
       <Tabs defaultValue="users">
         <TabsList className="mb-4 bg-muted/60">
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
+          <TabsTrigger value="roles" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Papéis</TabsTrigger>
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
           
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
@@ -497,8 +497,7 @@ const Admin = () => {
                     <SelectContent>
                       <SelectItem value="all">Todos</SelectItem>
                       <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="chefe">Chefe</SelectItem>
-                      <SelectItem value="dirigente">Dirigente</SelectItem>
+                      <SelectItem value="voluntario">Voluntário</SelectItem>
                       <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                       <SelectItem value="parent">Pai/Mãe</SelectItem>
                       <SelectItem value="viewer">Visitante</SelectItem>
@@ -541,8 +540,7 @@ const Admin = () => {
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
                               <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="chefe">Chefe Escoteiro</SelectItem>
-                              <SelectItem value="dirigente">Dirigente</SelectItem>
+                              <SelectItem value="voluntario">Voluntário</SelectItem>
                               <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
                               <SelectItem value="parent">Pai/Mãe</SelectItem>
                               <SelectItem value="viewer">Visitante</SelectItem>
@@ -584,7 +582,7 @@ const Admin = () => {
                           </button>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', chefe: 'Chefe', dirigente: 'Dirigente', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
+                        <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
                           {(() => {
                             const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
@@ -606,8 +604,7 @@ const Admin = () => {
                               <SelectTrigger className={`h-8 w-[120px] ${pendingRoles[u.user_id] ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="chefe">Chefe</SelectItem>
-                                <SelectItem value="dirigente">Dirigente</SelectItem>
+                                <SelectItem value="voluntario">Voluntário</SelectItem>
                                 <SelectItem value="dirigente_gestor">Dir. Gestor</SelectItem>
                                 <SelectItem value="parent">Pai/Mãe</SelectItem>
                                 <SelectItem value="viewer">Visitante</SelectItem>
@@ -664,6 +661,10 @@ const Admin = () => {
               </motion.div>
             )}
           </AnimatePresence>
+        </TabsContent>
+
+        <TabsContent value="roles">
+          <RolesManager />
         </TabsContent>
 
         <TabsContent value="permissions">
