@@ -69,6 +69,7 @@ const Admin = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('viewer');
+  const [newSection, setNewSection] = useState('');
   const [creating, setCreating] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
