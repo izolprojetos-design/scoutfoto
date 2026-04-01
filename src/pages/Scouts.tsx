@@ -1050,7 +1050,7 @@ const Scouts = () => {
                 Novo Integrante
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Cadastrar Membro</DialogTitle>
               </DialogHeader>
