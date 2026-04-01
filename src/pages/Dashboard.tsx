@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +60,9 @@ const PIE_COLORS: Record<string, string> = {
 };
 
 const Dashboard = () => {
-  const { profile, canUpload, isChefe, isDirigente } = useAuth();
+  const { profile, canUpload, isChefe, isDirigente, isAdmin } = useAuth();
+  const { hasPermission } = usePermissions();
+  const canTransfer = isAdmin || hasPermission('transfer_branch');
   const [branches, setBranches] = useState<BranchWithCount[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
@@ -343,9 +346,11 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
-                              <ArrowRightLeft className="h-3 w-3" /> Transferir
-                        </Button>
+                        {canTransfer && (
+                          <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                            <ArrowRightLeft className="h-3 w-3" /> Transferir
+                          </Button>
+                        )}
                       </div>
                     </div>
                   );
