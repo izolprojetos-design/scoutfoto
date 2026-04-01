@@ -780,6 +780,7 @@ export type Database = {
           view_count: number
         }[]
       }
+      get_user_section: { Args: { _user_id: string }; Returns: string }
       has_event_permission: {
         Args: { _event_id: string; _permission: string; _user_id: string }
         Returns: boolean
