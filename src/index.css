@@ -123,10 +123,10 @@
     @apply bg-card/80 backdrop-blur-sm border border-border/50;
   }
   .scout-gradient {
-    background: linear-gradient(135deg, hsl(var(--scout-green)), hsl(152 45% 22%));
+    background: linear-gradient(135deg, hsl(var(--scout-blue)), hsl(222 55% 20%));
   }
   .gold-gradient {
-    background: linear-gradient(135deg, hsl(var(--scout-gold)), hsl(38 80% 44%));
+    background: linear-gradient(135deg, hsl(var(--scout-gold)), hsl(38 85% 42%));
   }
 }
 
