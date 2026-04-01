@@ -13,7 +13,8 @@ export type PermissionKey =
   | 'view_users'
   | 'edit_users'
   | 'delete_data'
-  | 'access_admin';
+  | 'access_admin'
+  | 'transfer_branch';
 
 export interface Permission {
   id: string;
