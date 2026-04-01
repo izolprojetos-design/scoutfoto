@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
@@ -70,6 +71,7 @@ const branchColorMap: Record<string, string> = {
 };
 
 const Scouts = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAdmin, isChefe, isDirigente, canUpload } = useAuth();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
@@ -164,6 +166,18 @@ const Scouts = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Auto-open edit dialog when navigated with ?edit=scoutId
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && scouts.length > 0 && !editDialogOpen) {
+      const scout = scouts.find(s => s.id === editId);
+      if (scout) {
+        openEditDialog(scout);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [scouts, searchParams]);
 
   const toggleExpand = (id: string) => {
     setExpandedScouts(prev => {
