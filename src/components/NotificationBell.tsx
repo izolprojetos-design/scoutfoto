@@ -76,7 +76,7 @@ const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; on
 };
 
 const NotificationBell = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotifications();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const ref = useRef<HTMLDivElement>(null);
