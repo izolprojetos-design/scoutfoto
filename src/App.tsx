@@ -74,6 +74,7 @@ const App = () => {
                     <Route path="/forgot-password" element={<ForgotPassword />} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/evento/:token" element={<EventPortal />} />
+                    <Route path="/unsubscribe" element={<Unsubscribe />} />
                     
                     {/* All app routes share persistent sidebar layout */}
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
