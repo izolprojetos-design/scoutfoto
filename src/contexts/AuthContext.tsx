@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import type { Database } from '@/integrations/supabase/types';
 import { logAudit } from '@/lib/auditLog';
 import { checkAndRegisterDevice } from '@/lib/deviceDetection';
+import { notifyNewDevice, notifyLoginSuccess } from '@/lib/securityNotifications';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -198,6 +199,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             browser: deviceInfo.browser,
             os: deviceInfo.os,
           });
+          notifyNewDevice(data.user.id, deviceInfo.deviceName, deviceInfo.browser);
+        } else {
+          notifyLoginSuccess(data.user.id);
         }
       } catch {}
 
