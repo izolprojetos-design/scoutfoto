@@ -58,9 +58,9 @@ export default {
           ring: "hsl(var(--sidebar-ring))",
         },
         scout: {
-          green: "hsl(var(--scout-green))",
+          blue: "hsl(var(--scout-blue))",
           gold: "hsl(var(--scout-gold))",
-          brown: "hsl(var(--scout-brown))",
+          navy: "hsl(var(--scout-navy))",
           cream: "hsl(var(--scout-cream))",
         },
       },
