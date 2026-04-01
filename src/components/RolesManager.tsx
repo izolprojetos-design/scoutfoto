@@ -39,7 +39,8 @@ const RolesManager = () => {
       supabase.from('user_roles').select('role'),
     ]);
 
-    setRoles((roleDescs as RoleDescription[]) || []);
+    const filtered = ((roleDescs as RoleDescription[]) || []).filter(r => ACTIVE_ROLES.includes(r.role));
+    setRoles(filtered);
 
     // Count users per role
     const counts: Record<string, number> = {};
