@@ -167,6 +167,18 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Auto-open edit dialog when navigated with ?edit=scoutId
+  useEffect(() => {
+    const editId = searchParams.get('edit');
+    if (editId && scouts.length > 0 && !editDialogOpen) {
+      const scout = scouts.find(s => s.id === editId);
+      if (scout) {
+        openEditDialog(scout);
+        setSearchParams({}, { replace: true });
+      }
+    }
+  }, [scouts, searchParams]);
+
   const toggleExpand = (id: string) => {
     setExpandedScouts(prev => {
       const next = new Set(prev);
