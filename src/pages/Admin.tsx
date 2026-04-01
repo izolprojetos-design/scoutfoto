@@ -280,6 +280,15 @@ const Admin = () => {
     }
   };
 
+  const stageSectionChange = (userId: string, newSection: string) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && (original.section || '') === newSection) {
+      setPendingSections(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } else {
+      setPendingSections(prev => ({ ...prev, [userId]: newSection }));
+    }
+  };
+
   const handleSaveAll = async () => {
     setSaving(true);
     let hasError = false;
@@ -297,9 +306,16 @@ const Admin = () => {
       if (error) { toast.error('Erro: ' + error.message); hasError = true; }
     }
 
+    // Save section changes
+    for (const [userId, section] of Object.entries(pendingSections)) {
+      const { error } = await supabase.from('profiles').update({ section }).eq('user_id', userId);
+      if (error) { toast.error('Erro ao alterar seção: ' + error.message); hasError = true; }
+    }
+
     if (!hasError) toast.success('Alterações salvas com sucesso!');
     setPendingRoles({});
     setPendingStatus({});
+    setPendingSections({});
     fetchUsers();
     setSaving(false);
   };
