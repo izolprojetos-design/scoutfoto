@@ -759,7 +759,7 @@ const Scouts = () => {
           <Input value={registrationId} onChange={e => {
             const v = e.target.value.replace(/\D/g, '').slice(0, 10);
             setRegistrationId(v);
-          }} placeholder="Nº de registro" className="h-11" inputMode="numeric" />
+          }} placeholder="Nº de registro" className="h-11" inputMode="numeric" readOnly={formTarget === 'new'} />
         </div>
         <div className="space-y-2">
           <Label>Celular</Label>
@@ -1043,7 +1043,18 @@ const Scouts = () => {
           <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
         </div>
         {(isAdmin || isChefe || isDirigente || canUpload) && (
-          <Dialog open={dialogOpen} onOpenChange={v => { setDialogOpen(v); if (v) setCustomSectionMode(false); }}>
+          <Dialog open={dialogOpen} onOpenChange={v => {
+              setDialogOpen(v);
+              if (v) {
+                setCustomSectionMode(false);
+                // Auto-generate next registration_id
+                const existingIds = scouts
+                  .map(s => parseInt(s.registration_id, 10))
+                  .filter(n => !isNaN(n));
+                const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
+                setScoutRegistrationId(String(nextId).padStart(5, '0'));
+              }
+            }}>
             <DialogTrigger asChild>
               <Button className="gap-2 shadow-sm">
                 <Plus className="h-4 w-4" />
