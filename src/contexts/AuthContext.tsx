@@ -200,6 +200,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             os: deviceInfo.os,
           });
           notifyNewDevice(data.user.id, deviceInfo.deviceName, deviceInfo.browser);
+
+          // Send security email alert for new device
+          supabase.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'security-new-device',
+              recipientEmail: email,
+              idempotencyKey: `new-device-${data.user.id}-${Date.now()}`,
+              templateData: {
+                name: data.user.user_metadata?.name || email.split('@')[0],
+                device: deviceInfo.deviceName,
+                browser: deviceInfo.browser,
+                loginTime: new Date().toLocaleString('pt-BR'),
+              },
+            },
+          }).catch(() => {});
         } else {
           notifyLoginSuccess(data.user.id);
         }

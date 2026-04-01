@@ -9,6 +9,7 @@ import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle, Lock } from '
 import { motion, AnimatePresence } from 'framer-motion';
 import { isLockedOut, recordFailedAttempt, clearLoginAttempts, formatLockoutTime, getLoginAttempts } from '@/lib/loginRateLimit';
 import { logAudit } from '@/lib/auditLog';
+import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
   const { signIn } = useAuth();
@@ -52,6 +53,20 @@ const Login = () => {
       if (locked) {
         setLockoutRemaining(15 * 60 * 1000);
         setLoginError(`Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${formatLockoutTime(15 * 60 * 1000)}.`);
+
+        // Send security email alert for account lockout
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'security-account-locked',
+            recipientEmail: email,
+            idempotencyKey: `account-locked-${email}-${Date.now()}`,
+            templateData: {
+              name: email.split('@')[0],
+              attempts: 5,
+              lockDuration: '15 minutos',
+            },
+          },
+        }).catch(() => {});
       } else {
         setLoginError(`E-mail ou senha incorretos. ${attemptsLeft} tentativa${attemptsLeft === 1 ? '' : 's'} restante${attemptsLeft === 1 ? '' : 's'}.`);
       }
