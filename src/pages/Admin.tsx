@@ -327,6 +327,7 @@ const Admin = () => {
       setNewEmail('');
       setNewPassword('');
       setNewRole('viewer');
+      setNewSection('');
       fetchUsers();
     }
     setCreating(false);
