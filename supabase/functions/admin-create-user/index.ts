@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
     const { action } = body;
 
     if (action === "create") {
-      const { email, password, name, role } = body;
+      const { email, password, name, role, section } = body;
 
       if (!email || !password || !name) {
         return new Response(JSON.stringify({ error: "email, password e name são obrigatórios" }), { status: 400, headers: resHeaders });
