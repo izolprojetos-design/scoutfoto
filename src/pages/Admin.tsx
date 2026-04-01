@@ -33,6 +33,7 @@ interface UserWithRole {
   is_active: boolean;
   created_at: string;
   role: AppRole;
+  section: string;
 }
 
 interface AuditLog {
@@ -68,6 +69,7 @@ const Admin = () => {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('viewer');
+  const [newSection, setNewSection] = useState('');
   const [creating, setCreating] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
@@ -234,6 +236,7 @@ const Admin = () => {
           is_active: p.is_active,
           created_at: p.created_at,
           role: userRole?.role || 'viewer',
+          section: (p as any).section || '',
         };
       });
       setUsers(merged);
@@ -312,7 +315,7 @@ const Admin = () => {
     setCreating(true);
 
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
-      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole },
+      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole, section: newSection },
     });
 
     if (error || data?.error) {
@@ -324,6 +327,7 @@ const Admin = () => {
       setNewEmail('');
       setNewPassword('');
       setNewRole('viewer');
+      setNewSection('');
       fetchUsers();
     }
     setCreating(false);
@@ -386,7 +390,8 @@ const Admin = () => {
   };
 
   const filtered = users.filter(u => {
-    const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());
+    const q = search.toLowerCase();
+    const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.section || '').toLowerCase().includes(q);
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
   }).sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
@@ -547,6 +552,20 @@ const Admin = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="space-y-2">
+                          <Label>Seção (opcional)</Label>
+                          <Select value={newSection} onValueChange={setNewSection}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Nenhuma</SelectItem>
+                              <SelectItem value="Lobinho">Lobinho</SelectItem>
+                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
+                              <SelectItem value="Sênior">Sênior</SelectItem>
+                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
+                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
                           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                           Criar Usuário
@@ -564,6 +583,7 @@ const Admin = () => {
                     <TableRow>
                       <TableHead>Nome</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Seção</TableHead>
                       <TableHead>Papel</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Ações</TableHead>
@@ -582,6 +602,7 @@ const Admin = () => {
                           </button>
                         </TableCell>
                         <TableCell className="text-muted-foreground">{u.email}</TableCell>
+                        <TableCell className="text-muted-foreground">{u.section || '—'}</TableCell>
                         <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
                         <TableCell>
                           {(() => {
@@ -631,7 +652,7 @@ const Admin = () => {
                     ))}
                     {filtered.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
+                        <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
