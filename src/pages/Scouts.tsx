@@ -759,7 +759,7 @@ const Scouts = () => {
           <Input value={registrationId} onChange={e => {
             const v = e.target.value.replace(/\D/g, '').slice(0, 10);
             setRegistrationId(v);
-          }} placeholder="Nº de registro" className="h-11" inputMode="numeric" />
+          }} placeholder="Nº de registro" className="h-11" inputMode="numeric" readOnly={formTarget === 'new'} />
         </div>
         <div className="space-y-2">
           <Label>Celular</Label>
