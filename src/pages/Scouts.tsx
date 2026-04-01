@@ -544,10 +544,10 @@ const Scouts = () => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
-      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
       return [
         scout.registration_id || '',
-        scout.name,
+        scout.name.toUpperCase(),
         branch?.name || '',
         scout.section || '',
         sg?.name || '',
@@ -613,10 +613,10 @@ const Scouts = () => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
-      const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
+      const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
       return {
         'ID': scout.registration_id || '',
-        'Nome': scout.name,
+        'Nome': scout.name.toUpperCase(),
         'Ramo': branch?.name || '',
         'Seção': scout.section || '',
         'Equipe': sg?.name || '',
@@ -760,7 +760,7 @@ const Scouts = () => {
         </div>
         <div className="space-y-2">
           <Label>Nome completo *</Label>
-          <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
+          <Input value={name} onChange={e => setName(e.target.value.toUpperCase())} required placeholder="Nome completo" className="h-11 uppercase" />
         </div>
       </div>
       <div className="space-y-2">
@@ -1002,7 +1002,7 @@ const Scouts = () => {
           </div>
           <div className="space-y-2">
             <Label className="text-xs">Nome do responsável *</Label>
-            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value)} placeholder="Nome completo do responsável" className="h-10" required />
+            <Input value={guardianFields.name} onChange={e => guardianFields.setName(e.target.value.toUpperCase())} placeholder="Nome completo do responsável" className="h-10 uppercase" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -1176,7 +1176,7 @@ const Scouts = () => {
                       <div className="flex-1 min-w-0 overflow-hidden">
                         <div className="flex flex-col items-start gap-0.5">
                           <h3
-                            className="max-w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary" style={{ overflowWrap: 'anywhere' }}
+                            className="max-w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary uppercase" style={{ overflowWrap: 'anywhere' }}
                             onClick={(e) => { e.stopPropagation(); setViewingScout(scout); }}
                           >
                             {scout.name}
@@ -1448,7 +1448,7 @@ const Scouts = () => {
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                      <h3 className="text-lg font-semibold uppercase">{viewingScout.name}</h3>
                       {viewingScout.registration_id && (
                         <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
                       )}

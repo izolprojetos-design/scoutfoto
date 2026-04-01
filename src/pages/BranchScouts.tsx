@@ -141,7 +141,7 @@ const BranchScouts = () => {
                 )}
               </div>
               <div className="p-3">
-                <p className="text-sm font-semibold break-words leading-tight whitespace-normal" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
+                <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
                 <p className="text-xs text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                 {scout.subgroup_id && (() => {
                   const sg = subgroups.find(s => s.id === scout.subgroup_id);
@@ -162,7 +162,7 @@ const BranchScouts = () => {
                 alt={selectedPhoto.name}
                 className="w-64 h-64 rounded-xl object-cover shadow-lg"
               />
-              <p className="text-lg font-semibold">{selectedPhoto.name}</p>
+              <p className="text-lg font-semibold uppercase">{selectedPhoto.name}</p>
               <Button
                 variant="outline"
                 size="sm"
