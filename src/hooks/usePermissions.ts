@@ -78,6 +78,8 @@ export const usePermissions = () => {
     canViewPhotos: hasPermission('view_photos'),
     canUploadPhotos: hasPermission('upload_photos'),
     canDownloadPhotos: hasPermission('download_photos'),
+    canViewEvents: hasPermission('view_events'),
+    canEditEvents: hasPermission('edit_events'),
     canManageEvents: hasPermission('manage_events'),
     canManageScouts: hasPermission('manage_scouts'),
     canManageUsers: hasPermission('manage_users'),
