@@ -311,7 +311,7 @@ const Events = () => {
                         {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </div>
-                    {(isAdmin || isChefe || isDirigente) && (
+                    {(isAdmin || isVoluntario) && (
                       <div className="flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

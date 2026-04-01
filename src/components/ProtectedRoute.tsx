@@ -6,7 +6,7 @@ import MFAVerify from '@/components/MFAVerify';
 
 interface ProtectedRouteProps {
   children?: React.ReactNode;
-  requiredRole?: 'admin' | 'viewer' | 'chefe' | 'dirigente' | 'dirigente_gestor';
+  requiredRole?: 'admin' | 'viewer' | 'voluntario' | 'dirigente_gestor';
   requiredPermission?: PermissionKey;
 }
 

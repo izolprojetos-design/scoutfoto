@@ -51,7 +51,8 @@ const AppSidebar = () => {
   const primaryRole = roles[0] || 'viewer';
   const roleLabel: Record<string, string> = {
     admin: 'Administrador',
-    chefe: 'Chefe Escoteiro',
+    voluntario: 'Voluntário',
+    dirigente_gestor: 'Dir. Gestor',
     viewer: 'Visitante',
     parent: 'Pai/Mãe',
   };
