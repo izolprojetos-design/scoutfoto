@@ -187,7 +187,7 @@ const NotificationBell = () => {
                   </div>
                 ) : (
                   filtered.map(n => (
-                    <NotificationItem key={n.id} n={n} onRead={markAsRead} />
+                    <NotificationItem key={n.id} n={n} onRead={markAsRead} onDelete={deleteNotification} />
                   ))
                 )}
               </div>
