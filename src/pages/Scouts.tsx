@@ -1448,7 +1448,7 @@ const Scouts = () => {
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold">{viewingScout.name}</h3>
+                      <h3 className="text-lg font-semibold uppercase">{viewingScout.name}</h3>
                       {viewingScout.registration_id && (
                         <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
                       )}
