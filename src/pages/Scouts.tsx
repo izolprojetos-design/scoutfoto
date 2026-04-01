@@ -1085,9 +1085,9 @@ const Scouts = () => {
 
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+        <div className="relative w-full sm:w-auto sm:min-w-[220px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Buscar por nome ou grupo..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
+          <Input placeholder="Buscar por nome ou grupo..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant={branchFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter('all')}>
