@@ -616,7 +616,7 @@ const Scouts = () => {
       const responsavel = scoutGuards.map(g => g.name).join('; ') || '';
       return {
         'ID': scout.registration_id || '',
-        'Nome': scout.name,
+        'Nome': scout.name.toUpperCase(),
         'Ramo': branch?.name || '',
         'Seção': scout.section || '',
         'Equipe': sg?.name || '',

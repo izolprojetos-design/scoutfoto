@@ -162,7 +162,7 @@ const BranchScouts = () => {
                 alt={selectedPhoto.name}
                 className="w-64 h-64 rounded-xl object-cover shadow-lg"
               />
-              <p className="text-lg font-semibold">{selectedPhoto.name}</p>
+              <p className="text-lg font-semibold uppercase">{selectedPhoto.name}</p>
               <Button
                 variant="outline"
                 size="sm"
