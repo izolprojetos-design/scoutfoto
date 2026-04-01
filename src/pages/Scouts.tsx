@@ -753,25 +753,26 @@ const Scouts = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-[120px_1fr] gap-4">
         <div className="space-y-2">
-          <Label>ID do Associado</Label>
-          <Input value={registrationId} readOnly placeholder="Gerado automaticamente" className="h-11 bg-muted/50" />
+          <Label>ID</Label>
+          <Input value={registrationId} readOnly placeholder="Auto" className="h-11 bg-muted/50 font-mono text-center" />
         </div>
         <div className="space-y-2">
-          <Label>Celular</Label>
-          <Input value={phoneVal} onChange={e => {
-            const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
-            let formatted = digits;
-            if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-            if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-            setPhoneVal(formatted);
-          }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
+          <Label>Nome completo *</Label>
+          <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
         </div>
       </div>
       <div className="space-y-2">
-        <Label>Nome completo *</Label>
-        <Input value={name} onChange={e => setName(e.target.value)} required placeholder="Nome completo" className="h-11" />
+        <Label>Celular</Label>
+        <Input value={phoneVal} onChange={e => {
+          const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+          let formatted = digits;
+          if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+          if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+          setPhoneVal(formatted);
+        }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
+      </div>
       </div>
       <div className="space-y-2">
         <Label>Data de nascimento *</Label>
