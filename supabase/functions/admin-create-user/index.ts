@@ -78,9 +78,11 @@ Deno.serve(async (req) => {
       if (newUser.user) {
         // Small delay to ensure profile trigger has completed
         await new Promise(resolve => setTimeout(resolve, 500));
+        const updateData: Record<string, unknown> = { must_change_password: true };
+        if (section) updateData.section = section;
         await serviceClient
           .from("profiles")
-          .update({ must_change_password: true })
+          .update(updateData)
           .eq("user_id", newUser.user.id);
       }
 
