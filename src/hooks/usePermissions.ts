@@ -6,6 +6,8 @@ export type PermissionKey =
   | 'view_photos'
   | 'upload_photos'
   | 'download_photos'
+  | 'view_events'
+  | 'edit_events'
   | 'manage_events'
   | 'manage_scouts'
   | 'manage_users'
