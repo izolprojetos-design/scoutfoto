@@ -1305,7 +1305,7 @@ const Scouts = () => {
 
                             {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
                             <div className="flex gap-2 pt-1">
-                              {(isAdmin || isChefe || isDirigente) && (
+                              {(isAdmin || isVoluntario) && (
                                 <Button
                                   variant="outline"
                                   size="sm"
