@@ -551,6 +551,20 @@ const Admin = () => {
                             </SelectContent>
                           </Select>
                         </div>
+                        <div className="space-y-2">
+                          <Label>Seção (opcional)</Label>
+                          <Select value={newSection} onValueChange={setNewSection}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">Nenhuma</SelectItem>
+                              <SelectItem value="Lobinho">Lobinho</SelectItem>
+                              <SelectItem value="Escoteiro">Escoteiro</SelectItem>
+                              <SelectItem value="Sênior">Sênior</SelectItem>
+                              <SelectItem value="Pioneiro">Pioneiro</SelectItem>
+                              <SelectItem value="Voluntário">Voluntário</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
                         <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
                           {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
                           Criar Usuário
