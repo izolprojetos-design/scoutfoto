@@ -141,7 +141,7 @@ const BranchScouts = () => {
                 )}
               </div>
               <div className="p-3">
-                <p className="text-sm font-semibold truncate">{scout.name}</p>
+                <p className="text-sm font-semibold break-words leading-tight">{scout.name}</p>
                 <p className="text-xs text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
                 {scout.subgroup_id && (() => {
                   const sg = subgroups.find(s => s.id === scout.subgroup_id);
