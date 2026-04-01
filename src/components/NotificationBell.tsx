@@ -132,6 +132,12 @@ const NotificationBell = () => {
                 )}
               </div>
               <div className="flex items-center gap-1">
+                {notifications.length > 0 && (
+                  <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={deleteAllNotifications}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Limpar
+                  </Button>
+                )}
                 {unreadCount > 0 && (
                   <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={markAllAsRead}>
                     <CheckCheck className="h-3.5 w-3.5" />
