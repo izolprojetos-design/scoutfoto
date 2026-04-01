@@ -16,6 +16,7 @@ import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil,
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
+import SecurityDashboard from '@/components/SecurityDashboard';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
