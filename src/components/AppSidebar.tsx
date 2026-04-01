@@ -129,7 +129,7 @@ const AppSidebar = () => {
             <SidebarMenuButton
               asChild
               tooltip="Perfil"
-              onClick={() => navigate('/profile')}
+              onClick={() => { isMobile && setOpenMobile(false); navigate('/profile'); }}
             >
               <button className="flex items-center gap-2 w-full">
                 <Avatar className="h-7 w-7 shrink-0">
