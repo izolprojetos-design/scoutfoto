@@ -804,6 +804,7 @@ export type Database = {
         | "parent"
         | "dirigente"
         | "dirigente_gestor"
+        | "voluntario"
       image_visibility: "private" | "group" | "public"
     }
     CompositeTypes: {
@@ -939,6 +940,7 @@ export const Constants = {
         "parent",
         "dirigente",
         "dirigente_gestor",
+        "voluntario",
       ],
       image_visibility: ["private", "group", "public"],
     },
