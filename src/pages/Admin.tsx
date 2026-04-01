@@ -796,7 +796,7 @@ const Admin = () => {
                   <Input
                     value={newSubgroupName}
                     onChange={e => setNewSubgroupName(e.target.value)}
-                    placeholder="Nome da Equipe"
+                    placeholder="Ex: Equipe Gavião"
                     className="h-9"
                   />
                 </div>
