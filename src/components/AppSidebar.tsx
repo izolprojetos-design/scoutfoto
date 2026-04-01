@@ -24,7 +24,7 @@ const AppSidebar = () => {
   const { canViewPhotos, canManageEvents, canManageScouts, canManageUsers } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
-  const { state } = useSidebar();
+  const { state, setOpenMobile, isMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const { theme, setTheme } = useTheme();
 
