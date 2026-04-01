@@ -1005,13 +1005,14 @@ const Admin = () => {
                   type={showResetPassword ? 'text' : 'password'}
                   value={resetPassword}
                   onChange={e => setResetPassword(e.target.value)}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   className="pr-10"
                 />
                 <button type="button" onClick={() => setShowResetPassword(!showResetPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showResetPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
               </div>
+              <PasswordStrengthIndicator password={resetPassword} />
             </div>
             <Button onClick={handleResetPassword} disabled={resetting} className="w-full gap-2">
               {resetting ? <Loader2 className="h-4 w-4 animate-spin" /> : <KeyRound className="h-4 w-4" />}
