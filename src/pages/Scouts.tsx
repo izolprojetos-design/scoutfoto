@@ -448,8 +448,11 @@ const Scouts = () => {
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
 
   const filteredScouts = scouts.filter(s => {
-    const matchSearch = s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.scout_group.toLowerCase().includes(search.toLowerCase());
+    const term = search.toLowerCase();
+    const subgroupName = s.subgroup_id ? subgroups.find(sg => sg.id === s.subgroup_id)?.name || '' : '';
+    const matchSearch = s.name.toLowerCase().includes(term) ||
+      (s.section || '').toLowerCase().includes(term) ||
+      subgroupName.toLowerCase().includes(term);
     if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
