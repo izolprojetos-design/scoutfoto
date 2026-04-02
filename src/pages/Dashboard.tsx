@@ -372,8 +372,8 @@ const Dashboard = () => {
       </div>
       )}
 
-      {/* Charts Row: Role Pie + Section Bar + Branch Pie */}
-      {loading ? (
+      {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
+      {isAdmin && (loading ? (
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
           <PieChartSkeleton />
           <PieChartSkeleton />
@@ -509,7 +509,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-      )}
+      ))}
 
       {/* Operational Cards Row */}
       {loading ? (
