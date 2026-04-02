@@ -391,7 +391,7 @@ const Dashboard = () => {
           <PieChartSkeleton />
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
         {/* Role Distribution Pie */}
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
@@ -471,54 +471,6 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Branch Distribution Pie */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" /> Integrantes por Ramo
-              <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {scouts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
-            ) : (
-              <div className="space-y-4">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={branchDistribution.filter(b => b.count > 0)}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="count"
-                      nameKey="name"
-                    >
-                      {branchDistribution.filter(b => b.count > 0).map((entry, idx) => (
-                        <Cell key={idx} fill={PIE_COLORS[entry.key] || '#8884d8'} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                      formatter={(value: number, name: string) => [`${value} integrantes`, name]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="grid grid-cols-2 gap-2">
-                  {branchDistribution.map(b => (
-                    <div key={b.key} className="flex items-center gap-1.5 text-xs">
-                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
-                      <span className="text-muted-foreground">{b.icon} {b.name}</span>
-                      <span className="font-semibold">{b.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
       ))}
 
@@ -646,6 +598,55 @@ const Dashboard = () => {
                   </div>
                 );
               })
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Branch Distribution Pie */}
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4" /> Integrantes por Ramo
+              <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {scouts.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
+            ) : (
+              <div className="space-y-4">
+                <ResponsiveContainer width="100%" height={180}>
+                  <PieChart>
+                    <Pie
+                      data={branchDistribution.filter(b => b.count > 0)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={45}
+                      outerRadius={70}
+                      paddingAngle={3}
+                      dataKey="count"
+                      nameKey="name"
+                    >
+                      {branchDistribution.filter(b => b.count > 0).map((entry, idx) => (
+                        <Cell key={idx} fill={PIE_COLORS[entry.key] || '#8884d8'} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
+                      formatter={(value: number, name: string) => [`${value} integrantes`, name]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="grid grid-cols-2 gap-2">
+                  {branchDistribution.map(b => (
+                    <div key={b.key} className="flex items-center gap-1.5 text-xs">
+                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                      <span className="text-muted-foreground">{b.icon} {b.name}</span>
+                      <span className="font-semibold">{b.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
