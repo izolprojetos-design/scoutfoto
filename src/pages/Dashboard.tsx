@@ -509,7 +509,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
-      )}
+      ))}
 
       {/* Operational Cards Row */}
       {loading ? (
