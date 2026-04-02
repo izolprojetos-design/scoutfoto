@@ -650,7 +650,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Active vs Inactive */}
+        {/* Active vs Inactive - Admin only */}
+        {isAdmin && (
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
@@ -698,6 +699,7 @@ const Dashboard = () => {
             </div>
           </CardContent>
         </Card>
+        )}
       </div>
       )}
 
