@@ -360,11 +360,11 @@ const Dashboard = () => {
       {loading ? <StatsSkeleton /> : (
       <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
         {[
-          { icon: Users, value: totalUsers, label: 'Usuários', color: 'text-primary', adminOnly: true },
-          { icon: UserCheck, value: activeUsers, label: 'Ativos', color: 'text-emerald-600', adminOnly: true },
-          { icon: UserX, value: inactiveUsers, label: 'Inativos', color: 'text-destructive', adminOnly: true },
-          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent', adminOnly: false },
-          { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600', adminOnly: false },
+          { icon: Users, value: totalUsers, label: 'Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
+          { icon: UserCheck, value: activeUsers, label: 'Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
+          { icon: UserX, value: inactiveUsers, label: 'Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
+          { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
+          { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
         ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
             <Card className="border bg-card shadow-sm">
@@ -375,6 +375,7 @@ const Dashboard = () => {
                 <div>
                   <p className="text-xl font-bold tracking-tight">{stat.value}</p>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
+                  <p className="text-[10px] text-muted-foreground/60">Fonte: {stat.source}</p>
                 </div>
               </CardContent>
             </Card>
