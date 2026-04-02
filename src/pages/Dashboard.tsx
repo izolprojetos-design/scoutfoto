@@ -347,14 +347,14 @@ const Dashboard = () => {
 
       {/* KPI Stats Grid */}
       {loading ? <StatsSkeleton /> : (
-      <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5">
+      <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
         {[
-          { icon: Users, value: totalUsers, label: 'Usuários', color: 'text-primary' },
-          { icon: UserCheck, value: activeUsers, label: 'Ativos', color: 'text-emerald-600' },
-          { icon: UserX, value: inactiveUsers, label: 'Inativos', color: 'text-destructive' },
-          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent' },
-          { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600' },
-        ].map((stat, i) => (
+          { icon: Users, value: totalUsers, label: 'Usuários', color: 'text-primary', adminOnly: true },
+          { icon: UserCheck, value: activeUsers, label: 'Ativos', color: 'text-emerald-600', adminOnly: true },
+          { icon: UserX, value: inactiveUsers, label: 'Inativos', color: 'text-destructive', adminOnly: true },
+          { icon: Calendar, value: totalEvents, label: 'Eventos', color: 'text-accent', adminOnly: false },
+          { icon: Users, value: scouts.length, label: 'Integrantes', color: 'text-emerald-600', adminOnly: false },
+        ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
           <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
             <Card className="border bg-card shadow-sm">
               <CardContent className="flex items-center gap-3 p-4">
