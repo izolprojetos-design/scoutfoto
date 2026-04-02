@@ -653,56 +653,6 @@ const Dashboard = () => {
         </Card>
 
 
-
-        {isAdmin && (
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <UserCheck className="h-4 w-4" /> Status dos Usuários
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <ResponsiveContainer width="100%" height={180}>
-                <PieChart>
-                  <Pie
-                    data={[
-                      { name: 'Ativos', value: activeUsers, fill: '#10b981' },
-                      { name: 'Inativos', value: inactiveUsers, fill: '#ef4444' },
-                    ].filter(d => d.value > 0)}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={45}
-                    outerRadius={70}
-                    paddingAngle={3}
-                    dataKey="value"
-                    nameKey="name"
-                  >
-                    <Cell fill="#10b981" />
-                    <Cell fill="#ef4444" />
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                    formatter={(value: number, name: string) => [`${value} usuários`, name]}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="flex justify-center gap-6">
-                <div className="flex items-center gap-1.5 text-xs">
-                  <div className="h-3 w-3 rounded-full bg-emerald-500" />
-                  <span className="text-muted-foreground">Ativos</span>
-                  <span className="font-semibold">{activeUsers}</span>
-                </div>
-                <div className="flex items-center gap-1.5 text-xs">
-                  <div className="h-3 w-3 rounded-full bg-destructive" />
-                  <span className="text-muted-foreground">Inativos</span>
-                  <span className="font-semibold">{inactiveUsers}</span>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        )}
       </div>
       )}
 
