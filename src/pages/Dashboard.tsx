@@ -136,27 +136,34 @@ const Dashboard = () => {
     if (showLoader) setLoading(true);
     else setRefreshing(true);
 
-    const [branchRes, evtRes, scoutRes, profileRes, roleRes] = await Promise.all([
+    // Core queries for all users; admin-only queries run conditionally
+    const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }),
-      supabase.from('scouts').select('*').order('name'),
-      supabase.from('profiles').select('user_id, name, is_active, section'),
-      supabase.from('user_roles').select('user_id, role'),
-    ]);
-
-    const [allImgRes, eventImgRes] = await Promise.all([
+      supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }).limit(20),
+      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section').order('name'),
       supabase.from('images').select('branch_id, event_id'),
-      supabase.from('images').select('event_id').not('event_id', 'is', null),
+    ] as const;
+
+    const adminPromises = isAdmin
+      ? [
+          supabase.from('profiles').select('user_id, name, is_active, section'),
+          supabase.from('user_roles').select('user_id, role'),
+        ] as const
+      : null;
+
+    const [branchRes, evtRes, scoutRes, allImgRes, ...adminResults] = await Promise.all([
+      ...corePromises,
+      ...(adminPromises ?? []),
     ]);
 
-    const allImages = allImgRes.data || [];
-    const eventImages = eventImgRes.data || [];
-    const memberImages = allImages.filter(img => !img.event_id);
+    const allImages = (allImgRes as any).data || [];
+    const memberImages = allImages.filter((img: any) => !img.event_id);
+    const eventImages = allImages.filter((img: any) => img.event_id);
 
     if (branchRes.data) {
       const withCounts = branchRes.data.map(branch => ({
         ...branch,
-        imageCount: memberImages.filter(img => img.branch_id === branch.id).length,
+        imageCount: memberImages.filter((img: any) => img.branch_id === branch.id).length,
       }));
       setBranches(withCounts);
       setTotalImages(memberImages.length);
@@ -165,18 +172,22 @@ const Dashboard = () => {
     if (evtRes.data) {
       const evtsWithCounts = evtRes.data.map(evt => ({
         ...evt,
-        imageCount: eventImages.filter(img => img.event_id === evt.id).length,
+        imageCount: eventImages.filter((img: any) => img.event_id === evt.id).length,
       }));
       setEventsWithPhotos(evtsWithCounts);
       setTotalEvents(evtRes.data.length);
     }
 
-    setScouts(scoutRes.data || []);
-    setAllProfiles(profileRes.data || []);
-    setAllRoles((roleRes.data as UserRole[]) || []);
+    setScouts((scoutRes.data as any) || []);
+
+    if (isAdmin && adminResults.length === 2) {
+      setAllProfiles((adminResults[0] as any).data || []);
+      setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
+    }
+
     setLoading(false);
     setRefreshing(false);
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
