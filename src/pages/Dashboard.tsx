@@ -391,7 +391,7 @@ const Dashboard = () => {
           <PieChartSkeleton />
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
         {/* Role Distribution Pie */}
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
