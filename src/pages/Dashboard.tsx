@@ -291,7 +291,7 @@ const Dashboard = () => {
         const change = getNextBranchChange(parseLocalDate(s.birth_date));
         return change ? { ...s, change } : null;
       })
-      .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 6)
+      .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 3)
       .sort((a, b) => a.change.monthsLeft - b.change.monthsLeft),
     [scouts]
   );
