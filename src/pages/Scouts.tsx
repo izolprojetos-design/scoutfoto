@@ -1089,7 +1089,7 @@ const Scouts = () => {
             {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
           </p>
         </div>
-        {(isAdmin || isVoluntario || canUpload) && (
+        {(canManageScouts || canEditScouts) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
