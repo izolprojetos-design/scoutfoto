@@ -643,7 +643,6 @@ const Dashboard = () => {
                   </div>
                 );
               })
-            )
             )}
           </CardContent>
         </Card>
