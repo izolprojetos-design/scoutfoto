@@ -1082,7 +1082,10 @@ const Scouts = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Integrantes</h1>
-          <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
+          <p className="mt-1 text-muted-foreground">
+            {activeScouts.length} ativos
+            {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
+          </p>
         </div>
         {(isAdmin || isVoluntario || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
