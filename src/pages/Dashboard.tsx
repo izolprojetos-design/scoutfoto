@@ -358,16 +358,6 @@ const Dashboard = () => {
             </h1>
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} className="scale-90" />
-              <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground cursor-pointer">Auto</Label>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => fetchData(false)} disabled={refreshing} className="h-9 gap-1.5">
-              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline text-xs">Atualizar</span>
-            </Button>
-          </div>
         </motion.div>
       </div>
 
