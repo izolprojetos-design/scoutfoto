@@ -82,6 +82,7 @@ const Scouts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
