@@ -57,9 +57,10 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
 
   const changeDate = addMonths(birthDate, currentBranch.maxAge);
   const now = new Date();
+  const totalDaysLeft = differenceInDays(changeDate, now);
   const monthsLeft = differenceInMonths(changeDate, now);
   const afterMonths = addMonths(now, monthsLeft);
-  const daysLeft = Math.max(0, Math.floor((changeDate.getTime() - afterMonths.getTime()) / (1000 * 60 * 60 * 24)));
+  const daysLeft = differenceInDays(changeDate, afterMonths);
 
   return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
 }
