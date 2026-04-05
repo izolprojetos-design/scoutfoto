@@ -601,7 +601,7 @@ const Dashboard = () => {
             {upcomingChanges.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Calendar className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 6 meses</p>
+                <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 3 meses</p>
               </div>
             ) : (
               upcomingChanges.map(s => (
