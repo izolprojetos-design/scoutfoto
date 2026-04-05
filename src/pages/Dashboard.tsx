@@ -555,8 +555,8 @@ const Dashboard = () => {
               overdueChanges.map(s => {
                 const currentBranch = getEffectiveBranchKey(s);
                 return (
-                  <div key={s.id} className="flex items-center justify-between rounded-lg bg-destructive/10 border border-destructive/20 p-3">
-                    <div className="flex items-center gap-2">
+                  <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                    <div className="flex items-start gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                           <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
@@ -566,18 +566,20 @@ const Dashboard = () => {
                           <User className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
-                      <div>
-                        <p className="text-sm font-medium break-words whitespace-normal leading-tight">{s.name}</p>
-                        <p className="text-xs text-muted-foreground">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
+                          <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+                            <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                            {canTransfer && (
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                                <ArrowRightLeft className="h-3 w-3" /> Transferir
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                      {canTransfer && (
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
-                          <ArrowRightLeft className="h-3 w-3" /> Transferir
-                        </Button>
-                      )}
                     </div>
                   </div>
                 );
