@@ -528,10 +528,10 @@ const EventDetail = () => {
             <ImageIcon className="h-8 w-8" />
           </div>
           <p className="text-lg font-medium text-foreground">Nenhuma foto neste evento</p>
-          <p className="mt-1 text-sm">
-            {canUpload ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
-          </p>
-          {canUpload && (
+           <p className="mt-1 text-sm">
+             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
+           </p>
+           {(canUploadEventPhotos || canUpload) && (
             <Button className="mt-4 gap-2" onClick={() => setShowUpload(true)}>
               <Upload className="h-4 w-4" />
               Adicionar Foto
