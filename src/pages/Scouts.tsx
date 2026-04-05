@@ -1363,8 +1363,8 @@ const Scouts = () => {
                               );
                             })()}
 
-                            {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
-                            <div className="flex gap-2 pt-1">
+                            {/* Actions: Edit, Activate/Deactivate, Delete */}
+                            <div className="flex gap-2 pt-1 flex-wrap">
                               {(isAdmin || isVoluntario) && (
                                 <Button
                                   variant="outline"
@@ -1375,6 +1375,38 @@ const Scouts = () => {
                                   <Pencil className="h-3.5 w-3.5" />
                                   Editar
                                 </Button>
+                              )}
+                              {(isAdmin || isVoluntario) && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant={scout.is_active ? 'outline' : 'default'}
+                                      size="sm"
+                                      className="gap-1.5"
+                                    >
+                                      <Power className="h-3.5 w-3.5" />
+                                      {scout.is_active ? 'Desativar' : 'Reativar'}
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        {scout.is_active ? `Desativar "${scout.name}"?` : `Reativar "${scout.name}"?`}
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        {scout.is_active
+                                          ? 'O integrante ficará inativo e não aparecerá nas listagens padrão. Dados e histórico serão mantidos.'
+                                          : 'O integrante voltará a aparecer nas listagens operacionais.'}
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleToggleActive(scout)}>
+                                        {scout.is_active ? 'Desativar' : 'Reativar'}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               )}
                               {isAdmin && (
                                 <AlertDialog>
@@ -1387,11 +1419,13 @@ const Scouts = () => {
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
-                                      <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
+                                      <AlertDialogDescription>
+                                        Esta ação é irreversível. Considere desativar o integrante ao invés de excluí-lo para manter o histórico.
+                                      </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
+                                      <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir permanentemente</AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>
