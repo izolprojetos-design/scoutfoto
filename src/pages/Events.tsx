@@ -41,8 +41,9 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
+  const { user, isAdmin, isVoluntario } = useAuth();
   const navigate = useNavigate();
+  const { canEditEvents, canManageEvents } = usePermissions();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [photoCounts, setPhotoCounts] = useState<Record<string, number>>({});
