@@ -623,27 +623,27 @@ const Dashboard = () => {
               upcomingBirthdays.slice(0, 5).map(s => {
                 const branch = getEffectiveBranchKey(s);
                 return (
-                  <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
+                  <div key={s.id} className={`flex items-center justify-between rounded-lg p-3 transition-all ${s.daysUntil === 0 ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
                     <div className="flex items-center gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                           <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
                         </button>
                       ) : (
-                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 text-muted-foreground" />
+                        <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
+                          <User className={`h-4 w-4 ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: 'hsl(var(--scout-green))' }}>{s.name}</p>
+                        <p className={`text-sm font-bold break-words whitespace-normal leading-tight ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : ''}`} style={s.daysUntil !== 0 ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })}
                           {branch && <span> · {branch.icon} {branch.name}</span>}
                         </p>
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {s.daysUntil === 0 ? 'Hoje! 🎉' : `${s.daysUntil}d`}
+                    <Badge variant={s.daysUntil === 0 ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
+                      {s.daysUntil === 0 ? '🎉 Hoje!' : `${s.daysUntil}d`}
                     </Badge>
                   </div>
                 );
