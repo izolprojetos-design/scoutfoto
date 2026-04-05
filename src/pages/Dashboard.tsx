@@ -280,19 +280,19 @@ const Dashboard = () => {
     })).sort((a, b) => b.count - a.count);
   }, [filteredProfiles, allRoles]);
 
-  // Users by section (bar chart)
-  const sectionDistribution = useMemo(() => {
-    const counts: Record<string, number> = {};
-    allProfiles.forEach(p => {
-      const sec = p.section && p.section !== '' ? p.section : 'Sem seção';
-      counts[sec] = (counts[sec] || 0) + 1;
-    });
-    return Object.entries(counts).map(([section, count]) => ({
-      section,
-      count,
-      fill: BAR_SECTION_COLORS[section] || '#8884d8',
-    })).sort((a, b) => b.count - a.count);
-  }, [allProfiles]);
+  // Format login time ago
+  const formatTimeAgo = (dateStr: string) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Agora';
+    if (diffMin < 60) return `${diffMin}min`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d`;
+  };
 
   // Scout branch distribution
   const overdueChanges = useMemo(() =>
