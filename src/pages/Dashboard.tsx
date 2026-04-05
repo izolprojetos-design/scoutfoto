@@ -537,7 +537,7 @@ const Dashboard = () => {
       ) : (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
         {/* Overdue Branch Changes */}
-        <Card className="border-t-4 border-t-destructive border shadow-sm flex flex-col">
+        <Card className="order-2 lg:order-1 border-t-4 border-t-destructive border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <ArrowRightLeft className="h-5 w-5 text-destructive" /> Mudanças de Ramo
@@ -595,7 +595,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Upcoming 6 months */}
-        <Card className="border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
+        <Card className="order-3 lg:order-2 border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-amber-500" /> Próximos 3 Meses
@@ -648,7 +648,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Birthdays */}
-        <Card className="border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
+        <Card className="order-1 lg:order-3 border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
