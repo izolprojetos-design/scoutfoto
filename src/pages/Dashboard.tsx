@@ -116,8 +116,6 @@ const Dashboard = () => {
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const [allRoles, setAllRoles] = useState<UserRole[]>([]);
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
