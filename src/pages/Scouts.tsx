@@ -1370,7 +1370,7 @@ const Scouts = () => {
 
                             {/* Actions: Edit, Activate/Deactivate, Delete */}
                             <div className="flex gap-2 pt-1 flex-wrap">
-                              {(isAdmin || isVoluntario) && (
+                              {(canManageScouts || canEditScouts) && (
                                 <Button
                                   variant="outline"
                                   size="sm"
