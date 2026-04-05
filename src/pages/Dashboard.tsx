@@ -118,6 +118,7 @@ const Dashboard = () => {
   const [sectionFilter, setSectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
     id: string;
