@@ -303,13 +303,12 @@ const Dashboard = () => {
         const [y, m, d] = s.birth_date.split('-').map(Number);
         let nextBday = startOfDay(new Date(today.getFullYear(), m - 1, d));
         if (nextBday < today) nextBday = startOfDay(new Date(today.getFullYear() + 1, m - 1, d));
-        // Contagem inclusiva: o próprio dia conta como 1
-        const daysUntil = differenceInDays(nextBday, today) + 1;
+        const daysUntil = differenceInDays(nextBday, today);
         const nextAge = nextBday.getFullYear() - y;
-        const isToday = daysUntil === 1;
+        const isToday = daysUntil === 0;
         return { ...s, nextBday, daysUntil, nextAge, isToday };
       })
-      .filter(s => s.daysUntil >= 1 && s.daysUntil <= 31)
+      .filter(s => s.daysUntil >= 0 && s.daysUntil <= 30)
       .sort((a, b) => a.daysUntil - b.daysUntil);
   }, [scouts]);
 
