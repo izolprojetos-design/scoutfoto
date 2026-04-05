@@ -1221,7 +1221,7 @@ const Scouts = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
-                <Card className="border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <Card className={`border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden ${!scout.is_active ? 'opacity-60' : ''}`}>
                   <CardContent className="p-0">
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
