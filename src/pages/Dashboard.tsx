@@ -182,6 +182,34 @@ const Dashboard = () => {
     if (isAdmin && adminResults.length === 2) {
       setAllProfiles((adminResults[0] as any).data || []);
       setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
+
+      // Fetch recent logins (latest per user)
+      const { data: loginLogs } = await supabase
+        .from('audit_logs')
+        .select('user_id, created_at')
+        .eq('action', 'login')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (loginLogs) {
+        const profilesData = (adminResults[0] as any).data || [];
+        const profileMap = new Map<string, string>();
+        profilesData.forEach((p: UserProfile) => profileMap.set(p.user_id, p.name));
+
+        const seen = new Set<string>();
+        const logins: RecentLogin[] = [];
+        for (const log of loginLogs) {
+          if (!seen.has(log.user_id)) {
+            seen.add(log.user_id);
+            logins.push({
+              user_id: log.user_id,
+              name: profileMap.get(log.user_id) || 'Desconhecido',
+              last_login: log.created_at,
+            });
+          }
+        }
+        setRecentLogins(logins);
+      }
     }
 
     setLoading(false);
