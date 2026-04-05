@@ -648,15 +648,15 @@ const Dashboard = () => {
         </Card>
 
         {/* Birthdays */}
-        <Card className="border shadow-sm flex flex-col">
+        <Card className="border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Cake className="h-4 w-4 text-pink-500" /> Aniversariantes
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
               {upcomingBirthdays.length > 0 && (
                 <Badge variant="outline" className="ml-auto text-xs">{upcomingBirthdays.length}</Badge>
               )}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Próximos 30 dias</p>
+            <p className="text-sm font-medium text-muted-foreground">Próximos 30 dias</p>
           </CardHeader>
           <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
             {upcomingBirthdays.length === 0 ? (
