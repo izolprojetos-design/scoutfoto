@@ -129,9 +129,8 @@ const Dashboard = () => {
 
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
 
-  const fetchData = useCallback(async (showLoader = true) => {
-    if (showLoader) setLoading(true);
-    else setRefreshing(true);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
 
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
