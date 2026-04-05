@@ -615,6 +615,7 @@ const Dashboard = () => {
               upcomingChanges.map(s => {
                 const [birthYear] = s.birth_date.split('-').map(Number);
                 const ageAtChange = s.change.date.getFullYear() - birthYear;
+                const currentBranch = getCurrentBranch(parseLocalDate(s.birth_date));
                 return (
                   <div key={s.id} className="rounded-lg bg-muted/50 p-3">
                     <div className="flex items-start gap-2">
@@ -635,8 +636,12 @@ const Dashboard = () => {
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(s.change.date, "dd 'de' MMM", { locale: ptBR })} · {ageAtChange} anos · {s.change.branch.icon} {s.change.branch.name}
+                          {currentBranch?.icon} {currentBranch?.name} → {s.change.branch.icon} {s.change.branch.name} · {ageAtChange} anos
                         </p>
+                      </div>
+                    </div>
+                  </div>
+                );
                       </div>
                     </div>
                   </div>
