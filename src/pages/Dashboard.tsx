@@ -635,7 +635,7 @@ const Dashboard = () => {
                     </div>
                   </div>
                 );
-              }))
+              })
             )}
           </CardContent>
         </Card>
