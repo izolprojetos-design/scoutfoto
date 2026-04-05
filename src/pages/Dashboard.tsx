@@ -567,18 +567,16 @@ const Dashboard = () => {
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
-                          <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                            <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                            {canTransfer && (
-                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
-                                <ArrowRightLeft className="h-3 w-3" /> Transferir
-                              </Button>
-                            )}
-                          </div>
-                        </div>
+                        <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                          {canTransfer && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                              <ArrowRightLeft className="h-3 w-3" /> Transferir
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
