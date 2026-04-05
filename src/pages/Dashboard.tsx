@@ -519,33 +519,48 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Users by Section Bar Chart */}
+        {/* Recent Logins Table */}
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" /> Usuários por Seção
+              <LogIn className="h-4 w-4" /> Últimos Acessos
+              <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {sectionDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
+          <CardContent className="p-0">
+            {recentLogins.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Sem registros</p>
             ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={sectionDistribution} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="section" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                    formatter={(value: number) => [`${value} usuários`]}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                    {sectionDistribution.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.fill} />
+              <div className="max-h-[280px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Usuário</TableHead>
+                      <TableHead className="text-xs text-right">Último Acesso</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentLogins.map((login) => (
+                      <TableRow key={login.user_id}>
+                        <TableCell className="py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+                              <User className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium truncate max-w-[140px]">{login.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
