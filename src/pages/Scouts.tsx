@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
