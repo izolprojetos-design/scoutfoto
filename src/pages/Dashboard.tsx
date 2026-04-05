@@ -8,11 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, RefreshCw, ShieldCheck, UserCheck, UserX, Clock, LogIn } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -116,8 +113,6 @@ const Dashboard = () => {
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const [allRoles, setAllRoles] = useState<UserRole[]>([]);
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
-  const [autoRefresh, setAutoRefresh] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
@@ -131,9 +126,8 @@ const Dashboard = () => {
 
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
 
-  const fetchData = useCallback(async (showLoader = true) => {
-    if (showLoader) setLoading(true);
-    else setRefreshing(true);
+  const fetchData = useCallback(async () => {
+    setLoading(true);
 
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
@@ -213,17 +207,10 @@ const Dashboard = () => {
     }
 
     setLoading(false);
-    setRefreshing(false);
   }, [isAdmin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Auto-refresh
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => fetchData(false), 30000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchData]);
 
   const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
     setTransitioningId(scoutId);
@@ -236,7 +223,7 @@ const Dashboard = () => {
       toast.error('Erro ao realizar transição: ' + error.message);
     } else {
       toast.success(`${scoutName} transferido(a) com sucesso!`);
-      fetchData(false);
+      fetchData();
     }
     setTransitioningId(null);
   };
@@ -357,16 +344,6 @@ const Dashboard = () => {
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2">
-              <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} className="scale-90" />
-              <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground cursor-pointer">Auto</Label>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => fetchData(false)} disabled={refreshing} className="h-9 gap-1.5">
-              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline text-xs">Atualizar</span>
-            </Button>
           </div>
         </motion.div>
       </div>
