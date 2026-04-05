@@ -1413,7 +1413,7 @@ const Scouts = () => {
                                   </AlertDialogContent>
                                 </AlertDialog>
                               )}
-                              {isAdmin && (
+                              {canManageScouts && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="destructive" size="sm" className="gap-1.5">
