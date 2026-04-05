@@ -1,5 +1,11 @@
 import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths } from 'date-fns';
 
+/** Parse a "YYYY-MM-DD" date string as local time (avoids UTC timezone shift). */
+export function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 export interface BranchInfo {
   name: string;
   key: string;
