@@ -482,49 +482,73 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Logins Table */}
+        {/* Online & Recent Logins */}
         <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <LogIn className="h-4 w-4" /> Últimos Acessos
-              <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
-            </CardTitle>
-          </CardHeader>
           <CardContent className="p-0">
-            {recentLogins.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Sem registros</p>
-            ) : (
-              <div className="max-h-[280px] overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-xs">Usuário</TableHead>
-                      <TableHead className="text-xs text-right">Último Acesso</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {recentLogins.map((login) => (
-                      <TableRow key={login.user_id}>
-                        <TableCell className="py-2">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
-                              <User className="h-3.5 w-3.5 text-primary" />
-                            </div>
-                            <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="py-2 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            <Clock className="h-3 w-3 text-muted-foreground" />
-                            <span className="text-xs text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+            {/* Online Now Section */}
+            <div className="px-4 pt-4 pb-2">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-sm font-semibold">Online Agora</span>
+                <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                  {recentLogins.filter(l => {
+                    const diffMs = Date.now() - new Date(l.last_login).getTime();
+                    return diffMs < 30 * 60 * 1000;
+                  }).length}
+                </Badge>
               </div>
-            )}
+              {(() => {
+                const onlineUsers = recentLogins.filter(l => {
+                  const diffMs = Date.now() - new Date(l.last_login).getTime();
+                  return diffMs < 30 * 60 * 1000;
+                });
+                return onlineUsers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {onlineUsers.map(login => (
+                      <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
+                          <User className="h-3 w-3 text-emerald-600" />
+                        </div>
+                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* Divider */}
+            <div className="mx-4 my-2 border-t" />
+
+            {/* Recent Logins Section */}
+            <div className="px-4 pb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="text-sm font-semibold">Últimos Acessos</span>
+                <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
+              </div>
+              {recentLogins.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
+              ) : (
+                <div className="max-h-[180px] overflow-y-auto space-y-1">
+                  {recentLogins.map((login) => (
+                    <div key={login.user_id} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                        <User className="h-3 w-3 text-primary" />
+                      </div>
+                      <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                        <span className="text-[10px] text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
 
