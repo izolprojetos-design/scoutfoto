@@ -55,11 +55,12 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   const nextBranch = SCOUT_BRANCHES[idx + 1];
   if (!nextBranch) return null;
 
-  const changeDate = addMonths(birthDate, currentBranch.maxAge);
+  const changeDate = startOfDay(addMonths(birthDate, currentBranch.maxAge));
   const now = startOfDay(new Date());
   const monthsLeft = differenceInMonths(changeDate, now);
   const afterMonths = addMonths(now, monthsLeft);
-  const daysLeft = differenceInDays(changeDate, afterMonths);
+  // Contagem inclusiva: o próprio dia conta como 1
+  const daysLeft = differenceInDays(changeDate, afterMonths) + 1;
 
   return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
 }
