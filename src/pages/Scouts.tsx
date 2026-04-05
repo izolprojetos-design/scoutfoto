@@ -466,6 +466,10 @@ const Scouts = () => {
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
 
   const filteredScouts = scouts.filter(s => {
+    // Status filter
+    if (statusFilter === 'active' && !s.is_active) return false;
+    if (statusFilter === 'inactive' && s.is_active) return false;
+
     const term = search.toLowerCase();
     const subgroupName = s.subgroup_id ? subgroups.find(sg => sg.id === s.subgroup_id)?.name || '' : '';
     const matchSearch = s.name.toLowerCase().includes(term) ||
