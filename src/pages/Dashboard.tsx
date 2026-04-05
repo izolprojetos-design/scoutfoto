@@ -359,20 +359,6 @@ const Dashboard = () => {
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Section filter - only admin can change */}
-            {isAdmin && (
-              <Select value={sectionFilter} onValueChange={setSectionFilter}>
-                <SelectTrigger className="w-[160px] h-9 text-xs">
-                  <SelectValue placeholder="Filtrar seção" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as seções</SelectItem>
-                  {SECTION_OPTIONS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
             <div className="flex items-center gap-2">
               <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} className="scale-90" />
               <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground cursor-pointer">Auto</Label>
