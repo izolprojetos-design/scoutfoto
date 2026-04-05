@@ -635,7 +635,7 @@ const Dashboard = () => {
                         </div>
                       )}
                       <div>
-                        <p className="text-sm font-medium">{s.name}</p>
+                        <p className="text-sm font-medium text-[hsl(var(--scout-green,145_60%_28%))]">{s.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })}
                           {branch && <span> · {branch.icon} {branch.name}</span>}
