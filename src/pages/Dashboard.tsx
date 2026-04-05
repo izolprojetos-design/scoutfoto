@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
-import { useUserSection, SECTION_OPTIONS } from '@/hooks/useUserSection';
+import { useUserSection } from '@/hooks/useUserSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
@@ -115,7 +115,7 @@ const Dashboard = () => {
   // New state for enhanced dashboard
   const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
   const [allRoles, setAllRoles] = useState<UserRole[]>([]);
-  const [sectionFilter, setSectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
+  const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
@@ -359,20 +359,6 @@ const Dashboard = () => {
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Section filter - only admin can change */}
-            {isAdmin && (
-              <Select value={sectionFilter} onValueChange={setSectionFilter}>
-                <SelectTrigger className="w-[160px] h-9 text-xs">
-                  <SelectValue placeholder="Filtrar seção" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as seções</SelectItem>
-                  {SECTION_OPTIONS.map(s => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
             <div className="flex items-center gap-2">
               <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} className="scale-90" />
               <Label htmlFor="auto-refresh" className="text-xs text-muted-foreground cursor-pointer">Auto</Label>
