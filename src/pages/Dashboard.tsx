@@ -292,7 +292,7 @@ const Dashboard = () => {
         return change ? { ...s, change } : null;
       })
       .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft < 3)
-      .sort((a, b) => a.change.monthsLeft - b.change.monthsLeft),
+      .sort((a, b) => a.change.date.getTime() - b.change.date.getTime()),
     [scouts]
   );
 
