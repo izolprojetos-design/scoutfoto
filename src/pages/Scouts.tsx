@@ -23,6 +23,7 @@ import {
   formatAge,
   formatTimeLeft,
   calculateAge,
+  parseLocalDate,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
@@ -454,9 +455,9 @@ const Scouts = () => {
 
   const getEffectiveBranch = (scout: Scout) => {
     if (scout.manual_branch) {
-      return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+      return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(parseLocalDate(scout.birth_date));
     }
-    return getCurrentBranch(new Date(scout.birth_date));
+    return getCurrentBranch(parseLocalDate(scout.birth_date));
   };
 
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
@@ -569,8 +570,8 @@ const Scouts = () => {
         scout.section || '',
         sg?.name || '',
         scout.phone || '',
-        new Date(scout.birth_date).toLocaleDateString('pt-BR'),
-        formatAge(new Date(scout.birth_date)),
+        parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+        formatAge(parseLocalDate(scout.birth_date)),
         responsavel,
       ];
     });
@@ -638,8 +639,8 @@ const Scouts = () => {
         'Seção': scout.section || '',
         'Equipe': sg?.name || '',
         'Celular': scout.phone || '',
-        'Data de Nascimento': new Date(scout.birth_date).toLocaleDateString('pt-BR'),
-        'Idade': formatAge(new Date(scout.birth_date)),
+        'Data de Nascimento': parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+        'Idade': formatAge(parseLocalDate(scout.birth_date)),
         'Responsável': responsavel,
       };
     });
@@ -1150,7 +1151,7 @@ const Scouts = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredScouts.map((scout, index) => {
             const branch = getEffectiveBranch(scout);
-            const nextChange = getNextBranchChange(new Date(scout.birth_date));
+            const nextChange = getNextBranchChange(parseLocalDate(scout.birth_date));
             const scoutGuardians = getGuardiansForScout(scout.id);
             const isExpanded = expandedScouts.has(scout.id);
 
@@ -1202,7 +1203,7 @@ const Scouts = () => {
                             <span className="text-xs font-mono text-muted-foreground">#{scout.registration_id}</span>
                           )}
                         </div>
-                        <p className="text-sm text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
+                        <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
                         <div className="flex flex-wrap gap-1.5 mt-1">
                           {branch && (
                             <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
@@ -1262,7 +1263,7 @@ const Scouts = () => {
 
                             {/* Guardians - only show for minors (under 18) */}
                             {(() => {
-                              const ageInYears = calculateAge(new Date(scout.birth_date)).years;
+                              const ageInYears = calculateAge(parseLocalDate(scout.birth_date)).years;
                               const isMinor = ageInYears < 18;
                               if (!isMinor && scoutGuardians.length === 0) return null;
                               return (
@@ -1439,10 +1440,10 @@ const Scouts = () => {
             <DialogTitle>Dados do Integrante</DialogTitle>
           </DialogHeader>
           {viewingScout && (() => {
-            const branch = getCurrentBranch(new Date(viewingScout.birth_date));
-            const nextChange = getNextBranchChange(new Date(viewingScout.birth_date));
+            const branch = getCurrentBranch(parseLocalDate(viewingScout.birth_date));
+            const nextChange = getNextBranchChange(parseLocalDate(viewingScout.birth_date));
             const scoutGuardians = getGuardiansForScout(viewingScout.id);
-            const ageInYears = calculateAge(new Date(viewingScout.birth_date)).years;
+            const ageInYears = calculateAge(parseLocalDate(viewingScout.birth_date)).years;
             return (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
@@ -1470,7 +1471,7 @@ const Scouts = () => {
                         <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{formatAge(new Date(viewingScout.birth_date))}</p>
+                    <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(viewingScout.birth_date))}</p>
                     <div className="flex flex-wrap gap-1.5 mt-1">
                       {branch && (
                         <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
@@ -1503,7 +1504,7 @@ const Scouts = () => {
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-muted-foreground">Data de nascimento</span>
                     <span className="font-medium">
-                      {new Date(viewingScout.birth_date).toLocaleDateString('pt-BR')}
+                      {parseLocalDate(viewingScout.birth_date).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
                   {viewingScout.scout_group && (

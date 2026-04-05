@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { getCurrentBranch, formatAge, ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
 
 interface Scout {
@@ -64,7 +64,7 @@ const BranchScouts = () => {
       if (scoutRes) {
         const filtered = scoutRes.filter(s => {
           if (s.manual_branch) return s.manual_branch === branchKey;
-          const branch = getCurrentBranch(new Date(s.birth_date));
+          const branch = getCurrentBranch(parseLocalDate(s.birth_date));
           return branch?.key === branchKey;
         });
         setScouts(filtered);
@@ -142,7 +142,7 @@ const BranchScouts = () => {
               </div>
               <div className="p-3">
                 <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
-                <p className="text-xs text-muted-foreground">{formatAge(new Date(scout.birth_date))}</p>
+                <p className="text-xs text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
                 {scout.subgroup_id && (() => {
                   const sg = subgroups.find(s => s.id === scout.subgroup_id);
                   return sg ? <Badge className="mt-1.5 font-medium text-xs bg-accent text-accent-foreground">{sg.name}</Badge> : null;
