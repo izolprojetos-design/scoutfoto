@@ -658,43 +658,59 @@ const Dashboard = () => {
             </CardTitle>
             <p className="text-sm font-medium text-muted-foreground">Próximos 30 dias</p>
           </CardHeader>
-          <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
+          <CardContent className="space-y-1 overflow-y-auto max-h-[380px] flex-1">
             {upcomingBirthdays.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Cake className="h-8 w-8 text-muted-foreground/50 mb-2" />
                 <p className="text-sm text-muted-foreground">Nenhum aniversário nos próximos 30 dias</p>
               </div>
             ) : (
-              upcomingBirthdays.map(s => {
-                const branch = getEffectiveBranchKey(s);
-                return (
-                  <div key={s.id} className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
-                    <div className="flex items-start gap-2">
-                      {s.photo_url ? (
-                        <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                          <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
-                        </button>
-                      ) : (
-                        <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
-                          <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
+              (() => {
+                let lastMonth = -1;
+                return upcomingBirthdays.map(s => {
+                  const branch = getEffectiveBranchKey(s);
+                  const monthIdx = s.nextBday.getMonth();
+                  const showHeader = monthIdx !== lastMonth;
+                  lastMonth = monthIdx;
+                  const monthName = format(s.nextBday, 'MMMM', { locale: ptBR });
+                  return (
+                    <div key={s.id}>
+                      {showHeader && (
+                        <div className="flex items-center gap-2 py-2 mt-1 first:mt-0">
+                          <Calendar className="h-4 w-4 text-pink-500" />
+                          <span className="text-sm font-bold uppercase tracking-wide text-pink-600 dark:text-pink-400">{monthName}</span>
+                          <div className="flex-1 h-px bg-pink-200 dark:bg-pink-800" />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
-                          <Badge variant={s.isToday ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.isToday ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
-                            {s.isToday ? '🎉 Hoje!' : `${s.daysUntil}d`}
-                          </Badge>
+                      <div className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
+                        <div className="flex items-start gap-2">
+                          {s.photo_url ? (
+                            <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
+                              <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
+                            </button>
+                          ) : (
+                            <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
+                              <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
+                              <Badge variant={s.isToday ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.isToday ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
+                                {s.isToday ? '🎉 Hoje!' : `${s.daysUntil}d`}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })} · {s.nextAge} anos
+                              {branch && <span> · {branch.icon} {branch.name}</span>}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })} · {s.nextAge} anos
-                          {branch && <span> · {branch.icon} {branch.name}</span>}
-                        </p>
                       </div>
                     </div>
-                  </div>
-                );
-              })
+                  );
+                });
+              })()
             )}
           </CardContent>
         </Card>
