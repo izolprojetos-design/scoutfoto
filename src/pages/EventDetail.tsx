@@ -369,7 +369,7 @@ const EventDetail = () => {
       </div>
 
       {/* Upload Form */}
-      {showUpload && canUpload && (
+      {showUpload && (canUploadEventPhotos || canUpload) && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
           <Card className="mb-6 border shadow-sm">
             <CardContent className="p-5">
