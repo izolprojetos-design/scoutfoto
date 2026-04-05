@@ -297,17 +297,19 @@ const Dashboard = () => {
   );
 
   const upcomingBirthdays = useMemo(() => {
-    const today = new Date();
+    const today = startOfDay(new Date());
     return scouts
       .map(s => {
         const [y, m, d] = s.birth_date.split('-').map(Number);
-        const birth = new Date(y, m - 1, d);
-        let nextBday = new Date(today.getFullYear(), m - 1, d);
-        if (nextBday < today) nextBday = new Date(today.getFullYear() + 1, m - 1, d);
-        const daysUntil = differenceInDays(nextBday, today);
-        return { ...s, nextBday, daysUntil };
+        let nextBday = startOfDay(new Date(today.getFullYear(), m - 1, d));
+        if (nextBday < today) nextBday = startOfDay(new Date(today.getFullYear() + 1, m - 1, d));
+        // Contagem inclusiva: o próprio dia conta como 1
+        const daysUntil = differenceInDays(nextBday, today) + 1;
+        const nextAge = nextBday.getFullYear() - y;
+        const isToday = daysUntil === 1;
+        return { ...s, nextBday, daysUntil, nextAge, isToday };
       })
-      .filter(s => s.daysUntil >= 0 && s.daysUntil <= 30)
+      .filter(s => s.daysUntil >= 1 && s.daysUntil <= 31)
       .sort((a, b) => a.daysUntil - b.daysUntil);
   }, [scouts]);
 
