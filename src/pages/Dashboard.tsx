@@ -210,7 +210,6 @@ const Dashboard = () => {
     }
 
     setLoading(false);
-    setRefreshing(false);
   }, [isAdmin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
