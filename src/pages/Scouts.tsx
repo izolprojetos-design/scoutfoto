@@ -1279,6 +1279,9 @@ const Scouts = () => {
                           {scout.scout_group && (
                             <Badge variant="outline" className="font-normal text-xs">{scout.scout_group}</Badge>
                           )}
+                          {!scout.is_active && (
+                            <Badge variant="destructive" className="font-normal text-xs">Inativo</Badge>
+                          )}
                         </div>
                       </div>
                       <Button
