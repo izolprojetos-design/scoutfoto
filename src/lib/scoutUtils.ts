@@ -59,8 +59,7 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   const now = startOfDay(new Date());
   const monthsLeft = differenceInMonths(changeDate, now);
   const afterMonths = addMonths(now, monthsLeft);
-  // Contagem inclusiva: o próprio dia conta como 1
-  const daysLeft = differenceInDays(changeDate, afterMonths) + 1;
+  const daysLeft = differenceInDays(changeDate, afterMonths);
 
   return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
 }
