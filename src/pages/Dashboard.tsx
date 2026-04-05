@@ -595,15 +595,15 @@ const Dashboard = () => {
         </Card>
 
         {/* Upcoming 6 months */}
-        <Card className="border shadow-sm flex flex-col">
+        <Card className="border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 3 Meses
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-amber-500" /> Próximos 3 Meses
               {upcomingChanges.length > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
               )}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Mudanças de ramo previstas</p>
+            <p className="text-sm font-medium text-muted-foreground">Mudanças de ramo previstas</p>
           </CardHeader>
           <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
             {upcomingChanges.length === 0 ? (
