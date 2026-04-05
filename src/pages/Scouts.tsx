@@ -679,7 +679,7 @@ const Scouts = () => {
       auth: boolean; setAuth: (v: boolean) => void;
     },
   ) => {
-    const detectedBranch = birth ? getCurrentBranch(new Date(birth)) : null;
+    const detectedBranch = birth ? getCurrentBranch(parseLocalDate(birth)) : null;
     const effectiveBranch = branchOverride !== 'auto' 
       ? ALL_CATEGORIES.find(b => b.key === branchOverride) 
       : detectedBranch;
@@ -688,11 +688,11 @@ const Scouts = () => {
     const sectionsForBranch = effectiveBranchKey
       ? [...new Set(scouts.filter(s => (s.manual_branch || '') === effectiveBranchKey && s.section).map(s => s.section))].sort()
       : [];
-    const isMinor = birth ? (calculateAge(new Date(birth)).years < 18) : false;
+    const isMinor = birth ? (calculateAge(parseLocalDate(birth)).years < 18) : false;
 
     // Determine if transition date field should show
-    const nextBranchChange = birth ? getNextBranchChange(new Date(birth)) : null;
-    const ageBranch = birth ? getCurrentBranch(new Date(birth)) : null;
+    const nextBranchChange = birth ? getNextBranchChange(parseLocalDate(birth)) : null;
+    const ageBranch = birth ? getCurrentBranch(parseLocalDate(birth)) : null;
     const currentBranchIdx = effectiveBranch ? SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key) : -1;
     const ageBranchIdx = ageBranch ? SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key) : -1;
     const needsTransition = birth && effectiveBranchKey !== 'voluntario' && (
@@ -814,8 +814,8 @@ const Scouts = () => {
           if (!birth || branchOverride === 'auto' || branchOverride === 'voluntario') return null;
           const selectedBranchInfo = SCOUT_BRANCHES.find(b => b.key === branchOverride);
           if (!selectedBranchInfo) return null;
-          const ageInMonths = Math.floor((new Date().getTime() - new Date(birth).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
-          const expectedBranch = getCurrentBranch(new Date(birth));
+          const ageInMonths = Math.floor((new Date().getTime() - parseLocalDate(birth).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+          const expectedBranch = getCurrentBranch(parseLocalDate(birth));
           if (expectedBranch && expectedBranch.key === branchOverride) return null;
           const minYears = (selectedBranchInfo.minAge / 12).toFixed(1).replace('.0', '');
           const maxYears = (selectedBranchInfo.maxAge / 12).toFixed(1).replace('.0', '');
@@ -824,7 +824,7 @@ const Scouts = () => {
               <span className="text-amber-600 dark:text-amber-400 mt-0.5">⚠️</span>
               <div className="text-xs text-amber-700 dark:text-amber-300">
                 <p className="font-semibold">Idade não corresponde ao ramo selecionado</p>
-                <p>A idade deste integrante ({formatAge(new Date(birth))}) não está na faixa etária do ramo {selectedBranchInfo.icon} {selectedBranchInfo.name} ({minYears} a {maxYears} anos).
+                <p>A idade deste integrante ({formatAge(parseLocalDate(birth))}) não está na faixa etária do ramo {selectedBranchInfo.icon} {selectedBranchInfo.name} ({minYears} a {maxYears} anos).
                   {expectedBranch && <> O ramo esperado por idade é <strong>{expectedBranch.icon} {expectedBranch.name}</strong>.</>}
                   {!expectedBranch && <> Nenhum ramo juvenil corresponde a esta idade.</>}
                 </p>
@@ -994,16 +994,16 @@ const Scouts = () => {
       )}
       {birth && (
         <div className="rounded-lg bg-muted/50 p-3 space-y-1">
-          <p className="text-sm font-medium">Idade: {formatAge(new Date(birth))}</p>
+          <p className="text-sm font-medium">Idade: {formatAge(parseLocalDate(birth))}</p>
           {effectiveBranch && (
             <p className="text-sm text-muted-foreground">
               Ramo: {effectiveBranch.icon} {effectiveBranch.name}
               {branchOverride === 'auto' && ' (automático)'}
             </p>
           )}
-          {branchOverride === 'auto' && getNextBranchChange(new Date(birth)) && (
+          {branchOverride === 'auto' && getNextBranchChange(parseLocalDate(birth)) && (
             <p className="text-sm text-muted-foreground">
-              Mudança para {getNextBranchChange(new Date(birth))!.branch.name}: {formatTimeLeft(getNextBranchChange(new Date(birth))!.monthsLeft, getNextBranchChange(new Date(birth))!.daysLeft)}
+              Mudança para {getNextBranchChange(parseLocalDate(birth))!.branch.name}: {formatTimeLeft(getNextBranchChange(parseLocalDate(birth))!.monthsLeft, getNextBranchChange(parseLocalDate(birth))!.daysLeft)}
             </p>
           )}
         </div>
