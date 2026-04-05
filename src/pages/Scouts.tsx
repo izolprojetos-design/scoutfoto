@@ -1381,7 +1381,7 @@ const Scouts = () => {
                                   Editar
                                 </Button>
                               )}
-                              {(isAdmin || isVoluntario) && (
+                              {canManageScouts && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
