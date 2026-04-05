@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface Branch {
   id: string;
@@ -40,8 +41,9 @@ interface Event {
 }
 
 const Events = () => {
-  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
+  const { user, isAdmin, isVoluntario } = useAuth();
   const navigate = useNavigate();
+  const { canEditEvents, canManageEvents } = usePermissions();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [photoCounts, setPhotoCounts] = useState<Record<string, number>>({});
@@ -234,7 +236,7 @@ const Events = () => {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {(isAdmin || isVoluntario) && (
+          {(canManageEvents || canEditEvents) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
                 <Button className="gap-2 shadow-sm">
@@ -311,7 +313,7 @@ const Events = () => {
                         {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </div>
-                    {(isAdmin || isVoluntario) && (
+                    {(canManageEvents || canEditEvents) && (
                       <div className="flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -320,30 +322,40 @@ const Events = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Compartilhar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Permissões
-                              {eventsWithPerms.has(event.id) && (
-                                <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
+                            {canManageEvents && (
+                              <>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
+                                  <Share2 className="h-4 w-4 mr-2" />
+                                  Compartilhar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Permissões
+                                  {eventsWithPerms.has(event.id) && (
+                                    <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+                            {(canManageEvents || canEditEvents) && (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                            )}
+                            {canManageEvents && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>

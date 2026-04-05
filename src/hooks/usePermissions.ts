@@ -20,8 +20,8 @@ export type PermissionKey =
   | 'manage_scouts'
   | 'edit_scouts'
   | 'view_scouts'
-  | 'manage_users'
   | 'view_guardians'
+  | 'manage_users'
   | 'view_users'
   | 'edit_users'
   | 'delete_data'
@@ -85,13 +85,33 @@ export const usePermissions = () => {
     permissions,
     loading,
     hasPermission,
+    // Fotos
     canViewPhotos: hasPermission('view_photos'),
     canUploadPhotos: hasPermission('upload_photos'),
     canDownloadPhotos: hasPermission('download_photos'),
+    canEditPhotos: hasPermission('edit_photos'),
+    canDeletePhotos: hasPermission('delete_photos'),
+    canManagePhotos: hasPermission('manage_photos'),
+    // Eventos
     canViewEvents: hasPermission('view_events'),
     canEditEvents: hasPermission('edit_events'),
     canManageEvents: hasPermission('manage_events'),
+    canViewEventPhotos: hasPermission('view_event_photos'),
+    canDownloadEventPhotos: hasPermission('download_event_photos'),
+    canEditEventPhotos: hasPermission('edit_event_photos'),
+    canUploadEventPhotos: hasPermission('upload_event_photos'),
+    canDeleteEventPhotos: hasPermission('delete_event_photos'),
+    // Integrantes
+    canViewScouts: hasPermission('view_scouts'),
+    canEditScouts: hasPermission('edit_scouts'),
     canManageScouts: hasPermission('manage_scouts'),
+    canViewGuardians: hasPermission('view_guardians'),
+    canTransferBranch: hasPermission('transfer_branch'),
+    // Administração
     canManageUsers: hasPermission('manage_users'),
+    canViewUsers: hasPermission('view_users'),
+    canEditUsers: hasPermission('edit_users'),
+    canDeleteData: hasPermission('delete_data'),
+    canAccessAdmin: hasPermission('access_admin'),
   };
 };

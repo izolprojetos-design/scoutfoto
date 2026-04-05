@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -76,6 +77,7 @@ const branchColorMap: Record<string, string> = {
 const Scouts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, isAdmin, isVoluntario, canUpload } = useAuth();
+  const { canManageScouts, canEditScouts, canViewGuardians } = usePermissions();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -1087,7 +1089,7 @@ const Scouts = () => {
             {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
           </p>
         </div>
-        {(isAdmin || isVoluntario || canUpload) && (
+        {(canManageScouts || canEditScouts) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
@@ -1338,7 +1340,7 @@ const Scouts = () => {
                                           ? <span className="text-amber-600">Sem responsável</span>
                                           : null}
                                     </span>
-                                    {(isAdmin || isVoluntario) && isMinor && (
+                                    {(canManageScouts || canEditScouts) && isMinor && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
@@ -1368,7 +1370,7 @@ const Scouts = () => {
 
                             {/* Actions: Edit, Activate/Deactivate, Delete */}
                             <div className="flex gap-2 pt-1 flex-wrap">
-                              {(isAdmin || isVoluntario) && (
+                              {(canManageScouts || canEditScouts) && (
                                 <Button
                                   variant="outline"
                                   size="sm"
@@ -1379,7 +1381,7 @@ const Scouts = () => {
                                   Editar
                                 </Button>
                               )}
-                              {(isAdmin || isVoluntario) && (
+                              {canManageScouts && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button
@@ -1411,7 +1413,7 @@ const Scouts = () => {
                                   </AlertDialogContent>
                                 </AlertDialog>
                               )}
-                              {isAdmin && (
+                              {canManageScouts && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
                                     <Button variant="destructive" size="sm" className="gap-1.5">

@@ -21,6 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
+import { usePermissions } from '@/hooks/usePermissions';
 
 
 interface EventData {
@@ -64,6 +65,7 @@ const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user, canUpload, canViewMinors } = useAuth();
+  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos } = usePermissions();
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -355,7 +357,7 @@ const EventDetail = () => {
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{images.length} foto{images.length !== 1 ? 's' : ''}</p>
-          {canUpload && (
+          {(canUploadEventPhotos || canUpload) && (
             <div className="flex gap-2">
               <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowUpload(!showUpload)}>
                 <Upload className="h-4 w-4" />
@@ -367,7 +369,7 @@ const EventDetail = () => {
       </div>
 
       {/* Upload Form */}
-      {showUpload && canUpload && (
+      {showUpload && (canUploadEventPhotos || canUpload) && (
         <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
           <Card className="mb-6 border shadow-sm">
             <CardContent className="p-5">
@@ -526,10 +528,10 @@ const EventDetail = () => {
             <ImageIcon className="h-8 w-8" />
           </div>
           <p className="text-lg font-medium text-foreground">Nenhuma foto neste evento</p>
-          <p className="mt-1 text-sm">
-            {canUpload ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
-          </p>
-          {canUpload && (
+           <p className="mt-1 text-sm">
+             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
+           </p>
+           {(canUploadEventPhotos || canUpload) && (
             <Button className="mt-4 gap-2" onClick={() => setShowUpload(true)}>
               <Upload className="h-4 w-4" />
               Adicionar Foto
@@ -607,11 +609,13 @@ const EventDetail = () => {
                   </div>
                 )}
                 <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                  {(user?.id === selectedImage.user_id) && (
+                  {canDownloadEventPhotos && (
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  )}
+                  {(canDeleteEventPhotos || user?.id === selectedImage.user_id) && (
                     <Button
                       variant="outline"
                       size="sm"

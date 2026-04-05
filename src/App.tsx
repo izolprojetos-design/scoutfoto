@@ -83,12 +83,12 @@ const App = () => {
                       <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
                       <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
                       <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
-                      <Route path="/branch/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><BranchScouts /></ProtectedRoute>} />
-                      <Route path="/events" element={<ProtectedRoute requiredPermission="manage_events"><Events /></ProtectedRoute>} />
-                      <Route path="/events/:eventId" element={<EventDetail />} />
-                      <Route path="/scouts" element={<ProtectedRoute requiredPermission="manage_scouts"><Scouts /></ProtectedRoute>} />
+                      <Route path="/branch/:branchKey" element={<ProtectedRoute requiredPermission="view_scouts"><BranchScouts /></ProtectedRoute>} />
+                      <Route path="/events" element={<ProtectedRoute requiredPermission="view_events"><Events /></ProtectedRoute>} />
+                      <Route path="/events/:eventId" element={<ProtectedRoute requiredPermission="view_events"><EventDetail /></ProtectedRoute>} />
+                      <Route path="/scouts" element={<ProtectedRoute requiredPermission="view_scouts"><Scouts /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
-                      <Route path="/admin" element={<ProtectedRoute requiredPermission="manage_users"><Admin /></ProtectedRoute>} />
+                      <Route path="/admin" element={<ProtectedRoute requiredPermission="access_admin"><Admin /></ProtectedRoute>} />
                     </Route>
                     
                     <Route path="*" element={<NotFound />} />

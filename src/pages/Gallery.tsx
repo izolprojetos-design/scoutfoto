@@ -15,6 +15,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { toast } from 'sonner';
+import { usePermissions } from '@/hooks/usePermissions';
 
 interface ImageData {
   id: string;
@@ -54,6 +55,7 @@ const Gallery = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const { user, canViewMinors } = useAuth();
   const navigate = useNavigate();
+  const { canDownloadPhotos, canDeletePhotos } = usePermissions();
 
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
@@ -468,11 +470,13 @@ const Gallery = () => {
                   </div>
                 )}
                 <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-2" onClick={() => handleDownload(selectedImage)}>
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                  {(selectedImage.user_id === user?.id) && (
+                  {canDownloadPhotos && (
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => handleDownload(selectedImage)}>
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  )}
+                  {(canDeletePhotos || selectedImage.user_id === user?.id) && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="destructive" size="sm" className="gap-2">
