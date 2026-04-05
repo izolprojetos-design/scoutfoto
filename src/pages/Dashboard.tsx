@@ -575,7 +575,7 @@ const Dashboard = () => {
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(changeDate, "dd 'de' MMM", { locale: ptBR })} · {ageAtChange} anos · {s.targetBranch.icon} {s.targetBranch.name}
+                          {currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name} · {ageAtChange} anos
                         </p>
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <Badge variant="destructive" className="text-xs">Pendente</Badge>
