@@ -362,9 +362,9 @@ const Dashboard = () => {
       {loading ? <StatsSkeleton /> : (
       <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
         {[
-          { icon: Users, value: totalUsers, label: 'Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
-          { icon: UserCheck, value: activeUsers, label: 'Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
-          { icon: UserX, value: inactiveUsers, label: 'Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
+          { icon: Users, value: totalUsers, label: 'Total de Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
+          { icon: UserCheck, value: activeUsers, label: 'Usuários Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
+          { icon: UserX, value: inactiveUsers, label: 'Usuários Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
           { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
           { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
         ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
