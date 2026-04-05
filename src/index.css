@@ -53,6 +53,7 @@
     --scout-gold: 38 92% 50%;
     --scout-navy: 222 50% 18%;
     --scout-cream: 45 22% 94%;
+    --scout-green: 145 60% 28%;
 
     --gradient-hero: linear-gradient(135deg, hsl(222 64% 33%), hsl(222 55% 20%));
     --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.04);
@@ -101,6 +102,7 @@
     --scout-gold: 38 80% 45%;
     --scout-navy: 222 40% 25%;
     --scout-cream: 220 10% 14%;
+    --scout-green: 145 50% 35%;
   }
 }
 
