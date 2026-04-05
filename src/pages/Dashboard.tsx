@@ -555,8 +555,8 @@ const Dashboard = () => {
               overdueChanges.map(s => {
                 const currentBranch = getEffectiveBranchKey(s);
                 return (
-                  <div key={s.id} className="flex items-center justify-between rounded-lg bg-destructive/10 border border-destructive/20 p-3">
-                    <div className="flex items-center gap-2">
+                  <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                    <div className="flex items-start gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                           <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
@@ -566,18 +566,18 @@ const Dashboard = () => {
                           <User className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
-                      <div>
-                        <p className="text-sm font-medium break-words whitespace-normal leading-tight">{s.name}</p>
-                        <p className="text-xs text-muted-foreground">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
+                        <div className="flex items-center gap-1.5 mt-1.5">
+                          <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                          {canTransfer && (
+                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                              <ArrowRightLeft className="h-3 w-3" /> Transferir
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                      {canTransfer && (
-                        <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
-                          <ArrowRightLeft className="h-3 w-3" /> Transferir
-                        </Button>
-                      )}
                     </div>
                   </div>
                 );
@@ -605,8 +605,8 @@ const Dashboard = () => {
               </div>
             ) : (
               upcomingChanges.map(s => (
-                <div key={s.id} className="flex items-center justify-between rounded-lg bg-muted/50 p-3">
-                  <div className="flex items-center gap-2">
+                <div key={s.id} className="rounded-lg bg-muted/50 p-3">
+                  <div className="flex items-start gap-2">
                     {s.photo_url ? (
                       <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                         <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
@@ -616,14 +616,16 @@ const Dashboard = () => {
                         <User className="h-4 w-4 text-muted-foreground" />
                       </div>
                     )}
-                    <div>
-                      <p className="text-sm font-medium break-words whitespace-normal leading-tight">{s.name}</p>
-                      <p className="text-xs text-muted-foreground">→ {s.change.branch.icon} {s.change.branch.name}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
+                        <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
+                          {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5">→ {s.change.branch.icon} {s.change.branch.name}</p>
                     </div>
                   </div>
-                  <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
-                    {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
-                  </Badge>
                 </div>
               ))
             )}
@@ -651,8 +653,8 @@ const Dashboard = () => {
               upcomingBirthdays.map(s => {
                 const branch = getEffectiveBranchKey(s);
                 return (
-                  <div key={s.id} className={`flex items-center justify-between rounded-lg p-3 transition-all ${s.daysUntil === 0 ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
-                    <div className="flex items-center gap-2">
+                  <div key={s.id} className={`rounded-lg p-3 transition-all ${s.daysUntil === 0 ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
+                    <div className="flex items-start gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                           <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
@@ -662,17 +664,19 @@ const Dashboard = () => {
                           <User className={`h-4 w-4 ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
                         </div>
                       )}
-                      <div>
-                        <p className={`text-sm font-bold break-words whitespace-normal leading-tight ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : ''}`} style={s.daysUntil !== 0 ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
-                        <p className="text-xs text-muted-foreground">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className={`text-sm font-bold break-words leading-tight ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : ''}`} style={s.daysUntil !== 0 ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
+                          <Badge variant={s.daysUntil === 0 ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
+                            {s.daysUntil === 0 ? '🎉 Hoje!' : `${s.daysUntil}d`}
+                          </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })}
                           {branch && <span> · {branch.icon} {branch.name}</span>}
                         </p>
                       </div>
                     </div>
-                    <Badge variant={s.daysUntil === 0 ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
-                      {s.daysUntil === 0 ? '🎉 Hoje!' : `${s.daysUntil}d`}
-                    </Badge>
                   </div>
                 );
               })
