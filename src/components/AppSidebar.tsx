@@ -21,7 +21,7 @@ import {
 
 const AppSidebar = () => {
   const { profile, signOut, roles } = useAuth();
-  const { canViewPhotos, canManageEvents, canManageScouts, canManageUsers } = usePermissions();
+  const { canViewPhotos, canViewEvents, canViewScouts, canAccessAdmin } = usePermissions();
   const location = useLocation();
   const navigate = useNavigate();
   const { state, setOpenMobile, isMobile } = useSidebar();
@@ -35,10 +35,10 @@ const AppSidebar = () => {
 
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
-    { to: '/scouts', label: 'Integrantes', icon: Users, show: canManageScouts },
+    { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
-    { to: '/events', label: 'Eventos', icon: Calendar, show: canManageEvents },
-    { to: '/admin', label: 'Admin', icon: Settings, show: canManageUsers },
+    { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
+    { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
   ];
 
   const initials = profile?.name
