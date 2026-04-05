@@ -54,9 +54,9 @@ interface UserRole {
 
 const getEffectiveBranchKey = (scout: Scout) => {
   if (scout.manual_branch) {
-    return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(new Date(scout.birth_date));
+    return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(parseLocalDate(scout.birth_date));
   }
-  return getCurrentBranch(new Date(scout.birth_date));
+  return getCurrentBranch(parseLocalDate(scout.birth_date));
 };
 
 const branchColors: Record<string, string> = {
@@ -272,14 +272,14 @@ const Dashboard = () => {
     scouts
       .filter(s => {
         const effectiveBranch = getEffectiveBranchKey(s);
-        const ageBranch = getCurrentBranch(new Date(s.birth_date));
+        const ageBranch = getCurrentBranch(parseLocalDate(s.birth_date));
         if (!effectiveBranch || !ageBranch) return false;
         const effectiveIdx = SCOUT_BRANCHES.findIndex(b => b.key === effectiveBranch.key);
         const ageIdx = SCOUT_BRANCHES.findIndex(b => b.key === ageBranch.key);
         return effectiveIdx >= 0 && ageIdx >= 0 && ageIdx > effectiveIdx;
       })
       .map(s => {
-        const ageBranch = getCurrentBranch(new Date(s.birth_date))!;
+        const ageBranch = getCurrentBranch(parseLocalDate(s.birth_date))!;
         return { ...s, targetBranch: ageBranch };
       }),
     [scouts]
@@ -288,7 +288,7 @@ const Dashboard = () => {
   const upcomingChanges = useMemo(() =>
     scouts
       .map(s => {
-        const change = getNextBranchChange(new Date(s.birth_date));
+        const change = getNextBranchChange(parseLocalDate(s.birth_date));
         return change ? { ...s, change } : null;
       })
       .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 6)
