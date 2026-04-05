@@ -65,6 +65,7 @@ const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user, canUpload, canViewMinors } = useAuth();
+  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos } = usePermissions();
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
