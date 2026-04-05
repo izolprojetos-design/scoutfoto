@@ -648,7 +648,7 @@ const Dashboard = () => {
         </Card>
 
         {/* Birthdays */}
-        <Card className="border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
+        <Card className="order-1 lg:order-3 border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-bold flex items-center gap-2">
               <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
