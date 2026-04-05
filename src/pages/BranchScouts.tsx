@@ -50,7 +50,7 @@ const BranchScouts = () => {
     const fetchData = async () => {
       const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
-        supabase.from('scouts').select('*').order('name'),
+        supabase.from('scouts').select('*').eq('is_active', true).order('name'),
         supabase.from('subgroups').select('*'),
       ]);
 
