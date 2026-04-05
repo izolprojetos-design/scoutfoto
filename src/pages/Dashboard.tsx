@@ -92,14 +92,11 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Visitante',
 };
 
-const BAR_SECTION_COLORS: Record<string, string> = {
-  Lobinho: '#f59e0b',
-  Escoteiro: '#10b981',
-  'Sênior': '#ef4444',
-  Pioneiro: '#f97316',
-  'Voluntário': '#a855f7',
-  'Sem seção': '#94a3b8',
-};
+interface RecentLogin {
+  user_id: string;
+  name: string;
+  last_login: string;
+}
 
 const Dashboard = () => {
   const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
