@@ -537,15 +537,15 @@ const Dashboard = () => {
       ) : (
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
         {/* Overdue Branch Changes */}
-        <Card className="border shadow-sm flex flex-col">
+        <Card className="border-t-4 border-t-destructive border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ArrowRightLeft className="h-4 w-4 text-destructive" /> Mudanças de Ramo
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <ArrowRightLeft className="h-5 w-5 text-destructive" /> Mudanças de Ramo
               {overdueChanges.length > 0 && (
                 <Badge variant="destructive" className="ml-auto text-xs">{overdueChanges.length}</Badge>
               )}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Integrantes que já completaram a idade</p>
+            <p className="text-sm font-medium text-muted-foreground">Integrantes que já completaram a idade</p>
           </CardHeader>
           <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
             {overdueChanges.length === 0 ? (
@@ -595,15 +595,15 @@ const Dashboard = () => {
         </Card>
 
         {/* Upcoming 6 months */}
-        <Card className="border shadow-sm flex flex-col">
+        <Card className="border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 3 Meses
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-amber-500" /> Próximos 3 Meses
               {upcomingChanges.length > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
               )}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Mudanças de ramo previstas</p>
+            <p className="text-sm font-medium text-muted-foreground">Mudanças de ramo previstas</p>
           </CardHeader>
           <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
             {upcomingChanges.length === 0 ? (
@@ -648,15 +648,15 @@ const Dashboard = () => {
         </Card>
 
         {/* Birthdays */}
-        <Card className="border shadow-sm flex flex-col">
+        <Card className="border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Cake className="h-4 w-4 text-pink-500" /> Aniversariantes
+            <CardTitle className="text-lg font-bold flex items-center gap-2">
+              <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
               {upcomingBirthdays.length > 0 && (
                 <Badge variant="outline" className="ml-auto text-xs">{upcomingBirthdays.length}</Badge>
               )}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Próximos 30 dias</p>
+            <p className="text-sm font-medium text-muted-foreground">Próximos 30 dias</p>
           </CardHeader>
           <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
             {upcomingBirthdays.length === 0 ? (
