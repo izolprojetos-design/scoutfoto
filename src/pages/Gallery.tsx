@@ -55,6 +55,7 @@ const Gallery = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const { user, canViewMinors } = useAuth();
   const navigate = useNavigate();
+  const { canDownloadPhotos, canDeletePhotos } = usePermissions();
 
   const [branches, setBranches] = useState<Branch[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
