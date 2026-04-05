@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, User, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { getCurrentBranch, formatAge, ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
 
 interface Scout {

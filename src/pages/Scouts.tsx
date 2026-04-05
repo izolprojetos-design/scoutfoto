@@ -23,6 +23,7 @@ import {
   formatAge,
   formatTimeLeft,
   calculateAge,
+  parseLocalDate,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
