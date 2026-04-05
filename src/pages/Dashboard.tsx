@@ -12,13 +12,14 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, RefreshCw, ShieldCheck, UserCheck, UserX, BarChart3 } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, RefreshCw, ShieldCheck, UserCheck, UserX, Clock, LogIn } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 
 interface BranchWithCount {
@@ -91,14 +92,11 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Visitante',
 };
 
-const BAR_SECTION_COLORS: Record<string, string> = {
-  Lobinho: '#f59e0b',
-  Escoteiro: '#10b981',
-  'Sênior': '#ef4444',
-  Pioneiro: '#f97316',
-  'Voluntário': '#a855f7',
-  'Sem seção': '#94a3b8',
-};
+interface RecentLogin {
+  user_id: string;
+  name: string;
+  last_login: string;
+}
 
 const Dashboard = () => {
   const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
@@ -120,6 +118,7 @@ const Dashboard = () => {
   const [sectionFilter, setSectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
     id: string;
@@ -183,6 +182,34 @@ const Dashboard = () => {
     if (isAdmin && adminResults.length === 2) {
       setAllProfiles((adminResults[0] as any).data || []);
       setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
+
+      // Fetch recent logins (latest per user)
+      const { data: loginLogs } = await supabase
+        .from('audit_logs')
+        .select('user_id, created_at')
+        .eq('action', 'login')
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (loginLogs) {
+        const profilesData = (adminResults[0] as any).data || [];
+        const profileMap = new Map<string, string>();
+        profilesData.forEach((p: UserProfile) => profileMap.set(p.user_id, p.name));
+
+        const seen = new Set<string>();
+        const logins: RecentLogin[] = [];
+        for (const log of loginLogs) {
+          if (!seen.has(log.user_id)) {
+            seen.add(log.user_id);
+            logins.push({
+              user_id: log.user_id,
+              name: profileMap.get(log.user_id) || 'Desconhecido',
+              last_login: log.created_at,
+            });
+          }
+        }
+        setRecentLogins(logins);
+      }
     }
 
     setLoading(false);
@@ -253,19 +280,19 @@ const Dashboard = () => {
     })).sort((a, b) => b.count - a.count);
   }, [filteredProfiles, allRoles]);
 
-  // Users by section (bar chart)
-  const sectionDistribution = useMemo(() => {
-    const counts: Record<string, number> = {};
-    allProfiles.forEach(p => {
-      const sec = p.section && p.section !== '' ? p.section : 'Sem seção';
-      counts[sec] = (counts[sec] || 0) + 1;
-    });
-    return Object.entries(counts).map(([section, count]) => ({
-      section,
-      count,
-      fill: BAR_SECTION_COLORS[section] || '#8884d8',
-    })).sort((a, b) => b.count - a.count);
-  }, [allProfiles]);
+  // Format login time ago
+  const formatTimeAgo = (dateStr: string) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return 'Agora';
+    if (diffMin < 60) return `${diffMin}min`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h`;
+    const diffDays = Math.floor(diffHours / 24);
+    return `${diffDays}d`;
+  };
 
   // Scout branch distribution
   const overdueChanges = useMemo(() =>
@@ -492,33 +519,48 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Users by Section Bar Chart */}
+        {/* Recent Logins Table */}
         <Card className="border shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" /> Usuários por Seção
+              <LogIn className="h-4 w-4" /> Últimos Acessos
+              <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {sectionDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
+          <CardContent className="p-0">
+            {recentLogins.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Sem registros</p>
             ) : (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={sectionDistribution} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                  <XAxis dataKey="section" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
-                  <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" allowDecimals={false} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                    formatter={(value: number) => [`${value} usuários`]}
-                  />
-                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                    {sectionDistribution.map((entry, idx) => (
-                      <Cell key={idx} fill={entry.fill} />
+              <div className="max-h-[280px] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs">Usuário</TableHead>
+                      <TableHead className="text-xs text-right">Último Acesso</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentLogins.map((login) => (
+                      <TableRow key={login.user_id}>
+                        <TableCell className="py-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+                              <User className="h-3.5 w-3.5 text-primary" />
+                            </div>
+                            <span className="text-sm font-medium truncate max-w-[140px]">{login.name}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="py-2 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Clock className="h-3 w-3 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
                     ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                  </TableBody>
+                </Table>
+              </div>
             )}
           </CardContent>
         </Card>
