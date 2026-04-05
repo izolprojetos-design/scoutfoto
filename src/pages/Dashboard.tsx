@@ -216,12 +216,6 @@ const Dashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Auto-refresh
-  useEffect(() => {
-    if (!autoRefresh) return;
-    const interval = setInterval(() => fetchData(false), 30000);
-    return () => clearInterval(interval);
-  }, [autoRefresh, fetchData]);
 
   const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
     setTransitioningId(scoutId);
