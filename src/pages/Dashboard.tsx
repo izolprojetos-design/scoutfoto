@@ -655,26 +655,26 @@ const Dashboard = () => {
               upcomingBirthdays.map(s => {
                 const branch = getEffectiveBranchKey(s);
                 return (
-                  <div key={s.id} className={`rounded-lg p-3 transition-all ${s.daysUntil === 0 ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
+                  <div key={s.id} className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
                     <div className="flex items-start gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
                           <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" />
                         </button>
                       ) : (
-                        <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
-                          <User className={`h-4 w-4 ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
+                        <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
+                          <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className={`text-sm font-bold break-words leading-tight ${s.daysUntil === 0 ? 'text-green-700 dark:text-green-300' : ''}`} style={s.daysUntil !== 0 ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
-                          <Badge variant={s.daysUntil === 0 ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.daysUntil === 0 ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
-                            {s.daysUntil === 0 ? '🎉 Hoje!' : `${s.daysUntil}d`}
+                          <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
+                          <Badge variant={s.isToday ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.isToday ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
+                            {s.isToday ? '🎉 Hoje!' : `${s.daysUntil}d`}
                           </Badge>
                         </div>
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })}
+                          {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })} · {s.nextAge} anos
                           {branch && <span> · {branch.icon} {branch.name}</span>}
                         </p>
                       </div>
