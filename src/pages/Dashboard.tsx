@@ -590,7 +590,7 @@ const Dashboard = () => {
         <Card className="border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 6 Meses
+              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 3 Meses
               {upcomingChanges.length > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
               )}
