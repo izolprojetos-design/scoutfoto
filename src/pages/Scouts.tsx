@@ -14,7 +14,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power } from 'lucide-react';
+import { logAudit } from '@/lib/auditLog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -44,6 +45,7 @@ interface Scout {
   phone: string;
   section: string;
   transition_date: string | null;
+  is_active: boolean;
 }
 
 interface Subgroup {
@@ -80,6 +82,7 @@ const Scouts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [branchFilter, setBranchFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
@@ -463,6 +466,10 @@ const Scouts = () => {
   const branchOrder = ALL_CATEGORIES.map(b => b.key);
 
   const filteredScouts = scouts.filter(s => {
+    // Status filter
+    if (statusFilter === 'active' && !s.is_active) return false;
+    if (statusFilter === 'inactive' && s.is_active) return false;
+
     const term = search.toLowerCase();
     const subgroupName = s.subgroup_id ? subgroups.find(sg => sg.id === s.subgroup_id)?.name || '' : '';
     const matchSearch = s.name.toLowerCase().includes(term) ||
@@ -480,11 +487,31 @@ const Scouts = () => {
     return idxA - idxB;
   });
 
-  const branchCounts = scouts.reduce((acc, s) => {
+  const activeScouts = scouts.filter(s => s.is_active);
+  const inactiveScouts = scouts.filter(s => !s.is_active);
+
+  const branchCounts = activeScouts.reduce((acc, s) => {
     const branch = getEffectiveBranch(s);
     if (branch) acc[branch.key] = (acc[branch.key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  const handleToggleActive = async (scout: Scout) => {
+    const newStatus = !scout.is_active;
+    const { error } = await supabase.from('scouts').update({ is_active: newStatus }).eq('id', scout.id);
+    if (error) {
+      toast.error('Erro ao alterar status: ' + error.message);
+      return;
+    }
+    if (user) {
+      await logAudit(user.id, 'status_change', undefined, {
+        target_id: scout.id,
+        target_name: scout.name,
+      }, { is_active: scout.is_active }, { is_active: newStatus });
+    }
+    toast.success(newStatus ? `${scout.name} reativado!` : `${scout.name} desativado.`);
+    fetchData();
+  };
 
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
@@ -1055,7 +1082,10 @@ const Scouts = () => {
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Integrantes</h1>
-          <p className="mt-1 text-muted-foreground">{scouts.length} cadastrados</p>
+          <p className="mt-1 text-muted-foreground">
+            {activeScouts.length} ativos
+            {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
+          </p>
         </div>
         {(isAdmin || isVoluntario || canUpload) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
@@ -1107,6 +1137,35 @@ const Scouts = () => {
             </DialogContent>
           </Dialog>
         )}
+      </div>
+
+      {/* Status filter */}
+      <div className="mb-4 flex gap-2">
+        <Button
+          variant={statusFilter === 'active' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setStatusFilter('active')}
+        >
+          <UserCheck className="h-3.5 w-3.5" />
+          Ativos ({activeScouts.length})
+        </Button>
+        <Button
+          variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setStatusFilter('inactive')}
+        >
+          <UserX className="h-3.5 w-3.5" />
+          Inativos ({inactiveScouts.length})
+        </Button>
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+        >
+          Todos ({scouts.length})
+        </Button>
       </div>
 
       {/* Filters */}
@@ -1162,7 +1221,7 @@ const Scouts = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.04 }}
               >
-                <Card className="border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+                <Card className={`border bg-card shadow-sm hover:shadow-md transition-shadow overflow-hidden ${!scout.is_active ? 'opacity-60' : ''}`}>
                   <CardContent className="p-0">
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
@@ -1219,6 +1278,9 @@ const Scouts = () => {
                           })()}
                           {scout.scout_group && (
                             <Badge variant="outline" className="font-normal text-xs">{scout.scout_group}</Badge>
+                          )}
+                          {!scout.is_active && (
+                            <Badge variant="destructive" className="font-normal text-xs">Inativo</Badge>
                           )}
                         </div>
                       </div>
@@ -1304,8 +1366,8 @@ const Scouts = () => {
                               );
                             })()}
 
-                            {/* Actions: Edit (admin/chefe) + Delete (admin only) */}
-                            <div className="flex gap-2 pt-1">
+                            {/* Actions: Edit, Activate/Deactivate, Delete */}
+                            <div className="flex gap-2 pt-1 flex-wrap">
                               {(isAdmin || isVoluntario) && (
                                 <Button
                                   variant="outline"
@@ -1316,6 +1378,38 @@ const Scouts = () => {
                                   <Pencil className="h-3.5 w-3.5" />
                                   Editar
                                 </Button>
+                              )}
+                              {(isAdmin || isVoluntario) && (
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant={scout.is_active ? 'outline' : 'default'}
+                                      size="sm"
+                                      className="gap-1.5"
+                                    >
+                                      <Power className="h-3.5 w-3.5" />
+                                      {scout.is_active ? 'Desativar' : 'Reativar'}
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>
+                                        {scout.is_active ? `Desativar "${scout.name}"?` : `Reativar "${scout.name}"?`}
+                                      </AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        {scout.is_active
+                                          ? 'O integrante ficará inativo e não aparecerá nas listagens padrão. Dados e histórico serão mantidos.'
+                                          : 'O integrante voltará a aparecer nas listagens operacionais.'}
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleToggleActive(scout)}>
+                                        {scout.is_active ? 'Desativar' : 'Reativar'}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               )}
                               {isAdmin && (
                                 <AlertDialog>
@@ -1328,11 +1422,13 @@ const Scouts = () => {
                                   <AlertDialogContent>
                                     <AlertDialogHeader>
                                       <AlertDialogTitle>Excluir "{scout.name}"?</AlertDialogTitle>
-                                      <AlertDialogDescription>Esta ação excluirá o jovem e todos os responsáveis associados.</AlertDialogDescription>
+                                      <AlertDialogDescription>
+                                        Esta ação é irreversível. Considere desativar o integrante ao invés de excluí-lo para manter o histórico.
+                                      </AlertDialogDescription>
                                     </AlertDialogHeader>
                                     <AlertDialogFooter>
                                       <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir</AlertDialogAction>
+                                      <AlertDialogAction onClick={() => handleDeleteScout(scout.id)}>Excluir permanentemente</AlertDialogAction>
                                     </AlertDialogFooter>
                                   </AlertDialogContent>
                                 </AlertDialog>

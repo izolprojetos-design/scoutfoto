@@ -140,7 +140,7 @@ const Dashboard = () => {
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }).limit(20),
-      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section').order('name'),
+      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
       supabase.from('images').select('branch_id, event_id'),
     ] as const;
 
