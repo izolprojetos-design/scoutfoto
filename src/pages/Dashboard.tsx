@@ -291,7 +291,7 @@ const Dashboard = () => {
         const change = getNextBranchChange(parseLocalDate(s.birth_date));
         return change ? { ...s, change } : null;
       })
-      .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 6)
+      .filter((s): s is Scout & { change: NonNullable<ReturnType<typeof getNextBranchChange>> } => s !== null && s.change.monthsLeft <= 3)
       .sort((a, b) => a.change.monthsLeft - b.change.monthsLeft),
     [scouts]
   );
@@ -590,7 +590,7 @@ const Dashboard = () => {
         <Card className="border shadow-sm flex flex-col">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 6 Meses
+              <TrendingUp className="h-4 w-4 text-amber-500" /> Próximos 3 Meses
               {upcomingChanges.length > 0 && (
                 <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
               )}
@@ -601,7 +601,7 @@ const Dashboard = () => {
             {upcomingChanges.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-8 text-center">
                 <Calendar className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 6 meses</p>
+                <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 3 meses</p>
               </div>
             ) : (
               upcomingChanges.map(s => (
