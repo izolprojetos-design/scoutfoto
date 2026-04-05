@@ -1139,6 +1139,35 @@ const Scouts = () => {
         )}
       </div>
 
+      {/* Status filter */}
+      <div className="mb-4 flex gap-2">
+        <Button
+          variant={statusFilter === 'active' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setStatusFilter('active')}
+        >
+          <UserCheck className="h-3.5 w-3.5" />
+          Ativos ({activeScouts.length})
+        </Button>
+        <Button
+          variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setStatusFilter('inactive')}
+        >
+          <UserX className="h-3.5 w-3.5" />
+          Inativos ({inactiveScouts.length})
+        </Button>
+        <Button
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => setStatusFilter('all')}
+        >
+          Todos ({scouts.length})
+        </Button>
+      </div>
+
       {/* Filters */}
       <div className="mb-6 flex flex-col gap-3 sm:flex-row">
         <div className="relative w-full sm:w-auto sm:min-w-[220px]">
