@@ -1,4 +1,4 @@
-import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths } from 'date-fns';
+import { differenceInYears, differenceInMonths, differenceInDays, addYears, addMonths, startOfDay } from 'date-fns';
 
 /** Parse a "YYYY-MM-DD" date string as local time (avoids UTC timezone shift). */
 export function parseLocalDate(dateStr: string): Date {
@@ -56,8 +56,7 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   if (!nextBranch) return null;
 
   const changeDate = addMonths(birthDate, currentBranch.maxAge);
-  const now = new Date();
-  const totalDaysLeft = differenceInDays(changeDate, now);
+  const now = startOfDay(new Date());
   const monthsLeft = differenceInMonths(changeDate, now);
   const afterMonths = addMonths(now, monthsLeft);
   const daysLeft = differenceInDays(changeDate, afterMonths);
