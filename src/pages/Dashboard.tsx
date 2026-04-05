@@ -226,7 +226,7 @@ const Dashboard = () => {
       toast.error('Erro ao realizar transição: ' + error.message);
     } else {
       toast.success(`${scoutName} transferido(a) com sucesso!`);
-      fetchData(false);
+      fetchData();
     }
     setTransitioningId(null);
   };
