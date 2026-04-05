@@ -609,11 +609,13 @@ const EventDetail = () => {
                   </div>
                 )}
                 <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
-                    <Download className="h-4 w-4" />
-                    Download
-                  </Button>
-                  {(user?.id === selectedImage.user_id) && (
+                  {canDownloadEventPhotos && (
+                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
+                      <Download className="h-4 w-4" />
+                      Download
+                    </Button>
+                  )}
+                  {(canDeleteEventPhotos || user?.id === selectedImage.user_id) && (
                     <Button
                       variant="outline"
                       size="sm"

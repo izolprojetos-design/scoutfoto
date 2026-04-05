@@ -313,7 +313,7 @@ const Events = () => {
                         {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
                       </Badge>
                     </div>
-                    {(isAdmin || isVoluntario) && (
+                    {(canManageEvents || canEditEvents) && (
                       <div className="flex justify-end">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -322,30 +322,40 @@ const Events = () => {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Compartilhar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
-                              <Shield className="h-4 w-4 mr-2" />
-                              Permissões
-                              {eventsWithPerms.has(event.id) && (
-                                <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                              )}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
-                              <Pencil className="h-4 w-4 mr-2" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Excluir
-                            </DropdownMenuItem>
+                            {canManageEvents && (
+                              <>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
+                                  <Share2 className="h-4 w-4 mr-2" />
+                                  Compartilhar
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
+                                  <Shield className="h-4 w-4 mr-2" />
+                                  Permissões
+                                  {eventsWithPerms.has(event.id) && (
+                                    <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                              </>
+                            )}
+                            {(canManageEvents || canEditEvents) && (
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
+                                <Pencil className="h-4 w-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                            )}
+                            {canManageEvents && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  className="text-destructive focus:text-destructive"
+                                  onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Excluir
+                                </DropdownMenuItem>
+                              </>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
