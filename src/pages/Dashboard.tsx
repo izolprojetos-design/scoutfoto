@@ -300,9 +300,10 @@ const Dashboard = () => {
     const today = new Date();
     return scouts
       .map(s => {
-        const birth = new Date(s.birth_date);
-        let nextBday = setYear(birth, today.getFullYear());
-        if (nextBday < today) nextBday = setYear(birth, today.getFullYear() + 1);
+        const [y, m, d] = s.birth_date.split('-').map(Number);
+        const birth = new Date(y, m - 1, d);
+        let nextBday = new Date(today.getFullYear(), m - 1, d);
+        if (nextBday < today) nextBday = new Date(today.getFullYear() + 1, m - 1, d);
         const daysUntil = differenceInDays(nextBday, today);
         return { ...s, nextBday, daysUntil };
       })
