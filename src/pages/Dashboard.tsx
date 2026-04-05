@@ -547,7 +547,7 @@ const Dashboard = () => {
                             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
                               <User className="h-3.5 w-3.5 text-primary" />
                             </div>
-                            <span className="text-sm font-medium truncate max-w-[140px]">{login.name}</span>
+                            <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
                           </div>
                         </TableCell>
                         <TableCell className="py-2 text-right">
