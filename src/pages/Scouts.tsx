@@ -487,11 +487,31 @@ const Scouts = () => {
     return idxA - idxB;
   });
 
-  const branchCounts = scouts.reduce((acc, s) => {
+  const activeScouts = scouts.filter(s => s.is_active);
+  const inactiveScouts = scouts.filter(s => !s.is_active);
+
+  const branchCounts = activeScouts.reduce((acc, s) => {
     const branch = getEffectiveBranch(s);
     if (branch) acc[branch.key] = (acc[branch.key] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
+
+  const handleToggleActive = async (scout: Scout) => {
+    const newStatus = !scout.is_active;
+    const { error } = await supabase.from('scouts').update({ is_active: newStatus }).eq('id', scout.id);
+    if (error) {
+      toast.error('Erro ao alterar status: ' + error.message);
+      return;
+    }
+    if (user) {
+      await logAudit(user.id, 'status_change', undefined, {
+        target_id: scout.id,
+        target_name: scout.name,
+      }, { is_active: scout.is_active }, { is_active: newStatus });
+    }
+    toast.success(newStatus ? `${scout.name} reativado!` : `${scout.name} desativado.`);
+    fetchData();
+  };
 
   const getGuardiansForScout = (scoutId: string) =>
     guardians.filter(g => g.scout_id === scoutId);
