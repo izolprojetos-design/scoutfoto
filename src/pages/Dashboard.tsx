@@ -556,6 +556,10 @@ const Dashboard = () => {
             ) : (
               overdueChanges.map(s => {
                 const currentBranch = getEffectiveBranchKey(s);
+                const [birthYear, birthMonth, birthDay] = s.birth_date.split('-').map(Number);
+                const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+                const changeDate = startOfDay(addMonths(birthDate, SCOUT_BRANCHES.find(b => b.key === currentBranch?.key)?.maxAge || 0));
+                const ageAtChange = changeDate.getFullYear() - birthYear;
                 return (
                   <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
                     <div className="flex items-start gap-2">
@@ -570,7 +574,9 @@ const Dashboard = () => {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {format(changeDate, "dd 'de' MMM", { locale: ptBR })} · {ageAtChange} anos · {s.targetBranch.icon} {s.targetBranch.name}
+                        </p>
                         <div className="flex items-center gap-1.5 mt-1.5">
                           <Badge variant="destructive" className="text-xs">Pendente</Badge>
                           {canTransfer && (
