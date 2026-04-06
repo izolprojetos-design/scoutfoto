@@ -335,7 +335,7 @@ const EventDetail = () => {
           {event?.event_date && (
             <Badge variant="secondary" className="gap-1 font-normal">
               <Calendar className="h-3 w-3" />
-              {format(new Date(event.event_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              {format(parseLocalDate(event.event_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
             </Badge>
           )}
           {event?.location && (
