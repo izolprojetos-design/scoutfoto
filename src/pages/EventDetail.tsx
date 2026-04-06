@@ -484,11 +484,10 @@ const EventDetail = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
-                  <Checkbox id="event-consent" checked={consent} onCheckedChange={(checked) => setConsent(checked === true)} />
-                  <Label htmlFor="event-consent" className="text-xs leading-snug">
-                    Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram.
-                  </Label>
+                <div className="rounded-lg border bg-muted/50 p-3">
+                  <p className="text-xs leading-snug text-muted-foreground">
+                    Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
+                  </p>
                 </div>
 
                 {uploading && (
