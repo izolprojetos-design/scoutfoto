@@ -1632,9 +1632,6 @@ const Scouts = () => {
                         <div key={g.id} className="rounded-lg border p-3 text-sm space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="font-medium">{g.name}</span>
-                            <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
-                              {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
-                            </Badge>
                           </div>
                           {g.email && <p className="text-muted-foreground">{g.email}</p>}
                           {g.phone && <p className="text-muted-foreground">{g.phone}</p>}
