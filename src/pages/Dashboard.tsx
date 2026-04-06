@@ -806,7 +806,7 @@ const Dashboard = () => {
 
       {/* Event Gallery */}
       <div className="mt-8 mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Galerias de Eventos</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Galerias de Eventos <span className="text-sm font-normal text-muted-foreground">(últimos 30 dias)</span></h2>
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/events')}>
           Ver todos <ArrowRight className="h-4 w-4" />
         </Button>
