@@ -442,6 +442,7 @@ const EventDetail = () => {
                     <Select value={branchId} onValueChange={setBranchId}>
                       <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="all">🌐 Todos os Ramos</SelectItem>
                         {branches.map(b => (
                           <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
                         ))}
