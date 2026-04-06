@@ -86,7 +86,9 @@ export const usePermissions = () => {
         const keys = data
           .map((up: any) => up.permissions?.key)
           .filter(Boolean) as string[];
-        setPermissions([...new Set(keys)]);
+        const uniqueKeys = [...new Set(keys)];
+        setPermissions(uniqueKeys);
+        permissionsCache.set(user.id, { permissions: uniqueKeys, timestamp: Date.now() });
       }
       setLoading(false);
     };
