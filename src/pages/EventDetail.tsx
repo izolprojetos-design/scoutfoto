@@ -224,7 +224,8 @@ const EventDetail = () => {
     setUploading(true);
     const totalFiles = files.length;
     const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
-    const branch = branches.find(b => b.id === branchId);
+    const resolvedBranchId = branchId === 'all' ? (event?.branch_id || branches[0]?.id || '') : branchId;
+    const branch = branches.find(b => b.id === resolvedBranchId);
     let successCount = 0;
 
     for (let i = 0; i < totalFiles; i++) {
