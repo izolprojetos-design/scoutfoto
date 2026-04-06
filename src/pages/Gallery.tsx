@@ -240,7 +240,7 @@ const Gallery = () => {
       if (yearFilter !== 'all') {
         if (img.event_id) {
           const ev = events.find(e => e.id === img.event_id);
-          matchYear = !!ev?.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter;
+          matchYear = !!ev?.event_date && parseLocalDate(ev.event_date).getFullYear().toString() === yearFilter;
         } else {
           matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
         }
