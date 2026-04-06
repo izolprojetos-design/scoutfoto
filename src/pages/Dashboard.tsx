@@ -837,7 +837,7 @@ const Dashboard = () => {
                           {evt.event_date && (
                             <span className="text-xs flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
+                              Evento: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
                             </span>
                           )}
                           <div className="flex items-center gap-1.5">
