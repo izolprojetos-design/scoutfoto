@@ -1,15 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, User, Download } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ArrowLeft, User, Download, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
+import { SECTION_OPTIONS } from '@/lib/sectionOptions';
 
 interface Scout {
   id: string;
@@ -43,8 +45,10 @@ const BranchScouts = () => {
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
   const [branchData, setBranchData] = useState<BranchData | null>(null);
-  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null); // url is already signed
+  const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
+  const [sectionFilter, setSectionFilter] = useState<string>('all');
+  const [subgroupFilter, setSubgroupFilter] = useState<string>('all');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -75,13 +79,45 @@ const BranchScouts = () => {
     fetchData();
   }, [branchKey]);
 
+  // Get unique sections from scouts for filter options
+  const availableSections = useMemo(() => {
+    const sections = new Set<string>();
+    scouts.forEach(s => {
+      if (s.section) sections.add(s.section);
+    });
+    return Array.from(sections).sort();
+  }, [scouts]);
+
+  // Get subgroups relevant to this branch
+  const availableSubgroups = useMemo(() => {
+    const scoutSubgroupIds = new Set(scouts.map(s => s.subgroup_id).filter(Boolean));
+    return subgroups.filter(sg => scoutSubgroupIds.has(sg.id)).sort((a, b) => a.name.localeCompare(b.name));
+  }, [scouts, subgroups]);
+
+  // Filtered scouts
+  const filteredScouts = useMemo(() => {
+    return scouts.filter(s => {
+      if (sectionFilter !== 'all' && s.section !== sectionFilter) return false;
+      if (subgroupFilter !== 'all') {
+        if (subgroupFilter === 'none') {
+          if (s.subgroup_id) return false;
+        } else {
+          if (s.subgroup_id !== subgroupFilter) return false;
+        }
+      }
+      return true;
+    });
+  }, [scouts, sectionFilter, subgroupFilter]);
+
+  const hasActiveFilters = sectionFilter !== 'all' || subgroupFilter !== 'all';
+
   if (!branchData && !loading) {
     return null;
   }
 
   return (
     <>
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-4 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
@@ -89,9 +125,58 @@ const BranchScouts = () => {
           <h1 className="text-2xl font-bold tracking-tight">
             {branchData?.icon} {branchData?.display_name}
           </h1>
-          <p className="text-sm text-muted-foreground">{scouts.length} integrantes</p>
+          <p className="text-sm text-muted-foreground">
+            {hasActiveFilters ? `${filteredScouts.length} de ${scouts.length}` : scouts.length} integrantes
+          </p>
         </div>
       </div>
+
+      {/* Filters */}
+      {!loading && scouts.length > 0 && (
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          
+          <Select value={sectionFilter} onValueChange={setSectionFilter}>
+            <SelectTrigger className="w-[200px] h-9 text-xs">
+              <SelectValue placeholder="Seção" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as Seções</SelectItem>
+              {availableSections.map(section => (
+                <SelectItem key={section} value={section} className="text-xs">
+                  {section}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={subgroupFilter} onValueChange={setSubgroupFilter}>
+            <SelectTrigger className="w-[180px] h-9 text-xs">
+              <SelectValue placeholder="Equipe" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas as Equipes</SelectItem>
+              <SelectItem value="none">Sem Equipe</SelectItem>
+              {availableSubgroups.map(sg => (
+                <SelectItem key={sg.id} value={sg.id} className="text-xs">
+                  {sg.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-9 text-xs text-muted-foreground"
+              onClick={() => { setSectionFilter('all'); setSubgroupFilter('all'); }}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -99,14 +184,14 @@ const BranchScouts = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : scouts.length === 0 ? (
+      ) : filteredScouts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <span className="mb-2 text-4xl">{branchData?.icon}</span>
-          <p>Nenhum integrante cadastrado neste ramo</p>
+          <p>{hasActiveFilters ? 'Nenhum integrante encontrado com os filtros selecionados' : 'Nenhum integrante cadastrado neste ramo'}</p>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {scouts.map((scout, index) => (
+          {filteredScouts.map((scout, index) => (
             <motion.div
               key={scout.id}
               initial={{ opacity: 0, scale: 0.95 }}
