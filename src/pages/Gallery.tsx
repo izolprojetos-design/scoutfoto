@@ -12,6 +12,7 @@ import { Search, ArrowLeft, Calendar, Download, Eye, Trash2, X } from 'lucide-re
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { toast } from 'sonner';
