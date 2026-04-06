@@ -833,9 +833,7 @@ const Dashboard = () => {
                       <div>
                         <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
                         <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
-                          {evt.event_date && (
-                            <span className="text-xs">{format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}</span>
-                          )}
+                          <span className="text-xs">{format(new Date(evt.created_at), "dd/MM/yyyy")}</span>
                           <div className="flex items-center gap-1.5">
                             <ImageIcon className="h-3.5 w-3.5" />
                             <span>{evt.imageCount} {evt.imageCount === 1 ? 'foto' : 'fotos'}</span>
