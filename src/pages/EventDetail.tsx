@@ -224,7 +224,8 @@ const EventDetail = () => {
     setUploading(true);
     const totalFiles = files.length;
     const parsedTags = tags.split(',').map(t => t.trim()).filter(Boolean);
-    const branch = branches.find(b => b.id === branchId);
+    const resolvedBranchId = branchId === 'all' ? (event?.branch_id || branches[0]?.id || '') : branchId;
+    const branch = branches.find(b => b.id === resolvedBranchId);
     let successCount = 0;
 
     for (let i = 0; i < totalFiles; i++) {
@@ -255,7 +256,7 @@ const EventDetail = () => {
 
       const { data: imgData, error: dbError } = await supabase.from('images').insert({
         user_id: user.id,
-        branch_id: branchId,
+        branch_id: resolvedBranchId,
         event_id: eventId,
         filename: `${ts}.${ext}`,
         storage_path: storagePath,
@@ -442,6 +443,7 @@ const EventDetail = () => {
                     <Select value={branchId} onValueChange={setBranchId}>
                       <SelectTrigger className="h-9"><SelectValue placeholder="Selecione" /></SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="all">🌐 Todos os Ramos</SelectItem>
                         {branches.map(b => (
                           <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
                         ))}
