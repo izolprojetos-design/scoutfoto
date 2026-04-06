@@ -890,6 +890,12 @@ const Dashboard = () => {
                               Evento: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
                             </span>
                           )}
+                          {evt.location && (
+                            <span className="text-xs flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              Local: {evt.location}
+                            </span>
+                          )}
                           <div className="flex items-center gap-1.5">
                             <ImageIcon className="h-3.5 w-3.5" />
                             <span>{evt.imageCount} {evt.imageCount === 1 ? 'foto' : 'fotos'}</span>

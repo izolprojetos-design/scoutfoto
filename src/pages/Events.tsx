@@ -312,7 +312,7 @@ const Events = () => {
                       {event.location && (
                         <Badge variant="outline" className="gap-1 font-normal">
                           <MapPin className="h-3 w-3" />
-                          {event.location}
+                          Local: {event.location}
                         </Badge>
                       )}
                       {branchInfo && (
