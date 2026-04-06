@@ -1,0 +1,265 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { toast } from 'sonner';
+import { Link2, Copy, Send, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import type { Database } from '@/integrations/supabase/types';
+
+type AppRole = Database['public']['Enums']['app_role'];
+
+interface InviteLink {
+  id: string;
+  token: string;
+  role: string;
+  section: string;
+  expires_at: string;
+  used_at: string | null;
+  used_by: string | null;
+  created_at: string;
+}
+
+const InviteLinkPanel = () => {
+  const { user } = useAuth();
+  const [links, setLinks] = useState<InviteLink[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  // Form state
+  const [role, setRole] = useState<string>('voluntario');
+  const [section, setSection] = useState<string>('');
+
+  const fetchLinks = async () => {
+    const { data } = await supabase
+      .from('invite_links')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(50);
+    setLinks((data as InviteLink[]) || []);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLinks();
+  }, []);
+
+  const getInviteUrl = (token: string) => {
+    return `${window.location.origin}/register?token=${token}`;
+  };
+
+  const handleCreate = async () => {
+    if (!user) return;
+    setCreating(true);
+
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 6);
+
+    const { error } = await supabase.from('invite_links').insert({
+      role,
+      section: section || '',
+      expires_at: expiresAt.toISOString(),
+      created_by: user.id,
+    } as any);
+
+    if (error) {
+      toast.error('Erro ao criar link: ' + error.message);
+    } else {
+      toast.success('Link de convite criado com sucesso!');
+      setDialogOpen(false);
+      setRole('voluntario');
+      setSection('');
+      fetchLinks();
+    }
+    setCreating(false);
+  };
+
+  const handleCopy = async (token: string) => {
+    const url = getInviteUrl(token);
+    await navigator.clipboard.writeText(url);
+    toast.success('Link copiado!');
+  };
+
+  const handleWhatsApp = (token: string) => {
+    const url = getInviteUrl(token);
+    const text = encodeURIComponent(
+      `Olá! Você foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+  };
+
+  const handleEmail = (token: string) => {
+    const url = getInviteUrl(token);
+    const subject = encodeURIComponent('Convite para o ScoutFoto');
+    const body = encodeURIComponent(
+      `Olá!\n\nVocê foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}\n\nAtenciosamente,\nEquipe ScoutFoto`
+    );
+    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from('invite_links').delete().eq('id', id);
+    if (error) toast.error('Erro ao excluir link');
+    else {
+      toast.success('Link excluído');
+      fetchLinks();
+    }
+  };
+
+  const getLinkStatus = (link: InviteLink) => {
+    if (link.used_at) return { label: 'Usado', variant: 'secondary' as const, icon: CheckCircle2 };
+    if (new Date(link.expires_at) < new Date()) return { label: 'Expirado', variant: 'destructive' as const, icon: XCircle };
+    return { label: 'Ativo', variant: 'default' as const, icon: Clock };
+  };
+
+  const roleLabel = (r: string) => {
+    switch (r) {
+      case 'voluntario': return 'Voluntário';
+      case 'chefe': return 'Chefe';
+      case 'viewer': return 'Visualizador';
+      case 'dirigente': return 'Dirigente';
+      case 'dirigente_gestor': return 'Dirigente Gestor';
+      case 'parent': return 'Pai/Responsável';
+      default: return r;
+    }
+  };
+
+  return (
+    <Card className="border-0 shadow-lg">
+      <CardHeader>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Link2 className="h-5 w-5" />
+            Links de Convite
+          </CardTitle>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="gap-2">
+                <Link2 className="h-4 w-4" />
+                Gerar Link de Convite
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Gerar link de convite</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  O link terá validade de <strong>6 horas</strong> e poderá ser usado apenas uma vez.
+                </p>
+                <div className="space-y-2">
+                  <Label>Cargo</Label>
+                  <Select value={role} onValueChange={setRole}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="voluntario">Voluntário</SelectItem>
+                      <SelectItem value="chefe">Chefe</SelectItem>
+                      <SelectItem value="dirigente">Dirigente</SelectItem>
+                      <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
+                      <SelectItem value="parent">Pai/Responsável</SelectItem>
+                      <SelectItem value="viewer">Visualizador</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Seção</Label>
+                  <Select value={section || 'none'} onValueChange={(v) => setSection(v === 'none' ? '' : v)}>
+                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Nenhuma</SelectItem>
+                      {SECTION_OPTIONS.map(opt => (
+                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={handleCreate} className="w-full gap-2" disabled={creating}>
+                  {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                  Gerar Link
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : links.length === 0 ? (
+          <p className="py-8 text-center text-muted-foreground">Nenhum link de convite criado ainda.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Cargo</TableHead>
+                  <TableHead className="hidden md:table-cell">Seção</TableHead>
+                  <TableHead className="hidden md:table-cell">Expira em</TableHead>
+                  <TableHead>Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {links.map(link => {
+                  const status = getLinkStatus(link);
+                  const StatusIcon = status.icon;
+                  const isActive = status.label === 'Ativo';
+                  return (
+                    <TableRow key={link.id}>
+                      <TableCell>
+                        <Badge variant={status.variant} className="gap-1">
+                          <StatusIcon className="h-3 w-3" />
+                          {status.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="font-medium">{roleLabel(link.role)}</TableCell>
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                        {link.section || '—'}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                        {format(new Date(link.expires_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {isActive && (
+                            <>
+                              <Button variant="ghost" size="icon" onClick={() => handleCopy(link.token)} title="Copiar link">
+                                <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleWhatsApp(link.token)} title="Enviar via WhatsApp" className="text-green-600 hover:text-green-700">
+                                <MessageCircle className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleEmail(link.token)} title="Enviar por email">
+                                <Send className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(link.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
+export default InviteLinkPanel;
