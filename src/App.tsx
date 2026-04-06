@@ -62,7 +62,7 @@ const App = () => {
 
   // Auto-update: detect new versions and reload
   useAppUpdate();
-  usePeriodicUpdateCheck(5 * 60 * 1000); // check every 5 min
+  usePeriodicUpdateCheck(10 * 60 * 1000); // check every 10 min
 
   return (
     <>
