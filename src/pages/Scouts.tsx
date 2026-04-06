@@ -1358,9 +1358,6 @@ const Scouts = () => {
                                       {scoutGuardians.map(g => (
                                         <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
                                           <span>{g.name}</span>
-                                          <Badge variant={g.image_authorization ? 'default' : 'secondary'} className="text-[10px] h-5">
-                                            {g.image_authorization ? '✅ Autorizado' : '❌ Não autorizado'}
-                                          </Badge>
                                         </div>
                                       ))}
                                     </div>
