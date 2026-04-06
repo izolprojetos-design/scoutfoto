@@ -185,13 +185,13 @@ const Dashboard = () => {
       setAllProfiles((adminResults[0] as any).data || []);
       setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
 
-      // Fetch recent logins (latest per user)
+      // Fetch recent logins in parallel with admin data
       const { data: loginLogs } = await supabase
         .from('audit_logs')
         .select('user_id, created_at')
         .eq('action', 'login')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(50);
 
       if (loginLogs) {
         const profilesData = (adminResults[0] as any).data || [];

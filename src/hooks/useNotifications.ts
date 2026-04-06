@@ -34,8 +34,8 @@ export const useNotifications = () => {
     if (!user) { setNotifications([]); setLoading(false); return; }
     fetchNotifications();
 
-    // Poll every 30 seconds (realtime removed for security)
-    const interval = setInterval(fetchNotifications, 30000);
+    // Poll every 60 seconds instead of 30
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, [user, fetchNotifications]);
 
