@@ -167,7 +167,7 @@ const Dashboard = () => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       const recentEvents = evtRes.data.filter(evt => {
         if (!evt.event_date) return false;
-        return new Date(evt.event_date) >= thirtyDaysAgo;
+        return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
       });
       const evtsWithCounts = recentEvents.map(evt => ({
         ...evt,
@@ -833,7 +833,7 @@ const Dashboard = () => {
                         <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
                         <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
                           {evt.event_date && (
-                            <span className="text-xs">{format(new Date(evt.event_date), "dd/MM/yyyy")}</span>
+                            <span className="text-xs">{format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}</span>
                           )}
                           <div className="flex items-center gap-1.5">
                             <ImageIcon className="h-3.5 w-3.5" />
