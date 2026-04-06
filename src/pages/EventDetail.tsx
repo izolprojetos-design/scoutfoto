@@ -216,10 +216,6 @@ const EventDetail = () => {
       toast.error('Consentimento obrigatório para fotos de menores.');
       return;
     }
-    if (!consent) {
-      toast.error('Você precisa confirmar o consentimento.');
-      return;
-    }
 
     setUploading(true);
     const totalFiles = files.length;
