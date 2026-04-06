@@ -39,6 +39,7 @@ interface UserWithRole {
   created_at: string;
   role: AppRole;
   section: string;
+  user_number: number | null;
 }
 
 interface AuditLog {
