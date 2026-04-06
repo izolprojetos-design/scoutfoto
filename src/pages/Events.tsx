@@ -301,11 +301,14 @@ const Events = () => {
                       <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
                     )}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="secondary" className="gap-1 font-normal">
+                      <Badge variant="outline" className="gap-1 font-normal text-muted-foreground">
                         Cadastro: {format(new Date(event.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </Badge>
                       {event.event_date && (
-                        <Badge variant="secondary" className="gap-1 font-normal">
+                        <Badge 
+                          variant={isUpcoming ? "default" : "secondary"} 
+                          className={`gap-1 font-normal ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : ''}`}
+                        >
                           <Calendar className="h-3 w-3" />
                           Evento: {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </Badge>
