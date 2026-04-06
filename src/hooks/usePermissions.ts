@@ -93,6 +93,7 @@ export const usePermissions = () => {
       setLoading(false);
     };
 
+    fetchedRef.current = user.id;
     fetchPermissions();
   }, [user, roles]);
 
