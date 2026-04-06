@@ -208,7 +208,7 @@ const ScoutCalendar = () => {
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
                 {events
-                  .filter(e => e.event_date && new Date(e.event_date) >= new Date())
+                  .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
                   .slice(0, 5)
                   .map(event => (
                     <div key={event.id} className="rounded-lg border bg-muted/30 p-3">
