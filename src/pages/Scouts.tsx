@@ -609,8 +609,8 @@ const Scouts = () => {
       head: [headers],
       body: rows,
       startY: 30,
-      styles: { fontSize: 10, cellPadding: 3, textColor: [20, 20, 20] },
-      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 10 },
+      styles: { fontSize: 8, cellPadding: 2, textColor: [20, 20, 20] },
+      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       alternateRowStyles: { fillColor: [245, 245, 240] },
       margin: { top: 30 },
       didDrawPage: (data: any) => {
