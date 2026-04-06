@@ -122,6 +122,7 @@ const Dashboard = () => {
     created_at: string;
     branch_id: string | null;
     scout_group: string | null;
+    location: string | null;
     imageCount: number;
   }
 
