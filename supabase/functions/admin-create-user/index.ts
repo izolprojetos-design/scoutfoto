@@ -125,6 +125,79 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true }), { headers: resHeaders });
     }
 
+    if (action === "register-invite") {
+      const { token, name, email, password } = body;
+
+      if (!token || !name || !email || !password) {
+        return new Response(JSON.stringify({ error: "Dados incompletos" }), { status: 400, headers: resHeaders });
+      }
+
+      // No auth needed for this action - use service client directly
+      // Validate invite token
+      const { data: invite, error: inviteError } = await serviceClient
+        .from("invite_links")
+        .select("*")
+        .eq("token", token)
+        .single();
+
+      if (inviteError || !invite) {
+        return new Response(JSON.stringify({ error: "Link de convite inválido" }), { status: 400, headers: resHeaders });
+      }
+
+      if (invite.used_at) {
+        return new Response(JSON.stringify({ error: "Este link já foi utilizado" }), { status: 400, headers: resHeaders });
+      }
+
+      if (new Date(invite.expires_at) < new Date()) {
+        return new Response(JSON.stringify({ error: "Este link expirou" }), { status: 400, headers: resHeaders });
+      }
+
+      // Create user
+      const { data: newUser, error: createError } = await serviceClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { name },
+      });
+
+      if (createError) {
+        return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: resHeaders });
+      }
+
+      if (newUser.user) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Update profile with section
+        const updateData: Record<string, unknown> = {};
+        if (invite.section) updateData.section = invite.section;
+        if (Object.keys(updateData).length > 0) {
+          await serviceClient.from("profiles").update(updateData).eq("user_id", newUser.user.id);
+        }
+
+        // Set role
+        if (invite.role && invite.role !== "viewer") {
+          await new Promise(resolve => setTimeout(resolve, 500));
+          const { error: roleError } = await serviceClient
+            .from("user_roles")
+            .update({ role: invite.role })
+            .eq("user_id", newUser.user.id);
+          if (roleError) {
+            await serviceClient
+              .from("user_roles")
+              .upsert({ user_id: newUser.user.id, role: invite.role }, { onConflict: "user_id" });
+          }
+        }
+
+        // Mark invite as used
+        await serviceClient
+          .from("invite_links")
+          .update({ used_at: new Date().toISOString(), used_by: newUser.user.id })
+          .eq("id", invite.id);
+      }
+
+      return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), { headers: resHeaders });
+    }
+
     return new Response(JSON.stringify({ error: "Ação inválida" }), { status: 400, headers: resHeaders });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: resHeaders });
