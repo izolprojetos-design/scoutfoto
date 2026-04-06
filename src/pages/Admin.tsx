@@ -13,12 +13,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
+import InviteLinkPanel from '@/components/InviteLinkPanel';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
@@ -497,6 +498,7 @@ const Admin = () => {
           
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
           <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Equipes</TabsTrigger>
+          <TabsTrigger value="invites" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Link2 className="h-3.5 w-3.5" />Convites</TabsTrigger>
           <TabsTrigger value="maintenance" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Wrench className="h-3.5 w-3.5" />Manutenção</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
         </TabsList>
@@ -984,6 +986,10 @@ const Admin = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="invites">
+          <InviteLinkPanel />
         </TabsContent>
 
         <TabsContent value="security">
