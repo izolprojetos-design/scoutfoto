@@ -306,8 +306,8 @@ const Events = () => {
                       </Badge>
                       {event.event_date && (
                         <Badge 
-                          variant={isUpcoming ? "default" : "secondary"} 
-                          className={`gap-1 font-normal ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : ''}`}
+                          variant={isUpcoming ? "default" : "outline"} 
+                          className={`gap-1 font-normal ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : 'text-muted-foreground'}`}
                         >
                           <Calendar className="h-3 w-3" />
                           Evento: {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
