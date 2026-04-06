@@ -14,25 +14,8 @@ Deno.serve(async (req) => {
   const resHeaders = { ...corsHeaders, "Content-Type": "application/json" };
 
   try {
-    // Verify caller is authenticated
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: resHeaders });
-    }
-
-    const anonClient = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user: callerUser }, error: callerError } = await anonClient.auth.getUser(token);
-    if (callerError || !callerUser) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: resHeaders });
-    }
-
-    const callerId = callerUser.id;
+    const body = await req.json();
+    const { action } = body;
 
     // Service role client for admin operations
     const serviceClient = createClient(
@@ -40,22 +23,8 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Check caller is admin
-    const { data: roleData } = await serviceClient
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", callerId)
-      .eq("role", "admin")
-      .single();
-
-    if (!roleData) {
-      return new Response(JSON.stringify({ error: "Forbidden: admin only" }), { status: 403, headers: resHeaders });
-    }
-
-    const body = await req.json();
-    const { action } = body;
-
-    if (action === "create") {
+    // register-invite does NOT require authentication
+    if (action === "register-invite") {
       const { email, password, name, role, section } = body;
 
       if (!email || !password || !name) {
