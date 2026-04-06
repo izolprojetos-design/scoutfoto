@@ -988,6 +988,10 @@ const Admin = () => {
           </Card>
         </TabsContent>
 
+        <TabsContent value="invites">
+          <InviteLinkPanel />
+        </TabsContent>
+
         <TabsContent value="security">
           <SecurityDashboard />
         </TabsContent>
