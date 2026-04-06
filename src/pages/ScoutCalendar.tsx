@@ -21,6 +21,7 @@ import {
   isToday,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/scoutUtils';
 
 interface CalendarEvent {
   id: string;
