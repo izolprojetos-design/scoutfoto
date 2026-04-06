@@ -66,7 +66,7 @@ const ScoutCalendar = () => {
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getEventsForDay = (day: Date) =>
-    events.filter(e => e.event_date && isSameDay(new Date(e.event_date), day));
+    events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
 
   const selectedEvents = selectedDate
     ? getEventsForDay(selectedDate)
