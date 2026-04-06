@@ -119,6 +119,7 @@ const Dashboard = () => {
     id: string;
     name: string;
     event_date: string | null;
+    created_at: string;
     branch_id: string | null;
     scout_group: string | null;
     imageCount: number;
