@@ -163,7 +163,13 @@ const Dashboard = () => {
     }
 
     if (evtRes.data) {
-      const evtsWithCounts = evtRes.data.map(evt => ({
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentEvents = evtRes.data.filter(evt => {
+        if (!evt.event_date) return false;
+        return new Date(evt.event_date) >= thirtyDaysAgo;
+      });
+      const evtsWithCounts = recentEvents.map(evt => ({
         ...evt,
         imageCount: eventImages.filter((img: any) => img.event_id === evt.id).length,
       }));
@@ -809,7 +815,7 @@ const Dashboard = () => {
       {loading ? (
         <GalleryCardsSkeleton count={3} />
       ) : eventsWithPhotos.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento cadastrado</p>
+        <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento nos últimos 30 dias</p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {eventsWithPhotos.slice(0, 6).map((evt, index) => {
