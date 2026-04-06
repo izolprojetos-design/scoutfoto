@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
@@ -294,7 +295,7 @@ const Events = () => {
                       {event.event_date && (
                         <Badge variant="secondary" className="gap-1 font-normal">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </Badge>
                       )}
                       {event.location && (
