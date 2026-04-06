@@ -735,7 +735,7 @@ const Admin = () => {
                     ))}
                     {filtered.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
+                        <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
