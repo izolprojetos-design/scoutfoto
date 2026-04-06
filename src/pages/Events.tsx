@@ -284,7 +284,7 @@ const Events = () => {
                 transition={{ delay: Math.min(index * 0.02, 0.15), duration: 0.2 }}
               >
                 <Card className={`group border shadow-sm transition-all hover:shadow-md cursor-pointer overflow-hidden ${isPast ? 'bg-muted/40 opacity-70' : 'bg-card'}`} onClick={() => navigate(`/events/${event.id}`)}>
-                  <div className="relative h-36 overflow-hidden">
+                  <div className={`relative h-36 overflow-hidden ${isPast ? 'grayscale' : ''}`}>
                     <img
                       src={getEventCoverImage(event.name)}
                       alt={event.name}
@@ -292,9 +292,14 @@ const Events = () => {
                       className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <h3 className="absolute bottom-3 left-4 right-4 text-lg font-semibold tracking-tight text-white drop-shadow-md">
-                      {event.name}
-                    </h3>
+                    <div className="absolute bottom-3 left-4 right-4 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold tracking-tight text-white drop-shadow-md">
+                        {event.name}
+                      </h3>
+                      {isPast && (
+                        <Badge className="bg-muted-foreground/70 text-white text-[10px] px-1.5 py-0 shrink-0">Encerrado</Badge>
+                      )}
+                    </div>
                   </div>
                   <CardContent className="p-4">
                     {event.description && (
