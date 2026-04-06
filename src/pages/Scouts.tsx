@@ -135,7 +135,7 @@ const Scouts = () => {
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
-  const [guardianAuth, setGuardianAuth] = useState(false);
+  const [guardianAuth, setGuardianAuth] = useState(true);
   const [newSubgroupName, setNewSubgroupName] = useState('');
   const [creatingSubgroup, setCreatingSubgroup] = useState(false);
   const [customSectionMode, setCustomSectionMode] = useState(false);
