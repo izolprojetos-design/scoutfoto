@@ -102,7 +102,7 @@ const Gallery = () => {
   // Filter events shown in combobox based on year and branch filters
   const filteredEvents = useMemo(() => {
     return events.filter(ev => {
-      const matchYear = yearFilter === 'all' || (ev.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter);
+      const matchYear = yearFilter === 'all' || (ev.event_date && parseLocalDate(ev.event_date).getFullYear().toString() === yearFilter);
       const matchBranch = branchFilter === 'all' || ev.branch_id === branchFilter;
       const matchGroup = groupFilter === 'all' || ev.scout_group === groupFilter;
       return matchYear && matchBranch && matchGroup;
