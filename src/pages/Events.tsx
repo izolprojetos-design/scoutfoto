@@ -18,6 +18,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
