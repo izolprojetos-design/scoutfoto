@@ -806,6 +806,45 @@ const Dashboard = () => {
       )}
 
       {/* Event Gallery */}
+      {(() => {
+        const now = startOfDay(new Date());
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const upcomingEvents = eventsWithPhotos.filter(evt => {
+          if (!evt.event_date) return false;
+          const d = parseLocalDate(evt.event_date);
+          return d >= now && d <= endOfMonth;
+        });
+        return upcomingEvents.length > 0 ? (
+          <div className="mt-8 mb-4">
+            <Card className="border-amber-300 bg-amber-50/60 dark:bg-amber-950/20 dark:border-amber-700">
+              <CardContent className="p-4 flex items-start gap-3">
+                <span className="text-2xl mt-0.5">📢</span>
+                <div>
+                  <h3 className="font-semibold text-amber-900 dark:text-amber-200">
+                    {upcomingEvents.length === 1 ? 'Próximo evento este mês' : `${upcomingEvents.length} eventos este mês`}
+                  </h3>
+                  <ul className="mt-1 space-y-0.5">
+                    {upcomingEvents.map(evt => {
+                      const daysLeft = differenceInDays(parseLocalDate(evt.event_date!), now);
+                      return (
+                        <li key={evt.id} className="text-sm text-amber-800 dark:text-amber-300 flex items-center gap-1.5 cursor-pointer hover:underline" onClick={() => navigate(`/events/${evt.id}`)}>
+                          <Calendar className="h-3.5 w-3.5" />
+                          <span className="font-medium">{evt.name}</span>
+                          <span>— {format(parseLocalDate(evt.event_date!), "dd/MM", { locale: ptBR })}</span>
+                          <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0 border-amber-400 text-amber-700 dark:text-amber-300">
+                            {daysLeft === 0 ? 'Hoje!' : daysLeft === 1 ? 'Amanhã' : `em ${daysLeft} dias`}
+                          </Badge>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        ) : null;
+      })()}
+
       <div className="mt-8 mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">Galerias de Eventos <span className="text-sm font-normal text-muted-foreground">(últimos 30 dias)</span></h2>
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/events')}>
@@ -821,21 +860,31 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {eventsWithPhotos.slice(0, 6).map((evt, index) => {
             const branch = branches.find(b => b.id === evt.branch_id);
+            const isUpcoming = evt.event_date && parseLocalDate(evt.event_date) >= startOfDay(new Date());
             return (
               <motion.div key={evt.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
                 <Card
-                  className="group cursor-pointer border bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-md hover:-translate-y-0.5"
+                  className={`group cursor-pointer border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
+                    isUpcoming
+                      ? 'bg-gradient-to-br from-amber-50 to-orange-50/50 border-amber-300 dark:from-amber-950/30 dark:to-orange-950/20 dark:border-amber-700'
+                      : 'bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 hover:border-primary/30'
+                  }`}
                   onClick={() => navigate(`/events/${evt.id}`)}
                 >
                   <CardContent className="flex items-center justify-between p-6">
                     <div className="flex items-center gap-4">
                       <span className="text-4xl">{branch?.icon || '📅'}</span>
                       <div>
-                        <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
+                          {isUpcoming && (
+                            <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0">Próximo</Badge>
+                          )}
+                        </div>
                         <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
                           <span className="text-xs">Cadastro: {format(new Date(evt.created_at), "dd/MM/yyyy")}</span>
                           {evt.event_date && (
-                            <span className="text-xs flex items-center gap-1">
+                            <span className={`text-xs flex items-center gap-1 ${isUpcoming ? 'text-amber-700 dark:text-amber-300 font-medium' : ''}`}>
                               <Calendar className="h-3 w-3" />
                               Evento: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
                             </span>
