@@ -244,6 +244,7 @@ const Admin = () => {
           created_at: p.created_at,
           role: userRole?.role || 'viewer',
           section: (p as any).section || '',
+          user_number: (p as any).user_number || null,
         };
       });
       setUsers(merged);
