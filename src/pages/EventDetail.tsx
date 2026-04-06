@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -647,6 +647,16 @@ const EventDetail = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* FAB para adicionar fotos quando já existem fotos */}
+      {images.length > 0 && (canUploadEventPhotos || canUpload) && !showUpload && (
+        <button
+          onClick={() => { setShowUpload(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+          className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+          aria-label="Adicionar Foto"
+        >
+          <Plus className="h-6 w-6" />
+        </button>
+      )}
     </>
   );
 };
