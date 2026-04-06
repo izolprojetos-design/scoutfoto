@@ -256,7 +256,7 @@ const EventDetail = () => {
 
       const { data: imgData, error: dbError } = await supabase.from('images').insert({
         user_id: user.id,
-        branch_id: branchId,
+        branch_id: resolvedBranchId,
         event_id: eventId,
         filename: `${ts}.${ext}`,
         storage_path: storagePath,
