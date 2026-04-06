@@ -163,7 +163,13 @@ const Dashboard = () => {
     }
 
     if (evtRes.data) {
-      const evtsWithCounts = evtRes.data.map(evt => ({
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentEvents = evtRes.data.filter(evt => {
+        if (!evt.event_date) return false;
+        return new Date(evt.event_date) >= thirtyDaysAgo;
+      });
+      const evtsWithCounts = recentEvents.map(evt => ({
         ...evt,
         imageCount: eventImages.filter((img: any) => img.event_id === evt.id).length,
       }));
