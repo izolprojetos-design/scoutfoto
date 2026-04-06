@@ -23,6 +23,7 @@ import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 import { usePermissions } from '@/hooks/usePermissions';
+import { getEventCoverImage } from '@/lib/eventImages';
 
 interface Branch {
   id: string;
@@ -281,16 +282,23 @@ const Events = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(index * 0.02, 0.15), duration: 0.2 }}
               >
-                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md cursor-pointer" onClick={() => navigate(`/events/${event.id}`)}>
-                  <CardContent className="p-5">
-                    <div className="mb-3">
-                      <h3 className="text-lg font-semibold tracking-tight group-hover:text-primary transition-colors">
-                        {event.name}
-                      </h3>
-                      {event.description && (
-                        <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                      )}
-                    </div>
+                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md cursor-pointer overflow-hidden" onClick={() => navigate(`/events/${event.id}`)}>
+                  <div className="relative h-36 overflow-hidden">
+                    <img
+                      src={getEventCoverImage(event.name)}
+                      alt={event.name}
+                      loading="lazy"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                    <h3 className="absolute bottom-3 left-4 right-4 text-lg font-semibold tracking-tight text-white drop-shadow-md">
+                      {event.name}
+                    </h3>
+                  </div>
+                  <CardContent className="p-4">
+                    {event.description && (
+                      <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
+                    )}
                     <div className="flex flex-wrap gap-2 mb-4">
                       <Badge variant="secondary" className="gap-1 font-normal">
                         Cadastro: {format(new Date(event.created_at), "dd/MM/yyyy", { locale: ptBR })}
