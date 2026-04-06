@@ -192,7 +192,7 @@ const EventDetail = () => {
     setBranchId('');
     setCaption('');
     setTags('');
-    setConsent(false);
+    
     setResponsibleName('');
     setMinorAge('');
     setVisibility('group');
