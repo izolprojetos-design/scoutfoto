@@ -84,7 +84,7 @@ const Gallery = () => {
     const years = new Set<string>();
     events.forEach(ev => {
       if (ev.event_date) {
-        years.add(new Date(ev.event_date).getFullYear().toString());
+        years.add(parseLocalDate(ev.event_date).getFullYear().toString());
       }
     });
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
