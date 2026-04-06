@@ -67,8 +67,10 @@ export const usePermissions = () => {
         const { data: allPerms } = await supabase
           .from('permissions')
           .select('key');
-        if (allPerms) {
-          setPermissions(allPerms.map((p: any) => p.key));
+      if (allPerms) {
+          const keys = allPerms.map((p: any) => p.key);
+          setPermissions(keys);
+          permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now() });
         }
         setLoading(false);
         return;
