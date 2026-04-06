@@ -19,6 +19,7 @@ import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
+import InviteLinkPanel from '@/components/InviteLinkPanel';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
