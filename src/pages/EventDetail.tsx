@@ -363,14 +363,6 @@ const EventDetail = () => {
 
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{images.length} foto{images.length !== 1 ? 's' : ''}</p>
-          {(canUploadEventPhotos || canUpload) && (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => setShowUpload(!showUpload)}>
-                <Upload className="h-4 w-4" />
-                Adicionar Foto
-              </Button>
-            </div>
-          )}
         </div>
       </div>
 
