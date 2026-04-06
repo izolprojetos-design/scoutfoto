@@ -637,6 +637,9 @@ const Admin = () => {
                   <TableBody>
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {u.user_number ? String(u.user_number).padStart(7, '0') : '—'}
+                        </TableCell>
                         <TableCell className="font-medium">
                           <button
                             className="text-left hover:text-primary hover:underline cursor-pointer transition-colors"
