@@ -1497,17 +1497,10 @@ const Scouts = () => {
                 <Input value={guardianPhone} onChange={e => setGuardianPhone(e.target.value)} placeholder="(11) 99999-9999" className="h-11" />
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-4">
-              <input
-                type="checkbox"
-                id="img-auth"
-                checked={guardianAuth}
-                onChange={e => setGuardianAuth(e.target.checked)}
-                className="h-4 w-4 rounded border-border"
-              />
-              <Label htmlFor="img-auth" className="text-sm leading-snug">
-                Autorizo o uso de imagem do jovem em atividades escoteiras
-              </Label>
+            <div className="rounded-lg border bg-muted/50 p-3">
+              <p className="text-xs leading-snug text-muted-foreground">
+                Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
+              </p>
             </div>
             <Button type="submit" className="w-full h-11 font-semibold">Adicionar Responsável</Button>
           </form>
