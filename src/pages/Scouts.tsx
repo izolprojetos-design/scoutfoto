@@ -1186,14 +1186,46 @@ const Scouts = () => {
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportPDF} disabled={filteredScouts.length === 0}>
-            <FileDown className="h-4 w-4" />
-            Exportar PDF
-          </Button>
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportExcel} disabled={filteredScouts.length === 0}>
-            <FileSpreadsheet className="h-4 w-4" />
-            Exportar Excel
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
+                <FileDown className="h-4 w-4" />
+                Exportar PDF
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Exportar PDF</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para PDF?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleExportPDF}>Exportar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
+                <FileSpreadsheet className="h-4 w-4" />
+                Exportar Excel
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Exportar Excel</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para Excel?
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={handleExportExcel}>Exportar</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
