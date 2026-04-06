@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -122,6 +122,7 @@ const Dashboard = () => {
     created_at: string;
     branch_id: string | null;
     scout_group: string | null;
+    location: string | null;
     imageCount: number;
   }
 
@@ -133,7 +134,7 @@ const Dashboard = () => {
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group').order('event_date', { ascending: false }).limit(20),
+      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
       supabase.from('images').select('branch_id, event_id'),
     ] as const;
@@ -887,6 +888,12 @@ const Dashboard = () => {
                             <span className={`text-xs flex items-center gap-1 ${isUpcoming ? 'text-amber-700 dark:text-amber-300 font-medium' : ''}`}>
                               <Calendar className="h-3 w-3" />
                               Evento: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
+                            </span>
+                          )}
+                          {evt.location && (
+                            <span className="text-xs flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              Local: {evt.location}
                             </span>
                           )}
                           <div className="flex items-center gap-1.5">
