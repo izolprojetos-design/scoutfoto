@@ -292,10 +292,13 @@ const Events = () => {
                       )}
                     </div>
                     <div className="flex flex-wrap gap-2 mb-4">
+                      <Badge variant="secondary" className="gap-1 font-normal">
+                        Cadastro: {format(new Date(event.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                      </Badge>
                       {event.event_date && (
                         <Badge variant="secondary" className="gap-1 font-normal">
                           <Calendar className="h-3 w-3" />
-                          {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                          Evento: {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </Badge>
                       )}
                       {event.location && (
