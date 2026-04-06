@@ -17,7 +17,7 @@ import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield,
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
-import { format } from 'date-fns';
+import { format, startOfDay } from 'date-fns';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 import ShareLinkDialog from '@/components/ShareLinkDialog';
@@ -275,6 +275,7 @@ const Events = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
+            const isUpcoming = event.event_date && parseLocalDate(event.event_date) >= startOfDay(new Date());
             return (
               <motion.div
                 key={event.id}
@@ -300,11 +301,14 @@ const Events = () => {
                       <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
                     )}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="secondary" className="gap-1 font-normal">
+                      <Badge variant="outline" className="gap-1 font-normal text-muted-foreground">
                         Cadastro: {format(new Date(event.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </Badge>
                       {event.event_date && (
-                        <Badge variant="secondary" className="gap-1 font-normal">
+                        <Badge 
+                          variant={isUpcoming ? "default" : "secondary"} 
+                          className={`gap-1 font-normal ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : ''}`}
+                        >
                           <Calendar className="h-3 w-3" />
                           Evento: {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </Badge>
