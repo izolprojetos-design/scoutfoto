@@ -1067,9 +1067,10 @@ const Scouts = () => {
               }} placeholder="(00) 00000-0000" className="h-10" inputMode="tel" />
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="inline-guardian-auth" checked={guardianFields.auth} onChange={e => guardianFields.setAuth(e.target.checked)} className="rounded border-input" />
-            <Label htmlFor="inline-guardian-auth" className="text-xs cursor-pointer">Autorização de imagem concedida</Label>
+          <div className="rounded-lg border bg-muted/50 p-2">
+            <p className="text-xs leading-snug text-muted-foreground">
+              Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
+            </p>
           </div>
         </div>
       )}
