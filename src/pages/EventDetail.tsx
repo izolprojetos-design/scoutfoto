@@ -84,7 +84,7 @@ const EventDetail = () => {
   const [branchId, setBranchId] = useState('');
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(true);
   const [responsibleName, setResponsibleName] = useState('');
   const [minorAge, setMinorAge] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'group' | 'public'>('group');
@@ -192,7 +192,7 @@ const EventDetail = () => {
     setBranchId('');
     setCaption('');
     setTags('');
-    setConsent(false);
+    
     setResponsibleName('');
     setMinorAge('');
     setVisibility('group');
@@ -214,10 +214,6 @@ const EventDetail = () => {
     const hasMinor = minorAge && parseInt(minorAge) > 0;
     if (hasMinor && !consent) {
       toast.error('Consentimento obrigatório para fotos de menores.');
-      return;
-    }
-    if (!consent) {
-      toast.error('Você precisa confirmar o consentimento.');
       return;
     }
 
@@ -484,11 +480,10 @@ const EventDetail = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
-                  <Checkbox id="event-consent" checked={consent} onCheckedChange={(checked) => setConsent(checked === true)} />
-                  <Label htmlFor="event-consent" className="text-xs leading-snug">
-                    Confirmo que tenho autorização para enviar esta imagem e que todas as pessoas retratadas consentiram.
-                  </Label>
+                <div className="rounded-lg border bg-muted/50 p-3">
+                  <p className="text-xs leading-snug text-muted-foreground">
+                    Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
+                  </p>
                 </div>
 
                 {uploading && (
@@ -504,7 +499,7 @@ const EventDetail = () => {
                   <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowUpload(false); resetUploadForm(); }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || !consent || uploading}>
+                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
                     Enviar {files.length > 1 ? `${files.length} fotos` : ''}
                   </Button>
