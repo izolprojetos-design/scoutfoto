@@ -119,6 +119,7 @@ const Dashboard = () => {
     id: string;
     name: string;
     event_date: string | null;
+    created_at: string;
     branch_id: string | null;
     scout_group: string | null;
     imageCount: number;
@@ -132,7 +133,7 @@ const Dashboard = () => {
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, branch_id, scout_group').order('event_date', { ascending: false }).limit(20),
+      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
       supabase.from('images').select('branch_id, event_id'),
     ] as const;
@@ -832,9 +833,7 @@ const Dashboard = () => {
                       <div>
                         <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
                         <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
-                          {evt.event_date && (
-                            <span className="text-xs">{format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}</span>
-                          )}
+                          <span className="text-xs">{format(new Date(evt.created_at), "dd/MM/yyyy")}</span>
                           <div className="flex items-center gap-1.5">
                             <ImageIcon className="h-3.5 w-3.5" />
                             <span>{evt.imageCount} {evt.imageCount === 1 ? 'foto' : 'fotos'}</span>
