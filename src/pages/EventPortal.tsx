@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Calendar, MapPin, Lock, Clock, ImageIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 
 interface EventData {
