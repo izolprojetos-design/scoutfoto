@@ -215,7 +215,7 @@ const ScoutCalendar = () => {
                       <p className="font-medium text-sm">{event.name}</p>
                       {event.event_date && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </p>
                       )}
                     </div>

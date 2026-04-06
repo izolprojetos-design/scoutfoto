@@ -324,7 +324,7 @@ const Gallery = () => {
               {filteredEvents.map(ev => (
                 <SelectItem key={ev.id} value={ev.id}>
                   {ev.name}
-                  {ev.event_date && ` — ${format(new Date(ev.event_date), 'dd/MM/yyyy')}`}
+                  {ev.event_date && ` — ${format(parseLocalDate(ev.event_date), 'dd/MM/yyyy')}`}
                 </SelectItem>
               ))}
             </SelectContent>
