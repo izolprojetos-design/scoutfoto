@@ -499,7 +499,7 @@ const EventDetail = () => {
                   <Button type="button" variant="outline" className="flex-1" onClick={() => { setShowUpload(false); resetUploadForm(); }}>
                     Cancelar
                   </Button>
-                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || !consent || uploading}>
+                  <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
                     Enviar {files.length > 1 ? `${files.length} fotos` : ''}
                   </Button>
