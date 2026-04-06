@@ -275,6 +275,7 @@ const Events = () => {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
+            const isPast = event.event_date && parseLocalDate(event.event_date) < new Date(new Date().setHours(0,0,0,0));
             return (
               <motion.div
                 key={event.id}
@@ -282,7 +283,7 @@ const Events = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(index * 0.02, 0.15), duration: 0.2 }}
               >
-                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md cursor-pointer overflow-hidden" onClick={() => navigate(`/events/${event.id}`)}>
+                <Card className={`group border shadow-sm transition-all hover:shadow-md cursor-pointer overflow-hidden ${isPast ? 'bg-muted/40 opacity-70' : 'bg-card'}`} onClick={() => navigate(`/events/${event.id}`)}>
                   <div className="relative h-36 overflow-hidden">
                     <img
                       src={getEventCoverImage(event.name)}
