@@ -486,6 +486,7 @@ export type Database = {
           section: string | null
           updated_at: string
           user_id: string
+          user_number: number | null
         }
         Insert: {
           avatar_url?: string | null
@@ -498,6 +499,7 @@ export type Database = {
           section?: string | null
           updated_at?: string
           user_id: string
+          user_number?: number | null
         }
         Update: {
           avatar_url?: string | null
@@ -510,6 +512,7 @@ export type Database = {
           section?: string | null
           updated_at?: string
           user_id?: string
+          user_number?: number | null
         }
         Relationships: []
       }

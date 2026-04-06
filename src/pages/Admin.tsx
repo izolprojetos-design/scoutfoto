@@ -39,6 +39,7 @@ interface UserWithRole {
   created_at: string;
   role: AppRole;
   section: string;
+  user_number: number | null;
 }
 
 interface AuditLog {
@@ -243,6 +244,7 @@ const Admin = () => {
           created_at: p.created_at,
           role: userRole?.role || 'viewer',
           section: (p as any).section || '',
+          user_number: (p as any).user_number || null,
         };
       });
       setUsers(merged);
@@ -623,6 +625,7 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[100px]">ID</TableHead>
                       <TableHead>Nome</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead>Seção</TableHead>
@@ -634,6 +637,9 @@ const Admin = () => {
                   <TableBody>
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
+                        <TableCell className="font-mono text-xs text-muted-foreground">
+                          {u.user_number ? String(u.user_number).padStart(7, '0') : '—'}
+                        </TableCell>
                         <TableCell className="font-medium">
                           <button
                             className="text-left hover:text-primary hover:underline cursor-pointer transition-colors"
@@ -729,7 +735,7 @@ const Admin = () => {
                     ))}
                     {filtered.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={6} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
+                        <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
