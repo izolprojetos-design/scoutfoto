@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -136,7 +136,7 @@ const Dashboard = () => {
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
-      supabase.from('images').select('branch_id, event_id'),
+      supabase.from('images').select('branch_id, event_id').limit(5000),
     ] as const;
 
     const adminPromises = isAdmin
@@ -185,13 +185,13 @@ const Dashboard = () => {
       setAllProfiles((adminResults[0] as any).data || []);
       setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
 
-      // Fetch recent logins (latest per user)
+      // Fetch recent logins in parallel with admin data
       const { data: loginLogs } = await supabase
         .from('audit_logs')
         .select('user_id, created_at')
         .eq('action', 'login')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(50);
 
       if (loginLogs) {
         const profilesData = (adminResults[0] as any).data || [];
@@ -915,9 +915,10 @@ const Dashboard = () => {
       {/* Photo Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
+          <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <img src={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" />
+              <img src={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" loading="lazy" />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>
           )}

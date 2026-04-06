@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -36,14 +36,27 @@ export interface Permission {
   sort_order: number;
 }
 
+// Cache permissions per user to avoid re-fetching on every route change
+const permissionsCache = new Map<string, { permissions: string[]; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export const usePermissions = () => {
   const { user, roles } = useAuth();
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!user || roles.length === 0) {
       setPermissions([]);
+      setLoading(false);
+      return;
+    }
+
+    // Check cache first
+    const cached = permissionsCache.get(user.id);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL && fetchedRef.current === user.id) {
+      setPermissions(cached.permissions);
       setLoading(false);
       return;
     }
@@ -54,8 +67,10 @@ export const usePermissions = () => {
         const { data: allPerms } = await supabase
           .from('permissions')
           .select('key');
-        if (allPerms) {
-          setPermissions(allPerms.map((p: any) => p.key));
+      if (allPerms) {
+          const keys = allPerms.map((p: any) => p.key);
+          setPermissions(keys);
+          permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now() });
         }
         setLoading(false);
         return;
@@ -71,11 +86,14 @@ export const usePermissions = () => {
         const keys = data
           .map((up: any) => up.permissions?.key)
           .filter(Boolean) as string[];
-        setPermissions([...new Set(keys)]);
+        const uniqueKeys = [...new Set(keys)];
+        setPermissions(uniqueKeys);
+        permissionsCache.set(user.id, { permissions: uniqueKeys, timestamp: Date.now() });
       }
       setLoading(false);
     };
 
+    fetchedRef.current = user.id;
     fetchPermissions();
   }, [user, roles]);
 
