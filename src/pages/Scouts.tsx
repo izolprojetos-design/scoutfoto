@@ -145,7 +145,7 @@ const Scouts = () => {
   const [inlineGuardianName, setInlineGuardianName] = useState('');
   const [inlineGuardianEmail, setInlineGuardianEmail] = useState('');
   const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
-  const [inlineGuardianAuth, setInlineGuardianAuth] = useState(false);
+  const [inlineGuardianAuth, setInlineGuardianAuth] = useState(true);
 
   // Auto-clear broken photo URLs from the database
   const clearedPhotoIds = useRef(new Set<string>());
