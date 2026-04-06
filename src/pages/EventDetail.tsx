@@ -84,7 +84,7 @@ const EventDetail = () => {
   const [branchId, setBranchId] = useState('');
   const [caption, setCaption] = useState('');
   const [tags, setTags] = useState('');
-  const [consent, setConsent] = useState(false);
+  const [consent, setConsent] = useState(true);
   const [responsibleName, setResponsibleName] = useState('');
   const [minorAge, setMinorAge] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'group' | 'public'>('group');
