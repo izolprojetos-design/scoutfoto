@@ -21,6 +21,7 @@ import {
   isToday,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { parseLocalDate } from '@/lib/scoutUtils';
 
 interface CalendarEvent {
   id: string;
@@ -65,7 +66,7 @@ const ScoutCalendar = () => {
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getEventsForDay = (day: Date) =>
-    events.filter(e => e.event_date && isSameDay(new Date(e.event_date), day));
+    events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
 
   const selectedEvents = selectedDate
     ? getEventsForDay(selectedDate)
@@ -207,14 +208,14 @@ const ScoutCalendar = () => {
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
                 {events
-                  .filter(e => e.event_date && new Date(e.event_date) >= new Date())
+                  .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
                   .slice(0, 5)
                   .map(event => (
                     <div key={event.id} className="rounded-lg border bg-muted/30 p-3">
                       <p className="font-medium text-sm">{event.name}</p>
                       {event.event_date && (
                         <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(new Date(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                          {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
                         </p>
                       )}
                     </div>

@@ -12,6 +12,7 @@ import { Search, ArrowLeft, Calendar, Download, Eye, Trash2, X } from 'lucide-re
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { toast } from 'sonner';
@@ -83,7 +84,7 @@ const Gallery = () => {
     const years = new Set<string>();
     events.forEach(ev => {
       if (ev.event_date) {
-        years.add(new Date(ev.event_date).getFullYear().toString());
+        years.add(parseLocalDate(ev.event_date).getFullYear().toString());
       }
     });
     return Array.from(years).sort((a, b) => Number(b) - Number(a));
@@ -101,7 +102,7 @@ const Gallery = () => {
   // Filter events shown in combobox based on year and branch filters
   const filteredEvents = useMemo(() => {
     return events.filter(ev => {
-      const matchYear = yearFilter === 'all' || (ev.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter);
+      const matchYear = yearFilter === 'all' || (ev.event_date && parseLocalDate(ev.event_date).getFullYear().toString() === yearFilter);
       const matchBranch = branchFilter === 'all' || ev.branch_id === branchFilter;
       const matchGroup = groupFilter === 'all' || ev.scout_group === groupFilter;
       return matchYear && matchBranch && matchGroup;
@@ -239,7 +240,7 @@ const Gallery = () => {
       if (yearFilter !== 'all') {
         if (img.event_id) {
           const ev = events.find(e => e.id === img.event_id);
-          matchYear = !!ev?.event_date && new Date(ev.event_date).getFullYear().toString() === yearFilter;
+          matchYear = !!ev?.event_date && parseLocalDate(ev.event_date).getFullYear().toString() === yearFilter;
         } else {
           matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
         }
@@ -323,7 +324,7 @@ const Gallery = () => {
               {filteredEvents.map(ev => (
                 <SelectItem key={ev.id} value={ev.id}>
                   {ev.name}
-                  {ev.event_date && ` — ${format(new Date(ev.event_date), 'dd/MM/yyyy')}`}
+                  {ev.event_date && ` — ${format(parseLocalDate(ev.event_date), 'dd/MM/yyyy')}`}
                 </SelectItem>
               ))}
             </SelectContent>
