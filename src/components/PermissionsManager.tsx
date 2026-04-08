@@ -23,6 +23,7 @@ interface UserProfile {
   email: string;
   section: string | null;
   is_active: boolean;
+  user_number: number | null;
 }
 
 interface UserPermission {
