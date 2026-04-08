@@ -184,7 +184,12 @@ const PermissionsManager = () => {
                     : 'hover:bg-muted/50 border border-transparent'
                 }`}
               >
-                <div className="font-medium truncate">{u.name}</div>
+                <div className="font-medium truncate flex items-center gap-2">
+                  {u.user_number != null && (
+                    <span className="text-xs text-muted-foreground font-mono">#{String(u.user_number).padStart(7, '0')}</span>
+                  )}
+                  {u.name}
+                </div>
                 <div className="text-xs text-muted-foreground truncate">{u.email}</div>
                 <div className="flex items-center gap-1.5 mt-1">
                   {userRoles[u.user_id] === 'admin' && (
