@@ -76,7 +76,7 @@ const PermissionsManager = () => {
     const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     const matchSection = sectionFilter === 'all' || (u.section || '') === sectionFilter;
     return matchSearch && matchSection;
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => (a.user_number ?? Infinity) - (b.user_number ?? Infinity));
 
   const selectedUser = users.find(u => u.user_id === selectedUserId);
   const isAdmin = selectedUserId ? userRoles[selectedUserId] === 'admin' : false;
