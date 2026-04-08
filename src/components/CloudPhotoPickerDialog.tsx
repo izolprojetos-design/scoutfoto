@@ -92,7 +92,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
 
       if (privateImages) {
         for (const file of privateImages) {
-          if (!file.name || file.name.startsWith('.') || !file.metadata) continue;
+          if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
           const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
           if (data?.signedUrl) {
             items.push({ name: file.name, url: data.signedUrl });
