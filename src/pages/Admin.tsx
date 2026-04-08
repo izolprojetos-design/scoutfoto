@@ -503,6 +503,7 @@ const Admin = () => {
           <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Equipes</TabsTrigger>
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Link2 className="h-3.5 w-3.5" />Convites</TabsTrigger>
           <TabsTrigger value="maintenance" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Wrench className="h-3.5 w-3.5" />Manutenção</TabsTrigger>
+          <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
         </TabsList>
 
@@ -1001,6 +1002,10 @@ const Admin = () => {
 
         <TabsContent value="security">
           <SecurityDashboard />
+        </TabsContent>
+
+        <TabsContent value="archived">
+          <ArchivedPhotosPanel />
         </TabsContent>
       </Tabs>
 
