@@ -47,7 +47,7 @@ const PermissionsManager = () => {
   const fetchData = async () => {
     const [{ data: perms }, { data: profiles }, { data: ups }, { data: roles }] = await Promise.all([
       supabase.from('permissions').select('*').order('sort_order'),
-      supabase.from('profiles').select('user_id, name, email, section, is_active'),
+      supabase.from('profiles').select('user_id, name, email, section, is_active, user_number'),
       supabase.from('user_permissions').select('user_id, permission_id'),
       supabase.from('user_roles').select('user_id, role'),
     ]);
