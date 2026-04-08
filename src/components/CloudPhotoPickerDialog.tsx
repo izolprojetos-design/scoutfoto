@@ -72,14 +72,22 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
       });
 
       const items: StorageImage[] = [];
+      const seenScouts = new Set<string>();
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
           // Skip folders (like 'avatars') and hidden files
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
+          const scoutName = findScoutByFilename(file.name);
+          // Deduplicate: keep only the most recent photo per scout (list is sorted by created_at desc)
+          if (scoutName) {
+            const key = normalizeName(scoutName);
+            if (seenScouts.has(key)) continue;
+            seenScouts.add(key);
+          }
           const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(file.name, 3600);
           if (signedData?.signedUrl) {
-            items.push({ name: file.name, url: signedData.signedUrl, scoutName: findScoutByFilename(file.name) });
+            items.push({ name: file.name, url: signedData.signedUrl, scoutName });
           }
         }
       }
