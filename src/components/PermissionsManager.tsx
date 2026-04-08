@@ -174,7 +174,7 @@ const PermissionsManager = () => {
         </CardHeader>
         <CardContent className="pt-0">
           <div className="max-h-[500px] overflow-y-auto space-y-1 -mx-2 px-2">
-            {filteredUsers.map(u => (
+            {filteredUsers.map((u, index) => (
               <button
                 key={u.user_id}
                 onClick={() => { setSelectedUserId(u.user_id); setDirty(false); }}
@@ -185,13 +185,14 @@ const PermissionsManager = () => {
                 }`}
               >
                 <div className="font-medium truncate flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground font-mono min-w-[24px]">{index + 1}.</span>
                   {u.user_number != null && (
                     <span className="text-xs text-muted-foreground font-mono">#{String(u.user_number).padStart(7, '0')}</span>
                   )}
                   {u.name}
                 </div>
-                <div className="text-xs text-muted-foreground truncate">{u.email}</div>
-                <div className="flex items-center gap-1.5 mt-1">
+                <div className="text-xs text-muted-foreground truncate ml-7">{u.email}</div>
+                <div className="flex items-center gap-1.5 mt-1 ml-7">
                   {userRoles[u.user_id] === 'admin' && (
                     <Badge variant="destructive" className="text-[10px] px-1.5 py-0">Admin</Badge>
                   )}
