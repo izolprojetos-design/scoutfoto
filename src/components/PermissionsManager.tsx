@@ -271,8 +271,9 @@ const PermissionsManager = () => {
                 return category.toLowerCase().includes(q) ||
                   permissions.filter(p => p.category === category).some(p => p.name.toLowerCase().includes(q));
               }).map(category => {
-                const categoryPerms = permissions.filter(p => p.category === category);
-                const allChecked = categoryPerms.every(p => hasPermission(selectedUserId!, p.id));
+                const categoryPerms = permissions.filter(p => p.category === category &&
+                  (!permSearch || p.name.toLowerCase().includes(permSearch.toLowerCase()) || category.toLowerCase().includes(permSearch.toLowerCase()))
+                );
                 const someChecked = categoryPerms.some(p => hasPermission(selectedUserId!, p.id));
                 const isExpanded = expandedCategories[category] !== false;
 
