@@ -256,7 +256,21 @@ const PermissionsManager = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {categories.map(category => {
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar permissão..."
+                  value={permSearch}
+                  onChange={e => setPermSearch(e.target.value)}
+                  className="pl-9 h-9 text-sm"
+                />
+              </div>
+              {categories.filter(category => {
+                if (!permSearch) return true;
+                const q = permSearch.toLowerCase();
+                return category.toLowerCase().includes(q) ||
+                  permissions.filter(p => p.category === category).some(p => p.name.toLowerCase().includes(q));
+              }).map(category => {
                 const categoryPerms = permissions.filter(p => p.category === category);
                 const allChecked = categoryPerms.every(p => hasPermission(selectedUserId!, p.id));
                 const someChecked = categoryPerms.some(p => hasPermission(selectedUserId!, p.id));
