@@ -274,6 +274,7 @@ const PermissionsManager = () => {
                 const categoryPerms = permissions.filter(p => p.category === category &&
                   (!permSearch || p.name.toLowerCase().includes(permSearch.toLowerCase()) || category.toLowerCase().includes(permSearch.toLowerCase()))
                 );
+                const allChecked = categoryPerms.every(p => hasPermission(selectedUserId!, p.id));
                 const someChecked = categoryPerms.some(p => hasPermission(selectedUserId!, p.id));
                 const isExpanded = expandedCategories[category] !== false;
 
