@@ -39,6 +39,7 @@ const PermissionsManager = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [permSearch, setPermSearch] = useState('');
   const [sectionFilter, setSectionFilter] = useState('all');
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
