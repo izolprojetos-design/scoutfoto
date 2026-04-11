@@ -82,7 +82,7 @@ export function parseVolunteerSection(section: string | null): {
 // Helper: derive seção type from cargo name
 export function deriveSecaoFromCargo(cargo: string): string {
   if (!cargo) return '';
-  if (/chefe de se[çc][ãa]o|assistente de se[çc][ãa]o|^escotista$/i.test(cargo)) {
+  if (/chefe de se[çc][ãa]o|assistente de se[çc][ãa]o/i.test(cargo)) {
     return 'Escotista';
   }
   return 'Dirigente';
