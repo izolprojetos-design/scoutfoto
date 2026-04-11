@@ -841,6 +841,18 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_invite_link_by_token: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          id: string
+          role: string
+          section: string
+          used_at: string
+          used_by: string
+        }[]
+      }
       get_share_link_by_token: {
         Args: { p_token: string }
         Returns: {
