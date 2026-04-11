@@ -31,6 +31,7 @@ import {
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
+import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
 
 interface Scout {
   id: string;
