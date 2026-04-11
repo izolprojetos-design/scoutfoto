@@ -883,6 +883,16 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      log_audit: {
+        Args: {
+          _action: string
+          _after_data?: Json
+          _before_data?: Json
+          _details?: Json
+          _image_id?: string
+        }
+        Returns: undefined
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
