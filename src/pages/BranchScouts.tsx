@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
-import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 
 interface Scout {
   id: string;
