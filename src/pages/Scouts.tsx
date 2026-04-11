@@ -1315,7 +1315,7 @@ const Scouts = () => {
                           {branch?.icon || '⚜️'}
                         </div>
                       )}
-                      <div className="flex-1 min-w-0 overflow-hidden">
+                      <div className="flex-1 min-w-0">
                         <div className="flex flex-col items-start gap-0.5">
                           <h3
                             className="max-w-full whitespace-normal break-words font-semibold tracking-tight leading-tight cursor-pointer transition-colors hover:text-primary uppercase" style={{ overflowWrap: 'anywhere' }}
