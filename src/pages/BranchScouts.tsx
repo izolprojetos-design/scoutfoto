@@ -228,10 +228,23 @@ const BranchScouts = () => {
               <div className="p-3">
                 <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
                 <p className="text-xs text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
-                {scout.subgroup_id && (() => {
-                  const sg = subgroups.find(s => s.id === scout.subgroup_id);
-                  return sg ? <Badge className="mt-1.5 font-medium text-xs bg-accent text-accent-foreground">{sg.name}</Badge> : null;
-                })()}
+                <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
+                  {scout.section && (
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium text-foreground/70">Seção:</span>
+                      <span>{scout.section}</span>
+                    </div>
+                  )}
+                  {scout.subgroup_id && (() => {
+                    const sg = subgroups.find(s => s.id === scout.subgroup_id);
+                    return sg ? (
+                      <div className="flex items-center gap-1">
+                        <span className="font-medium text-foreground/70">Equipe:</span>
+                        <Badge className="font-medium text-xs bg-accent text-accent-foreground">{sg.name}</Badge>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
               </div>
             </motion.div>
           ))}
