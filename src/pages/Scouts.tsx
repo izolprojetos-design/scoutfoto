@@ -1274,7 +1274,7 @@ const Scouts = () => {
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
                 <FileSpreadsheet className="h-4 w-4" />
-                Exportar Excel
+                Exportar Excel ({filteredScouts.length})
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
