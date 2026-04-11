@@ -10,19 +10,18 @@ export type AuditAction =
   | 'role_change' | 'status_change' | 'section_change';
 
 export const logAudit = async (
-  userId: string,
+  _userId: string,
   action: AuditAction,
   imageId?: string,
   details?: Record<string, unknown>,
   beforeData?: Record<string, unknown>,
   afterData?: Record<string, unknown>
 ) => {
-  await supabase.from('audit_logs').insert([{
-    user_id: userId,
-    action,
-    image_id: imageId || null,
-    details: (details || {}) as any,
-    before_data: (beforeData || null) as any,
-    after_data: (afterData || null) as any,
-  }]);
+  await supabase.rpc('log_audit', {
+    _action: action,
+    _image_id: imageId || null,
+    _details: (details || {}) as any,
+    _before_data: (beforeData || null) as any,
+    _after_data: (afterData || null) as any,
+  });
 };
