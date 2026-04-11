@@ -1340,11 +1340,15 @@ const Scouts = () => {
                           {branch?.key === 'voluntario' ? (
                             <>
                               {(() => {
-                                const parts = scout.section ? scout.section.split(' / ') : [];
-                                const cargo1 = parts[0] || '';
-                                const cargo2 = parts[1] || '';
+                                const { secao, cargo1, cargo2 } = parseVolunteerSection(scout.section);
                                 return (
                                   <>
+                                    {secao && (
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="font-medium text-foreground/70 w-[52px] shrink-0">Seção:</span>
+                                        <span>{secao}</span>
+                                      </div>
+                                    )}
                                     {cargo1 && (
                                       <div className="flex items-start gap-1.5">
                                         <span className="font-medium text-foreground/70 w-[52px] shrink-0">Cargo:</span>
