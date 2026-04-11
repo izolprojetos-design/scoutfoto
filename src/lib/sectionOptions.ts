@@ -44,7 +44,7 @@ export const VOLUNTEER_CARGO_CATEGORIES = {
   'Comissão Fiscal': VOLUNTEER_CARGOS.filter(c => c.startsWith('Comissão Fiscal')),
   'Chefes de Seção': VOLUNTEER_CARGOS.filter(c => c.startsWith('Chefe de Seção')),
   'Assistentes de Seção': VOLUNTEER_CARGOS.filter(c => c.startsWith('Assistente de Seção')),
-  'Outros': VOLUNTEER_CARGOS.filter(c => c === 'Escotista' || c === 'Pais/Responsáveis'),
+  'Outros': VOLUNTEER_CARGOS.filter(c => c === 'Pais/Responsáveis'),
 } as const;
 
 // Helper: parse section field for volunteers
