@@ -39,31 +39,18 @@ const Register = () => {
 
     const validateToken = async () => {
       const { data, error } = await supabase
-        .from('invite_links')
-        .select('*')
-        .eq('token', token)
-        .single();
+        .rpc('get_invite_link_by_token', { p_token: token });
 
-      if (error || !data) {
+      if (error || !data || data.length === 0) {
         setLoading(false);
         return;
       }
 
-      if (data.used_at) {
-        setInviteUsed(true);
-        setLoading(false);
-        return;
-      }
-
-      if (new Date(data.expires_at) < new Date()) {
-        setInviteExpired(true);
-        setLoading(false);
-        return;
-      }
+      const invite = data[0];
 
       setInviteValid(true);
-      setInviteRole(data.role);
-      setInviteSection(data.section || '');
+      setInviteRole(invite.role);
+      setInviteSection(invite.section || '');
       setLoading(false);
     };
 
