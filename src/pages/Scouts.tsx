@@ -587,12 +587,29 @@ const Scouts = () => {
 
     drawHeader(doc);
 
-    const headers = ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
+    const isVoluntario = branchFilter === 'voluntario';
+    const headers = isVoluntario
+      ? ['ID', 'Nome', 'Ramo', 'Seção', '1ª Função', '2ª Função', 'Celular', 'Data Nasc.', 'Idade']
+      : ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
     const rows = filteredScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
       const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
+      if (isVoluntario) {
+        const { secao, cargo1, cargo2 } = parseVolunteerSection(scout.section);
+        return [
+          scout.registration_id || '',
+          scout.name.toUpperCase(),
+          branch?.name || '',
+          secao,
+          cargo1,
+          cargo2,
+          scout.phone || '',
+          parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+          formatAge(parseLocalDate(scout.birth_date)),
+        ];
+      }
       return [
         scout.registration_id || '',
         scout.name.toUpperCase(),
@@ -657,11 +674,26 @@ const Scouts = () => {
     const XLSX = await import('xlsx');
     const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
 
+    const isVoluntario = branchFilter === 'voluntario';
     const rows = filteredScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
       const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
+      if (isVoluntario) {
+        const { secao, cargo1, cargo2 } = parseVolunteerSection(scout.section);
+        return {
+          'ID': scout.registration_id || '',
+          'Nome': scout.name.toUpperCase(),
+          'Ramo': branch?.name || '',
+          'Seção': secao,
+          '1ª Função': cargo1,
+          '2ª Função': cargo2,
+          'Celular': scout.phone || '',
+          'Data de Nascimento': parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+          'Idade': formatAge(parseLocalDate(scout.birth_date)),
+        };
+      }
       return {
         'ID': scout.registration_id || '',
         'Nome': scout.name.toUpperCase(),
@@ -676,7 +708,9 @@ const Scouts = () => {
     });
 
     const ws = XLSX.utils.json_to_sheet(rows);
-    const colWidths = [10, 30, 12, 18, 18, 16, 16, 14, 30];
+    const colWidths = isVoluntario
+      ? [10, 30, 12, 14, 30, 30, 16, 16, 14]
+      : [10, 30, 12, 18, 18, 16, 16, 14, 30];
     ws['!cols'] = colWidths.map(w => ({ wch: w }));
 
     const wb = XLSX.utils.book_new();
