@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
-import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 
 interface Scout {
   id: string;
@@ -229,7 +229,31 @@ const BranchScouts = () => {
                 <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
                 <p className="text-xs text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
                 <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
-                  {scout.section && (
+                  {branchKey === 'voluntario' ? (() => {
+                    const { secao, cargo1, cargo2 } = parseVolunteerSection(scout.section);
+                    return (
+                      <>
+                        {secao && (
+                          <div className="flex items-start gap-1">
+                            <span className="font-medium text-foreground/70 w-[42px] shrink-0">Seção:</span>
+                            <span>{secao}</span>
+                          </div>
+                        )}
+                        {cargo1 && (
+                          <div className="flex items-start gap-1">
+                            <span className="font-medium text-foreground/70 w-[42px] shrink-0">Cargo:</span>
+                            <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo1}</span>
+                          </div>
+                        )}
+                        {cargo2 && (
+                          <div className="flex items-start gap-1">
+                            <span className="font-medium text-foreground/70 w-[42px] shrink-0">2º Fun:</span>
+                            <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo2}</span>
+                          </div>
+                        )}
+                      </>
+                    );
+                  })() : scout.section && (
                     <div className="flex items-center gap-1">
                       <span className="font-medium text-foreground/70">Seção:</span>
                       <span>{scout.section}</span>
