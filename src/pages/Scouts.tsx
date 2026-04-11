@@ -913,7 +913,7 @@ const Scouts = () => {
               <SelectTrigger className="h-11">
                 <SelectValue placeholder={`Selecione ${label.toLowerCase()}`} />
               </SelectTrigger>
-              <SelectContent className="max-h-60 overflow-y-auto">
+              <SelectContent position="popper" className="max-h-[200px]">
                 <SelectItem value="__none__">Nenhum</SelectItem>
                 {Object.entries(VOLUNTEER_CARGO_CATEGORIES)
                   .filter(([, items]) => items.length > 0)
