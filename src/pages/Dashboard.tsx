@@ -405,28 +405,13 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
             ) : (
               <div className="space-y-4">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={roleDistribution}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="count"
-                      nameKey="label"
-                    >
-                      {roleDistribution.map((entry, idx) => (
-                        <Cell key={idx} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                      formatter={(value: number, name: string) => [`${value} usuários`, name]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <LazyPieChart
+                  data={roleDistribution}
+                  dataKey="count"
+                  nameKey="label"
+                  colors={(entry: any) => entry.color}
+                  tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
+                />
                 <div className="grid grid-cols-2 gap-2">
                   {roleDistribution.map(r => (
                     <div key={r.role} className="flex items-center gap-1.5 text-xs">
@@ -454,28 +439,13 @@ const Dashboard = () => {
               <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
             ) : (
               <div className="space-y-4">
-                <ResponsiveContainer width="100%" height={180}>
-                  <PieChart>
-                    <Pie
-                      data={branchDistribution.filter(b => b.count > 0)}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={45}
-                      outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="count"
-                      nameKey="name"
-                    >
-                      {branchDistribution.filter(b => b.count > 0).map((entry, idx) => (
-                        <Cell key={idx} fill={PIE_COLORS[entry.key] || '#8884d8'} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))', background: 'hsl(var(--card))' }}
-                      formatter={(value: number, name: string) => [`${value} integrantes`, name]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <LazyPieChart
+                  data={branchDistribution.filter(b => b.count > 0)}
+                  dataKey="count"
+                  nameKey="name"
+                  colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
+                  tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
+                />
                 <div className="grid grid-cols-2 gap-2">
                   {branchDistribution.map(b => (
                     <div key={b.key} className="flex items-center gap-1.5 text-xs">
