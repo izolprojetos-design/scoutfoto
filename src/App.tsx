@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import ProtectedRoute from "@/components/ProtectedRoute";
+const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 import ForceChangePassword from "@/components/ForceChangePassword";
 import SplashScreen from "@/components/SplashScreen";
 import InstallPrompt from "@/components/InstallPrompt";
@@ -50,7 +50,7 @@ const PageLoader = () => (
   </div>
 );
 
-import AppLayout from "@/components/AppLayout";
+const AppLayout = lazy(() => import("@/components/AppLayout"));
 
 // Check if running as installed PWA (standalone mode)
 const isStandalone = window.matchMedia("(display-mode: standalone)").matches
