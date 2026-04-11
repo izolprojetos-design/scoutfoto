@@ -1143,7 +1143,7 @@ const Scouts = () => {
       </div>
 
       {/* Status filter */}
-      <div className="mb-4 flex gap-2">
+      <div className="mb-4 flex gap-2 min-h-[36px]">
         <Button
           variant={statusFilter === 'active' ? 'default' : 'outline'}
           size="sm"
@@ -1172,7 +1172,7 @@ const Scouts = () => {
       </div>
 
       {/* Filters */}
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row min-h-[76px] sm:min-h-[36px]">
         <div className="relative w-full sm:w-auto sm:min-w-[220px]">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar por nome, seção ou equipe..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
@@ -1242,7 +1242,7 @@ const Scouts = () => {
           <p className="mt-1 text-sm">Cadastre o primeiro membro</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 min-h-[200px]">
           {filteredScouts.map((scout, index) => {
             const branch = getEffectiveBranch(scout);
             const nextChange = getNextBranchChange(parseLocalDate(scout.birth_date));
