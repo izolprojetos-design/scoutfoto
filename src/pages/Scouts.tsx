@@ -900,6 +900,61 @@ const Scouts = () => {
           )}
         </div>
       )}
+      {effectiveBranchKey === 'voluntario' ? (() => {
+        const parsed = parseVolunteerSection(sectionVal);
+        const updateVolunteerSection = (secao: string, cargo1: string, cargo2: string) => {
+          setSectionVal(buildVolunteerSection(secao, cargo1, cargo2));
+        };
+        const renderCargoSelect = (label: string, value: string, onChange: (v: string) => void) => (
+          <div className="space-y-2">
+            <Label>{label}</Label>
+            <Select value={value || '__none__'} onValueChange={v => onChange(v === '__none__' ? '' : v)}>
+              <SelectTrigger className="h-11">
+                <SelectValue placeholder={`Selecione ${label.toLowerCase()}`} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">Nenhum</SelectItem>
+                {Object.entries(VOLUNTEER_CARGO_CATEGORIES)
+                  .filter(([, items]) => items.length > 0)
+                  .map(([cat, items]) => (
+                    <SelectGroup key={cat}>
+                      <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">{cat}</SelectLabel>
+                      {items.map(c => (
+                        <SelectItem key={c} value={c}>{c}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        );
+        return (
+          <>
+            <div className="space-y-2">
+              <Label>Seção</Label>
+              <Select value={parsed.secao || '__none__'} onValueChange={v => {
+                updateVolunteerSection(v === '__none__' ? '' : v, parsed.cargo1, parsed.cargo2);
+              }}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="Selecione a seção" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">Nenhuma</SelectItem>
+                  {VOLUNTEER_SECTIONS.map(s => (
+                    <SelectItem key={s} value={s}>{s}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            {renderCargoSelect('Cargo (1ª Função)', parsed.cargo1, (v) => {
+              updateVolunteerSection(parsed.secao, v, parsed.cargo2);
+            })}
+            {renderCargoSelect('Cargo (2ª Função)', parsed.cargo2, (v) => {
+              updateVolunteerSection(parsed.secao, parsed.cargo1, v);
+            })}
+          </>
+        );
+      })() : (
       <div className="space-y-2">
         <Label>Seção</Label>
         {sectionsForBranch.length > 0 && !customSectionMode ? (
@@ -916,34 +971,7 @@ const Scouts = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__">Nenhuma</SelectItem>
-              {effectiveBranchKey === 'voluntario' ? (() => {
-                const categories: Record<string, string[]> = {
-                  'Escotistas - Chefes de Seção': [],
-                  'Escotistas - Assistentes de Seção': [],
-                  'Dirigentes - Diretoria': [],
-                  'Comissão Fiscal': [],
-                  'Pais/Responsáveis': [],
-                  'Outros': [],
-                };
-                sectionsForBranch.forEach(s => {
-                  if (/chefe de se[çc][ãa]o/i.test(s)) categories['Escotistas - Chefes de Seção'].push(s);
-                  else if (/assistente de se[çc][ãa]o/i.test(s)) categories['Escotistas - Assistentes de Seção'].push(s);
-                  else if (/diretor|diretora|presidente/i.test(s)) categories['Dirigentes - Diretoria'].push(s);
-                  else if (/comiss[ãa]o fiscal/i.test(s)) categories['Comissão Fiscal'].push(s);
-                  else if (/pais|respons[áa]ve/i.test(s)) categories['Pais/Responsáveis'].push(s);
-                  else categories['Outros'].push(s);
-                });
-                return Object.entries(categories)
-                  .filter(([, items]) => items.length > 0)
-                  .map(([cat, items]) => (
-                    <SelectGroup key={cat}>
-                      <SelectLabel className="text-xs font-semibold text-muted-foreground px-2 py-1.5">{cat}</SelectLabel>
-                      {items.map(s => (
-                        <SelectItem key={s} value={s}>{s}</SelectItem>
-                      ))}
-                    </SelectGroup>
-                  ));
-              })() : sectionsForBranch.map(s => (
+              {sectionsForBranch.map(s => (
                 <SelectItem key={s} value={s}>{s}</SelectItem>
               ))}
               <SelectItem value="__custom__">✏️ Digitar outra...</SelectItem>
@@ -984,6 +1012,7 @@ const Scouts = () => {
           </div>
         )}
       </div>
+      )}
       {effectiveBranchKey && (
         <div className="space-y-2">
           <Label>Equipe</Label>
