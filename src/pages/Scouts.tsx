@@ -574,7 +574,7 @@ const Scouts = () => {
       pageDoc.setFontSize(18);
       pageDoc.setFont('helvetica', 'bold');
       pageDoc.setTextColor(30, 60, 35);
-      pageDoc.text(`Integrantes - ${filterLabel}`, 38, 14);
+      pageDoc.text(`Integrantes - ${filterLabel} (${filteredScouts.length})`, 38, 14);
       pageDoc.setFontSize(11);
       pageDoc.setFont('helvetica', 'normal');
       pageDoc.setTextColor(60);
