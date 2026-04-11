@@ -708,7 +708,9 @@ const Scouts = () => {
     });
 
     const ws = XLSX.utils.json_to_sheet(rows);
-    const colWidths = [10, 30, 12, 18, 18, 16, 16, 14, 30];
+    const colWidths = isVoluntario
+      ? [10, 30, 12, 14, 30, 30, 16, 16, 14]
+      : [10, 30, 12, 18, 18, 16, 16, 14, 30];
     ws['!cols'] = colWidths.map(w => ({ wch: w }));
 
     const wb = XLSX.utils.book_new();
