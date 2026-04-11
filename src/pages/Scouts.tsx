@@ -1351,13 +1351,13 @@ const Scouts = () => {
                                     )}
                                     {cargo1 && (
                                       <div className="flex items-start gap-1.5">
-                                        <span className="font-medium text-foreground/70 w-[52px] shrink-0">Cargo:</span>
+                                        <span className="font-medium text-foreground/70 shrink-0 whitespace-nowrap">1ª Função:</span>
                                         <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo1}</span>
                                       </div>
                                     )}
                                     {cargo2 && (
                                       <div className="flex items-start gap-1.5">
-                                        <span className="font-medium text-foreground/70 w-[52px] shrink-0">2º Fun:</span>
+                                        <span className="font-medium text-foreground/70 shrink-0 whitespace-nowrap">2ª Função:</span>
                                         <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo2}</span>
                                       </div>
                                     )}
