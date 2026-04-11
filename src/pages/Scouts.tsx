@@ -1254,7 +1254,7 @@ const Scouts = () => {
             <AlertDialogTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
                 <FileDown className="h-4 w-4" />
-                Exportar PDF
+                Exportar PDF ({filteredScouts.length})
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
