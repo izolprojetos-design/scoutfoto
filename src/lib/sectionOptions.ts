@@ -31,7 +31,6 @@ export const VOLUNTEER_CARGOS = [
   'Assistente de Seção - Tropa Sênior',
   'Assistente de Seção - Clã Pioneiro',
   // Outros
-  'Escotista',
   'Pais/Responsáveis',
 ] as const;
 
@@ -45,7 +44,7 @@ export const VOLUNTEER_CARGO_CATEGORIES = {
   'Comissão Fiscal': VOLUNTEER_CARGOS.filter(c => c.startsWith('Comissão Fiscal')),
   'Chefes de Seção': VOLUNTEER_CARGOS.filter(c => c.startsWith('Chefe de Seção')),
   'Assistentes de Seção': VOLUNTEER_CARGOS.filter(c => c.startsWith('Assistente de Seção')),
-  'Outros': VOLUNTEER_CARGOS.filter(c => c === 'Escotista' || c === 'Pais/Responsáveis'),
+  'Outros': VOLUNTEER_CARGOS.filter(c => c === 'Pais/Responsáveis'),
 } as const;
 
 // Helper: parse section field for volunteers
@@ -83,7 +82,7 @@ export function parseVolunteerSection(section: string | null): {
 // Helper: derive seção type from cargo name
 export function deriveSecaoFromCargo(cargo: string): string {
   if (!cargo) return '';
-  if (/chefe de se[çc][ãa]o|assistente de se[çc][ãa]o|^escotista$/i.test(cargo)) {
+  if (/chefe de se[çc][ãa]o|assistente de se[çc][ãa]o/i.test(cargo)) {
     return 'Escotista';
   }
   return 'Dirigente';
