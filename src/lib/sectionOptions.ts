@@ -31,7 +31,6 @@ export const VOLUNTEER_CARGOS = [
   'Assistente de Seção - Tropa Sênior',
   'Assistente de Seção - Clã Pioneiro',
   // Outros
-  'Escotista',
   'Pais/Responsáveis',
 ] as const;
 
