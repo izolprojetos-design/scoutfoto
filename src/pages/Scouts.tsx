@@ -1298,24 +1298,60 @@ const Scouts = () => {
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
-                        <div className="flex flex-wrap gap-1.5 mt-1">
+                        <div className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
                           {branch && (
-                            <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
-                              {branch.icon} {branch.name}
-                            </Badge>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-medium text-foreground/70 w-[52px] shrink-0">Ramo:</span>
+                              <Badge className={`${branchColorMap[branch.color]} border font-normal text-xs`}>
+                                {branch.icon} {branch.name}
+                              </Badge>
+                            </div>
                           )}
-                          {scout.section && (
-                            <Badge variant="outline" className="font-normal text-xs">{scout.section}</Badge>
-                          )}
-                          {scout.subgroup_id && (() => {
-                            const sg = subgroups.find(s => s.id === scout.subgroup_id);
-                            return sg ? <Badge variant="secondary" className="font-normal text-xs">{sg.name}</Badge> : null;
-                          })()}
-                          {scout.scout_group && (
-                            <Badge variant="outline" className="font-normal text-xs">{scout.scout_group}</Badge>
+                          {branch?.key === 'voluntario' ? (
+                            <>
+                              {(() => {
+                                const parts = scout.section ? scout.section.split(' / ') : [];
+                                const cargo1 = parts[0] || '';
+                                const cargo2 = parts[1] || '';
+                                return (
+                                  <>
+                                    {cargo1 && (
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="font-medium text-foreground/70 w-[52px] shrink-0">Cargo:</span>
+                                        <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo1}</span>
+                                      </div>
+                                    )}
+                                    {cargo2 && (
+                                      <div className="flex items-start gap-1.5">
+                                        <span className="font-medium text-foreground/70 w-[52px] shrink-0">2º Fun:</span>
+                                        <span className="break-words" style={{ overflowWrap: 'anywhere' }}>{cargo2}</span>
+                                      </div>
+                                    )}
+                                  </>
+                                );
+                              })()}
+                            </>
+                          ) : (
+                            <>
+                              {scout.section && (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-medium text-foreground/70 w-[52px] shrink-0">Seção:</span>
+                                  <span>{scout.section}</span>
+                                </div>
+                              )}
+                              {scout.subgroup_id && (() => {
+                                const sg = subgroups.find(s => s.id === scout.subgroup_id);
+                                return sg ? (
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-medium text-foreground/70 w-[52px] shrink-0">Equipe:</span>
+                                    <Badge variant="secondary" className="font-normal text-xs">{sg.name}</Badge>
+                                  </div>
+                                ) : null;
+                              })()}
+                            </>
                           )}
                           {!scout.is_active && (
-                            <Badge variant="destructive" className="font-normal text-xs">Inativo</Badge>
+                            <Badge variant="destructive" className="font-normal text-xs mt-1">Inativo</Badge>
                           )}
                         </div>
                       </div>
