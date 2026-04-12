@@ -626,19 +626,26 @@ const EventDetail = () => {
         </div>
       )}
 
-      {/* Image Viewer Modal */}
+      {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden">
           {selectedImage && (
             <div>
               <div className="bg-black">
-                {imageUrls[selectedImage.id] && (
+                {imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
+                  <video
+                    src={imageUrls[selectedImage.id]}
+                    controls
+                    className="mx-auto max-h-[70vh] w-full"
+                    autoPlay
+                  />
+                ) : imageUrls[selectedImage.id] ? (
                   <img
                     src={imageUrls[selectedImage.id]}
                     alt={selectedImage.caption || ''}
                     className="mx-auto max-h-[70vh] object-contain"
                   />
-                )}
+                ) : null}
               </div>
               <div className="p-6">
                 {selectedImage.caption && (
