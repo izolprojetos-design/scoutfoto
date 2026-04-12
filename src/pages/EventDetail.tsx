@@ -430,7 +430,7 @@ const EventDetail = () => {
                     <>
                       <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
-                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB • Múltiplas fotos</p>
+                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP, MP4, MOV, WebM • Fotos até 10MB • Vídeos até 100MB</p>
                     </>
                   )}
                   <input
