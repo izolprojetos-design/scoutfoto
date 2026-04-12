@@ -173,8 +173,10 @@ const EventDetail = () => {
         toast.error(`${f.name}: formato não aceito.`);
         return;
       }
-      if (f.size > MAX_SIZE) {
-        toast.error(`${f.name}: muito grande (máx 10MB).`);
+      const isVideo = ACCEPTED_VIDEO_TYPES.includes(f.type);
+      const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+      if (f.size > maxSize) {
+        toast.error(`${f.name}: muito grande (máx ${isVideo ? '100MB' : '10MB'}).`);
         return;
       }
       newFiles.push(f);
