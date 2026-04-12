@@ -436,7 +436,7 @@ const EventDetail = () => {
                   <input
                     id="event-file-input"
                     type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
+                    accept=".jpg,.jpeg,.png,.webp,.mp4,.mov,.webm"
                     multiple
                     className="hidden"
                     onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
