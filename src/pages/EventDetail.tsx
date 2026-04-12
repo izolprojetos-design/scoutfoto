@@ -376,7 +376,10 @@ const EventDetail = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{images.length} foto{images.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-muted-foreground">
+            {images.filter(i => i.media_type === 'image').length} foto{images.filter(i => i.media_type === 'image').length !== 1 ? 's' : ''}
+            {images.filter(i => i.media_type === 'video').length > 0 && ` • ${images.filter(i => i.media_type === 'video').length} vídeo${images.filter(i => i.media_type === 'video').length !== 1 ? 's' : ''}`}
+          </p>
         </div>
       </div>
 
