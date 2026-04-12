@@ -236,26 +236,35 @@ const EventDetail = () => {
       setProgress(Math.round(((i) / totalFiles) * 100));
 
       const currentFile = files[i];
-      const compressed = await compressImage(currentFile);
-      const thumbnail = await createThumbnail(currentFile);
-
+      const isVideo = ACCEPTED_VIDEO_TYPES.includes(currentFile.type);
       const ext = currentFile.name.split('.').pop();
       const ts = Date.now() + i;
       const storagePath = `${branch?.key}/${ts}.${ext}`;
-      const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+
+      let fileToUpload: Blob = currentFile;
+      let thumbPath: string | null = null;
+
+      if (isVideo) {
+        // Upload video directly (no compression)
+        fileToUpload = currentFile;
+      } else {
+        // Compress image and create thumbnail
+        fileToUpload = await compressImage(currentFile);
+        const thumbnail = await createThumbnail(currentFile);
+        thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+        await supabase.storage
+          .from('images')
+          .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('images')
-        .upload(storagePath, compressed, { contentType: compressed.type });
+        .upload(storagePath, fileToUpload, { contentType: fileToUpload.type || currentFile.type });
 
       if (uploadError) {
         toast.error(`Erro no upload (${i + 1}/${totalFiles}): ${uploadError.message}`);
         continue;
       }
-
-      await supabase.storage
-        .from('images')
-        .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
 
       const { data: imgData, error: dbError } = await supabase.from('images').insert({
         user_id: user.id,
@@ -270,6 +279,7 @@ const EventDetail = () => {
         responsible_name: responsibleName,
         minor_age: hasMinor ? parseInt(minorAge) : null,
         visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
+        media_type: isVideo ? 'video' : 'image',
       }).select('id').single();
 
       if (dbError) {
