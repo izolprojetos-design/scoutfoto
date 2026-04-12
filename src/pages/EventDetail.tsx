@@ -580,7 +580,25 @@ const EventDetail = () => {
               onClick={() => handleViewImage(img)}
             >
               <div className="aspect-square overflow-hidden">
-                {(thumbUrls[img.id] || imageUrls[img.id]) ? (
+                {img.media_type === 'video' ? (
+                  <div className="flex h-full w-full items-center justify-center bg-muted">
+                    {(thumbUrls[img.id] || imageUrls[img.id]) ? (
+                      <img
+                        src={thumbUrls[img.id] || imageUrls[img.id]}
+                        alt={img.caption || img.filename}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Film className="h-10 w-10 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white">
+                        <Video className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (thumbUrls[img.id] || imageUrls[img.id]) ? (
                   <img
                     src={thumbUrls[img.id] || imageUrls[img.id]}
                     alt={img.caption || img.filename}
@@ -593,6 +611,11 @@ const EventDetail = () => {
                   </div>
                 )}
               </div>
+              {img.media_type === 'video' && (
+                <div className="absolute left-2 top-2">
+                  <Badge variant="secondary" className="text-xs gap-1"><Film className="h-3 w-3" />Vídeo</Badge>
+                </div>
+              )}
               {img.minor_age && (
                 <div className="absolute right-2 top-2">
                   <Badge variant="destructive" className="text-xs">Menor</Badge>
