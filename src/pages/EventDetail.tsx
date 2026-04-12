@@ -396,20 +396,29 @@ const EventDetail = () => {
                 >
                   {previews.length > 0 ? (
                     <div className="flex flex-wrap gap-2 p-3" onClick={e => e.stopPropagation()}>
-                      {previews.map((p, i) => (
-                        <div key={i} className="relative">
-                          <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute right-0.5 top-0.5 h-5 w-5"
-                            onClick={() => removeFile(i)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                      {previews.map((p, i) => {
+                        const isVid = ACCEPTED_VIDEO_TYPES.includes(files[i]?.type);
+                        return (
+                          <div key={i} className="relative">
+                            {isVid ? (
+                              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted">
+                                <Film className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
+                            )}
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute right-0.5 top-0.5 h-5 w-5"
+                              onClick={() => removeFile(i)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                       <div
                         className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
                         onClick={() => document.getElementById('event-file-input')?.click()}
