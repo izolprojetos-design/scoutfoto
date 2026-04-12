@@ -530,7 +530,7 @@ const EventDetail = () => {
                   </Button>
                   <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Enviar {files.length > 1 ? `${files.length} fotos` : ''}
+                    Enviar {files.length > 1 ? `${files.length} arquivo${files.length !== 1 ? 's' : ''}` : ''}
                   </Button>
                 </div>
               </form>
