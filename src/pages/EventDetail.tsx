@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -57,10 +57,15 @@ interface ImageData {
   views: number;
   downloads: number;
   branch_id: string;
+  media_type: string;
+  duration_seconds: number | null;
 }
 
-const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const MAX_SIZE = 10 * 1024 * 1024;
+const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ACCEPTED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm'];
+const ACCEPTED_TYPES = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_VIDEO_TYPES];
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB for videos
 
 const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -168,8 +173,10 @@ const EventDetail = () => {
         toast.error(`${f.name}: formato não aceito.`);
         return;
       }
-      if (f.size > MAX_SIZE) {
-        toast.error(`${f.name}: muito grande (máx 10MB).`);
+      const isVideo = ACCEPTED_VIDEO_TYPES.includes(f.type);
+      const maxSize = isVideo ? MAX_VIDEO_SIZE : MAX_IMAGE_SIZE;
+      if (f.size > maxSize) {
+        toast.error(`${f.name}: muito grande (máx ${isVideo ? '100MB' : '10MB'}).`);
         return;
       }
       newFiles.push(f);
@@ -229,26 +236,35 @@ const EventDetail = () => {
       setProgress(Math.round(((i) / totalFiles) * 100));
 
       const currentFile = files[i];
-      const compressed = await compressImage(currentFile);
-      const thumbnail = await createThumbnail(currentFile);
-
+      const isVideo = ACCEPTED_VIDEO_TYPES.includes(currentFile.type);
       const ext = currentFile.name.split('.').pop();
       const ts = Date.now() + i;
       const storagePath = `${branch?.key}/${ts}.${ext}`;
-      const thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+
+      let fileToUpload: Blob = currentFile;
+      let thumbPath: string | null = null;
+
+      if (isVideo) {
+        // Upload video directly (no compression)
+        fileToUpload = currentFile;
+      } else {
+        // Compress image and create thumbnail
+        fileToUpload = await compressImage(currentFile);
+        const thumbnail = await createThumbnail(currentFile);
+        thumbPath = `${branch?.key}/thumb_${ts}.webp`;
+        await supabase.storage
+          .from('images')
+          .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('images')
-        .upload(storagePath, compressed, { contentType: compressed.type });
+        .upload(storagePath, fileToUpload, { contentType: fileToUpload.type || currentFile.type });
 
       if (uploadError) {
         toast.error(`Erro no upload (${i + 1}/${totalFiles}): ${uploadError.message}`);
         continue;
       }
-
-      await supabase.storage
-        .from('images')
-        .upload(thumbPath, thumbnail, { contentType: 'image/webp' });
 
       const { data: imgData, error: dbError } = await supabase.from('images').insert({
         user_id: user.id,
@@ -263,6 +279,7 @@ const EventDetail = () => {
         responsible_name: responsibleName,
         minor_age: hasMinor ? parseInt(minorAge) : null,
         visibility: hasMinor ? (visibility === 'public' ? 'group' : visibility) : visibility,
+        media_type: isVideo ? 'video' : 'image',
       }).select('id').single();
 
       if (dbError) {
@@ -359,7 +376,10 @@ const EventDetail = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{images.length} foto{images.length !== 1 ? 's' : ''}</p>
+          <p className="text-sm text-muted-foreground">
+            {images.filter(i => i.media_type === 'image').length} foto{images.filter(i => i.media_type === 'image').length !== 1 ? 's' : ''}
+            {images.filter(i => i.media_type === 'video').length > 0 && ` • ${images.filter(i => i.media_type === 'video').length} vídeo${images.filter(i => i.media_type === 'video').length !== 1 ? 's' : ''}`}
+          </p>
         </div>
       </div>
 
@@ -376,20 +396,29 @@ const EventDetail = () => {
                 >
                   {previews.length > 0 ? (
                     <div className="flex flex-wrap gap-2 p-3" onClick={e => e.stopPropagation()}>
-                      {previews.map((p, i) => (
-                        <div key={i} className="relative">
-                          <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            className="absolute right-0.5 top-0.5 h-5 w-5"
-                            onClick={() => removeFile(i)}
-                          >
-                            <X className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+                      {previews.map((p, i) => {
+                        const isVid = ACCEPTED_VIDEO_TYPES.includes(files[i]?.type);
+                        return (
+                          <div key={i} className="relative">
+                            {isVid ? (
+                              <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-muted">
+                                <Film className="h-8 w-8 text-muted-foreground" />
+                              </div>
+                            ) : (
+                              <img src={p} alt={`Preview ${i + 1}`} className="h-20 w-20 rounded-lg object-cover" />
+                            )}
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute right-0.5 top-0.5 h-5 w-5"
+                              onClick={() => removeFile(i)}
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        );
+                      })}
                       <div
                         className="flex h-20 w-20 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border hover:border-primary/50 transition-colors"
                         onClick={() => document.getElementById('event-file-input')?.click()}
@@ -401,13 +430,13 @@ const EventDetail = () => {
                     <>
                       <Upload className="mb-2 h-8 w-8 text-muted-foreground" />
                       <p className="text-sm text-muted-foreground">Arraste ou clique para selecionar</p>
-                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP • Máx 10MB • Múltiplas fotos</p>
+                      <p className="mt-1 text-xs text-muted-foreground">JPG, PNG, WebP, MP4, MOV, WebM • Fotos até 10MB • Vídeos até 100MB</p>
                     </>
                   )}
                   <input
                     id="event-file-input"
                     type="file"
-                    accept=".jpg,.jpeg,.png,.webp"
+                    accept=".jpg,.jpeg,.png,.webp,.mp4,.mov,.webm"
                     multiple
                     className="hidden"
                     onChange={e => { if (e.target.files) handleFiles(e.target.files); e.target.value = ''; }}
@@ -501,7 +530,7 @@ const EventDetail = () => {
                   </Button>
                   <Button type="submit" className="flex-1" disabled={files.length === 0 || !branchId || uploading}>
                     <Upload className="mr-2 h-4 w-4" />
-                    Enviar {files.length > 1 ? `${files.length} fotos` : ''}
+                    Enviar {files.length > 1 ? `${files.length} arquivo${files.length !== 1 ? 's' : ''}` : ''}
                   </Button>
                 </div>
               </form>
@@ -522,15 +551,21 @@ const EventDetail = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <ImageIcon className="h-8 w-8" />
           </div>
-          <p className="text-lg font-medium text-foreground">Nenhuma foto neste evento</p>
+          <p className="text-lg font-medium text-foreground">Nenhuma mídia neste evento</p>
            <p className="mt-1 text-sm">
-             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
+             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto ou vídeo!' : 'Aguarde o upload de mídias.'}
            </p>
            {(canUploadEventPhotos || canUpload) && (
-            <Button className="mt-4 gap-2" onClick={() => setShowUpload(true)}>
-              <Upload className="h-4 w-4" />
-              Adicionar Foto
-            </Button>
+            <div className="mt-4 flex gap-2">
+              <Button className="gap-2" onClick={() => setShowUpload(true)}>
+                <Upload className="h-4 w-4" />
+                Adicionar Foto
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
+                <Video className="h-4 w-4" />
+                Adicionar Vídeo
+              </Button>
+            </div>
           )}
         </div>
       ) : (
@@ -545,7 +580,25 @@ const EventDetail = () => {
               onClick={() => handleViewImage(img)}
             >
               <div className="aspect-square overflow-hidden">
-                {(thumbUrls[img.id] || imageUrls[img.id]) ? (
+                {img.media_type === 'video' ? (
+                  <div className="flex h-full w-full items-center justify-center bg-muted">
+                    {(thumbUrls[img.id] || imageUrls[img.id]) ? (
+                      <img
+                        src={thumbUrls[img.id] || imageUrls[img.id]}
+                        alt={img.caption || img.filename}
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <Film className="h-10 w-10 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white">
+                        <Video className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                ) : (thumbUrls[img.id] || imageUrls[img.id]) ? (
                   <img
                     src={thumbUrls[img.id] || imageUrls[img.id]}
                     alt={img.caption || img.filename}
@@ -558,6 +611,11 @@ const EventDetail = () => {
                   </div>
                 )}
               </div>
+              {img.media_type === 'video' && (
+                <div className="absolute left-2 top-2">
+                  <Badge variant="secondary" className="text-xs gap-1"><Film className="h-3 w-3" />Vídeo</Badge>
+                </div>
+              )}
               {img.minor_age && (
                 <div className="absolute right-2 top-2">
                   <Badge variant="destructive" className="text-xs">Menor</Badge>
@@ -568,19 +626,26 @@ const EventDetail = () => {
         </div>
       )}
 
-      {/* Image Viewer Modal */}
+      {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden">
           {selectedImage && (
             <div>
               <div className="bg-black">
-                {imageUrls[selectedImage.id] && (
+                {imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
+                  <video
+                    src={imageUrls[selectedImage.id]}
+                    controls
+                    className="mx-auto max-h-[70vh] w-full"
+                    autoPlay
+                  />
+                ) : imageUrls[selectedImage.id] ? (
                   <img
                     src={imageUrls[selectedImage.id]}
                     alt={selectedImage.caption || ''}
                     className="mx-auto max-h-[70vh] object-contain"
                   />
-                )}
+                ) : null}
               </div>
               <div className="p-6">
                 {selectedImage.caption && (
