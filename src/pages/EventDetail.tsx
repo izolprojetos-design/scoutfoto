@@ -551,15 +551,21 @@ const EventDetail = () => {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <ImageIcon className="h-8 w-8" />
           </div>
-          <p className="text-lg font-medium text-foreground">Nenhuma foto neste evento</p>
+          <p className="text-lg font-medium text-foreground">Nenhuma mídia neste evento</p>
            <p className="mt-1 text-sm">
-             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto!' : 'Aguarde o upload de fotos.'}
+             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto ou vídeo!' : 'Aguarde o upload de mídias.'}
            </p>
            {(canUploadEventPhotos || canUpload) && (
-            <Button className="mt-4 gap-2" onClick={() => setShowUpload(true)}>
-              <Upload className="h-4 w-4" />
-              Adicionar Foto
-            </Button>
+            <div className="mt-4 flex gap-2">
+              <Button className="gap-2" onClick={() => setShowUpload(true)}>
+                <Upload className="h-4 w-4" />
+                Adicionar Foto
+              </Button>
+              <Button variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
+                <Video className="h-4 w-4" />
+                Adicionar Vídeo
+              </Button>
+            </div>
           )}
         </div>
       ) : (
