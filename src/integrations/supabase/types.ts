@@ -349,9 +349,11 @@ export type Database = {
           consent: boolean
           created_at: string
           downloads: number
+          duration_seconds: number | null
           event_id: string | null
           filename: string
           id: string
+          media_type: string
           minor_age: number | null
           responsible_name: string | null
           storage_path: string
@@ -367,9 +369,11 @@ export type Database = {
           consent?: boolean
           created_at?: string
           downloads?: number
+          duration_seconds?: number | null
           event_id?: string | null
           filename: string
           id?: string
+          media_type?: string
           minor_age?: number | null
           responsible_name?: string | null
           storage_path: string
@@ -385,9 +389,11 @@ export type Database = {
           consent?: boolean
           created_at?: string
           downloads?: number
+          duration_seconds?: number | null
           event_id?: string | null
           filename?: string
           id?: string
+          media_type?: string
           minor_age?: number | null
           responsible_name?: string | null
           storage_path?: string
