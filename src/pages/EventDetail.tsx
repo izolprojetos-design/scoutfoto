@@ -57,6 +57,8 @@ interface ImageData {
   views: number;
   downloads: number;
   branch_id: string;
+  media_type: string;
+  duration_seconds: number | null;
 }
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
