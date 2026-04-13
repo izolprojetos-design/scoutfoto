@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -870,15 +870,25 @@ const Dashboard = () => {
                               Local: {evt.location}
                             </span>
                           )}
-                          <div className="flex items-center gap-1.5">
-                            <ImageIcon className="h-3.5 w-3.5" />
-                            <span>
-                              {evt.photoCount > 0 ? `${evt.photoCount} foto${evt.photoCount !== 1 ? 's' : ''}` : ''}
-                              {evt.photoCount > 0 && evt.videoCount > 0 ? ' • ' : ''}
-                              {evt.videoCount > 0 ? `${evt.videoCount} vídeo${evt.videoCount !== 1 ? 's' : ''}` : ''}
-                              {evt.photoCount === 0 && evt.videoCount === 0 ? '0 fotos' : ''}
-                            </span>
-                          </div>
+                          {evt.photoCount > 0 && (
+                            <div className="flex items-center gap-1">
+                              <ImageIcon className="h-3.5 w-3.5" />
+                              <span>{evt.photoCount} foto{evt.photoCount !== 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+                          {evt.photoCount > 0 && evt.videoCount > 0 && <span>•</span>}
+                          {evt.videoCount > 0 && (
+                            <div className="flex items-center gap-1">
+                              <Film className="h-3.5 w-3.5" />
+                              <span>{evt.videoCount} vídeo{evt.videoCount !== 1 ? 's' : ''}</span>
+                            </div>
+                          )}
+                          {evt.photoCount === 0 && evt.videoCount === 0 && (
+                            <div className="flex items-center gap-1">
+                              <ImageIcon className="h-3.5 w-3.5" />
+                              <span>0 fotos</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
