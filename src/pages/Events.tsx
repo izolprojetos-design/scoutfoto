@@ -343,17 +343,24 @@ const Events = () => {
                           {branchInfo.icon} {branchInfo.display_name}
                         </Badge>
                       )}
-                      <Badge variant="outline" className="gap-1 font-normal">
-                        {hasVideos && !hasPhotos ? (
-                          <Film className="h-3 w-3" />
-                        ) : (
+                      {hasPhotos && (
+                        <Badge variant="outline" className="gap-1 font-normal">
                           <ImageIcon className="h-3 w-3" />
-                        )}
-                        {hasPhotos ? `${mediaCount.photos} foto${mediaCount.photos !== 1 ? 's' : ''}` : ''}
-                        {hasPhotos && hasVideos ? ' • ' : ''}
-                        {hasVideos ? `${mediaCount.videos} vídeo${mediaCount.videos !== 1 ? 's' : ''}` : ''}
-                        {!hasPhotos && !hasVideos ? '0 fotos' : ''}
-                      </Badge>
+                          {mediaCount.photos} foto{mediaCount.photos !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      {hasVideos && (
+                        <Badge variant="outline" className="gap-1 font-normal">
+                          <Film className="h-3 w-3" />
+                          {mediaCount.videos} vídeo{mediaCount.videos !== 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      {!hasPhotos && !hasVideos && (
+                        <Badge variant="outline" className="gap-1 font-normal">
+                          <ImageIcon className="h-3 w-3" />
+                          0 fotos
+                        </Badge>
+                      )}
                     </div>
                     {(canManageEvents || canEditEvents) && (
                       <div className="flex justify-end">
