@@ -21,6 +21,7 @@ import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
 import InviteLinkPanel from '@/components/InviteLinkPanel';
 import ArchivedPhotosPanel from '@/components/ArchivedPhotosPanel';
+import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
@@ -1001,7 +1002,10 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="security">
-          <SecurityDashboard />
+          <div className="space-y-6">
+            <StorageUsageCard />
+            <SecurityDashboard />
+          </div>
         </TabsContent>
 
         <TabsContent value="archived">
