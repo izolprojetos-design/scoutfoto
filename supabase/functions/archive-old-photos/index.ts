@@ -13,20 +13,26 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Verify caller is admin
+  // Verify caller is admin or service_role (cron jobs)
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
 
-  const { data: { user } } = await createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  ).auth.getUser();
+  const token = authHeader.replace("Bearer ", "");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const isServiceRole = token === serviceRoleKey;
 
-  if (!user) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+  if (!isServiceRole) {
+    const { data: { user } } = await createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_ANON_KEY")!,
+      { global: { headers: { Authorization: authHeader } } }
+    ).auth.getUser();
 
-  const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-  if (!isAdmin) return new Response("Forbidden", { status: 403, headers: corsHeaders });
+    if (!user) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+
+    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    if (!isAdmin) return new Response("Forbidden", { status: 403, headers: corsHeaders });
+  }
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* GET requests */ }
