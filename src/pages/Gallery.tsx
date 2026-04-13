@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Search, ArrowLeft, Calendar, Download, Eye, Trash2, X } from 'lucide-react';
+import { Search, ArrowLeft, Calendar, Download, Eye, Trash2, X, ImageIcon, Film } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -303,16 +303,35 @@ const Gallery = () => {
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
               {pageTitle}
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
               {(() => {
                 const photoCount = filteredImages.filter(i => i.media_type !== 'video').length;
                 const videoCount = filteredImages.filter(i => i.media_type === 'video').length;
-                const parts: string[] = [];
-                if (photoCount > 0) parts.push(`${photoCount} foto${photoCount !== 1 ? 's' : ''}`);
-                if (videoCount > 0) parts.push(`${videoCount} vídeo${videoCount !== 1 ? 's' : ''}`);
-                return parts.length > 0 ? parts.join(' • ') : '0 fotos';
+                return (
+                  <>
+                    {photoCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        {photoCount} foto{photoCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {photoCount > 0 && videoCount > 0 && <span>•</span>}
+                    {videoCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Film className="h-3.5 w-3.5" />
+                        {videoCount} vídeo{videoCount !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {photoCount === 0 && videoCount === 0 && (
+                      <span className="flex items-center gap-1">
+                        <ImageIcon className="h-3.5 w-3.5" />
+                        0 fotos
+                      </span>
+                    )}
+                  </>
+                );
               })()}
-            </p>
+            </div>
           </div>
         </div>
 
