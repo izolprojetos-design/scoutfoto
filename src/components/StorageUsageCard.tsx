@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Database, HardDrive, ImageIcon, Users2, Loader2, RefreshCw } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { HardDrive, ImageIcon, Users2, Loader2, RefreshCw, Database } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -11,6 +12,9 @@ interface BucketInfo {
   files: number;
   total_bytes: number;
 }
+
+// Lovable Cloud free tier: 1 GB storage limit
+const STORAGE_LIMIT_BYTES = 1 * 1024 * 1024 * 1024;
 
 const formatBytes = (bytes: number) => {
   if (!bytes) return '0 B';
@@ -22,45 +26,20 @@ const formatBytes = (bytes: number) => {
 
 const StorageUsageCard = () => {
   const [buckets, setBuckets] = useState<BucketInfo[]>([]);
-  const [dbSize, setDbSize] = useState<string | null>(null);
+  const [totalBytes, setTotalBytes] = useState(0);
+  const [totalFiles, setTotalFiles] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch storage info per bucket
-      const { data: imgObjects } = await supabase
-        .from('images' as any)
-        .select('id', { count: 'exact', head: true });
-
-      // We'll use RPC or direct queries to get storage stats
-      // Since we can't query storage.objects directly from client,
-      // we'll estimate from our images table and scout-photos
-      const { data: images, count: imageCount } = await supabase
-        .from('images')
-        .select('id, storage_path', { count: 'exact' });
-
-      const { data: scouts, count: scoutCount } = await supabase
-        .from('scouts')
-        .select('id, photo_url', { count: 'exact' })
-        .not('photo_url', 'is', null);
-
-      const bucketData: BucketInfo[] = [
-        {
-          bucket_id: 'images',
-          files: imageCount || 0,
-          total_bytes: 0, // Will be populated from metadata if available
-        },
-        {
-          bucket_id: 'scout-photos',
-          files: scoutCount || 0,
-          total_bytes: 0,
-        },
-      ];
-
-      setBuckets(bucketData);
+      const { data, error } = await supabase.functions.invoke('storage-stats');
+      if (error) throw error;
+      setBuckets(data?.buckets || []);
+      setTotalBytes(data?.total_bytes || 0);
+      setTotalFiles(data?.total_files || 0);
     } catch (err) {
-      console.error('Error fetching storage data:', err);
+      console.error('Error fetching storage stats:', err);
     }
     setLoading(false);
   };
@@ -69,7 +48,9 @@ const StorageUsageCard = () => {
     fetchData();
   }, []);
 
-  const totalFiles = buckets.reduce((sum, b) => sum + b.files, 0);
+  const usagePercent = Math.min((totalBytes / STORAGE_LIMIT_BYTES) * 100, 100);
+  const statusColor = usagePercent > 90 ? 'destructive' : usagePercent > 70 ? 'warning' : 'healthy';
+  const statusLabel = usagePercent > 90 ? 'Crítico' : usagePercent > 70 ? 'Atenção' : 'Saudável';
 
   return (
     <Card className="border-0 shadow-lg">
@@ -97,42 +78,68 @@ const StorageUsageCard = () => {
           </div>
         ) : (
           <>
+            {/* Overall progress bar */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {formatBytes(totalBytes)} <span className="text-muted-foreground font-normal">de {formatBytes(STORAGE_LIMIT_BYTES)}</span>
+                </span>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    variant={statusColor === 'destructive' ? 'destructive' : 'secondary'}
+                    className={cn(
+                      "text-[10px] gap-1",
+                      statusColor === 'healthy' && "bg-green-600/15 text-green-700 dark:text-green-400 border border-green-600/20",
+                      statusColor === 'warning' && "bg-yellow-500/15 text-yellow-700 dark:text-yellow-400 border border-yellow-500/20"
+                    )}
+                  >
+                    {statusLabel}
+                  </Badge>
+                  <span className="text-xs font-semibold text-muted-foreground">{usagePercent.toFixed(1)}%</span>
+                </div>
+              </div>
+              <Progress
+                value={usagePercent}
+                className="h-2.5"
+              />
+            </div>
+
             {/* Summary badges */}
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary" className="gap-1.5 px-2.5 py-1">
                 <Database className="h-3 w-3" />
                 {totalFiles} arquivos
               </Badge>
-              <Badge variant="default" className="gap-1.5 px-2.5 py-1 bg-green-600/15 text-green-700 dark:text-green-400 border border-green-600/20">
-                Saudável
-              </Badge>
             </div>
 
-            {/* Bucket details */}
+            {/* Bucket details with individual bars */}
             <div className="space-y-3">
               {buckets.map((bucket) => {
                 const isImagesBucket = bucket.bucket_id === 'images';
                 const Icon = isImagesBucket ? ImageIcon : Users2;
                 const label = isImagesBucket ? 'Fotos de Eventos' : 'Fotos de Integrantes';
+                const bucketPercent = totalBytes > 0 ? (bucket.total_bytes / STORAGE_LIMIT_BYTES) * 100 : 0;
 
                 return (
                   <div
                     key={bucket.bucket_id}
-                    className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/30"
+                    className="rounded-lg border p-3 transition-colors hover:bg-muted/30 space-y-2"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10">
-                      <Icon className="h-4.5 w-4.5 text-primary" />
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-md bg-primary/10 shrink-0">
+                        <Icon className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">{label}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {bucket.files} arquivo{bucket.files !== 1 ? 's' : ''} • {formatBytes(bucket.total_bytes)}
+                        </p>
+                      </div>
+                      <span className="text-xs font-semibold text-muted-foreground shrink-0">
+                        {bucketPercent.toFixed(1)}%
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">{label}</p>
-                      <p className="text-xs text-muted-foreground">
-                        Bucket: <code className="text-[10px] bg-muted px-1 py-0.5 rounded">{bucket.bucket_id}</code>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold">{bucket.files}</p>
-                      <p className="text-[10px] text-muted-foreground">arquivos</p>
-                    </div>
+                    <Progress value={bucketPercent} className="h-1.5" />
                   </div>
                 );
               })}
@@ -140,7 +147,7 @@ const StorageUsageCard = () => {
 
             {/* Info note */}
             <p className="text-[10px] text-muted-foreground leading-relaxed">
-              Ambos os buckets são privados com acesso via URLs assinadas. O armazenamento é gerenciado automaticamente pelo Lovable Cloud.
+              Buckets privados com acesso via URLs assinadas. Limite de 1 GB no plano atual.
             </p>
           </>
         )}
