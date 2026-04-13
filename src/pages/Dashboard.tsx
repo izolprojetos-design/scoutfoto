@@ -124,6 +124,8 @@ const Dashboard = () => {
     scout_group: string | null;
     location: string | null;
     imageCount: number;
+    photoCount: number;
+    videoCount: number;
   }
 
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
@@ -136,7 +138,7 @@ const Dashboard = () => {
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
-      supabase.from('images').select('branch_id, event_id').limit(5000),
+      supabase.from('images').select('branch_id, event_id, media_type').limit(5000),
     ] as const;
 
     const adminPromises = isAdmin
@@ -171,10 +173,12 @@ const Dashboard = () => {
         if (!evt.event_date) return false;
         return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
       });
-      const evtsWithCounts = recentEvents.map(evt => ({
-        ...evt,
-        imageCount: eventImages.filter((img: any) => img.event_id === evt.id).length,
-      }));
+      const evtsWithCounts = recentEvents.map(evt => {
+        const evtImgs = eventImages.filter((img: any) => img.event_id === evt.id);
+        const photoCount = evtImgs.filter((img: any) => img.media_type !== 'video').length;
+        const videoCount = evtImgs.filter((img: any) => img.media_type === 'video').length;
+        return { ...evt, imageCount: evtImgs.length, photoCount, videoCount };
+      });
       setEventsWithPhotos(evtsWithCounts);
       setTotalEvents(evtRes.data.length);
     }
@@ -868,7 +872,12 @@ const Dashboard = () => {
                           )}
                           <div className="flex items-center gap-1.5">
                             <ImageIcon className="h-3.5 w-3.5" />
-                            <span>{evt.imageCount} {evt.imageCount === 1 ? 'foto' : 'fotos'}</span>
+                            <span>
+                              {evt.photoCount > 0 ? `${evt.photoCount} foto${evt.photoCount !== 1 ? 's' : ''}` : ''}
+                              {evt.photoCount > 0 && evt.videoCount > 0 ? ' • ' : ''}
+                              {evt.videoCount > 0 ? `${evt.videoCount} vídeo${evt.videoCount !== 1 ? 's' : ''}` : ''}
+                              {evt.photoCount === 0 && evt.videoCount === 0 ? '0 fotos' : ''}
+                            </span>
                           </div>
                         </div>
                       </div>
