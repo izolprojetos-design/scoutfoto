@@ -33,36 +33,37 @@ Deno.serve(async (req) => {
   const bucketIds = ["images", "scout-photos"];
   const results = [];
 
-  for (const bucketId of bucketIds) {
-    const { data: files, error } = await supabaseAdmin.storage.from(bucketId).list("", {
-      limit: 1000,
-      sortBy: { column: "created_at", order: "desc" },
-    });
-
+  // Helper to recursively list all files in a bucket
+  const listAllFiles = async (bucketId: string, prefix = ""): Promise<{ size: number; count: number }> => {
     let totalBytes = 0;
     let fileCount = 0;
 
-    if (files) {
-      for (const file of files) {
-        if (!file.name || file.name.startsWith(".") || !file.metadata) continue;
-        totalBytes += (file.metadata as any)?.size || 0;
-        fileCount++;
-      }
-    }
+    const { data: items } = await supabaseAdmin.storage.from(bucketId).list(prefix, {
+      limit: 1000,
+    });
 
-    // Also check subfolders (e.g. arquivadas/ in scout-photos)
-    if (bucketId === "scout-photos") {
-      const { data: archivedFiles } = await supabaseAdmin.storage.from(bucketId).list("arquivadas", {
-        limit: 500,
-      });
-      if (archivedFiles) {
-        for (const file of archivedFiles) {
-          if (!file.name || file.name.startsWith(".") || !file.metadata) continue;
-          totalBytes += (file.metadata as any)?.size || 0;
+    if (items) {
+      for (const item of items) {
+        if (!item.name || item.name.startsWith(".")) continue;
+        if (item.metadata) {
+          // It's a file
+          totalBytes += (item.metadata as any)?.size || 0;
           fileCount++;
+        } else {
+          // It's a folder — recurse
+          const subPath = prefix ? `${prefix}/${item.name}` : item.name;
+          const sub = await listAllFiles(bucketId, subPath);
+          totalBytes += sub.size;
+          fileCount += sub.count;
         }
       }
     }
+
+    return { size: totalBytes, count: fileCount };
+  };
+
+  for (const bucketId of bucketIds) {
+    const { size: totalBytes, count: fileCount } = await listAllFiles(bucketId);
 
     results.push({
       bucket_id: bucketId,
