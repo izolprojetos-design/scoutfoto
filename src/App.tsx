@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
+import { PersistQueryClientProvider, createSyncStoragePersister } from "@tanstack/react-query-persist-client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +16,13 @@ import SplashScreen from "@/components/SplashScreen";
 import InstallPrompt from "@/components/InstallPrompt";
 import ConnectivityBanner from "@/components/ConnectivityBanner";
 import { Loader2 } from "lucide-react";
+
+// Offline cache persister using localStorage
+const persister = createSyncStoragePersister({
+  storage: window.localStorage,
+  key: "scoutfoto-query-cache",
+  throttleTime: 2000,
+});
 
 // Lazy-loaded pages for code splitting
 const Index = lazy(() => import("./pages/Index"));
@@ -84,6 +92,7 @@ const queryClient = new QueryClient({
     queries: {
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
+      gcTime: 24 * 60 * 60 * 1000, // 24h to match persister maxAge
       refetchOnWindowFocus: false,
       retry: (failureCount, error) => {
         if (isAuthError(error)) return false;
@@ -118,7 +127,14 @@ const App = () => {
     <>
       {!splashDone && <SplashScreen onFinished={handleSplashFinished} />}
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider
+          client={queryClient}
+          persistOptions={{
+            persister,
+            maxAge: 24 * 60 * 60 * 1000, // 24h cache
+            buster: "v1",
+          }}
+        >
           <TooltipProvider>
             <Toaster />
             <Sonner />
@@ -158,7 +174,7 @@ const App = () => {
               </AuthProvider>
             </BrowserRouter>
           </TooltipProvider>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
       </ThemeProvider>
     </>
   );
