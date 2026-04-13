@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { compressAvatar } from '@/lib/imageCompression';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,18 +72,13 @@ const Profile = () => {
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error('Imagem deve ter no máximo 2MB');
-      return;
-    }
-
     setUploading(true);
-    const ext = file.name.split('.').pop();
-    const path = `avatars/${user.id}.${ext}`;
+    const compressed = await compressAvatar(file);
+    const path = `avatars/${user.id}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('scout-photos')
-      .upload(path, file, { upsert: true });
+      .upload(path, compressed, { upsert: true, contentType: compressed.type });
 
     if (uploadError) {
       toast.error('Erro no upload: ' + uploadError.message);
