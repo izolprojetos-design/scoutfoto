@@ -191,7 +191,7 @@ const BranchScouts = () => {
               variant="ghost"
               size="sm"
               className="h-9 text-xs text-muted-foreground"
-              onClick={() => { setSectionFilter('all'); setSubgroupFilter('all'); }}
+              onClick={() => { setSectionFilter('all'); setSubgroupFilter('all'); setSearchQuery(''); }}
             >
               Limpar filtros
             </Button>
