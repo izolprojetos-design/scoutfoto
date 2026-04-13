@@ -31,6 +31,7 @@ import {
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
+import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
 
 interface Scout {
@@ -254,7 +255,8 @@ const Scouts = () => {
         }
       }
     }
-    const { error } = await supabase.storage.from('scout-photos').upload(path, photo, { upsert: true });
+    const compressed = await compressScoutPhoto(photo);
+    const { error } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: true, contentType: compressed.type });
     if (error) { console.error('Upload error:', error); return null; }
     const { data } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
     return data?.signedUrl || path;
