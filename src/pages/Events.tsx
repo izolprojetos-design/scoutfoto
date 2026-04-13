@@ -13,7 +13,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from '@/components/ui/badge';
 
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield, MoreVertical, ImageIcon } from 'lucide-react';
+import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield, MoreVertical, ImageIcon, Film } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
@@ -42,13 +42,18 @@ interface Event {
   created_at: string;
 }
 
+interface EventMediaCount {
+  photos: number;
+  videos: number;
+}
+
 const Events = () => {
   const { user, isAdmin, isVoluntario } = useAuth();
   const navigate = useNavigate();
   const { canEditEvents, canManageEvents } = usePermissions();
   const [events, setEvents] = useState<Event[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [photoCounts, setPhotoCounts] = useState<Record<string, number>>({});
+  const [mediaCounts, setMediaCounts] = useState<Record<string, EventMediaCount>>({});
   const [eventsWithPerms, setEventsWithPerms] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -68,17 +73,27 @@ const Events = () => {
     const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
       supabase.from('events').select('*').order('event_date', { ascending: false }),
       supabase.from('event_permissions').select('event_id'),
-      supabase.from('images').select('event_id').not('event_id', 'is', null),
+      supabase.from('images').select('event_id, media_type').not('event_id', 'is', null),
     ]);
     setEvents(data || []);
     setEventsWithPerms(new Set((permsData || []).map(p => p.event_id)));
     
-    // Count photos per event
-    const counts: Record<string, number> = {};
+    // Count media by type per event
+    const counts: Record<string, EventMediaCount> = {};
     (imgData || []).forEach(img => {
-      if (img.event_id) counts[img.event_id] = (counts[img.event_id] || 0) + 1;
+      if (!img.event_id) return;
+
+      if (!counts[img.event_id]) {
+        counts[img.event_id] = { photos: 0, videos: 0 };
+      }
+
+      if (img.media_type === 'video') {
+        counts[img.event_id].videos += 1;
+      } else {
+        counts[img.event_id].photos += 1;
+      }
     });
-    setPhotoCounts(counts);
+    setMediaCounts(counts);
     
     setLoading(false);
   };
@@ -276,6 +291,10 @@ const Events = () => {
           {events.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
             const isUpcoming = event.event_date && parseLocalDate(event.event_date) >= startOfDay(new Date());
+            const mediaCount = mediaCounts[event.id] || { photos: 0, videos: 0 };
+            const hasPhotos = mediaCount.photos > 0;
+            const hasVideos = mediaCount.videos > 0;
+
             return (
               <motion.div
                 key={event.id}
@@ -325,8 +344,15 @@ const Events = () => {
                         </Badge>
                       )}
                       <Badge variant="outline" className="gap-1 font-normal">
-                        <ImageIcon className="h-3 w-3" />
-                        {photoCounts[event.id] || 0} foto{(photoCounts[event.id] || 0) !== 1 ? 's' : ''}
+                        {hasVideos && !hasPhotos ? (
+                          <Film className="h-3 w-3" />
+                        ) : (
+                          <ImageIcon className="h-3 w-3" />
+                        )}
+                        {hasPhotos ? `${mediaCount.photos} foto${mediaCount.photos !== 1 ? 's' : ''}` : ''}
+                        {hasPhotos && hasVideos ? ' • ' : ''}
+                        {hasVideos ? `${mediaCount.videos} vídeo${mediaCount.videos !== 1 ? 's' : ''}` : ''}
+                        {!hasPhotos && !hasVideos ? '0 fotos' : ''}
                       </Badge>
                     </div>
                     {(canManageEvents || canEditEvents) && (
