@@ -787,7 +787,7 @@ const Dashboard = () => {
         const upcomingEvents = eventsWithPhotos.filter(evt => {
           if (!evt.event_date) return false;
           const d = parseLocalDate(evt.event_date);
-          return d >= now && d <= endOfMonth;
+          return d > now && d <= endOfMonth;
         });
         return upcomingEvents.length > 0 ? (
           <div className="mt-8 mb-4">
