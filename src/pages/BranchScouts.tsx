@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, User, Download, Filter } from 'lucide-react';
+import { ArrowLeft, User, Download, Filter, Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -49,6 +50,7 @@ const BranchScouts = () => {
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [sectionFilter, setSectionFilter] = useState<string>('all');
   const [subgroupFilter, setSubgroupFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -96,7 +98,9 @@ const BranchScouts = () => {
 
   // Filtered scouts
   const filteredScouts = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return scouts.filter(s => {
+      if (query && !s.name.toLowerCase().includes(query)) return false;
       if (sectionFilter !== 'all' && s.section !== sectionFilter) return false;
       if (subgroupFilter !== 'all') {
         if (subgroupFilter === 'none') {
@@ -107,9 +111,9 @@ const BranchScouts = () => {
       }
       return true;
     });
-  }, [scouts, sectionFilter, subgroupFilter]);
+  }, [scouts, sectionFilter, subgroupFilter, searchQuery]);
 
-  const hasActiveFilters = sectionFilter !== 'all' || subgroupFilter !== 'all';
+  const hasActiveFilters = sectionFilter !== 'all' || subgroupFilter !== 'all' || searchQuery !== '';
 
   if (!branchData && !loading) {
     return null;
@@ -134,7 +138,24 @@ const BranchScouts = () => {
       {/* Filters */}
       {!loading && scouts.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full sm:w-auto">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-9 pl-8 pr-8 text-xs w-full sm:w-[220px]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <Filter className="h-4 w-4 text-muted-foreground hidden sm:block" />
           
           <Select value={sectionFilter} onValueChange={setSectionFilter}>
             <SelectTrigger className="w-[200px] h-9 text-xs">
@@ -170,7 +191,7 @@ const BranchScouts = () => {
               variant="ghost"
               size="sm"
               className="h-9 text-xs text-muted-foreground"
-              onClick={() => { setSectionFilter('all'); setSubgroupFilter('all'); }}
+              onClick={() => { setSectionFilter('all'); setSubgroupFilter('all'); setSearchQuery(''); }}
             >
               Limpar filtros
             </Button>
