@@ -1,12 +1,14 @@
-import { lazy, Suspense, useState, useCallback } from "react";
+import { lazy, Suspense, useState, useCallback, useEffect } from "react";
 import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 import ForceChangePassword from "@/components/ForceChangePassword";
 import SplashScreen from "@/components/SplashScreen";
@@ -33,13 +35,59 @@ const Register = lazy(() => import("./pages/Register"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
+const isAuthError = (error: unknown): boolean => {
+  if (!error) return false;
+  const msg = String(error);
+  return (
+    msg.includes("JWT") ||
+    msg.includes("401") ||
+    msg.includes("403") ||
+    msg.includes("token is expired") ||
+    msg.includes("invalid claim") ||
+    msg.includes("not authenticated")
+  );
+};
+
+let authErrorHandled = false;
+
+const handleAuthError = async () => {
+  if (authErrorHandled) return;
+  authErrorHandled = true;
+
+  // Try refreshing the session first
+  const { data } = await supabase.auth.refreshSession();
+  if (data.session) {
+    authErrorHandled = false;
+    // Session recovered — invalidate queries to refetch
+    queryClient.invalidateQueries();
+    return;
+  }
+
+  toast.error("Sua sessão expirou. Faça login novamente.", { id: "auth-expired" });
+  await supabase.auth.signOut();
+  setTimeout(() => { authErrorHandled = false; }, 3000);
+};
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (isAuthError(error)) handleAuthError();
+    },
+  }),
+  mutationCache: new MutationCache({
+    onError: (error) => {
+      if (isAuthError(error)) handleAuthError();
+    },
+  }),
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 min
-      gcTime: 10 * 60 * 1000,   // 10 min garbage collection
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
       refetchOnWindowFocus: false,
-      retry: 1,
+      retry: (failureCount, error) => {
+        if (isAuthError(error)) return false;
+        return failureCount < 1;
+      },
     },
   },
 });
