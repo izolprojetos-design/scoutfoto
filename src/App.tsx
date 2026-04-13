@@ -13,6 +13,7 @@ const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
 import ForceChangePassword from "@/components/ForceChangePassword";
 import SplashScreen from "@/components/SplashScreen";
 import InstallPrompt from "@/components/InstallPrompt";
+import ConnectivityBanner from "@/components/ConnectivityBanner";
 import { Loader2 } from "lucide-react";
 
 // Lazy-loaded pages for code splitting
@@ -121,6 +122,7 @@ const App = () => {
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <ConnectivityBanner />
             <InstallPrompt />
             <BrowserRouter>
               <AuthProvider>
