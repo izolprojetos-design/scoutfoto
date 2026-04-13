@@ -109,7 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [clearAuthState]);
 
-  const syncSessionState = useCallback(async (nextSession: Session | null, showExpiredToast = true) => {
+  const syncSessionState = useCallback(async (nextSession: Session | null, showExpiredToast = true, skipValidation = false) => {
     if (!nextSession) {
       clearAuthState();
       setLoading(false);
@@ -130,25 +130,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let validatedUser = activeSession.user ?? null;
-    let userCheck = await supabase.auth.getUser(activeSession.access_token);
 
-    if (userCheck.error || !userCheck.data.user) {
-      const { data, error } = await supabase.auth.refreshSession();
-      if (error || !data.session) {
-        await handleExpiredSession(showExpiredToast);
-        return;
-      }
-
-      activeSession = data.session;
-      userCheck = await supabase.auth.getUser(activeSession.access_token);
-
+    // Skip expensive getUser() call when session is fresh (not expiring soon)
+    if (!skipValidation) {
+      const userCheck = await supabase.auth.getUser(activeSession.access_token);
       if (userCheck.error || !userCheck.data.user) {
-        await handleExpiredSession(showExpiredToast);
-        return;
+        const { data, error } = await supabase.auth.refreshSession();
+        if (error || !data.session) {
+          await handleExpiredSession(showExpiredToast);
+          return;
+        }
+        activeSession = data.session;
+        validatedUser = activeSession.user;
+      } else {
+        validatedUser = userCheck.data.user;
       }
     }
-
-    validatedUser = userCheck.data.user;
     setSession(activeSession);
     setUser(validatedUser);
 
@@ -215,22 +212,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   useEffect(() => {
+    let initialHandled = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      (event, nextSes) => {
         if (event === 'SIGNED_OUT') {
           clearAuthState();
           setLoading(false);
           return;
         }
 
-        setTimeout(() => {
-          void syncSessionState(session, event !== 'INITIAL_SESSION');
-        }, 0);
+        if (event === 'INITIAL_SESSION') {
+          if (initialHandled) return;
+          initialHandled = true;
+          // Fresh initial session — skip getUser validation
+          void syncSessionState(nextSes, false, true);
+        } else {
+          setTimeout(() => {
+            void syncSessionState(nextSes, true, false);
+          }, 0);
+        }
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      void syncSessionState(session, true);
+    // getSession is only a fallback if onAuthStateChange doesn't fire INITIAL_SESSION
+    supabase.auth.getSession().then(({ data: { session: fallbackSes } }) => {
+      if (!initialHandled) {
+        initialHandled = true;
+        void syncSessionState(fallbackSes, false, true);
+      }
     });
 
     return () => subscription.unsubscribe();
