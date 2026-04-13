@@ -33,6 +33,7 @@ interface ImageData {
   branch_id: string;
   views: number;
   downloads: number;
+  media_type: string;
 }
 
 interface Branch {
@@ -302,7 +303,16 @@ const Gallery = () => {
             <h1 className="text-2xl font-bold" style={{ fontFamily: 'Space Grotesk' }}>
               {pageTitle}
             </h1>
-            <p className="text-sm text-muted-foreground">{filteredImages.length} fotos</p>
+            <p className="text-sm text-muted-foreground">
+              {(() => {
+                const photoCount = filteredImages.filter(i => i.media_type !== 'video').length;
+                const videoCount = filteredImages.filter(i => i.media_type === 'video').length;
+                const parts: string[] = [];
+                if (photoCount > 0) parts.push(`${photoCount} foto${photoCount !== 1 ? 's' : ''}`);
+                if (videoCount > 0) parts.push(`${videoCount} vídeo${videoCount !== 1 ? 's' : ''}`);
+                return parts.length > 0 ? parts.join(' • ') : '0 fotos';
+              })()}
+            </p>
           </div>
         </div>
 
