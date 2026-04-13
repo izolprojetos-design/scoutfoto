@@ -1002,7 +1002,10 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="security">
-          <SecurityDashboard />
+          <div className="space-y-6">
+            <StorageUsageCard />
+            <SecurityDashboard />
+          </div>
         </TabsContent>
 
         <TabsContent value="archived">
