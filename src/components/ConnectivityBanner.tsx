@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { WifiOff, Wifi } from "lucide-react";
+import { WifiOff, Wifi, Database } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -76,8 +76,9 @@ const ConnectivityBanner = () => {
         <>
           <WifiOff className="h-4 w-4" />
           {offline
-            ? "Sem conexão com a internet. Verifique sua rede."
-            : "Não foi possível conectar ao servidor. Tentando reconectar..."}
+            ? "Sem conexão — exibindo dados salvos localmente."
+            : "Servidor indisponível — exibindo dados em cache. Reconectando..."}
+          <Database className="h-3 w-3 ml-1 opacity-70" />
         </>
       )}
     </div>
