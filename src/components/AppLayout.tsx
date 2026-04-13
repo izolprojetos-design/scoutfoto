@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import NotificationBell from '@/components/NotificationBell';
 import SectionIndicator from '@/components/SectionIndicator';
+import DataFreshnessIndicator from '@/components/DataFreshnessIndicator';
 import { Loader2 } from 'lucide-react';
 import { Suspense } from 'react';
 
@@ -24,7 +25,10 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
               <SidebarTrigger />
               <SectionIndicator />
             </div>
-            <NotificationBell />
+            <div className="flex items-center gap-3">
+              <DataFreshnessIndicator />
+              <NotificationBell />
+            </div>
           </header>
           <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
             {children ?? (
