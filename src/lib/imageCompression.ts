@@ -8,6 +8,30 @@ export const compressImage = async (file: File): Promise<File> => {
     fileType: file.type as string,
     initialQuality: 0.8,
   };
+
+  try {
+    return await imageCompression(file, options);
+  } catch {
+    console.warn('Compression failed, using original file');
+    return file;
+  }
+};
+
+export const createThumbnail = async (file: File): Promise<File> => {
+  const options = {
+    maxSizeMB: 0.1,
+    maxWidthOrHeight: 400,
+    useWebWorker: true,
+    fileType: 'image/webp' as string,
+  };
+
+  try {
+    return await imageCompression(file, options);
+  } catch {
+    return file;
+  }
+};
+
 export const compressScoutPhoto = async (file: File): Promise<File> => {
   const options = {
     maxSizeMB: 0.5,
@@ -38,31 +62,6 @@ export const compressAvatar = async (file: File): Promise<File> => {
     return await imageCompression(file, options);
   } catch {
     console.warn('Avatar compression failed, using original');
-    return file;
-  }
-};
-
-  try {
-    const compressed = await imageCompression(file, options);
-    return compressed;
-  } catch {
-    console.warn('Compression failed, using original file');
-    return file;
-  }
-};
-
-export const createThumbnail = async (file: File): Promise<File> => {
-  const options = {
-    maxSizeMB: 0.1,
-    maxWidthOrHeight: 400,
-    useWebWorker: true,
-    fileType: 'image/webp' as string,
-  };
-
-  try {
-    const thumbnail = await imageCompression(file, options);
-    return thumbnail;
-  } catch {
     return file;
   }
 };
