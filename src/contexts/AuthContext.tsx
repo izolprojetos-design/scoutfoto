@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -50,24 +50,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaVerified, setMfaVerified] = useState(false);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('user_id', userId)
-      .single();
-    setProfile(data);
-  };
+      .maybeSingle();
+    setProfile(data ?? null);
+  }, []);
 
-  const fetchRoles = async (userId: string) => {
+  const fetchRoles = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
     setRoles(data?.map(r => r.role) || []);
-  };
+  }, []);
 
-  const checkMfaStatus = async () => {
+  const checkMfaStatus = useCallback(async () => {
     try {
       const { data } = await supabase.auth.mfa.listFactors();
       const verified = data?.totp?.filter(f => f.status === 'verified') || [];
@@ -88,7 +88,78 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       setMfaRequired(false);
     }
-  };
+  }, []);
+
+  const clearAuthState = useCallback(() => {
+    setSession(null);
+    setUser(null);
+    setProfile(null);
+    setRoles([]);
+    setMfaRequired(false);
+    setMfaVerified(false);
+  }, []);
+
+  const handleExpiredSession = useCallback(async (showToast = true) => {
+    clearAuthState();
+    setLoading(false);
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
+
+    if (showToast) {
+      toast.info('Sua sessão expirou. Faça login novamente.');
+    }
+  }, [clearAuthState]);
+
+  const syncSessionState = useCallback(async (nextSession: Session | null, showExpiredToast = true) => {
+    if (!nextSession) {
+      clearAuthState();
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    let activeSession = nextSession;
+    const expiresSoon = typeof activeSession.expires_at === 'number' && activeSession.expires_at * 1000 <= Date.now() + 30_000;
+
+    if (expiresSoon) {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) {
+        await handleExpiredSession(showExpiredToast);
+        return;
+      }
+      activeSession = data.session;
+    }
+
+    let validatedUser = activeSession.user ?? null;
+    let userCheck = await supabase.auth.getUser(activeSession.access_token);
+
+    if (userCheck.error || !userCheck.data.user) {
+      const { data, error } = await supabase.auth.refreshSession();
+      if (error || !data.session) {
+        await handleExpiredSession(showExpiredToast);
+        return;
+      }
+
+      activeSession = data.session;
+      userCheck = await supabase.auth.getUser(activeSession.access_token);
+
+      if (userCheck.error || !userCheck.data.user) {
+        await handleExpiredSession(showExpiredToast);
+        return;
+      }
+    }
+
+    validatedUser = userCheck.data.user;
+    setSession(activeSession);
+    setUser(validatedUser);
+
+    await Promise.all([
+      fetchProfile(validatedUser.id),
+      fetchRoles(validatedUser.id),
+      checkMfaStatus(),
+    ]);
+
+    setLoading(false);
+  }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession]);
 
   // Inactivity timeout: 30 minutes
   useEffect(() => {
@@ -145,38 +216,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => {
-            fetchProfile(session.user.id);
-            fetchRoles(session.user.id);
-            checkMfaStatus();
-          }, 0);
-        } else {
-          setProfile(null);
-          setRoles([]);
-          setMfaRequired(false);
-          setMfaVerified(false);
+      (event, session) => {
+        if (event === 'SIGNED_OUT') {
+          clearAuthState();
+          setLoading(false);
+          return;
         }
-        setLoading(false);
+
+        setTimeout(() => {
+          void syncSessionState(session, event !== 'INITIAL_SESSION');
+        }, 0);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-        fetchRoles(session.user.id);
-        checkMfaStatus();
-      }
-      setLoading(false);
+      void syncSessionState(session, true);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [clearAuthState, syncSessionState]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
