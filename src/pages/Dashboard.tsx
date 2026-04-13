@@ -787,7 +787,7 @@ const Dashboard = () => {
         const upcomingEvents = eventsWithPhotos.filter(evt => {
           if (!evt.event_date) return false;
           const d = parseLocalDate(evt.event_date);
-          return d >= now && d <= endOfMonth;
+          return d > now && d <= endOfMonth;
         });
         return upcomingEvents.length > 0 ? (
           <div className="mt-8 mb-4">
@@ -835,7 +835,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {eventsWithPhotos.slice(0, 6).map((evt, index) => {
             const branch = branches.find(b => b.id === evt.branch_id);
-            const isUpcoming = evt.event_date && parseLocalDate(evt.event_date) >= startOfDay(new Date());
+            const isUpcoming = evt.event_date && parseLocalDate(evt.event_date) > startOfDay(new Date());
             return (
               <motion.div key={evt.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
                 <Card
