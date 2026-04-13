@@ -383,10 +383,35 @@ const EventDetail = () => {
         </div>
 
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {images.filter(i => i.media_type === 'image').length} foto{images.filter(i => i.media_type === 'image').length !== 1 ? 's' : ''}
-            {images.filter(i => i.media_type === 'video').length > 0 && ` • ${images.filter(i => i.media_type === 'video').length} vídeo${images.filter(i => i.media_type === 'video').length !== 1 ? 's' : ''}`}
-          </p>
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            {(() => {
+              const photoCount = images.filter(i => i.media_type !== 'video').length;
+              const videoCount = images.filter(i => i.media_type === 'video').length;
+              return (
+                <>
+                  {photoCount > 0 && (
+                    <span className="flex items-center gap-1">
+                      <ImageIcon className="h-3.5 w-3.5" />
+                      {photoCount} foto{photoCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {photoCount > 0 && videoCount > 0 && <span>•</span>}
+                  {videoCount > 0 && (
+                    <span className="flex items-center gap-1">
+                      <Film className="h-3.5 w-3.5" />
+                      {videoCount} vídeo{videoCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {photoCount === 0 && videoCount === 0 && (
+                    <span className="flex items-center gap-1">
+                      <ImageIcon className="h-3.5 w-3.5" />
+                      0 fotos
+                    </span>
+                  )}
+                </>
+              );
+            })()}
+          </div>
         </div>
       </div>
 
