@@ -7,6 +7,7 @@ const DataFreshnessIndicator = () => {
   const isFetching = useIsFetching();
   const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
+  const queryClient = useQueryClient();
   if (isFetching > 0) {
     return (
       <Tooltip>
@@ -37,7 +38,6 @@ const DataFreshnessIndicator = () => {
     );
   }
 
-  const queryClient = useQueryClient();
 
   const handleRefresh = () => {
     queryClient.invalidateQueries();
