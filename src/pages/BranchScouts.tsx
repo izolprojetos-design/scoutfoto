@@ -98,7 +98,9 @@ const BranchScouts = () => {
 
   // Filtered scouts
   const filteredScouts = useMemo(() => {
+    const query = searchQuery.toLowerCase().trim();
     return scouts.filter(s => {
+      if (query && !s.name.toLowerCase().includes(query)) return false;
       if (sectionFilter !== 'all' && s.section !== sectionFilter) return false;
       if (subgroupFilter !== 'all') {
         if (subgroupFilter === 'none') {
@@ -109,9 +111,9 @@ const BranchScouts = () => {
       }
       return true;
     });
-  }, [scouts, sectionFilter, subgroupFilter]);
+  }, [scouts, sectionFilter, subgroupFilter, searchQuery]);
 
-  const hasActiveFilters = sectionFilter !== 'all' || subgroupFilter !== 'all';
+  const hasActiveFilters = sectionFilter !== 'all' || subgroupFilter !== 'all' || searchQuery !== '';
 
   if (!branchData && !loading) {
     return null;
