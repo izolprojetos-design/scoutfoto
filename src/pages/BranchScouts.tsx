@@ -138,7 +138,24 @@ const BranchScouts = () => {
       {/* Filters */}
       {!loading && scouts.length > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full sm:w-auto">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="h-9 pl-8 pr-8 text-xs w-full sm:w-[220px]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+          <Filter className="h-4 w-4 text-muted-foreground hidden sm:block" />
           
           <Select value={sectionFilter} onValueChange={setSectionFilter}>
             <SelectTrigger className="w-[200px] h-9 text-xs">
