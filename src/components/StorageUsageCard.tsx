@@ -33,8 +33,6 @@ const StorageUsageCard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Ensure session is fresh before calling edge function
-      await supabase.auth.getSession();
       const { data, error } = await supabase.functions.invoke('storage-stats');
       if (error) throw error;
       setBuckets(data?.buckets || []);
