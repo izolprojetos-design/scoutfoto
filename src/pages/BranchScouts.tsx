@@ -49,7 +49,7 @@ const BranchScouts = () => {
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [sectionFilter, setSectionFilter] = useState<string>('all');
-  const [subgroupFilter, setSubgroupFilter] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
