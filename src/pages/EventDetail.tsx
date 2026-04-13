@@ -116,6 +116,13 @@ const EventDetail = () => {
     if (!canViewMinors) {
       filtered = filtered.filter(img => img.minor_age === null);
     }
+    // Sort: photos first, then videos
+    filtered.sort((a, b) => {
+      const aIsVideo = a.media_type === 'video' ? 1 : 0;
+      const bIsVideo = b.media_type === 'video' ? 1 : 0;
+      if (aIsVideo !== bIsVideo) return aIsVideo - bIsVideo;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
     setImages(filtered);
 
     // Get signed URLs
