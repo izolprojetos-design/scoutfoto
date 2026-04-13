@@ -581,18 +581,23 @@ const EventDetail = () => {
             >
               <div className="aspect-square overflow-hidden">
                 {img.media_type === 'video' ? (
-                  <div className="flex h-full w-full items-center justify-center bg-muted">
-                    {(thumbUrls[img.id] || imageUrls[img.id]) ? (
-                      <img
-                        src={thumbUrls[img.id] || imageUrls[img.id]}
-                        alt={img.caption || img.filename}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
+                  <div className="relative flex h-full w-full items-center justify-center bg-muted">
+                    {imageUrls[img.id] ? (
+                      <video
+                        src={imageUrls[img.id]}
+                        className="h-full w-full object-cover"
+                        muted
+                        preload="metadata"
+                        playsInline
+                        onLoadedData={(e) => {
+                          const vid = e.currentTarget;
+                          vid.currentTime = 0.5;
+                        }}
                       />
                     ) : (
                       <Film className="h-10 w-10 text-muted-foreground" />
                     )}
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white">
                         <Video className="h-5 w-5" />
                       </div>
