@@ -56,6 +56,7 @@ const ScoutPhoto = ({ photoUrl, fallback, onBroken, className, alt, ...imgProps 
     <img
       src={signedUrl}
       alt={alt}
+      loading="lazy"
       className={className}
       onError={() => {
         setErrored(true);
