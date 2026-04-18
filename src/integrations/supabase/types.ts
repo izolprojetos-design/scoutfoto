@@ -872,7 +872,10 @@ export type Database = {
           locked_until: string
         }[]
       }
-      admin_signout_user: { Args: { p_user_id: string }; Returns: undefined }
+      admin_signout_user: {
+        Args: { p_admin_user_id?: string; p_user_id: string }
+        Returns: undefined
+      }
       admin_unlock_login: { Args: { p_email: string }; Returns: undefined }
       can_view_storage_image: {
         Args: { _storage_path: string; _user_id: string }
