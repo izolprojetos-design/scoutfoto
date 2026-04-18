@@ -402,7 +402,7 @@ const Admin = () => {
       setNewName('');
       setNewEmail('');
       setNewPassword('');
-      setNewRole('viewer');
+      setNewRole('voluntario');
       setNewSection('');
       fetchUsers();
     }
