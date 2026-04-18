@@ -275,6 +275,16 @@ const Events = () => {
               </button>
             )}
           </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'recent' | 'oldest' | 'alpha')}>
+            <SelectTrigger className="h-10 w-full sm:w-48">
+              <SelectValue placeholder="Ordenar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
+              <SelectItem value="alpha">Alfabético (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
           {(canManageEvents || canEditEvents) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
