@@ -778,6 +778,20 @@ const Admin = () => {
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleUnlockLogin(u.email, u.name)}
+                              disabled={u.user_id === user?.id || unlockingFor === u.email || !u.email}
+                              title="Zera as tentativas falhas e desbloqueia o login deste usuário"
+                            >
+                              {unlockingFor === u.email ? (
+                                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <Unlock className="h-3.5 w-3.5 mr-1" />
+                              )}
+                              Desbloquear login
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => handleForceRefresh(u.user_id, u.name)}
                               disabled={u.user_id === user?.id || forcingRefreshFor === u.user_id}
                               title="Limpa o cache e recarrega o app deste usuário na próxima verificação (até 2 minutos)"
