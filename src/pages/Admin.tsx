@@ -77,7 +77,7 @@ const Admin = () => {
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [newRole, setNewRole] = useState<AppRole>('viewer');
+  const [newRole, setNewRole] = useState<AppRole>('voluntario');
   const [newSection, setNewSection] = useState('');
   const [creating, setCreating] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -402,7 +402,7 @@ const Admin = () => {
       setNewName('');
       setNewEmail('');
       setNewPassword('');
-      setNewRole('viewer');
+      setNewRole('voluntario');
       setNewSection('');
       fetchUsers();
     }
