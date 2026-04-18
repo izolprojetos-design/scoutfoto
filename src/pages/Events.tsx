@@ -458,7 +458,8 @@ const Events = () => {
             );
           })}
         </div>
-      )}
+        );
+      })()}
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={(open) => { setEditDialogOpen(open); if (!open) { setEditingEvent(null); resetForm(); } }}>
