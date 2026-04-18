@@ -28,16 +28,9 @@ export const useRemoteForceRefresh = (userId: string | null | undefined) => {
 
     let cancelled = false;
 
-    const check = async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('force_refresh_at')
-        .eq('user_id', userId)
-        .maybeSingle();
+    const handleRemoteTimestamp = (remoteTs: string | null | undefined) => {
+      if (cancelled || !remoteTs) return;
 
-      if (cancelled || error || !data?.force_refresh_at) return;
-
-      const remoteTs = data.force_refresh_at;
       const lastSeen = localStorage.getItem(STORAGE_KEY);
 
       if (!lastSeen) {
@@ -48,22 +41,52 @@ export const useRemoteForceRefresh = (userId: string | null | undefined) => {
 
       if (lastSeen !== remoteTs) {
         localStorage.setItem(STORAGE_KEY, remoteTs);
-        toast.info('Atualização do app solicitada pelo administrador. Recarregando...', {
-          duration: 4000,
+        toast.info('Suas permissões foram atualizadas. Recarregando...', {
+          duration: 3000,
         });
         setTimeout(() => {
           clearCachesAndReload();
-        }, 1500);
+        }, 1200);
       }
     };
 
-    // Run immediately, then on interval
+    const check = async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('force_refresh_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (cancelled || error) return;
+      handleRemoteTimestamp(data?.force_refresh_at);
+    };
+
+    // Run immediately, then on interval as fallback
     void check();
     const interval = setInterval(check, CHECK_INTERVAL_MS);
+
+    // Realtime: react instantly when admin updates force_refresh_at
+    const channel = supabase
+      .channel(`force-refresh-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const next = (payload.new as { force_refresh_at?: string | null })?.force_refresh_at;
+          handleRemoteTimestamp(next);
+        }
+      )
+      .subscribe();
 
     return () => {
       cancelled = true;
       clearInterval(interval);
+      supabase.removeChannel(channel);
     };
   }, [userId]);
 };
