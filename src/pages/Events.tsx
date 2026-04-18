@@ -70,6 +70,8 @@ const Events = () => {
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'alpha'>('recent');
+  const [filterBranch, setFilterBranch] = useState<string>('all');
+  const [filterYear, setFilterYear] = useState<string>('all');
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
@@ -285,6 +287,30 @@ const Events = () => {
               <SelectItem value="alpha">Alfabético (A–Z)</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filterBranch} onValueChange={setFilterBranch}>
+            <SelectTrigger className="h-10 w-full sm:w-44">
+              <SelectValue placeholder="Ramo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os ramos</SelectItem>
+              {branches.map(b => (
+                <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterYear} onValueChange={setFilterYear}>
+            <SelectTrigger className="h-10 w-full sm:w-32">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os anos</SelectItem>
+              {Array.from(new Set(events.map(e => e.event_date ? new Date(e.event_date).getUTCFullYear() : null).filter((y): y is number => y !== null)))
+                .sort((a, b) => b - a)
+                .map(year => (
+                  <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
           {(canManageEvents || canEditEvents) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
@@ -320,13 +346,21 @@ const Events = () => {
         </div>
       ) : (() => {
         const q = searchQuery.trim().toLowerCase();
-        const filteredEvents = q
-          ? events.filter(e =>
+        const filteredEvents = events.filter(e => {
+          if (q) {
+            const matches =
               e.name.toLowerCase().includes(q) ||
               (e.location || '').toLowerCase().includes(q) ||
-              (e.description || '').toLowerCase().includes(q)
-            )
-          : events;
+              (e.description || '').toLowerCase().includes(q);
+            if (!matches) return false;
+          }
+          if (filterBranch !== 'all' && e.branch_id !== filterBranch) return false;
+          if (filterYear !== 'all') {
+            if (!e.event_date) return false;
+            if (String(new Date(e.event_date).getUTCFullYear()) !== filterYear) return false;
+          }
+          return true;
+        });
 
         const sortedEvents = [...filteredEvents].sort((a, b) => {
           if (sortBy === 'alpha') {
