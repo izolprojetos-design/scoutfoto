@@ -69,6 +69,7 @@ const Events = () => {
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'alpha'>('recent');
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
