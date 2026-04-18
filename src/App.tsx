@@ -151,6 +151,7 @@ const App = () => {
             <InstallPrompt />
             <BrowserRouter>
               <AuthProvider>
+                <RemoteRefreshWatcher />
                 <ForceChangePassword />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
