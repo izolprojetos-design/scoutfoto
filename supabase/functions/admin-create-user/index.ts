@@ -170,23 +170,25 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "Você não pode derrubar sua própria sessão por aqui" }), { status: 400, headers: resHeaders });
       }
 
-      // Revoke all sessions / refresh tokens for the target user via SECURITY DEFINER RPC.
-      // We pass the caller's id as p_admin_user_id so the function can verify admin without
-      // relying on auth.uid() (which is null when called with the service role key).
-      const { error: rpcError } = await serviceClient.rpc("admin_signout_user", {
-        p_user_id: user_id,
-        p_admin_user_id: callerUser.id,
-      });
+      // Run revocation + force-refresh bump in parallel for lower latency.
+      const [revokeRes, refreshRes] = await Promise.all([
+        serviceClient.rpc("admin_signout_user", {
+          p_user_id: user_id,
+          p_admin_user_id: callerUser.id,
+        }),
+        serviceClient
+          .from("profiles")
+          .update({ force_refresh_at: new Date().toISOString() })
+          .eq("user_id", user_id),
+      ]);
 
-      if (rpcError) {
-        return new Response(JSON.stringify({ error: `Falha ao encerrar sessões: ${rpcError.message}` }), { status: 400, headers: resHeaders });
+      if (revokeRes.error) {
+        return new Response(JSON.stringify({ error: `Falha ao encerrar sessões: ${revokeRes.error.message}` }), { status: 400, headers: resHeaders });
       }
-
-      // Also bump force_refresh_at so the PWA reloads quickly on the next poll
-      await serviceClient
-        .from("profiles")
-        .update({ force_refresh_at: new Date().toISOString() })
-        .eq("user_id", user_id);
+      if (refreshRes.error) {
+        // Non-fatal: sessions are already killed; just log.
+        console.warn("force_refresh_at bump failed:", refreshRes.error.message);
+      }
 
       return new Response(JSON.stringify({ success: true }), { headers: resHeaders });
     }
