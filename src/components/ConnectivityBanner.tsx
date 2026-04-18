@@ -26,6 +26,11 @@ const ConnectivityBanner = () => {
 
   // Periodic backend health check
   const checkBackend = async () => {
+    if (typeof document !== "undefined" && document.hidden) return;
+    if (!navigator.onLine) {
+      setBackendDown(false);
+      return;
+    }
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
@@ -41,9 +46,17 @@ const ConnectivityBanner = () => {
   };
 
   useEffect(() => {
-    // Check every 15s
-    intervalRef.current = setInterval(checkBackend, 15000);
-    return () => clearInterval(intervalRef.current);
+    // Slow poll only when something is wrong; rely on online/offline events otherwise
+    const intervalMs = backendDown ? 15000 : 120000;
+    intervalRef.current = setInterval(checkBackend, intervalMs);
+    const onVisible = () => {
+      if (!document.hidden) checkBackend();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(intervalRef.current);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [backendDown]);
 
   // Clear recovering state after animation
