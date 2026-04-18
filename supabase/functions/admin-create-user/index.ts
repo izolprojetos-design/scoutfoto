@@ -171,9 +171,12 @@ Deno.serve(async (req) => {
       }
 
       // Revoke all sessions / refresh tokens for the target user via SECURITY DEFINER RPC.
-      // This deletes from auth.sessions and auth.refresh_tokens directly, which is the
-      // most reliable way to globally sign out a user from the server side.
-      const { error: rpcError } = await serviceClient.rpc("admin_signout_user", { p_user_id: user_id });
+      // We pass the caller's id as p_admin_user_id so the function can verify admin without
+      // relying on auth.uid() (which is null when called with the service role key).
+      const { error: rpcError } = await serviceClient.rpc("admin_signout_user", {
+        p_user_id: user_id,
+        p_admin_user_id: callerUser.id,
+      });
 
       if (rpcError) {
         return new Response(JSON.stringify({ error: `Falha ao encerrar sessões: ${rpcError.message}` }), { status: 400, headers: resHeaders });
