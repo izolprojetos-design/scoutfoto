@@ -485,6 +485,7 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
+          force_refresh_at: string | null
           id: string
           is_active: boolean
           must_change_password: boolean
@@ -498,6 +499,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          force_refresh_at?: string | null
           id?: string
           is_active?: boolean
           must_change_password?: boolean
@@ -511,6 +513,7 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          force_refresh_at?: string | null
           id?: string
           is_active?: boolean
           must_change_password?: boolean
