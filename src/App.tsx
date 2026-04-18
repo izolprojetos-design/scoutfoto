@@ -110,6 +110,13 @@ const PageLoader = () => (
   </div>
 );
 
+// Watches for admin-triggered remote refresh requests on the current user
+const RemoteRefreshWatcher = () => {
+  const { user } = useAuth();
+  useRemoteForceRefresh(user?.id);
+  return null;
+};
+
 const AppLayout = lazy(() => import("@/components/AppLayout"));
 
 // Check if running as installed PWA (standalone mode)
