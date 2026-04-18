@@ -1059,6 +1059,7 @@ const Admin = () => {
         <TabsContent value="security">
           <div className="space-y-6">
             <StorageUsageCard />
+            <LockedAccountsPanel />
             <SecurityDashboard />
           </div>
         </TabsContent>
