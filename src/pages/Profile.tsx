@@ -17,16 +17,7 @@ import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import DevicesSection from '@/components/profile/DevicesSection';
 import UpdateCheckCard from '@/components/profile/UpdateCheckCard';
 import MFASetup from '@/components/MFASetup';
-
-const roleLabel: Record<string, string> = {
-  admin: 'Administrador',
-  voluntario: 'Voluntário',
-  dirigente_gestor: 'Dirigente Gestor',
-  chefe: 'Chefe Escoteiro',
-  dirigente: 'Dirigente',
-  parent: 'Pai/Mãe',
-  viewer: 'Visitante',
-};
+import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 
 const Profile = () => {
   const { profile, roles, user, isAdmin } = useAuth();
@@ -106,8 +97,7 @@ const Profile = () => {
     setUploading(false);
   };
 
-  const rolePriority = ['admin', 'voluntario', 'dirigente_gestor', 'chefe', 'dirigente', 'parent', 'viewer'];
-  const primaryRole = rolePriority.find(r => roles.includes(r as any)) || roles[0] || 'viewer';
+  const primaryRole = getPrimaryRole(roles);
 
   return (
     <>
@@ -173,38 +163,14 @@ const Profile = () => {
             <div className="text-center">
               <h2 className="text-xl font-bold">{profile?.name}</h2>
               <p className="text-sm text-muted-foreground">{profile?.email}</p>
-              <Badge variant="default" className="mt-2">{roleLabel[primaryRole]}</Badge>
+              <Badge variant="default" className="mt-2">{ROLE_LABELS[primaryRole]}</Badge>
             </div>
           </CardContent>
         </Card>
-
-        {/* Edit Name */}
-        <Card className="border-0 shadow-lg">
-          <CardHeader>
-            <CardTitle>Informações</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nome</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-                placeholder="Seu nome completo"
-                className="h-11"
-                disabled={!isAdmin}
-              />
-              {!isAdmin && (
-                <p className="text-xs text-muted-foreground">Apenas o administrador pode alterar o nome</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label>Email</Label>
-              <Input value={profile?.email || ''} disabled className="h-11 bg-muted" />
-            </div>
+...
             <div className="space-y-2">
               <Label>Cargo</Label>
-              <Input value={roleLabel[primaryRole]} disabled className="h-11 bg-muted" />
+              <Input value={ROLE_LABELS[primaryRole]} disabled className="h-11 bg-muted" />
               <p className="text-xs text-muted-foreground">O cargo é definido pelo administrador</p>
             </div>
             {isAdmin && <Button onClick={handleSaveName} disabled={saving} className="gap-2">

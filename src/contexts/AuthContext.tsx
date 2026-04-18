@@ -6,65 +6,21 @@ import type { Database } from '@/integrations/supabase/types';
 import { logAudit } from '@/lib/auditLog';
 import { checkAndRegisterDevice } from '@/lib/deviceDetection';
 import { notifyNewDevice, notifyLoginSuccess } from '@/lib/securityNotifications';
+import { ROLE_PRIORITY } from '@/lib/userRoles';
 
 type AppRole = Database['public']['Enums']['app_role'];
-
-interface Profile {
-  id: string;
-  user_id: string;
-  name: string;
-  email: string;
-  avatar_url: string | null;
-  is_active: boolean;
-  must_change_password: boolean;
-  section: string | null;
-}
-
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  profile: Profile | null;
-  roles: AppRole[];
-  loading: boolean;
-  mfaRequired: boolean;
-  mfaVerified: boolean;
-  setMfaVerified: (v: boolean) => void;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
-  signOut: () => Promise<void>;
-  hasRole: (role: AppRole) => boolean;
-  isAdmin: boolean;
-  isVoluntario: boolean;
-  canUpload: boolean;
-  canViewMinors: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaVerified, setMfaVerified] = useState(false);
-
-  const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-    setProfile(data ?? null);
-  }, []);
-
+...
   const fetchRoles = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
-    setRoles(data?.map(r => r.role) || []);
+
+    const sortedRoles = (data?.map(r => r.role) || []).sort(
+      (a, b) => ROLE_PRIORITY.indexOf(a) - ROLE_PRIORITY.indexOf(b)
+    );
+
+    setRoles(sortedRoles);
   }, []);
 
   const checkMfaStatus = useCallback(async () => {

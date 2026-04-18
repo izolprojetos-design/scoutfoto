@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 
 const AppSidebar = () => {
   const { profile, signOut, roles } = useAuth();
@@ -48,14 +49,7 @@ const AppSidebar = () => {
     .slice(0, 2)
     .toUpperCase() || '??';
 
-  const primaryRole = roles[0] || 'viewer';
-  const roleLabel: Record<string, string> = {
-    admin: 'Administrador',
-    voluntario: 'Voluntário',
-    dirigente_gestor: 'Dir. Gestor',
-    viewer: 'Visitante',
-    parent: 'Pai/Mãe',
-  };
+  const primaryRole = getPrimaryRole(roles);
 
   return (
     <Sidebar collapsible="icon">
@@ -141,7 +135,7 @@ const AppSidebar = () => {
                 {!collapsed && (
                   <div className="flex flex-1 flex-col items-start text-left leading-tight">
                     <span className="text-sm font-medium truncate max-w-[140px]">{profile?.name}</span>
-                    <span className="text-xs text-sidebar-foreground/60">{roleLabel[primaryRole]}</span>
+                    <span className="text-xs text-sidebar-foreground/60">{ROLE_LABELS[primaryRole]}</span>
                   </div>
                 )}
               </button>
