@@ -67,6 +67,12 @@ export const usePeriodicUpdateCheck = (intervalMs = 5 * 60 * 1000) => {
     const onUpdateEvent = () => showUpdateToast();
     window.addEventListener('app-update-available', onUpdateEvent);
 
+    // Manual trigger for testing: visit any page with ?test-update=1
+    (window as any).__testUpdateToast = showUpdateToast;
+    if (new URLSearchParams(window.location.search).get('test-update') === '1') {
+      setTimeout(showUpdateToast, 500);
+    }
+
     const check = async () => {
       try {
         // Fetch index.html with cache-busting to detect new deployments
