@@ -334,6 +334,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mfaRequired, mfaVerified, setMfaVerified,
       signIn, signUp, signOut, hasRole,
       isAdmin, isVoluntario, canUpload, canViewMinors,
+      refreshRoles: () => user ? fetchRoles(user.id) : Promise.resolve(),
     }}>
       {children}
     </AuthContext.Provider>
