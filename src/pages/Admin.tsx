@@ -543,7 +543,11 @@ const Admin = () => {
     const matchSearch = u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || (u.section || '').toLowerCase().includes(q);
     const matchRole = roleFilter === 'all' || u.role === roleFilter;
     return matchSearch && matchRole;
-  }).sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name));
+  }).sort((a, b) => {
+    const an = a.user_number ?? Number.MAX_SAFE_INTEGER;
+    const bn = b.user_number ?? Number.MAX_SAFE_INTEGER;
+    return an - bn;
+  });
 
   const roleBadgeVariant = (role: AppRole) => {
     switch (role) {
