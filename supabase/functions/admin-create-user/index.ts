@@ -159,6 +159,33 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ success: true, user_id: newUser.user?.id }), { headers: resHeaders });
     }
 
+    if (action === "signout-user") {
+      const { user_id } = body;
+
+      if (!user_id) {
+        return new Response(JSON.stringify({ error: "user_id é obrigatório" }), { status: 400, headers: resHeaders });
+      }
+
+      if (user_id === callerUser.id) {
+        return new Response(JSON.stringify({ error: "Você não pode derrubar sua própria sessão por aqui" }), { status: 400, headers: resHeaders });
+      }
+
+      // Revoke all refresh tokens / active sessions for the target user
+      const { error: signOutError } = await serviceClient.auth.admin.signOut(user_id, "global");
+
+      if (signOutError) {
+        return new Response(JSON.stringify({ error: signOutError.message }), { status: 400, headers: resHeaders });
+      }
+
+      // Also bump force_refresh_at so the PWA reloads quickly on the next poll
+      await serviceClient
+        .from("profiles")
+        .update({ force_refresh_at: new Date().toISOString() })
+        .eq("user_id", user_id);
+
+      return new Response(JSON.stringify({ success: true }), { headers: resHeaders });
+    }
+
     if (action === "reset-password") {
       const { user_id, new_password } = body;
 

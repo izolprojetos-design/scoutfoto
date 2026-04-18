@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
@@ -453,6 +453,32 @@ const Admin = () => {
     }
   };
 
+  const [signingOutUser, setSigningOutUser] = useState<string | null>(null);
+  const handleSignOutUser = async (userId: string, userName: string) => {
+    setSigningOutUser(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: { action: 'signout-user', user_id: userId },
+      });
+      if (error || (data as { error?: string })?.error) {
+        toast.error('Erro ao derrubar usuário', {
+          description: error?.message || (data as { error?: string })?.error,
+        });
+      } else {
+        toast.success(`${userName} foi desconectado de todos os dispositivos.`);
+        if (user) {
+          logAudit(user.id, 'logout_all_sessions', undefined, {
+            target_user_id: userId,
+            target_name: userName,
+            forced_by_admin: true,
+          }).catch(() => {});
+        }
+      }
+    } finally {
+      setSigningOutUser(null);
+    }
+  };
+
   const openEditNameDialog = (userId: string, currentName: string) => {
     setEditNameUserId(userId);
     setEditNameValue(currentName);
@@ -803,6 +829,41 @@ const Admin = () => {
                               )}
                               Forçar atualização
                             </Button>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={u.user_id === user?.id || signingOutUser === u.user_id}
+                                  title="Encerra todas as sessões ativas deste usuário em todos os dispositivos"
+                                  className="text-destructive hover:text-destructive"
+                                >
+                                  {signingOutUser === u.user_id ? (
+                                    <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                                  ) : (
+                                    <LogOut className="h-3.5 w-3.5 mr-1" />
+                                  )}
+                                  Derrubar
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Derrubar {u.name}?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Todas as sessões ativas deste usuário (em qualquer dispositivo) serão encerradas imediatamente. Ele precisará fazer login novamente.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleSignOutUser(u.user_id, u.name)}
+                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  >
+                                    Derrubar usuário
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                             <Button
                               variant="outline"
                               size="sm"
