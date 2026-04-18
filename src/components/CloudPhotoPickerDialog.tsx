@@ -95,8 +95,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
         sortBy: { column: 'created_at', order: 'desc' },
       });
 
+      const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
+
       const items: StorageImage[] = [];
       const seenScouts = new Set<string>();
+      const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string }[] = [];
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
@@ -106,35 +109,45 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDia
             if (seenScouts.has(scout.id)) continue;
             seenScouts.add(scout.id);
           }
-          const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(file.name, 3600);
-          if (signedData?.signedUrl) {
-            items.push({
-              name: file.name,
-              url: signedData.signedUrl,
-              scoutName: scout?.name,
-              scoutId: scout?.id,
-              section: scout?.section ?? undefined,
-              subgroupId: scout?.subgroupId ?? undefined,
-              subgroupName: scout?.subgroupName,
-            });
-          }
+          scoutPathsToSign.push({ path: file.name, scout, name: file.name });
         }
       }
 
-      // Also list from images bucket (signed URLs)
+      // Also list from images bucket
       const { data: privateImages } = await supabase.storage.from('images').list('', {
-        limit: 200,
+        limit: 100,
         sortBy: { column: 'created_at', order: 'desc' },
       });
-
+      const imagePathsToSign: { path: string; name: string }[] = [];
       if (privateImages) {
         for (const file of privateImages) {
           if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
-          const { data } = await supabase.storage.from('images').createSignedUrl(file.name, 3600);
-          if (data?.signedUrl) {
-            items.push({ name: file.name, url: data.signedUrl });
-          }
+          imagePathsToSign.push({ path: file.name, name: file.name });
         }
+      }
+
+      // Sign all URLs in parallel (batched, single round-trip per bucket)
+      const [scoutUrlMap, imageUrlMap] = await Promise.all([
+        getSignedUrlsBatch('scout-photos', scoutPathsToSign.map(p => p.path), 3600),
+        getSignedUrlsBatch('images', imagePathsToSign.map(p => p.path), 3600),
+      ]);
+
+      for (const item of scoutPathsToSign) {
+        const url = scoutUrlMap[item.path];
+        if (!url) continue;
+        items.push({
+          name: item.name,
+          url,
+          scoutName: item.scout?.name,
+          scoutId: item.scout?.id,
+          section: item.scout?.section ?? undefined,
+          subgroupId: item.scout?.subgroupId ?? undefined,
+          subgroupName: item.scout?.subgroupName,
+        });
+      }
+      for (const item of imagePathsToSign) {
+        const url = imageUrlMap[item.path];
+        if (url) items.push({ name: item.name, url });
       }
 
       setImages(items);

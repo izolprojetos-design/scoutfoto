@@ -147,31 +147,36 @@ const Gallery = () => {
     }
     setHasMore(filtered.length === PAGE_SIZE);
 
-    // Get signed URLs in batch
-    const allPaths = filtered.flatMap(img => {
-      const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
-      if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
-      paths.push({ path: img.storage_path, id: img.id, type: 'full' });
-      return paths;
-    });
+    // Get signed URLs in a single batched call (much faster on mobile)
+    const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
+    const thumbPaths: string[] = [];
+    const fullPaths: string[] = [];
+    const thumbIdByPath = new Map<string, string>();
+    const fullIdByPath = new Map<string, string>();
 
-    // Process in parallel batches of 10
-    const batchSize = 10;
+    for (const img of filtered) {
+      if (img.thumbnail_path) {
+        thumbPaths.push(img.thumbnail_path);
+        thumbIdByPath.set(img.thumbnail_path, img.id);
+      }
+      fullPaths.push(img.storage_path);
+      fullIdByPath.set(img.storage_path, img.id);
+    }
+
+    const [thumbMap, fullMap] = await Promise.all([
+      getSignedUrlsBatch('images', thumbPaths, 3600),
+      getSignedUrlsBatch('images', fullPaths, 3600),
+    ]);
+
     const urls: Record<string, string> = {};
     const thumbs: Record<string, string> = {};
-
-    for (let i = 0; i < allPaths.length; i += batchSize) {
-      const batch = allPaths.slice(i, i + batchSize);
-      const results = await Promise.all(
-        batch.map(item => supabase.storage.from('images').createSignedUrl(item.path, 3600))
-      );
-      results.forEach((res, idx) => {
-        const item = batch[idx];
-        if (res.data?.signedUrl) {
-          if (item.type === 'thumb') thumbs[item.id] = res.data.signedUrl;
-          else urls[item.id] = res.data.signedUrl;
-        }
-      });
+    for (const [path, url] of Object.entries(thumbMap)) {
+      const id = thumbIdByPath.get(path);
+      if (id) thumbs[id] = url;
+    }
+    for (const [path, url] of Object.entries(fullMap)) {
+      const id = fullIdByPath.get(path);
+      if (id) urls[id] = url;
     }
 
     setImageUrls(prev => ({ ...prev, ...urls }));
