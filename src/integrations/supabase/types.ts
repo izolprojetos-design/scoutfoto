@@ -456,6 +456,30 @@ export type Database = {
         }
         Relationships: []
       }
+      login_attempts: {
+        Row: {
+          email: string
+          failed_count: number
+          last_failed_at: string
+          locked_until: string | null
+          updated_at: string
+        }
+        Insert: {
+          email: string
+          failed_count?: number
+          last_failed_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Update: {
+          email?: string
+          failed_count?: number
+          last_failed_at?: string
+          locked_until?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       permissions: {
         Row: {
           category: string
@@ -838,10 +862,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_locked_logins: {
+        Args: never
+        Returns: {
+          email: string
+          failed_count: number
+          is_locked: boolean
+          last_failed_at: string
+          locked_until: string
+        }[]
+      }
+      admin_unlock_login: { Args: { p_email: string }; Returns: undefined }
       can_view_storage_image: {
         Args: { _storage_path: string; _user_id: string }
         Returns: boolean
       }
+      check_login_block: {
+        Args: { p_email: string }
+        Returns: {
+          failed_count: number
+          locked: boolean
+          remaining_seconds: number
+        }[]
+      }
+      clear_login_attempts: { Args: { p_email: string }; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -917,6 +961,14 @@ export type Database = {
           message: Json
           msg_id: number
           read_ct: number
+        }[]
+      }
+      record_login_failure: {
+        Args: { p_email: string }
+        Returns: {
+          attempts_left: number
+          locked: boolean
+          remaining_seconds: number
         }[]
       }
     }
