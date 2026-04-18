@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
@@ -440,6 +440,19 @@ const Admin = () => {
     setResetOpen(true);
   };
 
+  const [unlockingFor, setUnlockingFor] = useState<string | null>(null);
+  const handleUnlockLogin = async (email: string, name: string) => {
+    if (!email) return;
+    setUnlockingFor(email);
+    const { error } = await supabase.rpc('admin_unlock_login', { p_email: email });
+    setUnlockingFor(null);
+    if (error) {
+      toast.error('Erro ao desbloquear', { description: error.message });
+    } else {
+      toast.success('Login desbloqueado', { description: `Tentativas de ${name} foram zeradas.` });
+    }
+  };
+
   const openEditNameDialog = (userId: string, currentName: string) => {
     setEditNameUserId(userId);
     setEditNameValue(currentName);
@@ -761,6 +774,20 @@ const Admin = () => {
                             <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>
                               <KeyRound className="h-3.5 w-3.5 mr-1" />
                               Senha
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleUnlockLogin(u.email, u.name)}
+                              disabled={u.user_id === user?.id || unlockingFor === u.email || !u.email}
+                              title="Zera as tentativas falhas e desbloqueia o login deste usuário"
+                            >
+                              {unlockingFor === u.email ? (
+                                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <Unlock className="h-3.5 w-3.5 mr-1" />
+                              )}
+                              Desbloquear login
                             </Button>
                             <Button
                               variant="outline"
