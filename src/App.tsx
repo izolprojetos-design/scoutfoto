@@ -1,5 +1,7 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from "react";
 import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
+import { useRemoteForceRefresh } from "@/hooks/useRemoteForceRefresh";
+import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -108,6 +110,13 @@ const PageLoader = () => (
   </div>
 );
 
+// Watches for admin-triggered remote refresh requests on the current user
+const RemoteRefreshWatcher = () => {
+  const { user } = useAuth();
+  useRemoteForceRefresh(user?.id);
+  return null;
+};
+
 const AppLayout = lazy(() => import("@/components/AppLayout"));
 
 // Check if running as installed PWA (standalone mode)
@@ -142,6 +151,7 @@ const App = () => {
             <InstallPrompt />
             <BrowserRouter>
               <AuthProvider>
+                <RemoteRefreshWatcher />
                 <ForceChangePassword />
                 <Suspense fallback={<PageLoader />}>
                   <Routes>
