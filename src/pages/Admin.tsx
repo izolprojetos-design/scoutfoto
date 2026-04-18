@@ -757,17 +757,6 @@ const Admin = () => {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-2">
-                            <Select
-                              value={pendingRoles[u.user_id] || u.role}
-                              onValueChange={(v: AppRole) => stageRoleChange(u.user_id, v)}
-                              disabled={u.user_id === user?.id}
-                            >
-                              <SelectTrigger className={`h-8 w-[120px] ${pendingRoles[u.user_id] ? 'ring-2 ring-primary/50' : ''}`}><SelectValue /></SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">Admin</SelectItem>
-                                <SelectItem value="voluntario">Voluntário</SelectItem>
-                              </SelectContent>
-                            </Select>
                             <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>
                               <KeyRound className="h-3.5 w-3.5 mr-1" />
                               Senha
