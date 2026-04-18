@@ -1,10 +1,31 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, Loader2 } from 'lucide-react';
+import { RefreshCw, Loader2, Info } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 const APP_VERSION_KEY = 'scoutfoto_app_version';
+
+const BUILD_TIME = import.meta.env.VITE_BUILD_TIME || '__dev__';
+
+const formatBuildTime = (raw: string) => {
+  if (raw === '__dev__') return 'Desenvolvimento';
+  try {
+    return format(new Date(raw), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  } catch {
+    return raw;
+  }
+};
+
+const shortVersion = (raw: string) => {
+  if (raw === '__dev__') return 'dev';
+  // Compact: YYYYMMDD-HHMM from ISO
+  const m = raw.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return raw.slice(0, 16);
+  return `${m[1]}${m[2]}${m[3]}-${m[4]}${m[5]}`;
+};
 
 const clearCachesAndReload = async () => {
   try {
@@ -59,6 +80,15 @@ const UpdateCheckCard = () => {
     }
   };
 
+  const copyVersion = async () => {
+    try {
+      await navigator.clipboard.writeText(BUILD_TIME);
+      toast.success('Versão copiada para a área de transferência');
+    } catch {
+      toast.error('Não foi possível copiar');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -67,7 +97,29 @@ const UpdateCheckCard = () => {
           Atualizações do app
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-4">
+        <div className="rounded-md border border-border bg-muted/40 p-3">
+          <div className="flex items-start gap-2">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="flex-1 space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-medium text-muted-foreground">Versão instalada</span>
+                <button
+                  onClick={copyVersion}
+                  className="text-xs text-primary hover:underline"
+                  type="button"
+                >
+                  Copiar
+                </button>
+              </div>
+              <p className="font-mono text-sm font-semibold">{shortVersion(BUILD_TIME)}</p>
+              <p className="text-xs text-muted-foreground">
+                Publicada em {formatBuildTime(BUILD_TIME)}
+              </p>
+            </div>
+          </div>
+        </div>
+
         <p className="text-sm text-muted-foreground">
           O ScoutFoto verifica novas versões automaticamente. Use o botão abaixo
           para forçar uma verificação manual agora.
@@ -100,3 +152,4 @@ const UpdateCheckCard = () => {
 };
 
 export default UpdateCheckCard;
+
