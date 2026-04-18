@@ -86,7 +86,11 @@ const Register = () => {
     });
 
     if (fnError || data?.error) {
-      setError(data?.error || fnError?.message || 'Erro ao criar conta');
+      const rawError = data?.error || fnError?.message || 'Erro ao criar conta';
+      const friendly = /weak|known|pwned|compromised|easy to guess/i.test(rawError)
+        ? 'Esta senha aparece em vazamentos públicos e foi considerada insegura. Escolha outra senha, de preferência única, com mais de 12 caracteres.'
+        : rawError;
+      setError(friendly);
       setSubmitting(false);
       return;
     }
