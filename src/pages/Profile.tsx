@@ -15,6 +15,7 @@ import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucid
 import { validatePassword } from '@/lib/passwordValidation';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import DevicesSection from '@/components/profile/DevicesSection';
+import UpdateCheckCard from '@/components/profile/UpdateCheckCard';
 import MFASetup from '@/components/MFASetup';
 
 const roleLabel: Record<string, string> = {
@@ -341,6 +342,9 @@ const Profile = () => {
 
         {/* Connected Devices */}
         <DevicesSection />
+
+        {/* App Updates */}
+        <UpdateCheckCard />
       </div>
     </>
   );
