@@ -352,7 +352,7 @@ const Events = () => {
 
         return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event, index) => {
+          {sortedEvents.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
             const isUpcoming = event.event_date && parseLocalDate(event.event_date) > startOfDay(new Date());
             const mediaCount = mediaCounts[event.id] || { photos: 0, videos: 0 };
