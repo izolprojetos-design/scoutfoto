@@ -1319,7 +1319,7 @@ const Scouts = () => {
                         <ScoutPhoto
                           photoUrl={scout.photo_url}
                           alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
+                          className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (scout.photo_url) {
@@ -1667,7 +1667,7 @@ const Scouts = () => {
                     <ScoutPhoto
                       photoUrl={viewingScout.photo_url}
                       alt={viewingScout.name}
-                      className="h-20 w-20 rounded-full object-cover ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
+                      className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
                       onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
                       fallback={
                         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
