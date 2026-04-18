@@ -48,6 +48,25 @@ export const useAppUpdate = () => {
  */
 export const usePeriodicUpdateCheck = (intervalMs = 5 * 60 * 1000) => {
   useEffect(() => {
+    let notified = false;
+
+    const showUpdateToast = () => {
+      if (notified) return;
+      notified = true;
+      toast.info('Nova versão disponível', {
+        id: 'app-update-available',
+        description: 'Atualize para garantir os recursos mais recentes.',
+        duration: Infinity,
+        action: {
+          label: 'Atualizar agora',
+          onClick: () => forceReload(),
+        },
+      });
+    };
+
+    const onUpdateEvent = () => showUpdateToast();
+    window.addEventListener('app-update-available', onUpdateEvent);
+
     const check = async () => {
       try {
         // Fetch index.html with cache-busting to detect new deployments
@@ -57,11 +76,9 @@ export const usePeriodicUpdateCheck = (intervalMs = 5 * 60 * 1000) => {
         });
         if (res.ok) {
           const html = await res.text();
-          const currentScript = document.querySelector('script[type="module"][src^="/src/"]');
+          const currentScript = document.querySelector('script[type="module"][src^="/src/"], script[type="module"][src^="/assets/"]');
           // If the main script src changed, a new version is available
           if (currentScript && !html.includes(currentScript.getAttribute('src') || '')) {
-            // New version detected - we'll just note it for now
-            // The version check on next page load will handle the reload
             const event = new CustomEvent('app-update-available');
             window.dispatchEvent(event);
           }
@@ -72,6 +89,9 @@ export const usePeriodicUpdateCheck = (intervalMs = 5 * 60 * 1000) => {
     };
 
     const interval = setInterval(check, intervalMs);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('app-update-available', onUpdateEvent);
+    };
   }, [intervalMs]);
 };
