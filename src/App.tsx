@@ -1,5 +1,7 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from "react";
 import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
+import { useRemoteForceRefresh } from "@/hooks/useRemoteForceRefresh";
+import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";

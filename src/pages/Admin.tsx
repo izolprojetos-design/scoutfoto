@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
@@ -94,6 +94,30 @@ const Admin = () => {
   const [editNameUserId, setEditNameUserId] = useState('');
   const [editNameValue, setEditNameValue] = useState('');
   const [editingName, setEditingName] = useState(false);
+
+  // Force remote refresh
+  const [forcingRefreshFor, setForcingRefreshFor] = useState<string | null>(null);
+
+  const handleForceRefresh = async (userId: string, userName: string) => {
+    setForcingRefreshFor(userId);
+    const { error } = await supabase
+      .from('profiles')
+      .update({ force_refresh_at: new Date().toISOString() })
+      .eq('user_id', userId);
+
+    if (error) {
+      toast.error('Erro ao solicitar atualização: ' + error.message);
+    } else {
+      toast.success(`Atualização solicitada para ${userName}. O app dele recarregará em até 2 minutos.`);
+      if (user) {
+        logAudit(user.id, 'force_remote_refresh', undefined, {
+          target_user_id: userId,
+          target_name: userName,
+        }).catch(() => {});
+      }
+    }
+    setForcingRefreshFor(null);
+  };
 
   // Pending changes
   const [pendingRoles, setPendingRoles] = useState<Record<string, AppRole>>({});
@@ -747,6 +771,20 @@ const Admin = () => {
                             <Button variant="outline" size="sm" onClick={() => openResetDialog(u.user_id, u.name)} disabled={u.user_id === user?.id}>
                               <KeyRound className="h-3.5 w-3.5 mr-1" />
                               Senha
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleForceRefresh(u.user_id, u.name)}
+                              disabled={u.user_id === user?.id || forcingRefreshFor === u.user_id}
+                              title="Limpa o cache e recarrega o app deste usuário na próxima verificação (até 2 minutos)"
+                            >
+                              {forcingRefreshFor === u.user_id ? (
+                                <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                              )}
+                              Forçar atualização
                             </Button>
                             <Button
                               variant="outline"
