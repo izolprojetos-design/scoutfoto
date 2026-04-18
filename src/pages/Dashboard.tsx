@@ -236,6 +236,25 @@ const Dashboard = () => {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  // Auto-refresh "Online Agora" every 10 seconds (admin only)
+  useEffect(() => {
+    if (!isAdmin) return;
+    const refreshOnline = async () => {
+      const { data } = await supabase.rpc('admin_list_online_users');
+      if (data) {
+        setOnlineUsers(
+          data.map((u: any) => ({
+            user_id: u.user_id,
+            name: u.name,
+            last_login: u.last_active,
+          }))
+        );
+      }
+    };
+    const interval = setInterval(refreshOnline, 10_000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
+
 
   const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
     setTransitioningId(scoutId);
