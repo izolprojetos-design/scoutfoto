@@ -57,6 +57,9 @@ const ScoutPhoto = ({ photoUrl, fallback, onBroken, className, alt, ...imgProps 
       src={signedUrl}
       alt={alt}
       loading="lazy"
+      decoding="async"
+      // @ts-expect-error fetchpriority is a valid HTML attr not yet typed
+      fetchpriority="low"
       className={className}
       onError={() => {
         setErrored(true);
