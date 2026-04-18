@@ -519,6 +519,54 @@ const Dashboard = () => {
                 <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
                   {onlineUsers.length}
                 </Badge>
+                {isAdmin && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        title="Encerrar sessões antigas"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Encerrar sessões antigas?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação encerrará todas as sessões inativas há mais de 30 minutos. Os usuários afetados precisarão entrar novamente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={async () => {
+                            const { data, error } = await supabase.rpc('admin_clear_inactive_sessions' as any);
+                            if (error) {
+                              toast.error('Erro ao encerrar sessões');
+                              return;
+                            }
+                            toast.success(`Sessões encerradas (${data ?? 0})`);
+                            const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+                            if (onlineData) {
+                              setOnlineUsers(
+                                onlineData.map((u: any) => ({
+                                  user_id: u.user_id,
+                                  name: u.name,
+                                  last_login: u.last_active,
+                                }))
+                              );
+                            }
+                          }}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Encerrar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
               {onlineUsers.length === 0 ? (
                 <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>

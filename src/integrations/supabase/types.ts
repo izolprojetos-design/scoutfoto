@@ -862,6 +862,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_clear_inactive_sessions: { Args: never; Returns: number }
       admin_clear_login_history: { Args: never; Returns: number }
       admin_list_locked_logins: {
         Args: never
