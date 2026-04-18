@@ -20,9 +20,11 @@ import MFASetup from '@/components/MFASetup';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
+  voluntario: 'Voluntário',
+  dirigente_gestor: 'Dirigente Gestor',
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
-  
+  parent: 'Pai/Mãe',
   viewer: 'Visitante',
 };
 
@@ -104,7 +106,8 @@ const Profile = () => {
     setUploading(false);
   };
 
-  const primaryRole = roles[0] || 'viewer';
+  const rolePriority = ['admin', 'voluntario', 'dirigente_gestor', 'chefe', 'dirigente', 'parent', 'viewer'];
+  const primaryRole = rolePriority.find(r => roles.includes(r as any)) || roles[0] || 'viewer';
 
   return (
     <>
