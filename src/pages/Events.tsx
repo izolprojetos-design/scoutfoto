@@ -69,6 +69,7 @@ const Events = () => {
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'alpha'>('recent');
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
@@ -274,6 +275,16 @@ const Events = () => {
               </button>
             )}
           </div>
+          <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'recent' | 'oldest' | 'alpha')}>
+            <SelectTrigger className="h-10 w-full sm:w-48">
+              <SelectValue placeholder="Ordenar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Mais recentes</SelectItem>
+              <SelectItem value="oldest">Mais antigos</SelectItem>
+              <SelectItem value="alpha">Alfabético (A–Z)</SelectItem>
+            </SelectContent>
+          </Select>
           {(canManageEvents || canEditEvents) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
@@ -317,6 +328,16 @@ const Events = () => {
             )
           : events;
 
+        const sortedEvents = [...filteredEvents].sort((a, b) => {
+          if (sortBy === 'alpha') {
+            return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+          }
+          // Use event_date when available, fallback to created_at
+          const aTime = new Date(a.event_date || a.created_at).getTime();
+          const bTime = new Date(b.event_date || b.created_at).getTime();
+          return sortBy === 'recent' ? bTime - aTime : aTime - bTime;
+        });
+
         if (filteredEvents.length === 0) {
           return (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
@@ -331,7 +352,7 @@ const Events = () => {
 
         return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {filteredEvents.map((event, index) => {
+          {sortedEvents.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
             const isUpcoming = event.event_date && parseLocalDate(event.event_date) > startOfDay(new Date());
             const mediaCount = mediaCounts[event.id] || { photos: 0, videos: 0 };
