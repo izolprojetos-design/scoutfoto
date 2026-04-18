@@ -20,9 +20,11 @@ import MFASetup from '@/components/MFASetup';
 
 const roleLabel: Record<string, string> = {
   admin: 'Administrador',
+  voluntario: 'Voluntário',
+  dirigente_gestor: 'Dirigente Gestor',
   chefe: 'Chefe Escoteiro',
   dirigente: 'Dirigente',
-  
+  parent: 'Pai/Mãe',
   viewer: 'Visitante',
 };
 
