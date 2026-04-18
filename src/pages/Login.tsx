@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, Shield, Camera, Users, Eye, EyeOff, AlertCircle, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { isLockedOut, recordFailedAttempt, clearLoginAttempts, formatLockoutTime, getLoginAttempts } from '@/lib/loginRateLimit';
+import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockoutTime } from '@/lib/loginRateLimit';
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -21,16 +21,21 @@ const Login = () => {
   const [loginError, setLoginError] = useState('');
   const [lockoutRemaining, setLockoutRemaining] = useState(0);
 
-  // Check lockout on mount and update countdown
+  // Tick down lockout countdown locally; refresh from server periodically
   useEffect(() => {
-    const check = () => {
-      const { locked, remainingMs } = isLockedOut();
-      setLockoutRemaining(locked ? remainingMs : 0);
+    let cancelled = false;
+    const refreshFromServer = async () => {
+      if (!email) return;
+      const { locked, remainingMs } = await checkLoginBlock(email);
+      if (!cancelled) setLockoutRemaining(locked ? remainingMs : 0);
     };
-    check();
-    const interval = setInterval(check, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    refreshFromServer();
+    const tick = setInterval(() => {
+      setLockoutRemaining(prev => (prev > 1000 ? prev - 1000 : 0));
+    }, 1000);
+    const sync = setInterval(refreshFromServer, 30000);
+    return () => { cancelled = true; clearInterval(tick); clearInterval(sync); };
+  }, [email]);
 
   const isLocked = lockoutRemaining > 0;
 
@@ -38,12 +43,18 @@ const Login = () => {
     e.preventDefault();
     setLoginError('');
 
-    if (isLocked) return;
+    // Always re-check the server first
+    const preCheck = await checkLoginBlock(email);
+    if (preCheck.locked) {
+      setLockoutRemaining(preCheck.remainingMs);
+      setLoginError(`Conta bloqueada. Tente novamente em ${formatLockoutTime(preCheck.remainingMs)} ou contate um administrador.`);
+      return;
+    }
 
     setLoading(true);
     const { error } = await signIn(email, password);
     if (error) {
-      const { locked, attemptsLeft } = recordFailedAttempt();
+      const { locked, attemptsLeft, remainingMs } = await recordFailedAttempt(email);
 
       // Log failed login attempt (anonymous - no user_id available)
       try {
@@ -51,8 +62,8 @@ const Login = () => {
       } catch {}
 
       if (locked) {
-        setLockoutRemaining(15 * 60 * 1000);
-        setLoginError(`Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${formatLockoutTime(15 * 60 * 1000)}.`);
+        setLockoutRemaining(remainingMs || 15 * 60 * 1000);
+        setLoginError(`Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${formatLockoutTime(remainingMs || 15 * 60 * 1000)} ou contate um administrador.`);
 
         // Send security email alert for account lockout
         supabase.functions.invoke('send-transactional-email', {
@@ -71,7 +82,7 @@ const Login = () => {
         setLoginError(`E-mail ou senha incorretos. ${attemptsLeft} tentativa${attemptsLeft === 1 ? '' : 's'} restante${attemptsLeft === 1 ? '' : 's'}.`);
       }
     } else {
-      clearLoginAttempts();
+      await clearLoginAttempts(email);
       navigate('/dashboard');
     }
     setLoading(false);
