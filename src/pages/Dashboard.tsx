@@ -217,6 +217,18 @@ const Dashboard = () => {
         }
         setRecentLogins(logins);
       }
+
+      // Fetch real online users (active sessions in the last 30 minutes)
+      const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+      if (onlineData) {
+        setOnlineUsers(
+          onlineData.map((u: any) => ({
+            user_id: u.user_id,
+            name: u.name,
+            last_login: u.last_active,
+          }))
+        );
+      }
     }
 
     setLoading(false);
