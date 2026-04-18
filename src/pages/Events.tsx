@@ -287,6 +287,30 @@ const Events = () => {
               <SelectItem value="alpha">Alfabético (A–Z)</SelectItem>
             </SelectContent>
           </Select>
+          <Select value={filterBranch} onValueChange={setFilterBranch}>
+            <SelectTrigger className="h-10 w-full sm:w-44">
+              <SelectValue placeholder="Ramo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os ramos</SelectItem>
+              {branches.map(b => (
+                <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterYear} onValueChange={setFilterYear}>
+            <SelectTrigger className="h-10 w-full sm:w-32">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os anos</SelectItem>
+              {Array.from(new Set(events.map(e => e.event_date ? new Date(e.event_date).getUTCFullYear() : null).filter((y): y is number => y !== null)))
+                .sort((a, b) => b - a)
+                .map(year => (
+                  <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
           {(canManageEvents || canEditEvents) && (
             <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
               <DialogTrigger asChild>
