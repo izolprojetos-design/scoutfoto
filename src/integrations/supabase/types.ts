@@ -889,6 +889,7 @@ export type Database = {
           remaining_seconds: number
         }[]
       }
+      cleanup_old_refresh_tokens: { Args: never; Returns: number }
       clear_login_attempts: { Args: { p_email: string }; Returns: undefined }
       delete_email: {
         Args: { message_id: number; queue_name: string }
