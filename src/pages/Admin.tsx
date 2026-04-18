@@ -274,6 +274,11 @@ const Admin = () => {
           user_number: (p as any).user_number || null,
         };
       });
+      merged.sort((a, b) => {
+        const an = a.user_number ?? Number.MAX_SAFE_INTEGER;
+        const bn = b.user_number ?? Number.MAX_SAFE_INTEGER;
+        return an - bn;
+      });
       setUsers(merged);
     }
     setLoading(false);
