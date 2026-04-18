@@ -7,7 +7,7 @@ export type AuditAction =
   | 'logout_all_sessions' | 'remote_device_removed' | 'session_revoked_password_change'
   | 'create_event' | 'change_permissions' | 'create_user'
   | 'data_update' | 'access_denied' | 'mfa_enabled' | 'mfa_disabled'
-  | 'role_change' | 'status_change' | 'section_change';
+  | 'role_change' | 'status_change' | 'section_change' | 'force_remote_refresh';
 
 export const logAudit = async (
   _userId: string,
