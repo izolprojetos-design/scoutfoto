@@ -447,9 +447,9 @@ const Admin = () => {
     const { error } = await supabase.rpc('admin_unlock_login', { p_email: email });
     setUnlockingFor(null);
     if (error) {
-      toast({ title: 'Erro ao desbloquear', description: error.message, variant: 'destructive' });
+      toast.error('Erro ao desbloquear', { description: error.message });
     } else {
-      toast({ title: 'Login desbloqueado', description: `Tentativas de ${name} foram zeradas.` });
+      toast.success('Login desbloqueado', { description: `Tentativas de ${name} foram zeradas.` });
     }
   };
 
