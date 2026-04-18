@@ -1,7 +1,25 @@
 <!doctype html>
-<html lang="pt-BR" style="background-color:#f7f5f0">
+<html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Apply theme preference before render to avoid FOUC and respect dark mode
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark);
+          var bg = isDark ? '#0f1419' : '#f7f5f0';
+          if (isDark) document.documentElement.classList.add('dark');
+          document.documentElement.style.backgroundColor = bg;
+          document.addEventListener('DOMContentLoaded', function () {
+            if (document.body) document.body.style.backgroundColor = bg;
+            var loader = document.getElementById('initial-loader');
+            if (loader) loader.style.color = isDark ? '#e8e3d6' : '#1E3A8A';
+          });
+        } catch (e) {}
+      })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ScoutFoto - Banco de Imagens Escoteiro</title>
     <meta name="description" content="Sistema profissional de banco de imagens para grupos escoteiros. Todas as aventuras escoteiras em um só lugar.">
