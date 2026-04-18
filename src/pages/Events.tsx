@@ -346,13 +346,21 @@ const Events = () => {
         </div>
       ) : (() => {
         const q = searchQuery.trim().toLowerCase();
-        const filteredEvents = q
-          ? events.filter(e =>
+        const filteredEvents = events.filter(e => {
+          if (q) {
+            const matches =
               e.name.toLowerCase().includes(q) ||
               (e.location || '').toLowerCase().includes(q) ||
-              (e.description || '').toLowerCase().includes(q)
-            )
-          : events;
+              (e.description || '').toLowerCase().includes(q);
+            if (!matches) return false;
+          }
+          if (filterBranch !== 'all' && e.branch_id !== filterBranch) return false;
+          if (filterYear !== 'all') {
+            if (!e.event_date) return false;
+            if (String(new Date(e.event_date).getUTCFullYear()) !== filterYear) return false;
+          }
+          return true;
+        });
 
         const sortedEvents = [...filteredEvents].sort((a, b) => {
           if (sortBy === 'alpha') {
