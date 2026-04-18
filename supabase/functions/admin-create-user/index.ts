@@ -170,11 +170,25 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "Você não pode derrubar sua própria sessão por aqui" }), { status: 400, headers: resHeaders });
       }
 
-      // Revoke all refresh tokens / active sessions for the target user
-      const { error: signOutError } = await serviceClient.auth.admin.signOut(user_id, "global");
+      // Revoke all refresh tokens / active sessions for the target user.
+      // The JS SDK's auth.admin.signOut expects a JWT, so we call the GoTrue admin
+      // endpoint directly with the service role key to sign out by user_id.
+      const signOutRes = await fetch(
+        `${Deno.env.get("SUPABASE_URL")}/auth/v1/admin/users/${user_id}/logout`,
+        {
+          method: "POST",
+          headers: {
+            apikey: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ scope: "global" }),
+        }
+      );
 
-      if (signOutError) {
-        return new Response(JSON.stringify({ error: signOutError.message }), { status: 400, headers: resHeaders });
+      if (!signOutRes.ok && signOutRes.status !== 204) {
+        const errText = await signOutRes.text();
+        return new Response(JSON.stringify({ error: `Falha ao encerrar sessões: ${errText}` }), { status: 400, headers: resHeaders });
       }
 
       // Also bump force_refresh_at so the PWA reloads quickly on the next poll
