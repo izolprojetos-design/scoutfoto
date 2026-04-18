@@ -440,6 +440,19 @@ const Admin = () => {
     setResetOpen(true);
   };
 
+  const [unlockingFor, setUnlockingFor] = useState<string | null>(null);
+  const handleUnlockLogin = async (email: string, name: string) => {
+    if (!email) return;
+    setUnlockingFor(email);
+    const { error } = await supabase.rpc('admin_unlock_login', { p_email: email });
+    setUnlockingFor(null);
+    if (error) {
+      toast({ title: 'Erro ao desbloquear', description: error.message, variant: 'destructive' });
+    } else {
+      toast({ title: 'Login desbloqueado', description: `Tentativas de ${name} foram zeradas.` });
+    }
+  };
+
   const openEditNameDialog = (userId: string, currentName: string) => {
     setEditNameUserId(userId);
     setEditNameValue(currentName);
