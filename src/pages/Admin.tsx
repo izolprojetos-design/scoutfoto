@@ -453,6 +453,32 @@ const Admin = () => {
     }
   };
 
+  const [signingOutUser, setSigningOutUser] = useState<string | null>(null);
+  const handleSignOutUser = async (userId: string, userName: string) => {
+    setSigningOutUser(userId);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-create-user', {
+        body: { action: 'signout-user', user_id: userId },
+      });
+      if (error || (data as { error?: string })?.error) {
+        toast.error('Erro ao derrubar usuário', {
+          description: error?.message || (data as { error?: string })?.error,
+        });
+      } else {
+        toast.success(`${userName} foi desconectado de todos os dispositivos.`);
+        if (user) {
+          logAudit(user.id, 'logout_all_sessions', undefined, {
+            target_user_id: userId,
+            target_name: userName,
+            forced_by_admin: true,
+          }).catch(() => {});
+        }
+      }
+    } finally {
+      setSigningOutUser(null);
+    }
+  };
+
   const openEditNameDialog = (userId: string, currentName: string) => {
     setEditNameUserId(userId);
     setEditNameValue(currentName);
