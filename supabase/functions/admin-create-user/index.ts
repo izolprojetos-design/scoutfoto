@@ -67,17 +67,10 @@ Deno.serve(async (req) => {
           await serviceClient.from("profiles").update(updateData).eq("user_id", newUser.user.id);
         }
 
-        if (invite.role && invite.role !== "viewer") {
+        if (invite.role) {
           await new Promise(resolve => setTimeout(resolve, 500));
-          const { error: roleError } = await serviceClient
-            .from("user_roles")
-            .update({ role: invite.role })
-            .eq("user_id", newUser.user.id);
-          if (roleError) {
-            await serviceClient
-              .from("user_roles")
-              .upsert({ user_id: newUser.user.id, role: invite.role }, { onConflict: "user_id" });
-          }
+          await serviceClient.from("user_roles").delete().eq("user_id", newUser.user.id);
+          await serviceClient.from("user_roles").insert({ user_id: newUser.user.id, role: invite.role });
         }
 
         await serviceClient
