@@ -546,6 +546,45 @@ const Dashboard = () => {
                 <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
                 <span className="text-sm font-semibold">Últimos Acessos</span>
                 <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
+                {isAdmin && recentLogins.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                        title="Limpar histórico"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Limpar histórico de acessos?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta ação removerá permanentemente todos os registros de login do histórico de auditoria. Não é possível desfazer.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={async () => {
+                            const { data, error } = await supabase.rpc('admin_clear_login_history' as any);
+                            if (error) {
+                              toast.error('Erro ao limpar histórico');
+                              return;
+                            }
+                            setRecentLogins([]);
+                            toast.success(`Histórico limpo (${data ?? 0} registros)`);
+                          }}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          Limpar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
               {recentLogins.length === 0 ? (
                 <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
