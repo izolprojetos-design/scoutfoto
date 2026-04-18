@@ -114,6 +114,7 @@ const Dashboard = () => {
   const [allRoles, setAllRoles] = useState<UserRole[]>([]);
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
   const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
     id: string;
@@ -215,6 +216,18 @@ const Dashboard = () => {
           }
         }
         setRecentLogins(logins);
+      }
+
+      // Fetch real online users (active sessions in the last 30 minutes)
+      const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+      if (onlineData) {
+        setOnlineUsers(
+          onlineData.map((u: any) => ({
+            user_id: u.user_id,
+            name: u.name,
+            last_login: u.last_active,
+          }))
+        );
       }
     }
 
@@ -473,33 +486,24 @@ const Dashboard = () => {
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-sm font-semibold">Online Agora</span>
                 <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-                  {recentLogins.filter(l => {
-                    const diffMs = Date.now() - new Date(l.last_login).getTime();
-                    return diffMs < 30 * 60 * 1000;
-                  }).length}
+                  {onlineUsers.length}
                 </Badge>
               </div>
-              {(() => {
-                const onlineUsers = recentLogins.filter(l => {
-                  const diffMs = Date.now() - new Date(l.last_login).getTime();
-                  return diffMs < 30 * 60 * 1000;
-                });
-                return onlineUsers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
-                ) : (
-                  <div className="space-y-1.5">
-                    {onlineUsers.map(login => (
-                      <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
-                          <User className="h-3 w-3 text-emerald-600" />
-                        </div>
-                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
+              {onlineUsers.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {onlineUsers.map(login => (
+                    <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
+                        <User className="h-3 w-3 text-emerald-600" />
                       </div>
-                    ))}
-                  </div>
-                );
-              })()}
+                      <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Divider */}

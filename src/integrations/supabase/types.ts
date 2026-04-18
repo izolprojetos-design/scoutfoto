@@ -872,6 +872,14 @@ export type Database = {
           locked_until: string
         }[]
       }
+      admin_list_online_users: {
+        Args: never
+        Returns: {
+          last_active: string
+          name: string
+          user_id: string
+        }[]
+      }
       admin_signout_user: {
         Args: { p_admin_user_id?: string; p_user_id: string }
         Returns: undefined
