@@ -104,7 +104,8 @@ const Profile = () => {
     setUploading(false);
   };
 
-  const primaryRole = roles[0] || 'viewer';
+  const rolePriority = ['admin', 'voluntario', 'dirigente_gestor', 'chefe', 'dirigente', 'parent', 'viewer'];
+  const primaryRole = rolePriority.find(r => roles.includes(r as any)) || roles[0] || 'viewer';
 
   return (
     <>
