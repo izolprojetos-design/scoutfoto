@@ -6,6 +6,7 @@ import type { Database } from '@/integrations/supabase/types';
 import { logAudit } from '@/lib/auditLog';
 import { checkAndRegisterDevice } from '@/lib/deviceDetection';
 import { notifyNewDevice, notifyLoginSuccess } from '@/lib/securityNotifications';
+import { ROLE_PRIORITY } from '@/lib/userRoles';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -64,7 +65,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .from('user_roles')
       .select('role')
       .eq('user_id', userId);
-    setRoles(data?.map(r => r.role) || []);
+
+    const sortedRoles = (data?.map(r => r.role) || []).sort(
+      (a, b) => ROLE_PRIORITY.indexOf(a) - ROLE_PRIORITY.indexOf(b)
+    );
+
+    setRoles(sortedRoles);
   }, []);
 
   const checkMfaStatus = useCallback(async () => {
@@ -72,7 +78,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data } = await supabase.auth.mfa.listFactors();
       const verified = data?.totp?.filter(f => f.status === 'verified') || [];
       if (verified.length > 0) {
-        // Check current AAL level
         const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
         if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
           setMfaRequired(true);
@@ -131,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let validatedUser = activeSession.user ?? null;
 
-    // Skip expensive getUser() call when session is fresh (not expiring soon)
     if (!skipValidation) {
       const userCheck = await supabase.auth.getUser(activeSession.access_token);
       if (userCheck.error || !userCheck.data.user) {
@@ -146,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         validatedUser = userCheck.data.user;
       }
     }
+
     setSession(activeSession);
     setUser(validatedUser);
 
@@ -158,7 +163,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setLoading(false);
   }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession]);
 
-  // Inactivity timeout: 30 minutes
   useEffect(() => {
     if (!user) return;
 
@@ -224,7 +228,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (event === 'INITIAL_SESSION') {
           if (initialHandled) return;
           initialHandled = true;
-          // Fresh initial session — skip getUser validation
           void syncSessionState(nextSes, false, true);
         } else {
           setTimeout(() => {
@@ -234,7 +237,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // getSession is only a fallback if onAuthStateChange doesn't fire INITIAL_SESSION
     supabase.auth.getSession().then(({ data: { session: fallbackSes } }) => {
       if (!initialHandled) {
         initialHandled = true;
@@ -268,7 +270,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           });
           notifyNewDevice(data.user.id, deviceInfo.deviceName, deviceInfo.browser);
 
-          // Send security email alert for new device
           supabase.functions.invoke('send-transactional-email', {
             body: {
               templateName: 'security-new-device',
@@ -287,7 +288,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       } catch {}
 
-      // Check MFA
       await checkMfaStatus();
     }
     return { error: error as Error | null };
@@ -303,7 +303,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     });
 
-    // Send welcome email (fire-and-forget)
     if (!error && data.user) {
       supabase.functions.invoke('send-transactional-email', {
         body: {
