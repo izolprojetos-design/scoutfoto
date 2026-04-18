@@ -38,6 +38,7 @@ interface AuthContextType {
   isVoluntario: boolean;
   canUpload: boolean;
   canViewMinors: boolean;
+  refreshRoles: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
