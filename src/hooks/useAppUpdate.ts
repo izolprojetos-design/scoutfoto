@@ -1,6 +1,19 @@
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 const APP_VERSION_KEY = 'scoutfoto_app_version';
+
+const forceReload = async () => {
+  try {
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map((n) => caches.delete(n)));
+    }
+  } catch {
+    // ignore cache errors
+  }
+  window.location.reload();
+};
 
 /**
  * Checks for app updates by comparing a build timestamp.
