@@ -258,8 +258,8 @@ const Scouts = () => {
     const compressed = await compressScoutPhoto(photo);
     const { error } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: true, contentType: compressed.type });
     if (error) { console.error('Upload error:', error); return null; }
-    const { data } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
-    return data?.signedUrl || path;
+    // Always store the storage path (not a signed URL) — signed URLs expire in 1h
+    return path;
   };
 
   const handleCreateScout = async (e: React.FormEvent) => {
@@ -369,8 +369,8 @@ const Scouts = () => {
       await supabase.storage.from('scout-photos').upload(newPath, downloaded, { upsert: true });
       await supabase.storage.from('scout-photos').remove([oldFile.name]);
 
-      const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(newPath, 3600);
-      return signedData?.signedUrl || newPath;
+      // Store the storage path, not a signed URL
+      return newPath;
     } catch (err) {
       console.error('Error renaming photo in storage:', err);
       return null;
