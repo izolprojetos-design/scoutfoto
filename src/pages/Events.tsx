@@ -328,6 +328,16 @@ const Events = () => {
             )
           : events;
 
+        const sortedEvents = [...filteredEvents].sort((a, b) => {
+          if (sortBy === 'alpha') {
+            return a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' });
+          }
+          // Use event_date when available, fallback to created_at
+          const aTime = new Date(a.event_date || a.created_at).getTime();
+          const bTime = new Date(b.event_date || b.created_at).getTime();
+          return sortBy === 'recent' ? bTime - aTime : aTime - bTime;
+        });
+
         if (filteredEvents.length === 0) {
           return (
             <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
