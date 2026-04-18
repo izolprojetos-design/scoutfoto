@@ -20,7 +20,12 @@ import MFASetup from '@/components/MFASetup';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 
 const Profile = () => {
-  const { profile, roles, user, isAdmin } = useAuth();
+  const { profile, roles, user, isAdmin, refreshRoles } = useAuth();
+
+  useEffect(() => {
+    refreshRoles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [name, setName] = useState(profile?.name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
