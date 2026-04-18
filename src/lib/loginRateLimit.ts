@@ -1,57 +1,45 @@
-const LOGIN_ATTEMPTS_KEY = 'login_attempts';
-const LOCKOUT_KEY = 'login_lockout_until';
-const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+import { supabase } from '@/integrations/supabase/client';
 
-interface LoginAttempts {
-  count: number;
-  firstAttemptAt: number;
+const MAX_ATTEMPTS = 5;
+
+export interface BlockStatus {
+  locked: boolean;
+  remainingMs: number;
+  failedCount: number;
 }
 
-export const getLoginAttempts = (): LoginAttempts => {
-  try {
-    const stored = localStorage.getItem(LOGIN_ATTEMPTS_KEY);
-    if (!stored) return { count: 0, firstAttemptAt: Date.now() };
-    return JSON.parse(stored);
-  } catch {
-    return { count: 0, firstAttemptAt: Date.now() };
+export const checkLoginBlock = async (email: string): Promise<BlockStatus> => {
+  if (!email) return { locked: false, remainingMs: 0, failedCount: 0 };
+  const { data, error } = await supabase.rpc('check_login_block', { p_email: email });
+  if (error || !data || data.length === 0) {
+    return { locked: false, remainingMs: 0, failedCount: 0 };
   }
+  const row = data[0];
+  return {
+    locked: !!row.locked,
+    remainingMs: (row.remaining_seconds || 0) * 1000,
+    failedCount: row.failed_count || 0,
+  };
 };
 
-export const isLockedOut = (): { locked: boolean; remainingMs: number } => {
-  const lockoutUntil = localStorage.getItem(LOCKOUT_KEY);
-  if (!lockoutUntil) return { locked: false, remainingMs: 0 };
-  const until = parseInt(lockoutUntil, 10);
-  const remaining = until - Date.now();
-  if (remaining <= 0) {
-    localStorage.removeItem(LOCKOUT_KEY);
-    localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
-    return { locked: false, remainingMs: 0 };
+export const recordFailedAttempt = async (
+  email: string,
+): Promise<{ locked: boolean; attemptsLeft: number; remainingMs: number }> => {
+  const { data, error } = await supabase.rpc('record_login_failure', { p_email: email });
+  if (error || !data || data.length === 0) {
+    return { locked: false, attemptsLeft: MAX_ATTEMPTS, remainingMs: 0 };
   }
-  return { locked: true, remainingMs: remaining };
+  const row = data[0];
+  return {
+    locked: !!row.locked,
+    attemptsLeft: row.attempts_left ?? 0,
+    remainingMs: (row.remaining_seconds || 0) * 1000,
+  };
 };
 
-export const recordFailedAttempt = (): { locked: boolean; attemptsLeft: number } => {
-  const attempts = getLoginAttempts();
-  const newCount = attempts.count + 1;
-
-  if (newCount >= MAX_ATTEMPTS) {
-    localStorage.setItem(LOCKOUT_KEY, String(Date.now() + LOCKOUT_DURATION_MS));
-    localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
-    return { locked: true, attemptsLeft: 0 };
-  }
-
-  localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({
-    count: newCount,
-    firstAttemptAt: attempts.firstAttemptAt,
-  }));
-
-  return { locked: false, attemptsLeft: MAX_ATTEMPTS - newCount };
-};
-
-export const clearLoginAttempts = () => {
-  localStorage.removeItem(LOGIN_ATTEMPTS_KEY);
-  localStorage.removeItem(LOCKOUT_KEY);
+export const clearLoginAttempts = async (email: string) => {
+  if (!email) return;
+  await supabase.rpc('clear_login_attempts', { p_email: email });
 };
 
 export const formatLockoutTime = (ms: number): string => {
