@@ -307,9 +307,31 @@ const Events = () => {
           <p className="text-lg font-medium text-foreground">Nenhum evento cadastrado</p>
           <p className="mt-1 text-sm">Crie seu primeiro evento para começar</p>
         </div>
-      ) : (
+      ) : (() => {
+        const q = searchQuery.trim().toLowerCase();
+        const filteredEvents = q
+          ? events.filter(e =>
+              e.name.toLowerCase().includes(q) ||
+              (e.location || '').toLowerCase().includes(q) ||
+              (e.description || '').toLowerCase().includes(q)
+            )
+          : events;
+
+        if (filteredEvents.length === 0) {
+          return (
+            <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
+                <Search className="h-8 w-8" />
+              </div>
+              <p className="text-lg font-medium text-foreground">Nenhum evento encontrado</p>
+              <p className="mt-1 text-sm">Tente buscar por outro termo</p>
+            </div>
+          );
+        }
+
+        return (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event, index) => {
+          {filteredEvents.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
             const isUpcoming = event.event_date && parseLocalDate(event.event_date) > startOfDay(new Date());
             const mediaCount = mediaCounts[event.id] || { photos: 0, videos: 0 };
