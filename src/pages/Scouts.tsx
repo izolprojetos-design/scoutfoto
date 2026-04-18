@@ -335,21 +335,10 @@ const Scouts = () => {
     setEditPhoto(null);
     setEditDialogOpen(true);
 
-    // Validate photo_url still exists before showing preview
+    // Resolve signed URL for preview only — never auto-clear photo_url on transient failures
     if (scout.photo_url) {
       getSignedPhotoUrl(scout.photo_url).then(signedUrl => {
-        if (signedUrl) {
-          setEditPhotoPreview(signedUrl);
-        } else {
-          setEditPhotoPreview(null);
-          if (!clearedPhotoIds.current.has(scout.id)) {
-            clearedPhotoIds.current.add(scout.id);
-            supabase.from('scouts').update({ photo_url: null }).eq('id', scout.id).then(() => {
-              setScouts(prev => prev.map(s => s.id === scout.id ? { ...s, photo_url: null } : s));
-              setEditingScout(prev => prev ? { ...prev, photo_url: null } : prev);
-            });
-          }
-        }
+        setEditPhotoPreview(signedUrl);
       });
     } else {
       setEditPhotoPreview(null);
