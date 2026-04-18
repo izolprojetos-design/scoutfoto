@@ -692,7 +692,34 @@ const Admin = () => {
                             );
                           })()}
                         </TableCell>
-                        <TableCell><Badge variant={roleBadgeVariant(u.role)}>{{ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' }[u.role] || u.role}</Badge></TableCell>
+                        <TableCell>
+                          {(() => {
+                            const currentRole = (pendingRoles[u.user_id] || u.role) as AppRole;
+                            const isPending = !!pendingRoles[u.user_id];
+                            const label = ({ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' } as Record<string, string>)[currentRole] || currentRole;
+                            const isSelf = u.user_id === user?.id;
+                            return (
+                              <Select
+                                value={currentRole}
+                                onValueChange={(v: AppRole) => stageRoleChange(u.user_id, v)}
+                                disabled={isSelf}
+                              >
+                                <SelectTrigger
+                                  className={`h-auto w-auto gap-1 border-0 bg-transparent p-0 shadow-none focus:ring-0 focus:ring-offset-0 [&>svg]:opacity-50 ${isSelf ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                  aria-label="Alterar cargo"
+                                >
+                                  <Badge variant={roleBadgeVariant(currentRole)} className={isPending ? 'ring-2 ring-primary/50' : ''}>
+                                    {label}
+                                  </Badge>
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                  <SelectItem value="voluntario">Voluntário</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            );
+                          })()}
+                        </TableCell>
                         <TableCell>
                           {(() => {
                             const currentActive = pendingStatus[u.user_id] !== undefined ? pendingStatus[u.user_id] : u.is_active;
