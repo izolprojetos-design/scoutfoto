@@ -56,7 +56,7 @@ export const usePeriodicUpdateCheck = (intervalMs = 5 * 60 * 1000) => {
       toast.info('Nova versão disponível', {
         id: 'app-update-available',
         description: 'Atualize para garantir os recursos mais recentes.',
-        duration: Infinity,
+        duration: 8000,
         action: {
           label: 'Atualizar agora',
           onClick: () => forceReload(),
