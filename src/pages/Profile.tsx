@@ -342,6 +342,9 @@ const Profile = () => {
 
         {/* Connected Devices */}
         <DevicesSection />
+
+        {/* App Updates */}
+        <UpdateCheckCard />
       </div>
     </>
   );
