@@ -743,7 +743,7 @@ const Admin = () => {
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
                         <TableCell className="font-mono text-xs text-muted-foreground">
-                          {u.user_number ? String(u.user_number).padStart(7, '0') : '—'}
+                          {u.user_number ? String(u.user_number).padStart(4, '0') : '—'}
                         </TableCell>
                         <TableCell className="font-medium">
                           <button
