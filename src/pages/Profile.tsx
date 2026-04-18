@@ -28,7 +28,6 @@ const Profile = () => {
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
-  // Change password state
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -110,7 +109,6 @@ const Profile = () => {
           <p className="mt-1 text-muted-foreground">Gerencie suas informações pessoais</p>
         </div>
 
-        {/* Avatar Card */}
         <Card className="border-0 shadow-lg">
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <div className="relative">
@@ -167,7 +165,30 @@ const Profile = () => {
             </div>
           </CardContent>
         </Card>
-...
+
+        <Card className="border-0 shadow-lg">
+          <CardHeader>
+            <CardTitle>Informações</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="Seu nome completo"
+                className="h-11"
+                disabled={!isAdmin}
+              />
+              {!isAdmin && (
+                <p className="text-xs text-muted-foreground">Apenas o administrador pode alterar o nome</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={profile?.email || ''} disabled className="h-11 bg-muted" />
+            </div>
             <div className="space-y-2">
               <Label>Cargo</Label>
               <Input value={ROLE_LABELS[primaryRole]} disabled className="h-11 bg-muted" />
@@ -180,7 +201,6 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* Change Password */}
         <Card className="border-0 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -265,7 +285,6 @@ const Profile = () => {
                   return;
                 }
                 setChangingPassword(true);
-                // Verify current password by attempting sign in
                 const { error: verifyError } = await supabase.auth.signInWithPassword({
                   email: profile?.email || '',
                   password: currentPassword,
@@ -306,13 +325,8 @@ const Profile = () => {
           </CardContent>
         </Card>
 
-        {/* 2FA Setup */}
         <MFASetup />
-
-        {/* Connected Devices */}
         <DevicesSection />
-
-        {/* App Updates */}
         <UpdateCheckCard />
       </div>
     </>

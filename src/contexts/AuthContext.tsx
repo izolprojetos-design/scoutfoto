@@ -9,7 +9,57 @@ import { notifyNewDevice, notifyLoginSuccess } from '@/lib/securityNotifications
 import { ROLE_PRIORITY } from '@/lib/userRoles';
 
 type AppRole = Database['public']['Enums']['app_role'];
-...
+
+interface Profile {
+  id: string;
+  user_id: string;
+  name: string;
+  email: string;
+  avatar_url: string | null;
+  is_active: boolean;
+  must_change_password: boolean;
+  section: string | null;
+}
+
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  profile: Profile | null;
+  roles: AppRole[];
+  loading: boolean;
+  mfaRequired: boolean;
+  mfaVerified: boolean;
+  setMfaVerified: (v: boolean) => void;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<void>;
+  hasRole: (role: AppRole) => boolean;
+  isAdmin: boolean;
+  isVoluntario: boolean;
+  canUpload: boolean;
+  canViewMinors: boolean;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [roles, setRoles] = useState<AppRole[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaVerified, setMfaVerified] = useState(false);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+    setProfile(data ?? null);
+  }, []);
+
   const fetchRoles = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('user_roles')
@@ -28,7 +78,6 @@ type AppRole = Database['public']['Enums']['app_role'];
       const { data } = await supabase.auth.mfa.listFactors();
       const verified = data?.totp?.filter(f => f.status === 'verified') || [];
       if (verified.length > 0) {
-        // Check current AAL level
         const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
         if (aalData?.currentLevel === 'aal1' && aalData?.nextLevel === 'aal2') {
           setMfaRequired(true);
@@ -87,7 +136,6 @@ type AppRole = Database['public']['Enums']['app_role'];
 
     let validatedUser = activeSession.user ?? null;
 
-    // Skip expensive getUser() call when session is fresh (not expiring soon)
     if (!skipValidation) {
       const userCheck = await supabase.auth.getUser(activeSession.access_token);
       if (userCheck.error || !userCheck.data.user) {
@@ -102,6 +150,7 @@ type AppRole = Database['public']['Enums']['app_role'];
         validatedUser = userCheck.data.user;
       }
     }
+
     setSession(activeSession);
     setUser(validatedUser);
 
@@ -114,7 +163,6 @@ type AppRole = Database['public']['Enums']['app_role'];
     setLoading(false);
   }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession]);
 
-  // Inactivity timeout: 30 minutes
   useEffect(() => {
     if (!user) return;
 
@@ -180,7 +228,6 @@ type AppRole = Database['public']['Enums']['app_role'];
         if (event === 'INITIAL_SESSION') {
           if (initialHandled) return;
           initialHandled = true;
-          // Fresh initial session — skip getUser validation
           void syncSessionState(nextSes, false, true);
         } else {
           setTimeout(() => {
@@ -190,7 +237,6 @@ type AppRole = Database['public']['Enums']['app_role'];
       }
     );
 
-    // getSession is only a fallback if onAuthStateChange doesn't fire INITIAL_SESSION
     supabase.auth.getSession().then(({ data: { session: fallbackSes } }) => {
       if (!initialHandled) {
         initialHandled = true;
@@ -224,7 +270,6 @@ type AppRole = Database['public']['Enums']['app_role'];
           });
           notifyNewDevice(data.user.id, deviceInfo.deviceName, deviceInfo.browser);
 
-          // Send security email alert for new device
           supabase.functions.invoke('send-transactional-email', {
             body: {
               templateName: 'security-new-device',
@@ -243,7 +288,6 @@ type AppRole = Database['public']['Enums']['app_role'];
         }
       } catch {}
 
-      // Check MFA
       await checkMfaStatus();
     }
     return { error: error as Error | null };
@@ -259,7 +303,6 @@ type AppRole = Database['public']['Enums']['app_role'];
       },
     });
 
-    // Send welcome email (fire-and-forget)
     if (!error && data.user) {
       supabase.functions.invoke('send-transactional-email', {
         body: {
