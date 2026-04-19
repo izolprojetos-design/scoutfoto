@@ -822,6 +822,10 @@ const Scouts = () => {
             onClick={() => {
               photoPickInProgressRef.current = true;
               document.getElementById(`${photoInputId}-camera`)?.click();
+              // Defensive cleanup if user cancels camera (no change event fires)
+              window.setTimeout(() => {
+                if (!cropperOpen) photoPickInProgressRef.current = false;
+              }, 60000);
             }}
           >
             <Camera className="h-4 w-4" />
