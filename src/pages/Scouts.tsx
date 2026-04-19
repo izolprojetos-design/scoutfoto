@@ -1591,12 +1591,12 @@ const Scouts = () => {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={(v) => { if (!v && cropperOpen) return; setEditDialogOpen(v); }}>
+      <Dialog open={editDialogOpen} onOpenChange={(v) => { if (!v && (cropperOpen || photoPickInProgressRef.current)) return; setEditDialogOpen(v); }}>
         <DialogContent
           className="max-h-[90vh] overflow-y-auto"
-          onInteractOutside={(e) => { if (cropperOpen) e.preventDefault(); }}
-          onPointerDownOutside={(e) => { if (cropperOpen) e.preventDefault(); }}
-          onEscapeKeyDown={(e) => { if (cropperOpen) e.preventDefault(); }}
+          onInteractOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+          onPointerDownOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+          onEscapeKeyDown={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
         >
           <DialogHeader>
             <DialogTitle>Editar Membro</DialogTitle>
