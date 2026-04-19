@@ -128,6 +128,8 @@ const Scouts = () => {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
+  // Tracks if a camera/file picker is currently in progress (prevents parent Dialog from closing on mobile remount)
+  const photoPickInProgressRef = useRef(false);
 
   // Cloud picker state
   const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
@@ -198,12 +200,16 @@ const Scouts = () => {
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      photoPickInProgressRef.current = false;
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropperImage(reader.result as string);
       setCropperTarget('new');
       setCropperOpen(true);
+      // keep flag true; cleared when cropper closes
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -211,7 +217,10 @@ const Scouts = () => {
 
   const handleEditPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      photoPickInProgressRef.current = false;
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropperImage(reader.result as string);
@@ -235,6 +244,7 @@ const Scouts = () => {
     };
     reader.readAsDataURL(croppedFile);
     setCropperOpen(false);
+    photoPickInProgressRef.current = false;
   };
 
   const uploadPhoto = async (scoutId: string, photo: File, scoutNameForFile?: string): Promise<string | null> => {
@@ -765,7 +775,11 @@ const Scouts = () => {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
         <div className="relative">
-          <label htmlFor={photoInputId} className="cursor-pointer">
+          <label
+            htmlFor={photoInputId}
+            className="cursor-pointer"
+            onClick={() => { photoPickInProgressRef.current = true; }}
+          >
             <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
@@ -805,7 +819,14 @@ const Scouts = () => {
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
+            onClick={() => {
+              photoPickInProgressRef.current = true;
+              document.getElementById(`${photoInputId}-camera`)?.click();
+              // Defensive cleanup if user cancels camera (no change event fires)
+              window.setTimeout(() => {
+                if (!cropperOpen) photoPickInProgressRef.current = false;
+              }, 60000);
+            }}
           >
             <Camera className="h-4 w-4" />
             Câmera
@@ -1574,12 +1595,12 @@ const Scouts = () => {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={(v) => { if (!v && cropperOpen) return; setEditDialogOpen(v); }}>
+      <Dialog open={editDialogOpen} onOpenChange={(v) => { if (!v && (cropperOpen || photoPickInProgressRef.current)) return; setEditDialogOpen(v); }}>
         <DialogContent
           className="max-h-[90vh] overflow-y-auto"
-          onInteractOutside={(e) => { if (cropperOpen) e.preventDefault(); }}
-          onPointerDownOutside={(e) => { if (cropperOpen) e.preventDefault(); }}
-          onEscapeKeyDown={(e) => { if (cropperOpen) e.preventDefault(); }}
+          onInteractOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+          onPointerDownOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+          onEscapeKeyDown={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
         >
           <DialogHeader>
             <DialogTitle>Editar Membro</DialogTitle>
