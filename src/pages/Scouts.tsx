@@ -244,6 +244,7 @@ const Scouts = () => {
     };
     reader.readAsDataURL(croppedFile);
     setCropperOpen(false);
+    photoPickInProgressRef.current = false;
   };
 
   const uploadPhoto = async (scoutId: string, photo: File, scoutNameForFile?: string): Promise<string | null> => {
