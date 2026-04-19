@@ -87,25 +87,34 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
   }, []);
 
   const handleConfirm = useCallback(async () => {
-    if (!imgRef.current || !completedCrop) return;
+    console.log('[CROPPER] handleConfirm clicked', { hasImg: !!imgRef.current, hasCrop: !!completedCrop, crop: completedCrop });
+    if (!imgRef.current || !completedCrop) {
+      console.warn('[CROPPER] aborted: missing image or crop');
+      return;
+    }
     setProcessing(true);
 
     try {
       const canvas = getCroppedCanvas(imgRef.current, completedCrop);
+      console.log('[CROPPER] canvas created', { w: canvas.width, h: canvas.height });
       const sharpened = applySharpen(canvas, sharpness);
 
       sharpened.toBlob(
         (blob) => {
+          console.log('[CROPPER] toBlob result', { hasBlob: !!blob, size: blob?.size });
           if (blob) {
             const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg' });
             onCropComplete(file);
+          } else {
+            console.error('[CROPPER] toBlob returned null');
           }
           setProcessing(false);
         },
         'image/jpeg',
         0.92
       );
-    } catch {
+    } catch (err) {
+      console.error('[CROPPER] error during crop:', err);
       setProcessing(false);
     }
   }, [completedCrop, sharpness, onCropComplete]);
