@@ -83,7 +83,21 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
   const [processing, setProcessing] = useState(false);
 
   const onImageLoad = useCallback(() => {
-    setCrop({ unit: '%', x: 5, y: 5, width: 90, height: 90 });
+    const img = imgRef.current;
+    const initialCrop: Crop = { unit: '%', x: 5, y: 5, width: 90, height: 90 };
+    setCrop(initialCrop);
+    // Also seed completedCrop in pixels so user can confirm without manually adjusting
+    if (img) {
+      const w = img.width;
+      const h = img.height;
+      setCompletedCrop({
+        unit: 'px',
+        x: w * 0.05,
+        y: h * 0.05,
+        width: w * 0.9,
+        height: h * 0.9,
+      });
+    }
   }, []);
 
   const handleConfirm = useCallback(async () => {
