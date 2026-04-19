@@ -128,6 +128,8 @@ const Scouts = () => {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
+  // Tracks if a camera/file picker is currently in progress (prevents parent Dialog from closing on mobile remount)
+  const photoPickInProgressRef = useRef(false);
 
   // Cloud picker state
   const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
