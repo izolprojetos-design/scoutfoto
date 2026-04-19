@@ -232,8 +232,10 @@ const Scouts = () => {
   };
 
   const handleCropComplete = (croppedFile: File) => {
+    console.log('[CROP] handleCropComplete called', { target: cropperTarget, size: croppedFile.size, type: croppedFile.type });
     const reader = new FileReader();
     reader.onloadend = () => {
+      console.log('[CROP] reader.onloadend fired, applying preview', { target: cropperTarget });
       if (cropperTarget === 'new') {
         setScoutPhoto(croppedFile);
         setScoutPhotoPreview(reader.result as string);
@@ -242,6 +244,7 @@ const Scouts = () => {
         setEditPhotoPreview(reader.result as string);
       }
     };
+    reader.onerror = () => console.error('[CROP] reader error', reader.error);
     reader.readAsDataURL(croppedFile);
     setCropperOpen(false);
     photoPickInProgressRef.current = false;
