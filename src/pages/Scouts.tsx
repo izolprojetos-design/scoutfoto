@@ -819,7 +819,10 @@ const Scouts = () => {
             variant="outline"
             size="sm"
             className="gap-2"
-            onClick={() => document.getElementById(`${photoInputId}-camera`)?.click()}
+            onClick={() => {
+              photoPickInProgressRef.current = true;
+              document.getElementById(`${photoInputId}-camera`)?.click();
+            }}
           >
             <Camera className="h-4 w-4" />
             Câmera
