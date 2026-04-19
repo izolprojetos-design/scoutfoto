@@ -775,7 +775,11 @@ const Scouts = () => {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3">
         <div className="relative">
-          <label htmlFor={photoInputId} className="cursor-pointer">
+          <label
+            htmlFor={photoInputId}
+            className="cursor-pointer"
+            onClick={() => { photoPickInProgressRef.current = true; }}
+          >
             <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
