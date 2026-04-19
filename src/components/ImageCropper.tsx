@@ -83,29 +83,52 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
   const [processing, setProcessing] = useState(false);
 
   const onImageLoad = useCallback(() => {
-    setCrop({ unit: '%', x: 5, y: 5, width: 90, height: 90 });
+    const img = imgRef.current;
+    const initialCrop: Crop = { unit: '%', x: 5, y: 5, width: 90, height: 90 };
+    setCrop(initialCrop);
+    // Also seed completedCrop in pixels so user can confirm without manually adjusting
+    if (img) {
+      const w = img.width;
+      const h = img.height;
+      setCompletedCrop({
+        unit: 'px',
+        x: w * 0.05,
+        y: h * 0.05,
+        width: w * 0.9,
+        height: h * 0.9,
+      });
+    }
   }, []);
 
   const handleConfirm = useCallback(async () => {
-    if (!imgRef.current || !completedCrop) return;
+    console.log('[CROPPER] handleConfirm clicked', { hasImg: !!imgRef.current, hasCrop: !!completedCrop, crop: completedCrop });
+    if (!imgRef.current || !completedCrop) {
+      console.warn('[CROPPER] aborted: missing image or crop');
+      return;
+    }
     setProcessing(true);
 
     try {
       const canvas = getCroppedCanvas(imgRef.current, completedCrop);
+      console.log('[CROPPER] canvas created', { w: canvas.width, h: canvas.height });
       const sharpened = applySharpen(canvas, sharpness);
 
       sharpened.toBlob(
         (blob) => {
+          console.log('[CROPPER] toBlob result', { hasBlob: !!blob, size: blob?.size });
           if (blob) {
             const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg' });
             onCropComplete(file);
+          } else {
+            console.error('[CROPPER] toBlob returned null');
           }
           setProcessing(false);
         },
         'image/jpeg',
         0.92
       );
-    } catch {
+    } catch (err) {
+      console.error('[CROPPER] error during crop:', err);
       setProcessing(false);
     }
   }, [completedCrop, sharpness, onCropComplete]);
