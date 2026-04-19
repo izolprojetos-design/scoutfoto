@@ -428,7 +428,11 @@ const Admin = () => {
     });
 
     if (error || data?.error) {
-      toast.error('Erro ao criar usuário: ' + (data?.error || error?.message));
+      const raw = data?.error || error?.message || '';
+      const friendly = /weak|known|pwned|compromised|easy to guess/i.test(raw)
+        ? 'Esta senha aparece em vazamentos públicos e foi considerada insegura. Escolha outra, de preferência única e com mais de 12 caracteres.'
+        : raw;
+      toast.error('Erro ao criar usuário', { description: friendly });
     } else {
       toast.success('Usuário criado com sucesso! Ao fazer login, será solicitado a trocar a senha imediatamente.', { duration: 6000 });
       setCreateOpen(false);
@@ -455,7 +459,11 @@ const Admin = () => {
     });
 
     if (error || data?.error) {
-      toast.error('Erro: ' + (data?.error || error?.message));
+      const raw = data?.error || error?.message || '';
+      const friendly = /weak|known|pwned|compromised|easy to guess/i.test(raw)
+        ? 'Esta senha aparece em vazamentos públicos e foi considerada insegura. Escolha outra, de preferência única e com mais de 12 caracteres.'
+        : raw;
+      toast.error('Erro ao redefinir senha', { description: friendly });
     } else {
       // Set must_change_password flag
       await supabase.from('profiles').update({ must_change_password: true }).eq('user_id', resetUserId);
