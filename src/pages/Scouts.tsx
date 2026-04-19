@@ -200,12 +200,16 @@ const Scouts = () => {
 
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      photoPickInProgressRef.current = false;
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropperImage(reader.result as string);
       setCropperTarget('new');
       setCropperOpen(true);
+      // keep flag true; cleared when cropper closes
     };
     reader.readAsDataURL(file);
     e.target.value = '';
@@ -213,7 +217,10 @@ const Scouts = () => {
 
   const handleEditPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      photoPickInProgressRef.current = false;
+      return;
+    }
     const reader = new FileReader();
     reader.onloadend = () => {
       setCropperImage(reader.result as string);
