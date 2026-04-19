@@ -393,12 +393,20 @@ const Scouts = () => {
   const handleEditScout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingScout) return;
+    console.log('[EDIT] handleEditScout submit', { hasNewPhoto: !!editPhoto, photoSize: editPhoto?.size });
     setEditUploading(true);
 
     let photoUrl = editingScout.photo_url;
     if (editPhoto) {
+      console.log('[EDIT] uploading photo...');
       const uploaded = await uploadPhoto(editingScout.id, editPhoto, editName);
+      console.log('[EDIT] upload result:', uploaded);
       if (uploaded) photoUrl = uploaded;
+      else {
+        toast.error('Falha ao enviar foto. Verifique a conexão e tente novamente.');
+        setEditUploading(false);
+        return;
+      }
     } else if (photoUrl && editName !== editingScout.name) {
       // Name changed but no new photo — rename file in storage
       const renamed = await renamePhotoInStorage(editingScout.id, editName, photoUrl);
@@ -420,8 +428,10 @@ const Scouts = () => {
     }).eq('id', editingScout.id);
 
     if (error) {
+      console.error('[EDIT] update error:', error);
       toast.error('Erro ao atualizar: ' + error.message);
     } else {
+      console.log('[EDIT] update success');
       toast.success('Membro atualizado com sucesso!');
       setEditDialogOpen(false);
       fetchData();
