@@ -232,20 +232,27 @@ const Scouts = () => {
   };
 
   const handleCropComplete = (croppedFile: File) => {
-    console.log('[CROP] handleCropComplete called', { target: cropperTarget, size: croppedFile.size, type: croppedFile.type });
+    const target = cropperTarget;
+    console.log('[CROP] handleCropComplete called', { target, size: croppedFile.size, type: croppedFile.type });
+
+    if (target === 'new') {
+      setScoutPhoto(croppedFile);
+    } else {
+      setEditPhoto(croppedFile);
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log('[CROP] reader.onloadend fired, applying preview', { target: cropperTarget });
-      if (cropperTarget === 'new') {
-        setScoutPhoto(croppedFile);
+      console.log('[CROP] reader.onloadend fired, applying preview', { target });
+      if (target === 'new') {
         setScoutPhotoPreview(reader.result as string);
       } else {
-        setEditPhoto(croppedFile);
         setEditPhotoPreview(reader.result as string);
       }
     };
     reader.onerror = () => console.error('[CROP] reader error', reader.error);
     reader.readAsDataURL(croppedFile);
+
     setCropperOpen(false);
     photoPickInProgressRef.current = false;
   };
@@ -1673,7 +1680,10 @@ const Scouts = () => {
       <ImageCropper
         open={cropperOpen}
         imageSrc={cropperImage}
-        onClose={() => setCropperOpen(false)}
+        onClose={() => {
+          setCropperOpen(false);
+          photoPickInProgressRef.current = false;
+        }}
         onCropComplete={handleCropComplete}
       />
 
