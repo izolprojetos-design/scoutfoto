@@ -152,11 +152,9 @@ const ScoutCalendar = () => {
                 const today = isToday(day);
 
                 return (
-                  <motion.button
+                  <button
                     key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.005 }}
+                    type="button"
                     className={`relative flex flex-col items-center rounded-lg p-2 text-sm transition-colors min-h-[60px] ${
                       !isCurrentMonth
                         ? 'text-muted-foreground/40'
@@ -183,7 +181,7 @@ const ScoutCalendar = () => {
                         ))}
                       </div>
                     )}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
