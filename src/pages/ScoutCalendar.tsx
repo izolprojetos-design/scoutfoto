@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
+import SchedulingRequestForm from '@/components/SchedulingRequestForm';
+import MySchedulingRequests from '@/components/MySchedulingRequests';
 import { motion } from 'framer-motion';
 import {
   format,
@@ -42,11 +46,15 @@ interface Branch {
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const ScoutCalendar = () => {
+  const { roles } = useAuth();
+  const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState('calendar');
 
   useEffect(() => {
     Promise.all([
@@ -81,6 +89,33 @@ const ScoutCalendar = () => {
         <h1 className="text-3xl font-bold tracking-tight">Calendário Escoteiro</h1>
         <p className="mt-1 text-muted-foreground">Atividades e eventos do grupo</p>
       </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="calendar" className="gap-2">
+            <CalIcon className="h-4 w-4" /> Calendário
+          </TabsTrigger>
+          {canRequestScheduling && (
+            <>
+              <TabsTrigger value="schedule" className="gap-2">
+                <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
+              </TabsTrigger>
+              <TabsTrigger value="my-requests" className="gap-2">
+                <ListChecks className="h-4 w-4" /> Minhas Solicitações
+              </TabsTrigger>
+            </>
+          )}
+        </TabsList>
+
+        <TabsContent value="schedule" className="mt-6">
+          <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+        </TabsContent>
+
+        <TabsContent value="my-requests" className="mt-6">
+          <MySchedulingRequests refreshKey={requestsRefreshKey} />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="mt-6">
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Calendar Grid */}
