@@ -5,7 +5,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarIcon, Loader2, Send, CheckCircle2 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -111,20 +110,18 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   if (submitted) {
     return (
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-        <Alert className="border-primary/30 bg-primary/5">
-          <CheckCircle2 className="h-5 w-5 text-primary" />
-          <AlertTitle>Solicitação registrada com sucesso</AlertTitle>
-          <AlertDescription className="mt-1">
-            Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas solicitações".
-            <div className="mt-3">
-              <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
-                Nova solicitação
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      </motion.div>
+      <Alert className="border-primary/30 bg-primary/5">
+        <CheckCircle2 className="h-5 w-5 text-primary" />
+        <AlertTitle>Solicitação registrada com sucesso</AlertTitle>
+        <AlertDescription className="mt-1">
+          Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas solicitações".
+          <div className="mt-3">
+            <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
+              Nova solicitação
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
     );
   }
 

@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, Clock, MapPin, Trash2, Inbox } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -83,12 +82,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
         const status = SCHEDULING_STATUS_LABELS[r.status] ?? { label: r.status, variant: 'secondary' as const };
         const branch = getBranch(r.branch_id);
         return (
-          <motion.div
-            key={r.id}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
-          >
+          <div key={r.id}>
             <Card className="border shadow-sm">
               <CardContent className="p-4 sm:p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -141,7 +135,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         );
       })}
     </div>
