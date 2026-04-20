@@ -55,6 +55,13 @@ const ScoutCalendar = () => {
   const [loading, setLoading] = useState(true);
   const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState('calendar');
+  const [scheduleMounted, setScheduleMounted] = useState(false);
+  const [requestsMounted, setRequestsMounted] = useState(false);
+
+  useEffect(() => {
+    if (activeTab === 'schedule') setScheduleMounted(true);
+    if (activeTab === 'my-requests') setRequestsMounted(true);
+  }, [activeTab]);
 
   useEffect(() => {
     Promise.all([
@@ -120,13 +127,13 @@ const ScoutCalendar = () => {
       </div>
 
       <div className={activeTab === 'schedule' ? '' : 'hidden'}>
-        {canRequestScheduling && (
+        {canRequestScheduling && scheduleMounted && (
           <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
         )}
       </div>
 
       <div className={activeTab === 'my-requests' ? '' : 'hidden'}>
-        {canRequestScheduling && (
+        {canRequestScheduling && requestsMounted && (
           <MySchedulingRequests refreshKey={requestsRefreshKey} />
         )}
       </div>
