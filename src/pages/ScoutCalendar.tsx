@@ -89,36 +89,44 @@ const ScoutCalendar = () => {
         <p className="mt-1 text-muted-foreground">Atividades e eventos do grupo</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="w-full sm:w-auto">
-          <TabsTrigger value="calendar" className="gap-2">
-            <CalIcon className="h-4 w-4" /> Calendário
-          </TabsTrigger>
-          {canRequestScheduling && (
-            <>
-              <TabsTrigger value="schedule" className="gap-2">
-                <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
-              </TabsTrigger>
-              <TabsTrigger value="my-requests" className="gap-2">
-                <ListChecks className="h-4 w-4" /> Minhas Solicitações
-              </TabsTrigger>
-            </>
-          )}
-        </TabsList>
+      {/* Section Switcher */}
+      <div className="mb-6 inline-flex h-10 items-center gap-1 rounded-md bg-muted p-1 text-muted-foreground">
+        <button
+          type="button"
+          onClick={() => setActiveTab('calendar')}
+          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+        >
+          <CalIcon className="h-4 w-4" /> Calendário
+        </button>
+        {canRequestScheduling && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActiveTab('schedule')}
+              className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+            >
+              <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('my-requests')}
+              className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'my-requests' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+            >
+              <ListChecks className="h-4 w-4" /> Minhas Solicitações
+            </button>
+          </>
+        )}
+      </div>
 
-        <TabsContent value="schedule" className="mt-6">
-          {activeTab === 'schedule' && (
-            <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
-          )}
-        </TabsContent>
+      {activeTab === 'schedule' && (
+        <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+      )}
 
-        <TabsContent value="my-requests" className="mt-6">
-          {activeTab === 'my-requests' && (
-            <MySchedulingRequests refreshKey={requestsRefreshKey} />
-          )}
-        </TabsContent>
+      {activeTab === 'my-requests' && (
+        <MySchedulingRequests refreshKey={requestsRefreshKey} />
+      )}
 
-        <TabsContent value="calendar" className="mt-6">
+      {activeTab === 'calendar' && (
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Calendar Grid */}
