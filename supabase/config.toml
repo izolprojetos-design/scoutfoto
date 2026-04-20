@@ -13,3 +13,5 @@ project_id = "idrhcwxrifmmvdaitjiz"
     verify_jwt = false
   [functions.handle-email-suppression]
     verify_jwt = false
+  [functions.confirm-scheduling]
+    verify_jwt = false
