@@ -108,11 +108,15 @@ const ScoutCalendar = () => {
         </TabsList>
 
         <TabsContent value="schedule" className="mt-6">
-          <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+          {activeTab === 'schedule' && (
+            <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+          )}
         </TabsContent>
 
         <TabsContent value="my-requests" className="mt-6">
-          <MySchedulingRequests refreshKey={requestsRefreshKey} />
+          {activeTab === 'my-requests' && (
+            <MySchedulingRequests refreshKey={requestsRefreshKey} />
+          )}
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-6">
