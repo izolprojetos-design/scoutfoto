@@ -4,7 +4,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, Clock, MapPin, Trash2, Inbox } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
