@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import MySchedulingRequests from '@/components/MySchedulingRequests';
-import { motion } from 'framer-motion';
+
 import {
   format,
   startOfMonth,
