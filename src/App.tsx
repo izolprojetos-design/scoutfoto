@@ -45,6 +45,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const BranchScouts = lazy(() => import("./pages/BranchScouts"));
 const Register = lazy(() => import("./pages/Register"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const ConfirmScheduling = lazy(() => import("./pages/ConfirmScheduling"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const isAuthError = (error: unknown): boolean => {
@@ -162,6 +163,7 @@ const App = () => {
                     <Route path="/evento/:token" element={<EventPortal />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/unsubscribe" element={<Unsubscribe />} />
+                    <Route path="/confirmar-agendamento" element={<ConfirmScheduling />} />
                     
                     {/* All app routes share persistent sidebar layout */}
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
