@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
@@ -118,17 +119,19 @@ const ScoutCalendar = () => {
         )}
       </div>
 
-      {activeTab === 'schedule' && (
-        <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
-      )}
+      <div className={activeTab === 'schedule' ? '' : 'hidden'}>
+        {canRequestScheduling && (
+          <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+        )}
+      </div>
 
-      {activeTab === 'my-requests' && (
-        <MySchedulingRequests refreshKey={requestsRefreshKey} />
-      )}
+      <div className={activeTab === 'my-requests' ? '' : 'hidden'}>
+        {canRequestScheduling && (
+          <MySchedulingRequests refreshKey={requestsRefreshKey} />
+        )}
+      </div>
 
-      {activeTab === 'calendar' && (
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
         {/* Calendar Grid */}
         <Card className="lg:col-span-2 border shadow-sm">
           <CardContent className="p-4 sm:p-6">
@@ -267,7 +270,6 @@ const ScoutCalendar = () => {
           </CardContent>
         </Card>
       </div>
-      )}
     </>
   );
 };

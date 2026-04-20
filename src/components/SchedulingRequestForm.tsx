@@ -206,9 +206,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 <FormItem>
                   <FormLabel>Ramo escoteiro *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-12"><SelectValue placeholder="Selecione o ramo" /></SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger className="h-12"><SelectValue placeholder="Selecione o ramo" /></SelectTrigger>
                     <SelectContent>
                       {branches.map(b => (
                         <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
@@ -223,9 +221,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 <FormItem>
                   <FormLabel>Tipo de atividade *</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       {SCHEDULING_TYPES.map(t => (
                         <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
