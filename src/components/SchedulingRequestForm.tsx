@@ -161,15 +161,17 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   <FormLabel>Data da seção *</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button variant="outline" className={cn(
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className={cn(
                           'h-12 justify-start text-left font-normal',
                           !field.value && 'text-muted-foreground'
-                        )}>
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {field.value ? format(field.value, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione a data'}
-                        </Button>
-                      </FormControl>
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {field.value ? format(field.value, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione a data'}
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
