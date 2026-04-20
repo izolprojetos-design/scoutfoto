@@ -593,6 +593,87 @@ export type Database = {
           },
         ]
       }
+      scheduling_requests: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          branch_id: string | null
+          created_at: string
+          data: string
+          descricao: string
+          email: string
+          event_id: string | null
+          horario: string
+          id: string
+          local: string
+          nome_responsavel: string
+          rejection_reason: string | null
+          status: string
+          tipo: string
+          token_confirmacao: string
+          token_expires_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          data: string
+          descricao?: string
+          email: string
+          event_id?: string | null
+          horario: string
+          id?: string
+          local: string
+          nome_responsavel: string
+          rejection_reason?: string | null
+          status?: string
+          tipo: string
+          token_confirmacao?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          branch_id?: string | null
+          created_at?: string
+          data?: string
+          descricao?: string
+          email?: string
+          event_id?: string | null
+          horario?: string
+          id?: string
+          local?: string
+          nome_responsavel?: string
+          rejection_reason?: string | null
+          status?: string
+          tipo?: string
+          token_confirmacao?: string
+          token_expires_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduling_requests_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduling_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scouts: {
         Row: {
           birth_date: string
