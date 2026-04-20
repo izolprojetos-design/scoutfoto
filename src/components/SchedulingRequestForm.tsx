@@ -1,26 +1,15 @@
 import { useEffect, useState } from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Loader2, Send, CheckCircle2 } from 'lucide-react';
+import { Loader2, Send, CheckCircle2 } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
 import { toast } from '@/hooks/use-toast';
 import { SCHEDULING_TYPES } from '@/lib/schedulingTypes';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import {
-  Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage,
-} from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -30,19 +19,6 @@ interface Branch {
   icon: string;
 }
 
-const formSchema = z.object({
-  nome_responsavel: z.string().trim().min(2, 'Informe o nome completo').max(120),
-  email: z.string().trim().email('E-mail inválido').max(255),
-  data: z.date({ required_error: 'Selecione a data' }),
-  horario: z.string().regex(/^\d{2}:\d{2}$/, 'Formato HH:MM'),
-  local: z.string().trim().min(2, 'Informe o local').max(200),
-  branch_id: z.string().uuid('Selecione um ramo'),
-  tipo: z.enum(['reuniao', 'acampamento', 'atividade_especial', 'outro']),
-  descricao: z.string().trim().min(5, 'Descreva brevemente a atividade').max(1000),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 interface Props {
   onSuccess?: () => void;
 }
@@ -51,19 +27,17 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const { user, profile } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      nome_responsavel: profile?.name ?? '',
-      email: profile?.email ?? user?.email ?? '',
-      horario: '',
-      local: '',
-      branch_id: '',
-      tipo: 'reuniao',
-      descricao: '',
-    },
-  });
+  const [nomeResponsavel, setNomeResponsavel] = useState('');
+  const [email, setEmail] = useState('');
+  const [data, setData] = useState('');
+  const [horario, setHorario] = useState('');
+  const [local, setLocal] = useState('');
+  const [branchId, setBranchId] = useState('');
+  const [tipo, setTipo] = useState('reuniao');
+  const [descricao, setDescricao] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     supabase.from('branches').select('id, display_name, icon').order('sort_order')
@@ -71,23 +45,47 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   }, []);
 
   useEffect(() => {
-    if (profile?.name) form.setValue('nome_responsavel', profile.name);
-    if (profile?.email) form.setValue('email', profile.email);
-  }, [profile, form]);
+    if (profile?.name && !nomeResponsavel) setNomeResponsavel(profile.name);
+    if ((profile?.email || user?.email) && !email) setEmail(profile?.email ?? user?.email ?? '');
+  }, [profile, user, nomeResponsavel, email]);
 
-  const onSubmit = async (values: FormValues) => {
+  const validate = () => {
+    const e: Record<string, string> = {};
+    if (nomeResponsavel.trim().length < 2) e.nomeResponsavel = 'Informe o nome completo';
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) e.email = 'E-mail inválido';
+    if (!data) e.data = 'Selecione a data';
+    else {
+      const today = new Date(); today.setHours(0,0,0,0);
+      const [y, m, d] = data.split('-').map(Number);
+      const sel = new Date(y, m - 1, d);
+      if (sel < today) e.data = 'Data deve ser hoje ou futura';
+    }
+    if (!/^\d{2}:\d{2}$/.test(horario)) e.horario = 'Formato HH:MM';
+    if (local.trim().length < 2) e.local = 'Informe o local';
+    if (!branchId) e.branchId = 'Selecione um ramo';
+    if (descricao.trim().length < 5) e.descricao = 'Mínimo 5 caracteres';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSubmit = async (ev: React.FormEvent) => {
+    ev.preventDefault();
     if (!user) return;
+    if (!validate()) return;
+
+    setSubmitting(true);
     const { error } = await supabase.from('scheduling_requests').insert({
       user_id: user.id,
-      nome_responsavel: values.nome_responsavel,
-      email: values.email,
-      data: format(values.data, 'yyyy-MM-dd'),
-      horario: values.horario,
-      local: values.local,
-      branch_id: values.branch_id,
-      tipo: values.tipo,
-      descricao: values.descricao,
+      nome_responsavel: nomeResponsavel.trim(),
+      email: email.trim(),
+      data,
+      horario,
+      local: local.trim(),
+      branch_id: branchId,
+      tipo,
+      descricao: descricao.trim(),
     });
+    setSubmitting(false);
 
     if (error) {
       toast({ title: 'Erro ao enviar', description: error.message, variant: 'destructive' });
@@ -96,15 +94,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Aguarde a análise do administrador.' });
-    form.reset({
-      nome_responsavel: profile?.name ?? '',
-      email: profile?.email ?? user?.email ?? '',
-      horario: '',
-      local: '',
-      branch_id: '',
-      tipo: 'reuniao',
-      descricao: '',
-    });
+    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao('');
     onSuccess?.();
   };
 
@@ -114,7 +104,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         <CheckCircle2 className="h-5 w-5 text-primary" />
         <AlertTitle>Solicitação registrada com sucesso</AlertTitle>
         <AlertDescription className="mt-1">
-          Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas solicitações".
+          Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas Solicitações".
           <div className="mt-3">
             <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
               Nova solicitação
@@ -134,125 +124,84 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <FormField control={form.control} name="nome_responsavel" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome do responsável *</FormLabel>
-                  <FormControl><Input placeholder="Seu nome completo" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>E-mail *</FormLabel>
-                  <FormControl><Input type="email" placeholder="voce@exemplo.com" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="data" render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data da seção *</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={cn(
-                          'h-12 justify-start text-left font-normal',
-                          !field.value && 'text-muted-foreground'
-                        )}
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "dd 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione a data'}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                        initialFocus
-                        locale={ptBR}
-                        className={cn('p-3 pointer-events-auto')}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="horario" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Horário *</FormLabel>
-                  <FormControl><Input type="time" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="local" render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Local *</FormLabel>
-                  <FormControl><Input placeholder="Ex: Sede do grupo, Parque Anauá..." {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="branch_id" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Ramo escoteiro *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="h-12"><SelectValue placeholder="Selecione o ramo" /></SelectTrigger>
-                    <SelectContent>
-                      {branches.map(b => (
-                        <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="tipo" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de atividade *</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {SCHEDULING_TYPES.map(t => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="nome">Nome do responsável *</Label>
+              <Input id="nome" value={nomeResponsavel} onChange={e => setNomeResponsavel(e.target.value)} placeholder="Seu nome completo" />
+              {errors.nomeResponsavel && <p className="text-sm text-destructive">{errors.nomeResponsavel}</p>}
             </div>
 
-            <FormField control={form.control} name="descricao" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Descrição / Observações *</FormLabel>
-                <FormControl>
-                  <Textarea rows={4} placeholder="Detalhe a atividade, materiais necessários, observações importantes..." {...field} />
-                </FormControl>
-                <FormDescription>Mínimo 5 caracteres, máximo 1000.</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            <div className="flex justify-end pt-2">
-              <Button type="submit" size="lg" disabled={form.formState.isSubmitting} className="gap-2">
-                {form.formState.isSubmitting
-                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
-                  : <><Send className="h-4 w-4" /> Enviar Solicitação</>}
-              </Button>
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail *</Label>
+              <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
-          </form>
-        </Form>
+
+            <div className="space-y-2">
+              <Label htmlFor="data">Data da seção *</Label>
+              <Input id="data" type="date" value={data} onChange={e => setData(e.target.value)} />
+              {errors.data && <p className="text-sm text-destructive">{errors.data}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="horario">Horário *</Label>
+              <Input id="horario" type="time" value={horario} onChange={e => setHorario(e.target.value)} />
+              {errors.horario && <p className="text-sm text-destructive">{errors.horario}</p>}
+            </div>
+
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="local">Local *</Label>
+              <Input id="local" value={local} onChange={e => setLocal(e.target.value)} placeholder="Ex: Sede do grupo, Parque Anauá..." />
+              {errors.local && <p className="text-sm text-destructive">{errors.local}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="branch">Ramo escoteiro *</Label>
+              <select
+                id="branch"
+                value={branchId}
+                onChange={e => setBranchId(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Selecione o ramo</option>
+                {branches.map(b => (
+                  <option key={b.id} value={b.id}>{b.icon} {b.display_name}</option>
+                ))}
+              </select>
+              {errors.branchId && <p className="text-sm text-destructive">{errors.branchId}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tipo">Tipo de atividade *</Label>
+              <select
+                id="tipo"
+                value={tipo}
+                onChange={e => setTipo(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                {SCHEDULING_TYPES.map(t => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="descricao">Descrição / Observações *</Label>
+            <Textarea id="descricao" rows={4} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Detalhe a atividade, materiais necessários, observações importantes..." />
+            <p className="text-sm text-muted-foreground">Mínimo 5 caracteres, máximo 1000.</p>
+            {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button type="submit" size="lg" disabled={submitting} className="gap-2">
+              {submitting
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
+                : <><Send className="h-4 w-4" /> Enviar Solicitação</>}
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );
