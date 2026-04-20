@@ -212,10 +212,8 @@ const ScoutCalendar = () => {
               {selectedEvents.map(event => {
                 const branch = getBranch(event.branch_id);
                 return (
-                  <motion.div
+                  <div
                     key={event.id}
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
                     className="rounded-lg border bg-muted/30 p-4"
                   >
                     <h4 className="font-semibold">{event.name}</h4>
@@ -235,7 +233,7 @@ const ScoutCalendar = () => {
                         </Badge>
                       )}
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
