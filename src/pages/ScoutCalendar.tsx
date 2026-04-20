@@ -108,11 +108,15 @@ const ScoutCalendar = () => {
         </TabsList>
 
         <TabsContent value="schedule" className="mt-6">
-          <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+          {activeTab === 'schedule' && (
+            <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+          )}
         </TabsContent>
 
         <TabsContent value="my-requests" className="mt-6">
-          <MySchedulingRequests refreshKey={requestsRefreshKey} />
+          {activeTab === 'my-requests' && (
+            <MySchedulingRequests refreshKey={requestsRefreshKey} />
+          )}
         </TabsContent>
 
         <TabsContent value="calendar" className="mt-6">
@@ -152,11 +156,9 @@ const ScoutCalendar = () => {
                 const today = isToday(day);
 
                 return (
-                  <motion.button
+                  <button
                     key={i}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: i * 0.005 }}
+                    type="button"
                     className={`relative flex flex-col items-center rounded-lg p-2 text-sm transition-colors min-h-[60px] ${
                       !isCurrentMonth
                         ? 'text-muted-foreground/40'
@@ -183,7 +185,7 @@ const ScoutCalendar = () => {
                         ))}
                       </div>
                     )}
-                  </motion.button>
+                  </button>
                 );
               })}
             </div>
