@@ -74,26 +74,55 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!validate()) return;
 
     setSubmitting(true);
-    const { error } = await supabase.from('scheduling_requests').insert({
-      user_id: user.id,
-      nome_responsavel: nomeResponsavel.trim(),
-      email: email.trim(),
-      data,
-      horario,
-      local: local.trim(),
-      branch_id: branchId,
-      tipo,
-      descricao: descricao.trim(),
-    });
-    setSubmitting(false);
+    const { data: inserted, error } = await supabase
+      .from('scheduling_requests')
+      .insert({
+        user_id: user.id,
+        nome_responsavel: nomeResponsavel.trim(),
+        email: email.trim(),
+        data,
+        horario,
+        local: local.trim(),
+        branch_id: branchId,
+        tipo,
+        descricao: descricao.trim(),
+      })
+      .select('id, token_confirmacao')
+      .single();
 
-    if (error) {
-      toast({ title: 'Erro ao enviar', description: error.message, variant: 'destructive' });
+    if (error || !inserted) {
+      setSubmitting(false);
+      toast({ title: 'Erro ao enviar', description: error?.message ?? 'Falha desconhecida', variant: 'destructive' });
       return;
     }
 
+    // Fire-and-forget confirmation email
+    const branchLabel = branches.find(b => b.id === branchId);
+    const tipoLabel = SCHEDULING_TYPES.find(t => t.value === tipo)?.label ?? tipo;
+    const [y, m, d] = data.split('-');
+    const confirmUrl = `${window.location.origin}/confirmar-agendamento?token=${inserted.token_confirmacao}`;
+
+    supabase.functions.invoke('send-transactional-email', {
+      body: {
+        templateName: 'scheduling-confirmation',
+        recipientEmail: email.trim(),
+        idempotencyKey: `scheduling-confirm-${inserted.id}`,
+        templateData: {
+          nomeResponsavel: nomeResponsavel.trim(),
+          data: `${d}/${m}/${y}`,
+          horario,
+          local: local.trim(),
+          tipo: tipoLabel,
+          ramo: branchLabel ? `${branchLabel.icon} ${branchLabel.display_name}` : '',
+          descricao: descricao.trim(),
+          confirmUrl,
+        },
+      },
+    }).catch(err => console.error('Failed to send confirmation email', err));
+
+    setSubmitting(false);
     setSubmitted(true);
-    toast({ title: 'Solicitação enviada!', description: 'Aguarde a análise do administrador.' });
+    toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao('');
     onSuccess?.();
   };
