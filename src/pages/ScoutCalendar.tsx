@@ -260,6 +260,8 @@ const ScoutCalendar = () => {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+      </Tabs>
     </>
   );
 };
