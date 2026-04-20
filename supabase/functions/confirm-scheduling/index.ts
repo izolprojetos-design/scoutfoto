@@ -76,6 +76,7 @@ Deno.serve(async (req) => {
       JSON.stringify({
         valid: true,
         status: request.status,
+        alreadyConfirmed: request.status !== 'pendente',
         request: {
           nome_responsavel: request.nome_responsavel,
           data: request.data,
@@ -90,7 +91,7 @@ Deno.serve(async (req) => {
   }
 
   // POST = perform confirmation
-  if (request.status === 'confirmado' || request.status === 'pendente_analise') {
+  if (request.status === 'confirmado_email' || request.status === 'aprovado') {
     return new Response(
       JSON.stringify({ success: true, alreadyConfirmed: true, status: request.status }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -106,7 +107,7 @@ Deno.serve(async (req) => {
 
   const { error: updateError } = await supabase
     .from('scheduling_requests')
-    .update({ status: 'pendente_analise', updated_at: new Date().toISOString() })
+    .update({ status: 'confirmado_email', updated_at: new Date().toISOString() })
     .eq('id', request.id)
 
   if (updateError) {
@@ -118,7 +119,7 @@ Deno.serve(async (req) => {
   }
 
   return new Response(
-    JSON.stringify({ success: true, status: 'pendente_analise' }),
+    JSON.stringify({ success: true, status: 'confirmado_email' }),
     { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
   )
 })

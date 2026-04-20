@@ -46,7 +46,7 @@ const ConfirmScheduling = () => {
         const json = await resp.json();
         if (resp.ok && json.valid) {
           setRequest(json.request);
-          if (json.status === 'pendente_analise' || json.status === 'confirmado') {
+          if (json.alreadyConfirmed) {
             setStatus('already');
           } else {
             setStatus('valid');
