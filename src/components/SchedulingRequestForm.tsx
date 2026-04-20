@@ -176,7 +176,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
-                        initialFocus
                         locale={ptBR}
                         className={cn('p-3 pointer-events-auto')}
                       />
