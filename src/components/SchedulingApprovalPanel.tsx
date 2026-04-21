@@ -409,6 +409,7 @@ const SchedulingApprovalPanel = () => {
                 </p>
               )}
 
+              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Status:</span>
                 <Badge variant={SCHEDULING_STATUS_LABELS[selectedRequest.status]?.variant || 'secondary'}>
                   {SCHEDULING_STATUS_LABELS[selectedRequest.status]?.label || selectedRequest.status}
