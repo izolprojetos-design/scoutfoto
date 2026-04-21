@@ -215,12 +215,38 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
+    // Upload pending files
+    const uploadedAttachments: Attachment[] = [];
+    if (pendingFiles.length > 0) {
+      for (const file of pendingFiles) {
+        const ext = file.name.split('.').pop() ?? '';
+        const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('anexos-agendamentos')
+          .upload(storagePath, file, { contentType: file.type, upsert: false });
+        if (uploadError) {
+          console.error('Attachment upload failed', uploadError.message);
+          continue;
+        }
+        const { data: row, error: insertErr } = await supabase
+          .from('agendamento_anexos')
+          .insert({ agendamento_id: inserted.id, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
+          .select('id, file_name, file_path, file_size, content_type')
+          .single();
+        if (!insertErr && row) uploadedAttachments.push(row);
+      }
+      if (uploadedAttachments.length > 0) {
+        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)` });
+      }
+    }
+
     setSubmitting(false);
     setInsertedId(inserted.id);
     setSubmitted(true);
+    setAttachments(uploadedAttachments);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
-    setAttachments([]);
+    setPendingFiles([]);
     onSuccess?.();
   };
 
