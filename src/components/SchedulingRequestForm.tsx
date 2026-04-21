@@ -511,7 +511,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   <div key={`upload-${idx}`} className="rounded-md border bg-muted/30 p-3 space-y-2">
                     <div className="flex items-center gap-3">
                       {state.status === 'uploading' && <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />}
-                      {state.status === 'done' && <Check className="h-4 w-4 text-green-600 shrink-0" />}
+                      {state.status === 'done' && <Check className="h-4 w-4 text-primary shrink-0" />}
                       {state.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive shrink-0" />}
                       {state.status === 'pending' && <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />}
                       <div className="flex-1 min-w-0">
