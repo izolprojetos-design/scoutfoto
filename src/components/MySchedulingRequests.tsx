@@ -20,6 +20,7 @@ interface Request {
   id: string;
   nome_responsavel: string;
   email: string;
+  destinatario_email: string;
   data: string;
   horario: string;
   local: string;
@@ -192,7 +193,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                   )}
 
                   {r.descricao && (
-                    <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3">{r.descricao}</p>
+                    <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Assunto:</strong> {r.descricao}</p>
                   )}
 
                   {r.rejection_reason && (
@@ -276,7 +277,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-descricao">Descrição / Observações *</Label>
+              <Label htmlFor="edit-descricao">Assunto / Observações *</Label>
               <Textarea id="edit-descricao" rows={4} value={editDescricao} onChange={e => setEditDescricao(e.target.value)} placeholder="Detalhe a atividade..." />
               {editErrors.descricao && <p className="text-sm text-destructive">{editErrors.descricao}</p>}
             </div>

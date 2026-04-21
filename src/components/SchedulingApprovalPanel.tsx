@@ -28,6 +28,7 @@ interface SchedulingRequest {
   user_id: string;
   nome_responsavel: string;
   email: string;
+  destinatario_email: string;
   data: string;
   horario: string;
   local: string;
@@ -335,9 +336,12 @@ const SchedulingApprovalPanel = () => {
                   <div><strong>Local:</strong> {selectedRequest.local}</div>
                 </div>
                 <div><strong>Tipo:</strong> {getSchedulingTypeLabel(selectedRequest.tipo)}</div>
-                <div><strong>E-mail:</strong> {selectedRequest.email}</div>
+                <div><strong>De E-mail:</strong> {selectedRequest.email}</div>
+                {selectedRequest.destinatario_email && (
+                  <div><strong>Para E-mail:</strong> {selectedRequest.destinatario_email}</div>
+                )}
                 {selectedRequest.descricao && (
-                  <div><strong>Descrição:</strong> {selectedRequest.descricao}</div>
+                  <div><strong>Assunto:</strong> {selectedRequest.descricao}</div>
                 )}
                 {selectedRequest.branch_id && (
                   <div><strong>Ramo:</strong> {getBranch(selectedRequest.branch_id)?.icon} {getBranch(selectedRequest.branch_id)?.display_name}</div>

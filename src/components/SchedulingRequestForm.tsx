@@ -31,6 +31,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [email, setEmail] = useState('');
+  const [destinatarioEmail, setDestinatarioEmail] = useState('');
   const [data, setData] = useState('');
   const [horario, setHorario] = useState('');
   const [local, setLocal] = useState('');
@@ -53,6 +54,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     const e: Record<string, string> = {};
     if (nomeResponsavel.trim().length < 2) e.nomeResponsavel = 'Informe o nome completo';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) e.email = 'E-mail inválido';
+    if (destinatarioEmail.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(destinatarioEmail.trim())) e.destinatarioEmail = 'E-mail inválido';
     if (!data) e.data = 'Selecione a data';
     else {
       const today = new Date(); today.setHours(0,0,0,0);
@@ -80,6 +82,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         user_id: user.id,
         nome_responsavel: nomeResponsavel.trim(),
         email: email.trim(),
+        destinatario_email: destinatarioEmail.trim(),
         data,
         horario,
         local: local.trim(),
@@ -123,7 +126,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setSubmitting(false);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
-    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao('');
+    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail('');
     onSuccess?.();
   };
 
@@ -162,9 +165,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail *</Label>
+              <Label htmlFor="email">De E-mail *</Label>
               <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="destinatario-email">Para E-mail</Label>
+              <Input id="destinatario-email" type="email" value={destinatarioEmail} onChange={e => setDestinatarioEmail(e.target.value)} placeholder="destinatario@exemplo.com" />
+              {errors.destinatarioEmail && <p className="text-sm text-destructive">{errors.destinatarioEmail}</p>}
             </div>
 
             <div className="space-y-2">
@@ -217,7 +226,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição / Observações *</Label>
+            <Label htmlFor="descricao">Assunto / Observações *</Label>
             <Textarea id="descricao" rows={4} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Detalhe a atividade, materiais necessários, observações importantes..." />
             <p className="text-sm text-muted-foreground">Mínimo 5 caracteres, máximo 1000.</p>
             {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
