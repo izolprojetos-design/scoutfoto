@@ -604,6 +604,7 @@ export type Database = {
           created_at: string
           data: string
           descricao: string
+          destinatario_email: string
           email: string
           event_id: string | null
           horario: string
@@ -625,6 +626,7 @@ export type Database = {
           created_at?: string
           data: string
           descricao?: string
+          destinatario_email?: string
           email: string
           event_id?: string | null
           horario: string
@@ -646,6 +648,7 @@ export type Database = {
           created_at?: string
           data?: string
           descricao?: string
+          destinatario_email?: string
           email?: string
           event_id?: string | null
           horario?: string
