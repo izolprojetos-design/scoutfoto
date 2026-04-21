@@ -63,7 +63,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   useEffect(() => {
     if (profile?.name && !nomeResponsavel) setNomeResponsavel(profile.name);
     if ((profile?.email || user?.email) && !email) setEmail(profile?.email ?? user?.email ?? '');
-  }, [profile, user, nomeResponsavel, email]);
+    if (profile?.section && !secao && !cargo1) {
+      const parsed = parseVolunteerSection(profile.section);
+      if (parsed.secao) setSecao(parsed.secao);
+      if (parsed.cargo1) setCargo1(parsed.cargo1);
+      if (parsed.cargo2) setCargo2(parsed.cargo2);
+    }
+  }, [profile, user, nomeResponsavel, email, secao, cargo1]);
 
   const validate = () => {
     const e: Record<string, string> = {};
