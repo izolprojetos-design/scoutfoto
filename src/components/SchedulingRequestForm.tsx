@@ -173,7 +173,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setInsertedId(inserted.id);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
-    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail('');
+    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     setAttachments([]);
     onSuccess?.();
   };
