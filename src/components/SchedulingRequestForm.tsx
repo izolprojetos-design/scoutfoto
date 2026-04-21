@@ -62,6 +62,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [insertedId, setInsertedId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadStates, setUploadStates] = useState<FileUploadState[]>([]);
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
