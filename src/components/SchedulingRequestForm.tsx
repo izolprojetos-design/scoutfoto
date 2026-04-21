@@ -593,6 +593,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
             {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
+                {/* Counter */}
+                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                    {pendingFiles.length}
+                  </span>
+                  {pendingFiles.length === 1 ? 'arquivo válido na fila' : 'arquivos válidos na fila'} • serão enviados ao submeter
+                </p>
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
                     {file.type === 'application/pdf'
