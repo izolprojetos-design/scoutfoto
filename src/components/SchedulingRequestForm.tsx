@@ -221,9 +221,62 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome do responsável *</Label>
+              <Label htmlFor="nome">Nome do associado *</Label>
               <Input id="nome" value={nomeResponsavel} onChange={e => setNomeResponsavel(e.target.value)} placeholder="Seu nome completo" />
               {errors.nomeResponsavel && <p className="text-sm text-destructive">{errors.nomeResponsavel}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="secao">Seção</Label>
+              <select
+                id="secao"
+                value={secao}
+                onChange={e => setSecao(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Selecione a seção</option>
+                {VOLUNTEER_SECTIONS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cargo1">Cargo (1ª Função)</Label>
+              <select
+                id="cargo1"
+                value={cargo1}
+                onChange={e => setCargo1(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Selecione o cargo</option>
+                {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, cargos]) => (
+                  <optgroup key={cat} label={cat}>
+                    {cargos.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cargo2">Cargo (2ª Função)</Label>
+              <select
+                id="cargo2"
+                value={cargo2}
+                onChange={e => setCargo2(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Nenhum</option>
+                {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, cargos]) => (
+                  <optgroup key={cat} label={cat}>
+                    {cargos.map(c => (
+                      <option key={c} value={c} disabled={c === cargo1}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
