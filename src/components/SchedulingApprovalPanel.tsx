@@ -20,8 +20,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import {
   Loader2, CheckCircle2, XCircle, Eye, Calendar, MapPin, Clock, User,
-  Search, Filter, CalendarPlus,
+  Search, Filter, CalendarPlus, Paperclip,
 } from 'lucide-react';
+import SchedulingAttachments from '@/components/SchedulingAttachments';
 
 interface SchedulingRequest {
   id: string;
@@ -62,6 +63,7 @@ const SchedulingApprovalPanel = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [detailAttachments, setDetailAttachments] = useState<{ id: string; file_name: string; file_path: string; file_size: number; content_type: string }[]>([]);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -239,9 +241,14 @@ const SchedulingApprovalPanel = () => {
     return acc;
   }, {});
 
-  const openDetail = (req: SchedulingRequest) => {
+  const openDetail = async (req: SchedulingRequest) => {
     setSelectedRequest(req);
     setDetailOpen(true);
+    const { data: atts } = await supabase
+      .from('scheduling_attachments')
+      .select('id, file_name, file_path, file_size, content_type')
+      .eq('scheduling_request_id', req.id);
+    setDetailAttachments(atts ?? []);
   };
 
   return (
@@ -386,6 +393,21 @@ const SchedulingApprovalPanel = () => {
                   <div><strong>Ramo:</strong> {getBranch(selectedRequest.branch_id)?.icon} {getBranch(selectedRequest.branch_id)?.display_name}</div>
                 )}
               </div>
+
+              {/* Attachments (read-only for admin) */}
+              {detailAttachments.length > 0 && (
+                <SchedulingAttachments
+                  requestId={selectedRequest.id}
+                  editable={false}
+                  attachments={detailAttachments}
+                  onAttachmentsChange={() => {}}
+                />
+              )}
+              {detailAttachments.length === 0 && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Paperclip className="h-3 w-3" /> Nenhum anexo
+                </p>
+              )}
 
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">Status:</span>

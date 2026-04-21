@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +15,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from '@/hooks/use-toast';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { SCHEDULING_STATUS_LABELS, SCHEDULING_TYPES, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import SchedulingAttachments from '@/components/SchedulingAttachments';
+
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  content_type: string;
+}
 
 interface Request {
   id: string;
@@ -43,6 +52,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [attachmentsByReq, setAttachmentsByReq] = useState<Record<string, Attachment[]>>({});
 
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
@@ -56,6 +66,10 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [editDescricao, setEditDescricao] = useState('');
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
+  // Attachments panel
+  const [attachOpen, setAttachOpen] = useState(false);
+  const [attachReq, setAttachReq] = useState<Request | null>(null);
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
@@ -65,6 +79,23 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
     ]);
     setRequests(reqs ?? []);
     setBranches(br ?? []);
+
+    // Load attachments for all requests
+    if (reqs?.length) {
+      const ids = reqs.map(r => r.id);
+      const { data: atts } = await supabase
+        .from('scheduling_attachments')
+        .select('id, scheduling_request_id, file_name, file_path, file_size, content_type')
+        .in('scheduling_request_id', ids);
+      const grouped: Record<string, Attachment[]> = {};
+      for (const a of atts ?? []) {
+        const key = (a as any).scheduling_request_id as string;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(a);
+      }
+      setAttachmentsByReq(grouped);
+    }
+
     setLoading(false);
   };
 
@@ -137,6 +168,11 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
 
   const getBranch = (id: string | null) => branches.find(b => b.id === id);
 
+  const openAttachments = (r: Request) => {
+    setAttachReq(r);
+    setAttachOpen(true);
+  };
+
   if (loading) return <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>;
 
   if (requests.length === 0) {
@@ -157,6 +193,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
           const status = SCHEDULING_STATUS_LABELS[r.status] ?? { label: r.status, variant: 'secondary' as const };
           const branch = getBranch(r.branch_id);
           const canEdit = EDITABLE_STATUSES.includes(r.status);
+          const attCount = attachmentsByReq[r.id]?.length ?? 0;
           return (
             <div key={r.id}>
               <Card className="border shadow-sm">
@@ -202,18 +239,24 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     </div>
                   )}
 
-                  {canEdit && (
-                    <div className="mt-4 flex justify-end gap-2">
-                      <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-1">
-                        <Pencil className="h-4 w-4" /> Editar
-                      </Button>
-                      {r.status === 'pendente' && (
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} className="text-destructive hover:text-destructive">
-                          <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                  <div className="mt-4 flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => openAttachments(r)} className="gap-1">
+                      <Paperclip className="h-4 w-4" />
+                      Anexos{attCount > 0 && ` (${attCount})`}
+                    </Button>
+                    {canEdit && (
+                      <>
+                        <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-1">
+                          <Pencil className="h-4 w-4" /> Editar
                         </Button>
-                      )}
-                    </div>
-                  )}
+                        {r.status === 'pendente' && (
+                          <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                          </Button>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -282,6 +325,18 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
               {editErrors.descricao && <p className="text-sm text-destructive">{editErrors.descricao}</p>}
             </div>
 
+            {/* Attachments in edit mode */}
+            {editReq && (
+              <SchedulingAttachments
+                requestId={editReq.id}
+                editable={EDITABLE_STATUSES.includes(editReq.status)}
+                attachments={attachmentsByReq[editReq.id] ?? []}
+                onAttachmentsChange={(newAtts) => {
+                  setAttachmentsByReq(prev => ({ ...prev, [editReq.id]: newAtts }));
+                }}
+              />
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
               <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
@@ -289,6 +344,30 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Attachments Dialog */}
+      <Dialog open={attachOpen} onOpenChange={setAttachOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Anexos da Solicitação</DialogTitle>
+            <DialogDescription>
+              {attachReq && EDITABLE_STATUSES.includes(attachReq.status)
+                ? 'Adicione ou remova arquivos antes da aprovação.'
+                : 'Visualize os arquivos anexados.'}
+            </DialogDescription>
+          </DialogHeader>
+          {attachReq && (
+            <SchedulingAttachments
+              requestId={attachReq.id}
+              editable={EDITABLE_STATUSES.includes(attachReq.status)}
+              attachments={attachmentsByReq[attachReq.id] ?? []}
+              onAttachmentsChange={(newAtts) => {
+                setAttachmentsByReq(prev => ({ ...prev, [attachReq.id]: newAtts }));
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </>

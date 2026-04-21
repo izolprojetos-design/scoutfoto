@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import SchedulingAttachments from '@/components/SchedulingAttachments';
 
 interface Branch {
   id: string;
@@ -23,11 +24,21 @@ interface Props {
   onSuccess?: () => void;
 }
 
+interface Attachment {
+  id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  content_type: string;
+}
+
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const { user, profile } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [insertedId, setInsertedId] = useState<string | null>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [email, setEmail] = useState('');
@@ -149,26 +160,42 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
     setSubmitting(false);
+    setInsertedId(inserted.id);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail('');
+    setAttachments([]);
     onSuccess?.();
   };
 
   if (submitted) {
     return (
-      <Alert className="border-primary/30 bg-primary/5">
-        <CheckCircle2 className="h-5 w-5 text-primary" />
-        <AlertTitle>Solicitação registrada com sucesso</AlertTitle>
-        <AlertDescription className="mt-1">
-          Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas Solicitações".
-          <div className="mt-3">
-            <Button variant="outline" size="sm" onClick={() => setSubmitted(false)}>
-              Nova solicitação
-            </Button>
-          </div>
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-4">
+        <Alert className="border-primary/30 bg-primary/5">
+          <CheckCircle2 className="h-5 w-5 text-primary" />
+          <AlertTitle>Solicitação registrada com sucesso</AlertTitle>
+          <AlertDescription className="mt-1">
+            Sua solicitação está com status <strong>Pendente</strong>. Você poderá acompanhá-la na aba "Minhas Solicitações".
+          </AlertDescription>
+        </Alert>
+
+        {insertedId && (
+          <Card className="border shadow-sm">
+            <CardContent className="p-5">
+              <SchedulingAttachments
+                requestId={insertedId}
+                editable={true}
+                attachments={attachments}
+                onAttachmentsChange={setAttachments}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        <Button variant="outline" size="sm" onClick={() => { setSubmitted(false); setInsertedId(null); setAttachments([]); }}>
+          Nova solicitação
+        </Button>
+      </div>
     );
   }
 
@@ -256,6 +283,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             <p className="text-sm text-muted-foreground">Mínimo 5 caracteres, máximo 1000.</p>
             {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
           </div>
+
+          <p className="text-xs text-muted-foreground">Após enviar, você poderá anexar arquivos (PDF, JPG, PNG) na tela de confirmação.</p>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="lg" disabled={submitting} className="gap-2">
