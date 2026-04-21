@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon, AlertCircle, Check } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon, AlertCircle, Check, RotateCcw } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
