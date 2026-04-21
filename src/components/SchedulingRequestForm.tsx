@@ -485,7 +485,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {pendingFiles.length > 0 && (
+            {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
@@ -503,12 +503,44 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 ))}
               </div>
             )}
+
+            {/* Upload progress per file */}
+            {isUploadingAttachments && uploadStates.length > 0 && (
+              <div className="space-y-2">
+                {uploadStates.map((state, idx) => (
+                  <div key={`upload-${idx}`} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      {state.status === 'uploading' && <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />}
+                      {state.status === 'done' && <Check className="h-4 w-4 text-green-600 shrink-0" />}
+                      {state.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive shrink-0" />}
+                      {state.status === 'pending' && <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{state.file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {state.status === 'pending' && 'Aguardando...'}
+                          {state.status === 'uploading' && 'Enviando...'}
+                          {state.status === 'done' && 'Concluído'}
+                          {state.status === 'error' && (state.error ?? 'Erro no envio')}
+                        </p>
+                      </div>
+                    </div>
+                    {state.status === 'uploading' && (
+                      <Progress value={undefined} className="h-1.5" />
+                    )}
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Enviando {uploadStates.filter(s => s.status === 'done').length}/{uploadStates.length} anexos...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="lg" disabled={submitting} className="gap-2">
               {submitting
-                ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> {isUploadingAttachments ? 'Enviando anexos...' : 'Enviando...'}</>
                 : <><Send className="h-4 w-4" /> Enviar Solicitação</>}
             </Button>
           </div>
