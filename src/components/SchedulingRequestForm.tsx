@@ -158,6 +158,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const removePendingFile = (index: number) => {
     setPendingFiles(prev => prev.filter((_, i) => i !== index));
+    setFileErrors([]);
   };
 
   const onDrop = useCallback((e: React.DragEvent) => {
