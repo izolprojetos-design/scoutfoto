@@ -118,24 +118,42 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [tipo, setTipo] = useState('reuniao');
   const [descricao, setDescricao] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fileErrors, setFileErrors] = useState<string[]>([]);
+
+  const validateFile = (f: File): string | null => {
+    if (!ACCEPTED_TYPES.includes(f.type)) return `"${f.name}" — tipo não aceito (apenas PDF, JPG, PNG)`;
+    if (f.size > MAX_SIZE_BYTES) return `"${f.name}" — excede 5 MB (${formatFileSize(f.size)})`;
+    return null;
+  };
 
   const addPendingFiles = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files);
+    const newErrors: string[] = [];
+    const valid: File[] = [];
+
     if (pendingFiles.length + fileArray.length > MAX_FILES) {
       toast({ title: 'Limite excedido', description: `Máximo de ${MAX_FILES} arquivos.`, variant: 'destructive' });
       return;
     }
+
     for (const f of fileArray) {
-      if (!ACCEPTED_TYPES.includes(f.type)) {
-        toast({ title: 'Tipo não aceito', description: `"${f.name}" — aceito apenas PDF, JPG e PNG.`, variant: 'destructive' });
-        return;
-      }
-      if (f.size > MAX_SIZE_BYTES) {
-        toast({ title: 'Arquivo muito grande', description: `"${f.name}" excede 5 MB.`, variant: 'destructive' });
-        return;
+      const err = validateFile(f);
+      if (err) {
+        newErrors.push(err);
+      } else {
+        valid.push(f);
       }
     }
-    setPendingFiles(prev => [...prev, ...fileArray]);
+
+    if (newErrors.length > 0) {
+      setFileErrors(newErrors);
+    } else {
+      setFileErrors([]);
+    }
+
+    if (valid.length > 0) {
+      setPendingFiles(prev => [...prev, ...valid]);
+    }
   }, [pendingFiles]);
 
   const removePendingFile = (index: number) => {
