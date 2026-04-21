@@ -141,6 +141,25 @@ const SchedulingApprovalPanel = () => {
         responsavel: req.nome_responsavel,
       });
 
+      // Notify requester via email (fire-and-forget)
+      const branch = getBranch(req.branch_id);
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'scheduling-approved',
+          recipientEmail: req.email,
+          idempotencyKey: `scheduling-approved-${req.id}`,
+          templateData: {
+            nomeResponsavel: req.nome_responsavel,
+            data: formatDate(req.data),
+            horario: req.horario,
+            local: req.local,
+            tipo: getSchedulingTypeLabel(req.tipo),
+            ramo: branch ? `${branch.icon} ${branch.display_name}` : '',
+            assunto: req.descricao,
+          },
+        },
+      }).catch(err => console.error('Failed to send approval email', err));
+
       toast.success('Solicitação aprovada e evento criado no calendário!');
       setDetailOpen(false);
       fetchRequests();
@@ -176,6 +195,26 @@ const SchedulingApprovalPanel = () => {
         responsavel: selectedRequest.nome_responsavel,
         reason: rejectionReason.trim(),
       });
+
+      // Notify requester via email (fire-and-forget)
+      const branch = getBranch(selectedRequest.branch_id);
+      supabase.functions.invoke('send-transactional-email', {
+        body: {
+          templateName: 'scheduling-rejected',
+          recipientEmail: selectedRequest.email,
+          idempotencyKey: `scheduling-rejected-${selectedRequest.id}`,
+          templateData: {
+            nomeResponsavel: selectedRequest.nome_responsavel,
+            data: formatDate(selectedRequest.data),
+            horario: selectedRequest.horario,
+            local: selectedRequest.local,
+            tipo: getSchedulingTypeLabel(selectedRequest.tipo),
+            ramo: branch ? `${branch.icon} ${branch.display_name}` : '',
+            assunto: selectedRequest.descricao,
+            motivoRejeicao: rejectionReason.trim(),
+          },
+        },
+      }).catch(err => console.error('Failed to send rejection email', err));
 
       toast.success('Solicitação rejeitada.');
       setRejectOpen(false);
