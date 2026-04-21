@@ -114,6 +114,7 @@ const SchedulingApprovalPanel = () => {
           location: req.local,
           branch_id: req.branch_id,
           created_by: user.id,
+          source: 'scheduling',
         })
         .select('id')
         .single();
