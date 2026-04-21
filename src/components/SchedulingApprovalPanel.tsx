@@ -63,6 +63,7 @@ const SchedulingApprovalPanel = () => {
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
+  const [detailAttachments, setDetailAttachments] = useState<{ id: string; file_name: string; file_path: string; file_size: number; content_type: string }[]>([]);
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
