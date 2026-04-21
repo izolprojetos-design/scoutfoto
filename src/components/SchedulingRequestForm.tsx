@@ -226,7 +226,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="descricao">Descrição / Observações *</Label>
+            <Label htmlFor="descricao">Assunto / Observações *</Label>
             <Textarea id="descricao" rows={4} value={descricao} onChange={e => setDescricao(e.target.value)} placeholder="Detalhe a atividade, materiais necessários, observações importantes..." />
             <p className="text-sm text-muted-foreground">Mínimo 5 caracteres, máximo 1000.</p>
             {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
