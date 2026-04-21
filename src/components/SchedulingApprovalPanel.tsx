@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/scoutUtils';
-import { SCHEDULING_STATUS_LABELS, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import { SCHEDULING_STATUS_LABELS, getSchedulingTypeLabel, APPROVAL_LEVELS } from '@/lib/schedulingTypes';
 import { logAudit } from '@/lib/auditLog';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,7 @@ import {
   Search, Filter, CalendarPlus, Paperclip,
 } from 'lucide-react';
 import SchedulingAttachments from '@/components/SchedulingAttachments';
+import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 interface SchedulingRequest {
   id: string;
@@ -64,6 +65,8 @@ const SchedulingApprovalPanel = () => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [processing, setProcessing] = useState(false);
   const [detailAttachments, setDetailAttachments] = useState<{ id: string; file_name: string; file_path: string; file_size: number; content_type: string }[]>([]);
+  const [approvalSteps, setApprovalSteps] = useState<ApprovalStep[]>([]);
+  const [allApprovals, setAllApprovals] = useState<Record<string, ApprovalStep[]>>({});
 
   const fetchRequests = useCallback(async () => {
     setLoading(true);
@@ -73,7 +76,12 @@ const SchedulingApprovalPanel = () => {
       .order('created_at', { ascending: false });
 
     if (statusFilter !== 'all') {
-      query = query.eq('status', statusFilter);
+      if (statusFilter === 'confirmado_email') {
+        // Show both confirmado_email and em_aprovacao
+        query = query.in('status', ['confirmado_email', 'em_aprovacao']);
+      } else {
+        query = query.eq('status', statusFilter);
+      }
     }
 
     const { data, error } = await query;
@@ -81,6 +89,36 @@ const SchedulingApprovalPanel = () => {
       toast.error('Erro ao carregar solicitações.');
     } else {
       setRequests(data || []);
+      // Fetch all approval steps for these requests
+      if (data && data.length > 0) {
+        const ids = data.map(r => r.id);
+        const { data: approvals } = await supabase
+          .from('aprovacoes')
+          .select('*')
+          .in('agendamento_id', ids);
+
+        // Fetch approver names
+        const approverIds = [...new Set((approvals ?? []).filter(a => a.aprovado_por).map(a => a.aprovado_por!))];
+        let profileMap: Record<string, string> = {};
+        if (approverIds.length > 0) {
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('user_id, name')
+            .in('user_id', approverIds);
+          profileMap = Object.fromEntries((profiles ?? []).map(p => [p.user_id, p.name]));
+        }
+
+        const grouped: Record<string, ApprovalStep[]> = {};
+        for (const a of approvals ?? []) {
+          if (!grouped[a.agendamento_id]) grouped[a.agendamento_id] = [];
+          grouped[a.agendamento_id].push({
+            ...a,
+            status: a.status as 'pendente' | 'aprovado' | 'rejeitado',
+            aprovador_nome: a.aprovado_por ? profileMap[a.aprovado_por] ?? '' : undefined,
+          });
+        }
+        setAllApprovals(grouped);
+      }
     }
     setLoading(false);
   }, [statusFilter]);
@@ -103,66 +141,133 @@ const SchedulingApprovalPanel = () => {
     }
   };
 
-  const handleApprove = async (req: SchedulingRequest) => {
+  /** Initialize approval steps for a request (creates level 1 & 2 as pending) */
+  const initApprovalSteps = async (requestId: string) => {
+    const steps = APPROVAL_LEVELS.map(l => ({
+      agendamento_id: requestId,
+      nivel: l.nivel,
+      status: 'pendente' as const,
+    }));
+
+    const { error } = await supabase.from('aprovacoes').insert(steps);
+    if (error) throw error;
+
+    // Update request status to em_aprovacao
+    await supabase
+      .from('scheduling_requests')
+      .update({ status: 'em_aprovacao' })
+      .eq('id', requestId);
+  };
+
+  /** Get the current pending level for a request */
+  const getCurrentPendingLevel = (requestId: string): ApprovalStep | null => {
+    const steps = allApprovals[requestId] ?? [];
+    const sorted = [...steps].sort((a, b) => a.nivel - b.nivel);
+    return sorted.find(s => s.status === 'pendente') ?? null;
+  };
+
+  const isRejected = (requestId: string): boolean => {
+    const steps = allApprovals[requestId] ?? [];
+    return steps.some(s => s.status === 'rejeitado');
+  };
+
+  const allApproved = (requestId: string): boolean => {
+    const steps = allApprovals[requestId] ?? [];
+    return steps.length === APPROVAL_LEVELS.length && steps.every(s => s.status === 'aprovado');
+  };
+
+  const handleStartApproval = async (req: SchedulingRequest) => {
     if (!user) return;
     setProcessing(true);
     try {
-      // 1. Create the event in the calendar
-      const { data: newEvent, error: eventError } = await supabase
-        .from('events')
-        .insert({
-          name: `${getSchedulingTypeLabel(req.tipo)} — ${req.nome_responsavel}`,
-          description: req.descricao || '',
-          event_date: req.data,
-          location: req.local,
-          branch_id: req.branch_id,
-          created_by: user.id,
-          source: 'scheduling',
-        })
-        .select('id')
-        .single();
+      await initApprovalSteps(req.id);
+      toast.success('Fluxo de aprovação iniciado!');
+      fetchRequests();
+    } catch (err: any) {
+      toast.error(`Erro: ${err.message}`);
+    } finally {
+      setProcessing(false);
+    }
+  };
 
-      if (eventError) throw eventError;
+  const handleApproveLevel = async (req: SchedulingRequest) => {
+    if (!user) return;
+    const pendingStep = getCurrentPendingLevel(req.id);
+    if (!pendingStep) return;
 
-      // 2. Update the scheduling request status
-      const { error: updateError } = await supabase
-        .from('scheduling_requests')
+    setProcessing(true);
+    try {
+      // Approve current level
+      const { error } = await supabase
+        .from('aprovacoes')
         .update({
           status: 'aprovado',
-          approved_at: new Date().toISOString(),
-          approved_by: user.id,
-          event_id: newEvent.id,
+          aprovado_por: user.id,
         })
-        .eq('id', req.id);
+        .eq('id', pendingStep.id);
 
-      if (updateError) throw updateError;
+      if (error) throw error;
 
       await logAudit(user.id, 'scheduling_approve', undefined, {
         request_id: req.id,
-        event_id: newEvent.id,
-        responsavel: req.nome_responsavel,
+        nivel: pendingStep.nivel,
+        nivel_label: APPROVAL_LEVELS.find(l => l.nivel === pendingStep.nivel)?.label,
       });
 
-      // Notify requester via email (fire-and-forget)
-      const branch = getBranch(req.branch_id);
-      supabase.functions.invoke('send-transactional-email', {
-        body: {
-          templateName: 'scheduling-approved',
-          recipientEmail: req.email,
-          idempotencyKey: `scheduling-approved-${req.id}`,
-          templateData: {
-            nomeResponsavel: req.nome_responsavel,
-            data: formatDate(req.data),
-            horario: req.horario,
-            local: req.local,
-            tipo: getSchedulingTypeLabel(req.tipo),
-            ramo: branch ? `${branch.icon} ${branch.display_name}` : '',
-            assunto: req.descricao,
-          },
-        },
-      }).catch(err => console.error('Failed to send approval email', err));
+      // Check if this was the last level
+      const nextLevel = APPROVAL_LEVELS.find(l => l.nivel > pendingStep.nivel);
+      if (!nextLevel) {
+        // All levels approved — create the event
+        const { data: newEvent, error: eventError } = await supabase
+          .from('events')
+          .insert({
+            name: `${getSchedulingTypeLabel(req.tipo)} — ${req.nome_responsavel}`,
+            description: req.descricao || '',
+            event_date: req.data,
+            location: req.local,
+            branch_id: req.branch_id,
+            created_by: user.id,
+            source: 'scheduling',
+          })
+          .select('id')
+          .single();
 
-      toast.success('Solicitação aprovada e evento criado no calendário!');
+        if (eventError) throw eventError;
+
+        await supabase
+          .from('scheduling_requests')
+          .update({
+            status: 'aprovado',
+            approved_at: new Date().toISOString(),
+            approved_by: user.id,
+            event_id: newEvent.id,
+          })
+          .eq('id', req.id);
+
+        // Notify requester
+        const branch = getBranch(req.branch_id);
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'scheduling-approved',
+            recipientEmail: req.email,
+            idempotencyKey: `scheduling-approved-${req.id}`,
+            templateData: {
+              nomeResponsavel: req.nome_responsavel,
+              data: formatDate(req.data),
+              horario: req.horario,
+              local: req.local,
+              tipo: getSchedulingTypeLabel(req.tipo),
+              ramo: branch ? `${branch.icon} ${branch.display_name}` : '',
+              assunto: req.descricao,
+            },
+          },
+        }).catch(err => console.error('Failed to send approval email', err));
+
+        toast.success('Todos os níveis aprovados! Evento criado no calendário.');
+      } else {
+        toast.success(`Nível ${pendingStep.nivel} aprovado. Aguardando nível ${nextLevel.nivel}.`);
+      }
+
       setDetailOpen(false);
       fetchRequests();
     } catch (err: any) {
@@ -172,33 +277,48 @@ const SchedulingApprovalPanel = () => {
     }
   };
 
-  const handleReject = async () => {
+  const handleRejectLevel = async () => {
     if (!user || !selectedRequest) return;
     if (!rejectionReason.trim()) {
       toast.error('Informe o motivo da rejeição.');
       return;
     }
+
+    const pendingStep = getCurrentPendingLevel(selectedRequest.id);
+    if (!pendingStep) return;
+
     setProcessing(true);
     try {
+      // Reject current level
       const { error } = await supabase
+        .from('aprovacoes')
+        .update({
+          status: 'rejeitado',
+          aprovado_por: user.id,
+          motivo_rejeicao: rejectionReason.trim(),
+        })
+        .eq('id', pendingStep.id);
+
+      if (error) throw error;
+
+      // Update the scheduling request to rejected
+      await supabase
         .from('scheduling_requests')
         .update({
           status: 'rejeitado',
           approved_at: new Date().toISOString(),
           approved_by: user.id,
-          rejection_reason: rejectionReason.trim(),
+          rejection_reason: `[Nível ${pendingStep.nivel}] ${rejectionReason.trim()}`,
         })
         .eq('id', selectedRequest.id);
 
-      if (error) throw error;
-
       await logAudit(user.id, 'scheduling_reject', undefined, {
         request_id: selectedRequest.id,
-        responsavel: selectedRequest.nome_responsavel,
+        nivel: pendingStep.nivel,
         reason: rejectionReason.trim(),
       });
 
-      // Notify requester via email (fire-and-forget)
+      // Notify requester
       const branch = getBranch(selectedRequest.branch_id);
       supabase.functions.invoke('send-transactional-email', {
         body: {
@@ -213,7 +333,7 @@ const SchedulingApprovalPanel = () => {
             tipo: getSchedulingTypeLabel(selectedRequest.tipo),
             ramo: branch ? `${branch.icon} ${branch.display_name}` : '',
             assunto: selectedRequest.descricao,
-            motivoRejeicao: rejectionReason.trim(),
+            motivoRejeicao: `Rejeitado no nível ${pendingStep.nivel} (${APPROVAL_LEVELS.find(l => l.nivel === pendingStep.nivel)?.label}): ${rejectionReason.trim()}`,
           },
         },
       }).catch(err => console.error('Failed to send rejection email', err));
@@ -244,19 +364,42 @@ const SchedulingApprovalPanel = () => {
   const openDetail = async (req: SchedulingRequest) => {
     setSelectedRequest(req);
     setDetailOpen(true);
-    const { data: atts } = await supabase
-      .from('agendamento_anexos')
-      .select('id, file_name, file_path, file_size, content_type')
-      .eq('agendamento_id', req.id);
+
+    const [{ data: atts }, { data: steps }] = await Promise.all([
+      supabase.from('agendamento_anexos').select('id, file_name, file_path, file_size, content_type').eq('agendamento_id', req.id),
+      supabase.from('aprovacoes').select('*').eq('agendamento_id', req.id).order('nivel'),
+    ]);
     setDetailAttachments(atts ?? []);
+
+    // Fetch names for steps
+    const approverIds = [...new Set((steps ?? []).filter(s => s.aprovado_por).map(s => s.aprovado_por!))];
+    let profileMap: Record<string, string> = {};
+    if (approverIds.length > 0) {
+      const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', approverIds);
+      profileMap = Object.fromEntries((profiles ?? []).map(p => [p.user_id, p.name]));
+    }
+
+    setApprovalSteps(
+      (steps ?? []).map(s => ({
+        ...s,
+        status: s.status as 'pendente' | 'aprovado' | 'rejeitado',
+        aprovador_nome: s.aprovado_por ? profileMap[s.aprovado_por] ?? '' : undefined,
+      }))
+    );
   };
+
+  const pendingStep = selectedRequest ? getCurrentPendingLevel(selectedRequest.id) : null;
+  const hasApprovalSteps = selectedRequest ? (allApprovals[selectedRequest.id]?.length ?? 0) > 0 : false;
+  const canStartApproval = selectedRequest?.status === 'confirmado_email' && !hasApprovalSteps;
+  const canApproveReject = selectedRequest?.status === 'em_aprovacao' && pendingStep && !isRejected(selectedRequest.id);
 
   return (
     <div className="space-y-6">
       {/* KPI cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { key: 'confirmado_email', label: 'Aguardando aprovação', color: 'text-amber-600' },
+          { key: 'confirmado_email', label: 'Aguardando início', color: 'text-amber-600' },
+          { key: 'em_aprovacao', label: 'Em aprovação', color: 'text-blue-600' },
           { key: 'aprovado', label: 'Aprovados', color: 'text-primary' },
           { key: 'rejeitado', label: 'Rejeitados', color: 'text-destructive' },
           { key: 'pendente', label: 'Aguardando e-mail', color: 'text-muted-foreground' },
@@ -289,7 +432,8 @@ const SchedulingApprovalPanel = () => {
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
             <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="confirmado_email">Confirmado (e-mail)</SelectItem>
+            <SelectItem value="confirmado_email">Aguardando aprovação</SelectItem>
+            <SelectItem value="em_aprovacao">Em aprovação</SelectItem>
             <SelectItem value="aprovado">Aprovado</SelectItem>
             <SelectItem value="rejeitado">Rejeitado</SelectItem>
           </SelectContent>
@@ -317,6 +461,7 @@ const SchedulingApprovalPanel = () => {
                     <TableHead>Data</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead>Local</TableHead>
+                    <TableHead>Aprovação</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
@@ -325,6 +470,7 @@ const SchedulingApprovalPanel = () => {
                   {filtered.map(req => {
                     const statusInfo = SCHEDULING_STATUS_LABELS[req.status];
                     const branch = getBranch(req.branch_id);
+                    const steps = allApprovals[req.id] ?? [];
                     return (
                       <TableRow key={req.id}>
                         <TableCell className="font-medium">{req.nome_responsavel}</TableCell>
@@ -336,6 +482,13 @@ const SchedulingApprovalPanel = () => {
                           </div>
                         </TableCell>
                         <TableCell>{req.local}</TableCell>
+                        <TableCell>
+                          {steps.length > 0 ? (
+                            <ApprovalTimeline steps={steps} compact />
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
                         <TableCell>
                           <Badge variant={statusInfo?.variant || 'secondary'}>
                             {statusInfo?.label || req.status}
@@ -394,7 +547,18 @@ const SchedulingApprovalPanel = () => {
                 )}
               </div>
 
-              {/* Attachments (read-only for admin) */}
+              {/* Approval Timeline */}
+              {approvalSteps.length > 0 && (
+                <div className="rounded-lg border p-4">
+                  <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                    <CalendarPlus className="h-4 w-4" />
+                    Fluxo de Aprovação
+                  </h4>
+                  <ApprovalTimeline steps={approvalSteps} />
+                </div>
+              )}
+
+              {/* Attachments */}
               {detailAttachments.length > 0 && (
                 <SchedulingAttachments
                   requestId={selectedRequest.id}
@@ -429,15 +593,30 @@ const SchedulingApprovalPanel = () => {
                 </div>
               )}
 
-              {selectedRequest.status === 'confirmado_email' && (
+              {/* Start approval flow */}
+              {canStartApproval && (
+                <div className="pt-2">
+                  <Button
+                    onClick={() => handleStartApproval(selectedRequest)}
+                    disabled={processing}
+                    className="w-full gap-2"
+                  >
+                    {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CalendarPlus className="h-4 w-4" />}
+                    Iniciar fluxo de aprovação
+                  </Button>
+                </div>
+              )}
+
+              {/* Approve / Reject current level */}
+              {canApproveReject && pendingStep && (
                 <div className="flex gap-2 pt-2">
                   <Button
-                    onClick={() => handleApprove(selectedRequest)}
+                    onClick={() => handleApproveLevel(selectedRequest)}
                     disabled={processing}
                     className="flex-1 gap-2"
                   >
                     {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
-                    Aprovar e criar evento
+                    Aprovar Nível {pendingStep.nivel} ({APPROVAL_LEVELS.find(l => l.nivel === pendingStep.nivel)?.label})
                   </Button>
                   <Button
                     variant="destructive"
@@ -467,7 +646,7 @@ const SchedulingApprovalPanel = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Rejeitar solicitação</AlertDialogTitle>
             <AlertDialogDescription>
-              Informe o motivo da rejeição. O solicitante será informado.
+              Informe o motivo da rejeição. O solicitante será informado e o fluxo será encerrado.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">
@@ -483,7 +662,7 @@ const SchedulingApprovalPanel = () => {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={processing}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleReject}
+              onClick={handleRejectLevel}
               disabled={processing || !rejectionReason.trim()}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >

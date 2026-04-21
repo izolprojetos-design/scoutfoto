@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip } from 'lucide-react';
+import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -53,6 +54,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [attachmentsByReq, setAttachmentsByReq] = useState<Record<string, Attachment[]>>({});
+  const [approvalsByReq, setApprovalsByReq] = useState<Record<string, ApprovalStep[]>>({});
 
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
@@ -94,6 +96,34 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
         grouped[key].push(a);
       }
       setAttachmentsByReq(grouped);
+    }
+
+    // Load approval steps
+    if (reqs?.length) {
+      const ids = reqs.map(r => r.id);
+      const { data: approvals } = await supabase
+        .from('aprovacoes')
+        .select('*')
+        .in('agendamento_id', ids)
+        .order('nivel');
+
+      const approverIds = [...new Set((approvals ?? []).filter(a => a.aprovado_por).map(a => a.aprovado_por!))];
+      let profileMap: Record<string, string> = {};
+      if (approverIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', approverIds);
+        profileMap = Object.fromEntries((profiles ?? []).map(p => [p.user_id, p.name]));
+      }
+
+      const groupedApprovals: Record<string, ApprovalStep[]> = {};
+      for (const a of approvals ?? []) {
+        if (!groupedApprovals[a.agendamento_id]) groupedApprovals[a.agendamento_id] = [];
+        groupedApprovals[a.agendamento_id].push({
+          ...a,
+          status: a.status as 'pendente' | 'aprovado' | 'rejeitado',
+          aprovador_nome: a.aprovado_por ? profileMap[a.aprovado_por] ?? '' : undefined,
+        });
+      }
+      setApprovalsByReq(groupedApprovals);
     }
 
     setLoading(false);
@@ -236,6 +266,14 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                   {r.rejection_reason && (
                     <div className="mt-3 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                       <strong>Motivo da rejeição:</strong> {r.rejection_reason}
+                    </div>
+                  )}
+
+                  {/* Approval Timeline */}
+                  {(approvalsByReq[r.id]?.length ?? 0) > 0 && (
+                    <div className="mt-3 rounded-lg border p-3">
+                      <p className="text-xs font-semibold mb-2 text-muted-foreground">Fluxo de Aprovação</p>
+                      <ApprovalTimeline steps={approvalsByReq[r.id]} />
                     </div>
                   )}
 

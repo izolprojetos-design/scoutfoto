@@ -52,6 +52,47 @@ export type Database = {
           },
         ]
       }
+      aprovacoes: {
+        Row: {
+          agendamento_id: string
+          aprovado_por: string | null
+          created_at: string
+          id: string
+          motivo_rejeicao: string | null
+          nivel: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agendamento_id: string
+          aprovado_por?: string | null
+          created_at?: string
+          id?: string
+          motivo_rejeicao?: string | null
+          nivel: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agendamento_id?: string
+          aprovado_por?: string | null
+          created_at?: string
+          id?: string
+          motivo_rejeicao?: string | null
+          nivel?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aprovacoes_agendamento_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "scheduling_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
