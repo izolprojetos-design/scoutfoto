@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { SCHEDULING_TYPES } from '@/lib/schedulingTypes';
+import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGOS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection } from '@/lib/sectionOptions';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
+  const [secao, setSecao] = useState('');
+  const [cargo1, setCargo1] = useState('');
+  const [cargo2, setCargo2] = useState('');
   const [email, setEmail] = useState('');
   const [destinatarioEmail, setDestinatarioEmail] = useState('');
   const [data, setData] = useState('');
@@ -59,7 +63,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   useEffect(() => {
     if (profile?.name && !nomeResponsavel) setNomeResponsavel(profile.name);
     if ((profile?.email || user?.email) && !email) setEmail(profile?.email ?? user?.email ?? '');
-  }, [profile, user, nomeResponsavel, email]);
+    if (profile?.section && !secao && !cargo1) {
+      const parsed = parseVolunteerSection(profile.section);
+      if (parsed.secao) setSecao(parsed.secao);
+      if (parsed.cargo1) setCargo1(parsed.cargo1);
+      if (parsed.cargo2) setCargo2(parsed.cargo2);
+    }
+  }, [profile, user, nomeResponsavel, email, secao, cargo1]);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -163,7 +173,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setInsertedId(inserted.id);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
-    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail('');
+    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     setAttachments([]);
     onSuccess?.();
   };
@@ -211,9 +221,62 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="nome">Nome do responsável *</Label>
+              <Label htmlFor="nome">Nome do associado *</Label>
               <Input id="nome" value={nomeResponsavel} onChange={e => setNomeResponsavel(e.target.value)} placeholder="Seu nome completo" />
               {errors.nomeResponsavel && <p className="text-sm text-destructive">{errors.nomeResponsavel}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="secao">Seção</Label>
+              <select
+                id="secao"
+                value={secao}
+                onChange={e => setSecao(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Selecione a seção</option>
+                {VOLUNTEER_SECTIONS.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cargo1">Cargo (1ª Função)</Label>
+              <select
+                id="cargo1"
+                value={cargo1}
+                onChange={e => setCargo1(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Selecione o cargo</option>
+                {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, cargos]) => (
+                  <optgroup key={cat} label={cat}>
+                    {cargos.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="cargo2">Cargo (2ª Função)</Label>
+              <select
+                id="cargo2"
+                value={cargo2}
+                onChange={e => setCargo2(e.target.value)}
+                className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+              >
+                <option value="">Nenhum</option>
+                {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, cargos]) => (
+                  <optgroup key={cat} label={cat}>
+                    {cargos.map(c => (
+                      <option key={c} value={c} disabled={c === cargo1}>{c}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
 
             <div className="space-y-2">
