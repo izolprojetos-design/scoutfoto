@@ -544,13 +544,24 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
             {/* Erros de validação por arquivo — sempre no topo da seção */}
             {fileErrors.length > 0 && (
-              <div className="space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-3">
-                {fileErrors.map((err, idx) => (
-                  <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                    {err}
-                  </p>
-                ))}
+              <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                <div className="space-y-1">
+                  {fileErrors.map((err, idx) => (
+                    <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
+                      <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                      {err}
+                    </p>
+                  ))}
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setFileErrors([])}
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
+                >
+                  <X className="h-4 w-4 mr-1" /> Limpar erros
+                </Button>
               </div>
             )}
 
