@@ -225,29 +225,54 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
-    // Upload pending files
+    // Upload pending files with per-file status
     const uploadedAttachments: Attachment[] = [];
     if (pendingFiles.length > 0) {
-      for (const file of pendingFiles) {
+      setIsUploadingAttachments(true);
+      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus }));
+      setUploadStates([...states]);
+
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i];
+        states[i] = { ...states[i], status: 'uploading' };
+        setUploadStates([...states]);
+
         const ext = file.name.split('.').pop() ?? '';
         const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('anexos-agendamentos')
           .upload(storagePath, file, { contentType: file.type, upsert: false });
+
         if (uploadError) {
-          console.error('Attachment upload failed', uploadError.message);
+          states[i] = { ...states[i], status: 'error', error: uploadError.message };
+          setUploadStates([...states]);
           continue;
         }
+
         const { data: row, error: insertErr } = await supabase
           .from('agendamento_anexos')
           .insert({ agendamento_id: inserted.id, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
           .select('id, file_name, file_path, file_size, content_type')
           .single();
-        if (!insertErr && row) uploadedAttachments.push(row);
+
+        if (insertErr || !row) {
+          states[i] = { ...states[i], status: 'error', error: insertErr?.message ?? 'Erro ao registrar' };
+          setUploadStates([...states]);
+          continue;
+        }
+
+        states[i] = { ...states[i], status: 'done' };
+        setUploadStates([...states]);
+        uploadedAttachments.push(row);
       }
+
+      const errorCount = states.filter(s => s.status === 'error').length;
       if (uploadedAttachments.length > 0) {
-        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)` });
+        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)${errorCount > 0 ? `, ${errorCount} com erro` : ''}` });
+      } else if (errorCount > 0) {
+        toast({ title: 'Falha ao enviar anexos', description: 'Nenhum anexo foi enviado com sucesso.', variant: 'destructive' });
       }
+      setIsUploadingAttachments(false);
     }
 
     setSubmitting(false);
@@ -257,6 +282,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     setPendingFiles([]);
+    setUploadStates([]);
     onSuccess?.();
   };
 
