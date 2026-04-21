@@ -51,7 +51,45 @@ type FileUploadStatus = 'pending' | 'uploading' | 'done' | 'error';
 interface FileUploadState {
   file: File;
   status: FileUploadStatus;
+  progress: number; // 0-100
   error?: string;
+}
+
+/** Upload via XHR to get real progress events */
+function uploadWithProgress(
+  bucket: string,
+  path: string,
+  file: File,
+  token: string,
+  onProgress: (pct: number) => void,
+): Promise<{ error: string | null }> {
+  return new Promise((resolve) => {
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve({ error: null });
+      else {
+        try {
+          const body = JSON.parse(xhr.responseText);
+          resolve({ error: body.message || body.error || `HTTP ${xhr.status}` });
+        } catch {
+          resolve({ error: `HTTP ${xhr.status}` });
+        }
+      }
+    };
+    xhr.onerror = () => resolve({ error: 'Erro de rede' });
+    const formData = new FormData();
+    formData.append('', file, path);
+    // Send raw file with content-type header instead of FormData
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.send(file);
+  });
 }
 
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
@@ -225,29 +263,43 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
-    // Upload pending files with per-file status
+    // Upload pending files with real progress
     const uploadedAttachments: Attachment[] = [];
     if (pendingFiles.length > 0) {
       setIsUploadingAttachments(true);
-      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus }));
+      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus, progress: 0 }));
       setUploadStates([...states]);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token ?? '';
 
       for (let i = 0; i < pendingFiles.length; i++) {
         const file = pendingFiles[i];
-        states[i] = { ...states[i], status: 'uploading' };
+        states[i] = { ...states[i], status: 'uploading', progress: 0 };
         setUploadStates([...states]);
 
         const ext = file.name.split('.').pop() ?? '';
         const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('anexos-agendamentos')
-          .upload(storagePath, file, { contentType: file.type, upsert: false });
+
+        const { error: uploadError } = await uploadWithProgress(
+          'anexos-agendamentos',
+          storagePath,
+          file,
+          token,
+          (pct) => {
+            states[i] = { ...states[i], progress: pct };
+            setUploadStates([...states]);
+          },
+        );
 
         if (uploadError) {
-          states[i] = { ...states[i], status: 'error', error: uploadError.message };
+          states[i] = { ...states[i], status: 'error', error: uploadError };
           setUploadStates([...states]);
           continue;
         }
+
+        states[i] = { ...states[i], progress: 100 };
+        setUploadStates([...states]);
 
         const { data: row, error: insertErr } = await supabase
           .from('agendamento_anexos')
@@ -518,14 +570,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                         <p className="text-sm font-medium truncate">{state.file.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {state.status === 'pending' && 'Aguardando...'}
-                          {state.status === 'uploading' && 'Enviando...'}
+                          {state.status === 'uploading' && `Enviando... ${state.progress}%`}
                           {state.status === 'done' && 'Concluído'}
                           {state.status === 'error' && (state.error ?? 'Erro no envio')}
                         </p>
                       </div>
                     </div>
                     {state.status === 'uploading' && (
-                      <Progress value={undefined} className="h-1.5" />
+                      <Progress value={state.progress} className="h-1.5" />
                     )}
                   </div>
                 ))}
