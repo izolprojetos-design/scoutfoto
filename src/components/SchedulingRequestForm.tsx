@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon, AlertCircle, Check } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -46,6 +46,14 @@ interface Attachment {
   content_type: string;
 }
 
+type FileUploadStatus = 'pending' | 'uploading' | 'done' | 'error';
+
+interface FileUploadState {
+  file: File;
+  status: FileUploadStatus;
+  error?: string;
+}
+
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const { user, profile } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -54,6 +62,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [insertedId, setInsertedId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [uploadStates, setUploadStates] = useState<FileUploadState[]>([]);
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -215,29 +225,54 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
-    // Upload pending files
+    // Upload pending files with per-file status
     const uploadedAttachments: Attachment[] = [];
     if (pendingFiles.length > 0) {
-      for (const file of pendingFiles) {
+      setIsUploadingAttachments(true);
+      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus }));
+      setUploadStates([...states]);
+
+      for (let i = 0; i < pendingFiles.length; i++) {
+        const file = pendingFiles[i];
+        states[i] = { ...states[i], status: 'uploading' };
+        setUploadStates([...states]);
+
         const ext = file.name.split('.').pop() ?? '';
         const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
         const { error: uploadError } = await supabase.storage
           .from('anexos-agendamentos')
           .upload(storagePath, file, { contentType: file.type, upsert: false });
+
         if (uploadError) {
-          console.error('Attachment upload failed', uploadError.message);
+          states[i] = { ...states[i], status: 'error', error: uploadError.message };
+          setUploadStates([...states]);
           continue;
         }
+
         const { data: row, error: insertErr } = await supabase
           .from('agendamento_anexos')
           .insert({ agendamento_id: inserted.id, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
           .select('id, file_name, file_path, file_size, content_type')
           .single();
-        if (!insertErr && row) uploadedAttachments.push(row);
+
+        if (insertErr || !row) {
+          states[i] = { ...states[i], status: 'error', error: insertErr?.message ?? 'Erro ao registrar' };
+          setUploadStates([...states]);
+          continue;
+        }
+
+        states[i] = { ...states[i], status: 'done' };
+        setUploadStates([...states]);
+        uploadedAttachments.push(row);
       }
+
+      const errorCount = states.filter(s => s.status === 'error').length;
       if (uploadedAttachments.length > 0) {
-        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)` });
+        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)${errorCount > 0 ? `, ${errorCount} com erro` : ''}` });
+      } else if (errorCount > 0) {
+        toast({ title: 'Falha ao enviar anexos', description: 'Nenhum anexo foi enviado com sucesso.', variant: 'destructive' });
       }
+      setIsUploadingAttachments(false);
     }
 
     setSubmitting(false);
@@ -247,6 +282,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     setPendingFiles([]);
+    setUploadStates([]);
     onSuccess?.();
   };
 
@@ -449,7 +485,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {pendingFiles.length > 0 && (
+            {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
@@ -467,12 +503,44 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 ))}
               </div>
             )}
+
+            {/* Upload progress per file */}
+            {isUploadingAttachments && uploadStates.length > 0 && (
+              <div className="space-y-2">
+                {uploadStates.map((state, idx) => (
+                  <div key={`upload-${idx}`} className="rounded-md border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center gap-3">
+                      {state.status === 'uploading' && <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />}
+                      {state.status === 'done' && <Check className="h-4 w-4 text-primary shrink-0" />}
+                      {state.status === 'error' && <AlertCircle className="h-4 w-4 text-destructive shrink-0" />}
+                      {state.status === 'pending' && <div className="h-4 w-4 rounded-full border-2 border-muted-foreground/30 shrink-0" />}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{state.file.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {state.status === 'pending' && 'Aguardando...'}
+                          {state.status === 'uploading' && 'Enviando...'}
+                          {state.status === 'done' && 'Concluído'}
+                          {state.status === 'error' && (state.error ?? 'Erro no envio')}
+                        </p>
+                      </div>
+                    </div>
+                    {state.status === 'uploading' && (
+                      <Progress value={undefined} className="h-1.5" />
+                    )}
+                  </div>
+                ))}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Enviando {uploadStates.filter(s => s.status === 'done').length}/{uploadStates.length} anexos...</span>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="lg" disabled={submitting} className="gap-2">
               {submitting
-                ? <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
+                ? <><Loader2 className="h-4 w-4 animate-spin" /> {isUploadingAttachments ? 'Enviando anexos...' : 'Enviando...'}</>
                 : <><Send className="h-4 w-4" /> Enviar Solicitação</>}
             </Button>
           </div>
