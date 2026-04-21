@@ -98,6 +98,34 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
       setAttachmentsByReq(grouped);
     }
 
+    // Load approval steps
+    if (reqs?.length) {
+      const ids = reqs.map(r => r.id);
+      const { data: approvals } = await supabase
+        .from('aprovacoes')
+        .select('*')
+        .in('agendamento_id', ids)
+        .order('nivel');
+
+      const approverIds = [...new Set((approvals ?? []).filter(a => a.aprovado_por).map(a => a.aprovado_por!))];
+      let profileMap: Record<string, string> = {};
+      if (approverIds.length > 0) {
+        const { data: profiles } = await supabase.from('profiles').select('user_id, name').in('user_id', approverIds);
+        profileMap = Object.fromEntries((profiles ?? []).map(p => [p.user_id, p.name]));
+      }
+
+      const groupedApprovals: Record<string, ApprovalStep[]> = {};
+      for (const a of approvals ?? []) {
+        if (!groupedApprovals[a.agendamento_id]) groupedApprovals[a.agendamento_id] = [];
+        groupedApprovals[a.agendamento_id].push({
+          ...a,
+          status: a.status as 'pendente' | 'aprovado' | 'rejeitado',
+          aprovador_nome: a.aprovado_por ? profileMap[a.aprovado_por] ?? '' : undefined,
+        });
+      }
+      setApprovalsByReq(groupedApprovals);
+    }
+
     setLoading(false);
   };
 
