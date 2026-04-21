@@ -3,18 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save } from 'lucide-react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { parseLocalDate } from '@/lib/scoutUtils';
-import { SCHEDULING_STATUS_LABELS, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import { SCHEDULING_STATUS_LABELS, SCHEDULING_TYPES, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
 
 interface Request {
   id: string;
   nome_responsavel: string;
+  email: string;
   data: string;
   horario: string;
   local: string;
@@ -30,11 +35,25 @@ interface Branch { id: string; display_name: string; icon: string }
 
 interface Props { refreshKey?: number }
 
+const EDITABLE_STATUSES = ['pendente', 'confirmado_email'];
+
 const MySchedulingRequests = ({ refreshKey }: Props) => {
   const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Edit state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editReq, setEditReq] = useState<Request | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [editData, setEditData] = useState('');
+  const [editHorario, setEditHorario] = useState('');
+  const [editLocal, setEditLocal] = useState('');
+  const [editBranchId, setEditBranchId] = useState('');
+  const [editTipo, setEditTipo] = useState('');
+  const [editDescricao, setEditDescricao] = useState('');
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const load = async () => {
     if (!user) return;
@@ -61,6 +80,60 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
     load();
   };
 
+  const openEdit = (r: Request) => {
+    setEditReq(r);
+    setEditData(r.data);
+    setEditHorario(r.horario);
+    setEditLocal(r.local);
+    setEditBranchId(r.branch_id ?? '');
+    setEditTipo(r.tipo);
+    setEditDescricao(r.descricao);
+    setEditErrors({});
+    setEditOpen(true);
+  };
+
+  const validateEdit = () => {
+    const e: Record<string, string> = {};
+    if (!editData) e.data = 'Selecione a data';
+    else {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const [y, m, d] = editData.split('-').map(Number);
+      const sel = new Date(y, m - 1, d);
+      if (sel < today) e.data = 'Data deve ser hoje ou futura';
+    }
+    if (!/^\d{2}:\d{2}$/.test(editHorario)) e.horario = 'Formato HH:MM';
+    if (editLocal.trim().length < 2) e.local = 'Informe o local';
+    if (!editBranchId) e.branchId = 'Selecione um ramo';
+    if (editDescricao.trim().length < 5) e.descricao = 'Mínimo 5 caracteres';
+    setEditErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editReq || !validateEdit()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('scheduling_requests')
+      .update({
+        data: editData,
+        horario: editHorario,
+        local: editLocal.trim(),
+        branch_id: editBranchId || null,
+        tipo: editTipo,
+        descricao: editDescricao.trim(),
+      })
+      .eq('id', editReq.id);
+
+    setSaving(false);
+    if (error) {
+      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Solicitação atualizada!' });
+    setEditOpen(false);
+    load();
+  };
+
   const getBranch = (id: string | null) => branches.find(b => b.id === id);
 
   if (loading) return <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>;
@@ -77,68 +150,147 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   }
 
   return (
-    <div className="space-y-3">
-      {requests.map((r, i) => {
-        const status = SCHEDULING_STATUS_LABELS[r.status] ?? { label: r.status, variant: 'secondary' as const };
-        const branch = getBranch(r.branch_id);
-        return (
-          <div key={r.id}>
-            <Card className="border shadow-sm">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div>
-                    <h4 className="font-semibold text-base">{getSchedulingTypeLabel(r.tipo)}</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Enviada em {format(new Date(r.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                    </p>
+    <>
+      <div className="space-y-3">
+        {requests.map((r) => {
+          const status = SCHEDULING_STATUS_LABELS[r.status] ?? { label: r.status, variant: 'secondary' as const };
+          const branch = getBranch(r.branch_id);
+          const canEdit = EDITABLE_STATUSES.includes(r.status);
+          return (
+            <div key={r.id}>
+              <Card className="border shadow-sm">
+                <CardContent className="p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-3 mb-3">
+                    <div>
+                      <h4 className="font-semibold text-base">{getSchedulingTypeLabel(r.tipo)}</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Enviada em {format(new Date(r.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                      </p>
+                    </div>
+                    <Badge variant={status.variant}>{status.label}</Badge>
                   </div>
-                  <Badge variant={status.variant}>{status.label}</Badge>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <CalendarDays className="h-4 w-4 shrink-0" />
-                    <span>{format(parseLocalDate(r.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CalendarDays className="h-4 w-4 shrink-0" />
+                      <span>{format(parseLocalDate(r.data), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Clock className="h-4 w-4 shrink-0" />
+                      <span>{r.horario}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-muted-foreground sm:col-span-2">
+                      <MapPin className="h-4 w-4 shrink-0" />
+                      <span>{r.local}</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4 shrink-0" />
-                    <span>{r.horario}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground sm:col-span-2">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    <span>{r.local}</span>
-                  </div>
-                </div>
 
-                {branch && (
-                  <Badge variant="outline" className="mt-3 font-normal">
-                    {branch.icon} {branch.display_name}
-                  </Badge>
-                )}
+                  {branch && (
+                    <Badge variant="outline" className="mt-3 font-normal">
+                      {branch.icon} {branch.display_name}
+                    </Badge>
+                  )}
 
-                {r.descricao && (
-                  <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3">{r.descricao}</p>
-                )}
+                  {r.descricao && (
+                    <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3">{r.descricao}</p>
+                  )}
 
-                {r.rejection_reason && (
-                  <div className="mt-3 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                    <strong>Motivo da rejeição:</strong> {r.rejection_reason}
-                  </div>
-                )}
+                  {r.rejection_reason && (
+                    <div className="mt-3 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+                      <strong>Motivo da rejeição:</strong> {r.rejection_reason}
+                    </div>
+                  )}
 
-                {r.status === 'pendente' && (
-                  <div className="mt-4 flex justify-end">
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4 mr-1" /> Excluir
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                  {canEdit && (
+                    <div className="mt-4 flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-1">
+                        <Pencil className="h-4 w-4" /> Editar
+                      </Button>
+                      {r.status === 'pendente' && (
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(r.id)} className="text-destructive hover:text-destructive">
+                          <Trash2 className="h-4 w-4 mr-1" /> Excluir
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Solicitação</DialogTitle>
+            <DialogDescription>Altere os dados abaixo. Campos marcados com * são obrigatórios.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="edit-data">Data *</Label>
+                <Input id="edit-data" type="date" value={editData} onChange={e => setEditData(e.target.value)} />
+                {editErrors.data && <p className="text-sm text-destructive">{editErrors.data}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-horario">Horário *</Label>
+                <Input id="edit-horario" type="time" value={editHorario} onChange={e => setEditHorario(e.target.value)} />
+                {editErrors.horario && <p className="text-sm text-destructive">{editErrors.horario}</p>}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label htmlFor="edit-local">Local *</Label>
+                <Input id="edit-local" value={editLocal} onChange={e => setEditLocal(e.target.value)} placeholder="Ex: Sede do grupo, Parque Anauá..." />
+                {editErrors.local && <p className="text-sm text-destructive">{editErrors.local}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-branch">Ramo escoteiro *</Label>
+                <select
+                  id="edit-branch"
+                  value={editBranchId}
+                  onChange={e => setEditBranchId(e.target.value)}
+                  className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                >
+                  <option value="">Selecione o ramo</option>
+                  {branches.map(b => (
+                    <option key={b.id} value={b.id}>{b.icon} {b.display_name}</option>
+                  ))}
+                </select>
+                {editErrors.branchId && <p className="text-sm text-destructive">{editErrors.branchId}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-tipo">Tipo de atividade *</Label>
+                <select
+                  id="edit-tipo"
+                  value={editTipo}
+                  onChange={e => setEditTipo(e.target.value)}
+                  className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                >
+                  {SCHEDULING_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="edit-descricao">Descrição / Observações *</Label>
+              <Textarea id="edit-descricao" rows={4} value={editDescricao} onChange={e => setEditDescricao(e.target.value)} placeholder="Detalhe a atividade..." />
+              {editErrors.descricao && <p className="text-sm text-destructive">{editErrors.descricao}</p>}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
+              <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
+                {saving ? <><Loader2 className="h-4 w-4 animate-spin" /> Salvando...</> : <><Save className="h-4 w-4" /> Salvar alterações</>}
+              </Button>
+            </div>
           </div>
-        );
-      })}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
