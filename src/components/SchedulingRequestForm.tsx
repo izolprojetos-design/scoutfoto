@@ -71,6 +71,36 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [descricao, setDescricao] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const addPendingFiles = useCallback((files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    if (pendingFiles.length + fileArray.length > MAX_FILES) {
+      toast({ title: 'Limite excedido', description: `Máximo de ${MAX_FILES} arquivos.`, variant: 'destructive' });
+      return;
+    }
+    for (const f of fileArray) {
+      if (!ACCEPTED_TYPES.includes(f.type)) {
+        toast({ title: 'Tipo não aceito', description: `"${f.name}" — aceito apenas PDF, JPG e PNG.`, variant: 'destructive' });
+        return;
+      }
+      if (f.size > MAX_SIZE_BYTES) {
+        toast({ title: 'Arquivo muito grande', description: `"${f.name}" excede 5 MB.`, variant: 'destructive' });
+        return;
+      }
+    }
+    setPendingFiles(prev => [...prev, ...fileArray]);
+  }, [pendingFiles]);
+
+  const removePendingFile = (index: number) => {
+    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (submitting) return;
+    addPendingFiles(e.dataTransfer.files);
+  }, [submitting, addPendingFiles]);
+
   useEffect(() => {
     supabase.from('branches').select('id, display_name, icon').order('sort_order')
       .then(({ data }) => setBranches(data ?? []));
