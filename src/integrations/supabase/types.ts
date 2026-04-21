@@ -596,6 +596,44 @@ export type Database = {
           },
         ]
       }
+      scheduling_attachments: {
+        Row: {
+          content_type: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          scheduling_request_id: string
+        }
+        Insert: {
+          content_type?: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          id?: string
+          scheduling_request_id: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          scheduling_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduling_attachments_scheduling_request_id_fkey"
+            columns: ["scheduling_request_id"]
+            isOneToOne: false
+            referencedRelation: "scheduling_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       scheduling_requests: {
         Row: {
           approved_at: string | null
