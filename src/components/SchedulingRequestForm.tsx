@@ -46,6 +46,14 @@ interface Attachment {
   content_type: string;
 }
 
+type FileUploadStatus = 'pending' | 'uploading' | 'done' | 'error';
+
+interface FileUploadState {
+  file: File;
+  status: FileUploadStatus;
+  error?: string;
+}
+
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const { user, profile } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
