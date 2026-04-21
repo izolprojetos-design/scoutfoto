@@ -269,6 +269,14 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     </div>
                   )}
 
+                  {/* Approval Timeline */}
+                  {(approvalsByReq[r.id]?.length ?? 0) > 0 && (
+                    <div className="mt-3 rounded-lg border p-3">
+                      <p className="text-xs font-semibold mb-2 text-muted-foreground">Fluxo de Aprovação</p>
+                      <ApprovalTimeline steps={approvalsByReq[r.id]} />
+                    </div>
+                  )}
+
                   <div className="mt-4 flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => openAttachments(r)} className="gap-1">
                       <Paperclip className="h-4 w-4" />
