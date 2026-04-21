@@ -133,7 +133,7 @@ const SchedulingApprovalPanel = () => {
 
       if (updateError) throw updateError;
 
-      await logAudit('scheduling_approve', undefined, {
+      await logAudit(user.id, 'scheduling_approve', undefined, {
         request_id: req.id,
         event_id: newEvent.id,
         responsavel: req.nome_responsavel,
@@ -169,7 +169,7 @@ const SchedulingApprovalPanel = () => {
 
       if (error) throw error;
 
-      await logAudit('scheduling_reject', undefined, {
+      await logAudit(user.id, 'scheduling_reject', undefined, {
         request_id: selectedRequest.id,
         responsavel: selectedRequest.nome_responsavel,
         reason: rejectionReason.trim(),
