@@ -9,13 +9,13 @@
           var stored = localStorage.getItem('theme');
           var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
           var isDark = stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark);
-          var bg = isDark ? '#0f1419' : '#f7f5f0';
+          var bg = isDark ? '#0f1f17' : '#f4f7f6';
           if (isDark) document.documentElement.classList.add('dark');
           document.documentElement.style.backgroundColor = bg;
           document.addEventListener('DOMContentLoaded', function () {
             if (document.body) document.body.style.backgroundColor = bg;
             var loader = document.getElementById('initial-loader');
-            if (loader) loader.style.color = isDark ? '#e8e3d6' : '#1E3A8A';
+            if (loader) loader.style.color = isDark ? '#e8e3d6' : '#0a3d2e';
           });
         } catch (e) {}
       })();
@@ -24,7 +24,7 @@
     <title>ScoutFoto - Banco de Imagens Escoteiro</title>
     <meta name="description" content="Sistema profissional de banco de imagens para grupos escoteiros. Todas as aventuras escoteiras em um só lugar.">
     <meta name="author" content="ScoutFoto" />
-    <meta name="theme-color" content="#1E3A8A" />
+    <meta name="theme-color" content="#0a3d2e" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
@@ -38,8 +38,8 @@
     <link rel="dns-prefetch" href="https://idrhcwxrifmmvdaitjiz.supabase.co" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
     
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -55,7 +55,7 @@
     <div id="root" style="min-height:100vh">
       <div id="initial-loader" style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Inter,system-ui,sans-serif;color:#1E3A8A">
         <div style="text-align:center">
-          <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#1E3A8A;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px"></div>
+          <div style="width:40px;height:40px;border:3px solid #e5e7eb;border-top-color:#0a3d2e;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px"></div>
           <p style="margin:0;font-size:14px;opacity:0.7">Carregando...</p>
         </div>
       </div>

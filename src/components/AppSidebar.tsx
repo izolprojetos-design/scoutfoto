@@ -66,7 +66,7 @@ const AppSidebar = () => {
                   ⚜️
                 </div>
                 {!collapsed && (
-                  <span className="text-lg font-bold tracking-tight text-sidebar-foreground">
+                  <span className="text-lg font-bold tracking-tight text-sidebar-primary">
                     ScoutFoto
                   </span>
                 )}
@@ -128,7 +128,7 @@ const AppSidebar = () => {
             >
               <button className="flex items-center gap-2 w-full">
                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="bg-sidebar-primary/20 text-sidebar-primary text-xs font-semibold">
+                  <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
                     {initials}
                   </AvatarFallback>
                 </Avatar>
@@ -146,7 +146,7 @@ const AppSidebar = () => {
               size="sm"
               onClick={handleSignOut}
               tooltip="Sair"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="text-red-300 hover:text-red-200 hover:bg-red-500/15"
             >
               <LogOut className="h-4 w-4" />
               {!collapsed && <span>Sair</span>}

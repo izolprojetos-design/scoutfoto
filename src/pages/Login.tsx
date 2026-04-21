@@ -43,7 +43,6 @@ const Login = () => {
     e.preventDefault();
     setLoginError('');
 
-    // Always re-check the server first
     const preCheck = await checkLoginBlock(email);
     if (preCheck.locked) {
       setLockoutRemaining(preCheck.remainingMs);
@@ -56,7 +55,6 @@ const Login = () => {
     if (error) {
       const { locked, attemptsLeft, remainingMs } = await recordFailedAttempt(email);
 
-      // Log failed login attempt (anonymous - no user_id available)
       try {
         await logAudit('00000000-0000-0000-0000-000000000000', 'login_failed' as any, undefined, { email, reason: 'invalid_credentials' });
       } catch {}
@@ -65,7 +63,6 @@ const Login = () => {
         setLockoutRemaining(remainingMs || 15 * 60 * 1000);
         setLoginError(`Conta bloqueada temporariamente por excesso de tentativas. Tente novamente em ${formatLockoutTime(remainingMs || 15 * 60 * 1000)} ou contate um administrador.`);
 
-        // Send security email alert for account lockout
         supabase.functions.invoke('send-transactional-email', {
           body: {
             templateName: 'security-account-locked',
@@ -105,13 +102,13 @@ const Login = () => {
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 text-2xl backdrop-blur-sm">
                 ⚜️
               </div>
-              <span className="text-2xl font-bold tracking-tight">ScoutFoto</span>
+              <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>ScoutFoto</span>
             </div>
           </div>
 
           <div className="space-y-6">
             <div>
-              <h1 className="text-4xl font-bold leading-tight tracking-tight text-balance">
+              <h1 className="text-4xl font-bold leading-tight tracking-tight text-balance" style={{ fontFamily: 'Montserrat, sans-serif' }}>
                 Todas as aventuras escoteiras em um só lugar
               </h1>
               <p className="mt-4 text-lg text-white/80 leading-relaxed">
@@ -126,9 +123,9 @@ const Login = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + i * 0.15 }}
-                  className="flex items-center gap-3 rounded-lg bg-white/10 px-4 py-3 backdrop-blur-sm"
+                  className="flex items-center gap-3 rounded-xl bg-white/10 px-4 py-3 backdrop-blur-sm border border-white/5"
                 >
-                  <f.icon className="h-5 w-5 text-white/90" />
+                  <f.icon className="h-5 w-5 text-secondary" />
                   <span className="text-sm font-medium text-white/90">{f.text}</span>
                 </motion.div>
               ))}
@@ -140,7 +137,7 @@ const Login = () => {
           </p>
         </div>
 
-        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-white/5" />
+        <div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-secondary/10" />
         <div className="absolute -bottom-32 -left-16 h-96 w-96 rounded-full bg-white/5" />
       </div>
 
@@ -172,7 +169,7 @@ const Login = () => {
             <p className="mt-1 text-muted-foreground">Acesse sua conta para continuar</p>
           </div>
 
-          <Card className="border shadow-sm">
+          <Card className="border shadow-sm rounded-2xl">
             <CardContent className="p-6">
               <form onSubmit={handleLogin} className="space-y-4">
                 <div className="space-y-2">
@@ -220,7 +217,7 @@ const Login = () => {
                       initial={{ opacity: 0, y: -8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -8 }}
-                      className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
+                      className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive"
                     >
                       {isLocked ? (
                         <Lock className="h-4 w-4 shrink-0" />
@@ -233,7 +230,7 @@ const Login = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
-                <Button type="submit" className="w-full h-11 font-semibold" disabled={loading || isLocked} tabIndex={4}>
+                <Button type="submit" className="w-full h-11 font-semibold rounded-xl" disabled={loading || isLocked} tabIndex={4}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isLocked ? 'Bloqueado' : 'Entrar'}
                 </Button>
               </form>
