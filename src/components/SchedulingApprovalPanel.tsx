@@ -20,8 +20,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { toast } from 'sonner';
 import {
   Loader2, CheckCircle2, XCircle, Eye, Calendar, MapPin, Clock, User,
-  Search, Filter, CalendarPlus,
+  Search, Filter, CalendarPlus, Paperclip,
 } from 'lucide-react';
+import SchedulingAttachments from '@/components/SchedulingAttachments';
 
 interface SchedulingRequest {
   id: string;
