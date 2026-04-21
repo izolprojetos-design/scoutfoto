@@ -263,29 +263,43 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
-    // Upload pending files with per-file status
+    // Upload pending files with real progress
     const uploadedAttachments: Attachment[] = [];
     if (pendingFiles.length > 0) {
       setIsUploadingAttachments(true);
-      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus }));
+      const states: FileUploadState[] = pendingFiles.map(f => ({ file: f, status: 'pending' as FileUploadStatus, progress: 0 }));
       setUploadStates([...states]);
+
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token ?? '';
 
       for (let i = 0; i < pendingFiles.length; i++) {
         const file = pendingFiles[i];
-        states[i] = { ...states[i], status: 'uploading' };
+        states[i] = { ...states[i], status: 'uploading', progress: 0 };
         setUploadStates([...states]);
 
         const ext = file.name.split('.').pop() ?? '';
         const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await supabase.storage
-          .from('anexos-agendamentos')
-          .upload(storagePath, file, { contentType: file.type, upsert: false });
+
+        const { error: uploadError } = await uploadWithProgress(
+          'anexos-agendamentos',
+          storagePath,
+          file,
+          token,
+          (pct) => {
+            states[i] = { ...states[i], progress: pct };
+            setUploadStates([...states]);
+          },
+        );
 
         if (uploadError) {
-          states[i] = { ...states[i], status: 'error', error: uploadError.message };
+          states[i] = { ...states[i], status: 'error', error: uploadError };
           setUploadStates([...states]);
           continue;
         }
+
+        states[i] = { ...states[i], progress: 100 };
+        setUploadStates([...states]);
 
         const { data: row, error: insertErr } = await supabase
           .from('agendamento_anexos')
