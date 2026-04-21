@@ -20,6 +20,7 @@ interface Request {
   id: string;
   nome_responsavel: string;
   email: string;
+  destinatario_email: string;
   data: string;
   horario: string;
   local: string;
