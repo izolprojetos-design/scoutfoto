@@ -591,15 +591,29 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {pendingFiles.length > 0 && !isUploadingAttachments && (
-              <div className="space-y-2">
-                {/* Counter */}
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                  <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            {/* Counter - sempre visível quando há arquivos */}
+            {pendingFiles.length > 0 && (
+              <div className="flex items-center justify-between rounded-md border bg-muted/30 p-3">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
                     {pendingFiles.length}
                   </span>
-                  {pendingFiles.length === 1 ? 'arquivo válido na fila' : 'arquivos válidos na fila'} • serão enviados ao submeter
-                </p>
+                  <span className="text-sm text-muted-foreground">
+                    {pendingFiles.length === 1 ? 'arquivo válido na fila' : 'arquivos válidos na fila'}
+                  </span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {isUploadingAttachments 
+                    ? `${uploadStates.filter(s => s.status === 'done').length} de ${uploadStates.length} enviados`
+                    : 'serão enviados ao submeter'
+                  }
+                </span>
+              </div>
+            )}
+
+            {/* Lista de arquivos pendentes (visível quando não está enviando) */}
+            {pendingFiles.length > 0 && !isUploadingAttachments && (
+              <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
                     {file.type === 'application/pdf'
