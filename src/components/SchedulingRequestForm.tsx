@@ -356,39 +356,106 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         toast({ title: 'Falha ao enviar anexos', description: 'Nenhum anexo foi enviado com sucesso.', variant: 'destructive' });
       }
       setIsUploadingAttachments(false);
-      // Keep uploadStates visible if there are errors so user can retry
-      if (errorCount === 0) {
-        setUploadStates([]);
-      }
     }
 
     setSubmitting(false);
     setInsertedId(inserted.id);
-    // Only show success screen if no upload errors remain
-    const hasUploadErrors = uploadStates.length > 0 || pendingFiles.some((_, i) => {
-      const s = uploadStates[i]; // won't exist after clearing but check states array
-      return false;
-    });
-    const finalStates = pendingFiles.length > 0 
-      ? pendingFiles.map((f, i) => {
-          const s = uploadStates[i] ?? { file: f, status: 'pending' as FileUploadStatus, progress: 0 };
-          return s;
-        }).filter(s => s.status === 'error')
+
+    const failedStates = pendingFiles.length > 0
+      ? pendingFiles.map((f, i) => uploadStates[i]).filter(s => s && s.status === 'error')
       : [];
-    
-    if (finalStates.length > 0) {
-      // Keep form visible with error states for retry
+
+    if (failedStates.length > 0) {
+      const failedFiles = failedStates.map(s => s.file);
+      setPendingFiles(failedFiles);
+      setUploadStates(failedStates.map(s => ({ ...s })));
       setAttachments(prev => [...prev, ...uploadedAttachments]);
       toast({ title: 'Solicitação enviada!', description: 'Alguns anexos falharam. Você pode tentar reenviá-los.' });
     } else {
       setSubmitted(true);
       setAttachments(uploadedAttachments);
-      toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
       setPendingFiles([]);
       setUploadStates([]);
+      toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     }
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     onSuccess?.();
+  };
+
+  /** Retry uploading only the files that previously failed */
+  const retryFailedUploads = async () => {
+    if (!user || !insertedId) return;
+    const failedIndices = uploadStates.map((s, i) => s.status === 'error' ? i : -1).filter(i => i >= 0);
+    if (failedIndices.length === 0) return;
+
+    setIsUploadingAttachments(true);
+    setSubmitting(true);
+    const states = [...uploadStates];
+    const newAttachments: Attachment[] = [];
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token ?? '';
+
+    for (const i of failedIndices) {
+      const file = states[i].file;
+      states[i] = { ...states[i], status: 'uploading', progress: 0, error: undefined };
+      setUploadStates([...states]);
+
+      const ext = file.name.split('.').pop() ?? '';
+      const storagePath = `${user.id}/${insertedId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await uploadWithProgress(
+        'anexos-agendamentos',
+        storagePath,
+        file,
+        token,
+        (pct) => {
+          states[i] = { ...states[i], progress: pct };
+          setUploadStates([...states]);
+        },
+      );
+
+      if (uploadError) {
+        states[i] = { ...states[i], status: 'error', error: uploadError };
+        setUploadStates([...states]);
+        continue;
+      }
+
+      states[i] = { ...states[i], progress: 100 };
+      setUploadStates([...states]);
+
+      const { data: row, error: insertErr } = await supabase
+        .from('agendamento_anexos')
+        .insert({ agendamento_id: insertedId, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
+        .select('id, file_name, file_path, file_size, content_type')
+        .single();
+
+      if (insertErr || !row) {
+        states[i] = { ...states[i], status: 'error', error: insertErr?.message ?? 'Erro ao registrar' };
+        setUploadStates([...states]);
+        continue;
+      }
+
+      states[i] = { ...states[i], status: 'done' };
+      setUploadStates([...states]);
+      newAttachments.push(row);
+    }
+
+    setIsUploadingAttachments(false);
+    setSubmitting(false);
+    setAttachments(prev => [...prev, ...newAttachments]);
+
+    const stillFailed = states.filter(s => s.status === 'error');
+    if (stillFailed.length === 0) {
+      setSubmitted(true);
+      setPendingFiles([]);
+      setUploadStates([]);
+      toast({ title: 'Todos os anexos enviados com sucesso!' });
+    } else {
+      setPendingFiles(stillFailed.map(s => s.file));
+      setUploadStates(stillFailed);
+      toast({ title: `${newAttachments.length} enviado(s), ${stillFailed.length} ainda com erro`, variant: 'destructive' });
+    }
   };
 
   if (submitted) {
