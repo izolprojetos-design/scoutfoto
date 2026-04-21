@@ -123,6 +123,31 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       },
     }).catch(err => console.error('Failed to send confirmation email', err));
 
+    // Notify admins about the new scheduling request (fire-and-forget)
+    supabase.rpc('get_admin_emails').then(({ data: adminRows }) => {
+      if (!adminRows?.length) return;
+      const templateData = {
+        nomeResponsavel: nomeResponsavel.trim(),
+        emailSolicitante: email.trim(),
+        data: `${d}/${m}/${y}`,
+        horario,
+        local: local.trim(),
+        tipo: tipoLabel,
+        ramo: branchLabel ? `${branchLabel.icon} ${branchLabel.display_name}` : '',
+        assunto: descricao.trim(),
+      };
+      for (const row of adminRows) {
+        supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'scheduling-admin-notification',
+            recipientEmail: row.email,
+            idempotencyKey: `scheduling-admin-${inserted.id}-${row.email}`,
+            templateData,
+          },
+        }).catch(err => console.error('Failed to notify admin', row.email, err));
+      }
+    }).catch(err => console.error('Failed to fetch admin emails', err));
+
     setSubmitting(false);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
