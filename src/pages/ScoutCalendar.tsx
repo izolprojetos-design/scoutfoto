@@ -63,6 +63,7 @@ const ScoutCalendar = () => {
   useEffect(() => {
     if (activeTab === 'schedule') setScheduleMounted(true);
     if (activeTab === 'my-requests') setRequestsMounted(true);
+    if (activeTab === 'approval') setApprovalMounted(true);
   }, [activeTab]);
 
   useEffect(() => {
@@ -126,6 +127,15 @@ const ScoutCalendar = () => {
             </button>
           </>
         )}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('approval')}
+            className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'approval' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+          >
+            <ShieldCheck className="h-4 w-4" /> Aprovações
+          </button>
+        )}
       </div>
 
       <div className={activeTab === 'schedule' ? '' : 'hidden'}>
@@ -138,6 +148,10 @@ const ScoutCalendar = () => {
         {canRequestScheduling && requestsMounted && (
           <MySchedulingRequests refreshKey={requestsRefreshKey} />
         )}
+      </div>
+
+      <div className={activeTab === 'approval' ? '' : 'hidden'}>
+        {isAdmin && approvalMounted && <SchedulingApprovalPanel />}
       </div>
 
       <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
