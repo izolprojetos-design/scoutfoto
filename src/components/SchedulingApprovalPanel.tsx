@@ -245,9 +245,9 @@ const SchedulingApprovalPanel = () => {
     setSelectedRequest(req);
     setDetailOpen(true);
     const { data: atts } = await supabase
-      .from('scheduling_attachments')
+      .from('agendamento_anexos')
       .select('id, file_name, file_path, file_size, content_type')
-      .eq('scheduling_request_id', req.id);
+      .eq('agendamento_id', req.id);
     setDetailAttachments(atts ?? []);
   };
 

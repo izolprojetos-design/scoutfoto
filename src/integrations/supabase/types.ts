@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      agendamento_anexos: {
+        Row: {
+          agendamento_id: string
+          content_type: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+        }
+        Insert: {
+          agendamento_id: string
+          content_type?: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number
+          id?: string
+        }
+        Update: {
+          agendamento_id?: string
+          content_type?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduling_attachments_scheduling_request_id_fkey"
+            columns: ["agendamento_id"]
+            isOneToOne: false
+            referencedRelation: "scheduling_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -592,44 +630,6 @@ export type Database = {
             columns: ["permission_id"]
             isOneToOne: false
             referencedRelation: "permissions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      scheduling_attachments: {
-        Row: {
-          content_type: string
-          created_at: string
-          file_name: string
-          file_path: string
-          file_size: number
-          id: string
-          scheduling_request_id: string
-        }
-        Insert: {
-          content_type?: string
-          created_at?: string
-          file_name: string
-          file_path: string
-          file_size?: number
-          id?: string
-          scheduling_request_id: string
-        }
-        Update: {
-          content_type?: string
-          created_at?: string
-          file_name?: string
-          file_path?: string
-          file_size?: number
-          id?: string
-          scheduling_request_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "scheduling_attachments_scheduling_request_id_fkey"
-            columns: ["scheduling_request_id"]
-            isOneToOne: false
-            referencedRelation: "scheduling_requests"
             referencedColumns: ["id"]
           },
         ]
