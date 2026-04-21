@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Send, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +13,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import SchedulingAttachments from '@/components/SchedulingAttachments';
+
+const MAX_FILES = 5;
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+const ACCEPTED_EXT = '.pdf,.jpg,.jpeg,.png';
+
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 interface Branch {
   id: string;
