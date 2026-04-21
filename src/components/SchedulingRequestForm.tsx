@@ -199,8 +199,20 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (local.trim().length < 2) e.local = 'Informe o local';
     if (!branchId) e.branchId = 'Selecione um ramo';
     if (descricao.trim().length < 5) e.descricao = 'Mínimo 5 caracteres';
+
+    // Re-validate pending files before submit
+    const fErrors: string[] = [];
+    for (const f of pendingFiles) {
+      const err = validateFile(f);
+      if (err) fErrors.push(err);
+    }
+    if (pendingFiles.length > MAX_FILES) {
+      fErrors.push(`Máximo de ${MAX_FILES} arquivos permitido`);
+    }
+    setFileErrors(fErrors);
+
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return Object.keys(e).length === 0 && fErrors.length === 0;
   };
 
   const handleSubmit = async (ev: React.FormEvent) => {
