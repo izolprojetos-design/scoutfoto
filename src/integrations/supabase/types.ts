@@ -996,6 +996,12 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_admin_emails: {
+        Args: never
+        Returns: {
+          email: string
+        }[]
+      }
       get_invite_link_by_token: {
         Args: { p_token: string }
         Returns: {
