@@ -241,9 +241,14 @@ const SchedulingApprovalPanel = () => {
     return acc;
   }, {});
 
-  const openDetail = (req: SchedulingRequest) => {
+  const openDetail = async (req: SchedulingRequest) => {
     setSelectedRequest(req);
     setDetailOpen(true);
+    const { data: atts } = await supabase
+      .from('scheduling_attachments')
+      .select('id, file_name, file_path, file_size, content_type')
+      .eq('scheduling_request_id', req.id);
+    setDetailAttachments(atts ?? []);
   };
 
   return (
