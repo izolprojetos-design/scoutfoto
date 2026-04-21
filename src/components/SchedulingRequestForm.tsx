@@ -124,7 +124,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     }).catch(err => console.error('Failed to send confirmation email', err));
 
     // Notify admins about the new scheduling request (fire-and-forget)
-    supabase.rpc('get_admin_emails').then(({ data: adminRows }) => {
+    Promise.resolve(supabase.rpc('get_admin_emails')).then(({ data: adminRows }) => {
       if (!adminRows?.length) return;
       const templateData = {
         nomeResponsavel: nomeResponsavel.trim(),
