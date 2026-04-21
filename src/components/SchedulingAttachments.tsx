@@ -84,9 +84,9 @@ const SchedulingAttachments = ({ requestId, editable, attachments, onAttachments
       }
 
       const { data: row, error: insertError } = await supabase
-        .from('scheduling_attachments')
+        .from('agendamento_anexos')
         .insert({
-          scheduling_request_id: requestId,
+          agendamento_id: requestId,
           file_path: storagePath,
           file_name: file.name,
           file_size: file.size,
@@ -120,7 +120,7 @@ const SchedulingAttachments = ({ requestId, editable, attachments, onAttachments
       toast({ title: 'Erro ao remover', description: delStorage.message, variant: 'destructive' });
       return;
     }
-    await supabase.from('scheduling_attachments').delete().eq('id', att.id);
+    await supabase.from('agendamento_anexos').delete().eq('id', att.id);
     onAttachmentsChange(attachments.filter(a => a.id !== att.id));
     toast({ title: 'Anexo removido' });
   };
