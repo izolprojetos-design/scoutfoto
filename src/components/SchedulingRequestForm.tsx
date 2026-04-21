@@ -542,6 +542,18 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           <div className="space-y-3">
             <Label>Anexos (máx. {MAX_FILES} arquivos, 5 MB cada)</Label>
 
+            {/* Erros de validação por arquivo — sempre no topo da seção */}
+            {fileErrors.length > 0 && (
+              <div className="space-y-1 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                {fileErrors.map((err, idx) => (
+                  <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    {err}
+                  </p>
+                ))}
+              </div>
+            )}
+
             {pendingFiles.length < MAX_FILES && (
               <div
                 onDragOver={e => { e.preventDefault(); setDragOver(true); }}
@@ -568,17 +580,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {/* Erros de validação por arquivo */}
-            {fileErrors.length > 0 && (
-              <div className="space-y-1">
-                {fileErrors.map((err, idx) => (
-                  <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
-                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-                    {err}
-                  </p>
-                ))}
-              </div>
-            )}
             {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
