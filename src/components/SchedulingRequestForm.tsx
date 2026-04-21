@@ -570,14 +570,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                         <p className="text-sm font-medium truncate">{state.file.name}</p>
                         <p className="text-xs text-muted-foreground">
                           {state.status === 'pending' && 'Aguardando...'}
-                          {state.status === 'uploading' && 'Enviando...'}
+                          {state.status === 'uploading' && `Enviando... ${state.progress}%`}
                           {state.status === 'done' && 'Concluído'}
                           {state.status === 'error' && (state.error ?? 'Erro no envio')}
                         </p>
                       </div>
                     </div>
                     {state.status === 'uploading' && (
-                      <Progress value={undefined} className="h-1.5" />
+                      <Progress value={state.progress} className="h-1.5" />
                     )}
                   </div>
                 ))}
