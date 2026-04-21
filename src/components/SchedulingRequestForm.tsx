@@ -419,7 +419,55 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
           </div>
 
-          <p className="text-xs text-muted-foreground">Após enviar, você poderá anexar arquivos (PDF, JPG, PNG) na tela de confirmação.</p>
+          {/* Anexos inline */}
+          <div className="space-y-3">
+            <Label>Anexos (máx. {MAX_FILES} arquivos, 5 MB cada)</Label>
+
+            {pendingFiles.length < MAX_FILES && (
+              <div
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                onClick={() => !submitting && fileInputRef.current?.click()}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors text-sm',
+                  dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30',
+                  submitting && 'pointer-events-none opacity-60'
+                )}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <span className="text-muted-foreground">Arraste arquivos aqui ou clique para selecionar</span>
+                <span className="text-xs text-muted-foreground">PDF, JPG ou PNG</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_EXT}
+                  multiple
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.length) addPendingFiles(e.target.files); e.target.value = ''; }}
+                />
+              </div>
+            )}
+
+            {pendingFiles.length > 0 && (
+              <div className="space-y-2">
+                {pendingFiles.map((file, idx) => (
+                  <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
+                    {file.type === 'application/pdf'
+                      ? <FileText className="h-5 w-5 text-destructive shrink-0" />
+                      : <ImageIcon className="h-5 w-5 text-primary shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => removePendingFile(idx)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="lg" disabled={submitting} className="gap-2">
