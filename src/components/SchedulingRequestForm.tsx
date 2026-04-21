@@ -42,6 +42,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
+  const [secao, setSecao] = useState('');
+  const [cargo1, setCargo1] = useState('');
+  const [cargo2, setCargo2] = useState('');
   const [email, setEmail] = useState('');
   const [destinatarioEmail, setDestinatarioEmail] = useState('');
   const [data, setData] = useState('');
