@@ -82,6 +82,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         user_id: user.id,
         nome_responsavel: nomeResponsavel.trim(),
         email: email.trim(),
+        destinatario_email: destinatarioEmail.trim(),
         data,
         horario,
         local: local.trim(),
@@ -125,7 +126,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setSubmitting(false);
     setSubmitted(true);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
-    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao('');
+    setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail('');
     onSuccess?.();
   };
 
@@ -164,9 +165,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">E-mail *</Label>
+              <Label htmlFor="email">De E-mail *</Label>
               <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="voce@exemplo.com" />
               {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="destinatario-email">Para E-mail</Label>
+              <Input id="destinatario-email" type="email" value={destinatarioEmail} onChange={e => setDestinatarioEmail(e.target.value)} placeholder="destinatario@exemplo.com" />
+              {errors.destinatarioEmail && <p className="text-sm text-destructive">{errors.destinatarioEmail}</p>}
             </div>
 
             <div className="space-y-2">
