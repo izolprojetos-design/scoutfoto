@@ -390,7 +390,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
     onSuccess?.();
   };
-  };
 
   if (submitted) {
     return (
