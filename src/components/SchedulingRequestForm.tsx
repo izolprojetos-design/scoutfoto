@@ -31,6 +31,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [email, setEmail] = useState('');
+  const [destinatarioEmail, setDestinatarioEmail] = useState('');
   const [data, setData] = useState('');
   const [horario, setHorario] = useState('');
   const [local, setLocal] = useState('');
@@ -53,6 +54,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     const e: Record<string, string> = {};
     if (nomeResponsavel.trim().length < 2) e.nomeResponsavel = 'Informe o nome completo';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) e.email = 'E-mail inválido';
+    if (destinatarioEmail.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(destinatarioEmail.trim())) e.destinatarioEmail = 'E-mail inválido';
     if (!data) e.data = 'Selecione a data';
     else {
       const today = new Date(); today.setHours(0,0,0,0);
