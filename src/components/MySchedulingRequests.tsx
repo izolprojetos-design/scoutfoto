@@ -54,6 +54,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [attachmentsByReq, setAttachmentsByReq] = useState<Record<string, Attachment[]>>({});
+  const [approvalsByReq, setApprovalsByReq] = useState<Record<string, ApprovalStep[]>>({});
 
   // Edit state
   const [editOpen, setEditOpen] = useState(false);
