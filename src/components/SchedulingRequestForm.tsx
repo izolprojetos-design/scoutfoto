@@ -51,7 +51,45 @@ type FileUploadStatus = 'pending' | 'uploading' | 'done' | 'error';
 interface FileUploadState {
   file: File;
   status: FileUploadStatus;
+  progress: number; // 0-100
   error?: string;
+}
+
+/** Upload via XHR to get real progress events */
+function uploadWithProgress(
+  bucket: string,
+  path: string,
+  file: File,
+  token: string,
+  onProgress: (pct: number) => void,
+): Promise<{ error: string | null }> {
+  return new Promise((resolve) => {
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve({ error: null });
+      else {
+        try {
+          const body = JSON.parse(xhr.responseText);
+          resolve({ error: body.message || body.error || `HTTP ${xhr.status}` });
+        } catch {
+          resolve({ error: `HTTP ${xhr.status}` });
+        }
+      }
+    };
+    xhr.onerror = () => resolve({ error: 'Erro de rede' });
+    const formData = new FormData();
+    formData.append('', file, path);
+    // Send raw file with content-type header instead of FormData
+    xhr.setRequestHeader('Content-Type', file.type);
+    xhr.send(file);
+  });
 }
 
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
