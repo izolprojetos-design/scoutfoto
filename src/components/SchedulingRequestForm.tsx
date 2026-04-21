@@ -567,7 +567,18 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {pendingFiles.length > 0 && !isUploadingAttachments && (
+            {/* Erros de validação por arquivo */}
+            {fileErrors.length > 0 && (
+              <div className="space-y-1">
+                {fileErrors.map((err, idx) => (
+                  <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    {err}
+                  </p>
+                ))}
+              </div>
+            )}
+
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
