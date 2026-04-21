@@ -656,10 +656,24 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                     )}
                   </div>
                 ))}
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Enviando {uploadStates.filter(s => s.status === 'done').length}/{uploadStates.length} anexos...</span>
-                </div>
+                {/* Barra de progresso geral */}
+                {(() => {
+                  const done = uploadStates.filter(s => s.status === 'done').length;
+                  const total = uploadStates.length;
+                  const pct = Math.round((done / total) * 100);
+                  return (
+                    <div className="space-y-2 rounded-md border bg-muted/20 p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Enviando anexos...</span>
+                        </div>
+                        <span className="font-medium text-foreground">{done}/{total} ({pct}%)</span>
+                      </div>
+                      <Progress value={pct} className="h-2" />
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>
