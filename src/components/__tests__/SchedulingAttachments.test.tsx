@@ -114,8 +114,8 @@ describe("SchedulingAttachments — upload bloqueado após aprovação", () => {
 
     // Não deve ter tentado inserir na tabela
     expect(mockInsert).not.toHaveBeenCalled();
-    // Callback não deve ter sido chamado com novos anexos
-    expect(noop).not.toHaveBeenCalled();
+    // Callback é chamado mas sem novos anexos (array vazio permanece)
+    expect(noop).toHaveBeenCalledWith([]);
   });
 
   it("insert na tabela falha quando RLS bloqueia (simulação de status aprovado)", async () => {
