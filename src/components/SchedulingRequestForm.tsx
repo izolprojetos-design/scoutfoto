@@ -118,28 +118,47 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [tipo, setTipo] = useState('reuniao');
   const [descricao, setDescricao] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [fileErrors, setFileErrors] = useState<string[]>([]);
+
+  const validateFile = (f: File): string | null => {
+    if (!ACCEPTED_TYPES.includes(f.type)) return `"${f.name}" — tipo não aceito (apenas PDF, JPG, PNG)`;
+    if (f.size > MAX_SIZE_BYTES) return `"${f.name}" — excede 5 MB (${formatFileSize(f.size)})`;
+    return null;
+  };
 
   const addPendingFiles = useCallback((files: FileList | File[]) => {
     const fileArray = Array.from(files);
+    const newErrors: string[] = [];
+    const valid: File[] = [];
+
     if (pendingFiles.length + fileArray.length > MAX_FILES) {
       toast({ title: 'Limite excedido', description: `Máximo de ${MAX_FILES} arquivos.`, variant: 'destructive' });
       return;
     }
+
     for (const f of fileArray) {
-      if (!ACCEPTED_TYPES.includes(f.type)) {
-        toast({ title: 'Tipo não aceito', description: `"${f.name}" — aceito apenas PDF, JPG e PNG.`, variant: 'destructive' });
-        return;
-      }
-      if (f.size > MAX_SIZE_BYTES) {
-        toast({ title: 'Arquivo muito grande', description: `"${f.name}" excede 5 MB.`, variant: 'destructive' });
-        return;
+      const err = validateFile(f);
+      if (err) {
+        newErrors.push(err);
+      } else {
+        valid.push(f);
       }
     }
-    setPendingFiles(prev => [...prev, ...fileArray]);
+
+    if (newErrors.length > 0) {
+      setFileErrors(newErrors);
+    } else {
+      setFileErrors([]);
+    }
+
+    if (valid.length > 0) {
+      setPendingFiles(prev => [...prev, ...valid]);
+    }
   }, [pendingFiles]);
 
   const removePendingFile = (index: number) => {
     setPendingFiles(prev => prev.filter((_, i) => i !== index));
+    setFileErrors([]);
   };
 
   const onDrop = useCallback((e: React.DragEvent) => {
@@ -181,8 +200,20 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (local.trim().length < 2) e.local = 'Informe o local';
     if (!branchId) e.branchId = 'Selecione um ramo';
     if (descricao.trim().length < 5) e.descricao = 'Mínimo 5 caracteres';
+
+    // Re-validate pending files before submit
+    const fErrors: string[] = [];
+    for (const f of pendingFiles) {
+      const err = validateFile(f);
+      if (err) fErrors.push(err);
+    }
+    if (pendingFiles.length > MAX_FILES) {
+      fErrors.push(`Máximo de ${MAX_FILES} arquivos permitido`);
+    }
+    setFileErrors(fErrors);
+
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return Object.keys(e).length === 0 && fErrors.length === 0;
   };
 
   const handleSubmit = async (ev: React.FormEvent) => {
@@ -537,6 +568,17 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
+            {/* Erros de validação por arquivo */}
+            {fileErrors.length > 0 && (
+              <div className="space-y-1">
+                {fileErrors.map((err, idx) => (
+                  <p key={idx} className="text-sm text-destructive flex items-center gap-1.5">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    {err}
+                  </p>
+                ))}
+              </div>
+            )}
             {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
