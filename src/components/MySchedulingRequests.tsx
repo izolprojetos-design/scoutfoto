@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip } from 'lucide-react';
+import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
