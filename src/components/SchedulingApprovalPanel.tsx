@@ -394,7 +394,21 @@ const SchedulingApprovalPanel = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* Attachments (read-only for admin) */}
+              {detailAttachments.length > 0 && (
+                <SchedulingAttachments
+                  requestId={selectedRequest.id}
+                  editable={false}
+                  attachments={detailAttachments}
+                  onAttachmentsChange={() => {}}
+                />
+              )}
+              {detailAttachments.length === 0 && (
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Paperclip className="h-3 w-3" /> Nenhum anexo
+                </p>
+              )}
+
                 <span className="text-sm text-muted-foreground">Status:</span>
                 <Badge variant={SCHEDULING_STATUS_LABELS[selectedRequest.status]?.variant || 'secondary'}>
                   {SCHEDULING_STATUS_LABELS[selectedRequest.status]?.label || selectedRequest.status}
