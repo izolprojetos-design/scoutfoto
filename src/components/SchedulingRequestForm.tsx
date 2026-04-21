@@ -557,10 +557,10 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => setFileErrors([])}
+                  onClick={() => { setFileErrors([]); setPendingFiles([]); }}
                   className="text-destructive hover:text-destructive hover:bg-destructive/10 h-8 px-2"
                 >
-                  <X className="h-4 w-4 mr-1" /> Limpar erros
+                  <X className="h-4 w-4 mr-1" /> Limpar erros e anexos
                 </Button>
               </div>
             )}
