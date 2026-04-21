@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon, AlertCircle, Check } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon, AlertCircle, Check, RotateCcw } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -360,13 +360,102 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
     setSubmitting(false);
     setInsertedId(inserted.id);
-    setSubmitted(true);
-    setAttachments(uploadedAttachments);
-    toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
+
+    const failedStates = pendingFiles.length > 0
+      ? pendingFiles.map((f, i) => uploadStates[i]).filter(s => s && s.status === 'error')
+      : [];
+
+    if (failedStates.length > 0) {
+      const failedFiles = failedStates.map(s => s.file);
+      setPendingFiles(failedFiles);
+      setUploadStates(failedStates.map(s => ({ ...s })));
+      setAttachments(prev => [...prev, ...uploadedAttachments]);
+      toast({ title: 'Solicitação enviada!', description: 'Alguns anexos falharam. Você pode tentar reenviá-los.' });
+    } else {
+      setSubmitted(true);
+      setAttachments(uploadedAttachments);
+      setPendingFiles([]);
+      setUploadStates([]);
+      toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
+    }
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
-    setPendingFiles([]);
-    setUploadStates([]);
     onSuccess?.();
+  };
+
+  /** Retry uploading only the files that previously failed */
+  const retryFailedUploads = async () => {
+    if (!user || !insertedId) return;
+    const failedIndices = uploadStates.map((s, i) => s.status === 'error' ? i : -1).filter(i => i >= 0);
+    if (failedIndices.length === 0) return;
+
+    setIsUploadingAttachments(true);
+    setSubmitting(true);
+    const states = [...uploadStates];
+    const newAttachments: Attachment[] = [];
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData?.session?.access_token ?? '';
+
+    for (const i of failedIndices) {
+      const file = states[i].file;
+      states[i] = { ...states[i], status: 'uploading', progress: 0, error: undefined };
+      setUploadStates([...states]);
+
+      const ext = file.name.split('.').pop() ?? '';
+      const storagePath = `${user.id}/${insertedId}/${crypto.randomUUID()}.${ext}`;
+
+      const { error: uploadError } = await uploadWithProgress(
+        'anexos-agendamentos',
+        storagePath,
+        file,
+        token,
+        (pct) => {
+          states[i] = { ...states[i], progress: pct };
+          setUploadStates([...states]);
+        },
+      );
+
+      if (uploadError) {
+        states[i] = { ...states[i], status: 'error', error: uploadError };
+        setUploadStates([...states]);
+        continue;
+      }
+
+      states[i] = { ...states[i], progress: 100 };
+      setUploadStates([...states]);
+
+      const { data: row, error: insertErr } = await supabase
+        .from('agendamento_anexos')
+        .insert({ agendamento_id: insertedId, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
+        .select('id, file_name, file_path, file_size, content_type')
+        .single();
+
+      if (insertErr || !row) {
+        states[i] = { ...states[i], status: 'error', error: insertErr?.message ?? 'Erro ao registrar' };
+        setUploadStates([...states]);
+        continue;
+      }
+
+      states[i] = { ...states[i], status: 'done' };
+      setUploadStates([...states]);
+      newAttachments.push(row);
+    }
+
+    setIsUploadingAttachments(false);
+    setSubmitting(false);
+    setAttachments(prev => [...prev, ...newAttachments]);
+
+    const stillFailed = states.filter(s => s.status === 'error');
+    if (stillFailed.length === 0) {
+      setSubmitted(true);
+      setPendingFiles([]);
+      setUploadStates([]);
+      toast({ title: 'Todos os anexos enviados com sucesso!' });
+    } else {
+      setPendingFiles(stillFailed.map(s => s.file));
+      setUploadStates(stillFailed);
+      toast({ title: `${newAttachments.length} enviado(s), ${stillFailed.length} ainda com erro`, variant: 'destructive' });
+    }
   };
 
   if (submitted) {
@@ -611,8 +700,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {/* Lista de arquivos pendentes (visível quando não está enviando) */}
-            {pendingFiles.length > 0 && !isUploadingAttachments && (
+            {/* Lista de arquivos pendentes (visível quando não está enviando e sem erros de upload) */}
+            {pendingFiles.length > 0 && !isUploadingAttachments && !uploadStates.some(s => s.status === 'error') && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
@@ -674,6 +763,51 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                     </div>
                   );
                 })()}
+              </div>
+            )}
+
+            {/* Failed uploads - retry panel */}
+            {!isUploadingAttachments && uploadStates.length > 0 && uploadStates.some(s => s.status === 'error') && (
+              <div className="space-y-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                  <p className="text-sm font-medium text-destructive">
+                    {uploadStates.filter(s => s.status === 'error').length} arquivo(s) falharam no envio
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {uploadStates.filter(s => s.status === 'error').map((state, idx) => (
+                    <div key={`failed-${idx}`} className="flex items-center gap-3 rounded-md border border-destructive/20 bg-background p-3">
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{state.file.name}</p>
+                        <p className="text-xs text-destructive">{state.error ?? 'Erro no envio'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={retryFailedUploads}
+                    disabled={submitting}
+                    className="gap-1.5"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Reenviar {uploadStates.filter(s => s.status === 'error').length === 1 ? 'arquivo' : 'arquivos'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setUploadStates([]); setPendingFiles([]); setSubmitted(true); }}
+                    className="text-muted-foreground"
+                  >
+                    Ignorar e continuar
+                  </Button>
+                </div>
               </div>
             )}
           </div>
