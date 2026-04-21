@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Loader2, Send, CheckCircle2 } from 'lucide-react';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { Loader2, Send, CheckCircle2, Upload, X, FileText, Image as ImageIcon } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,7 +13,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 import SchedulingAttachments from '@/components/SchedulingAttachments';
+
+const MAX_FILES = 5;
+const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+const ACCEPTED_EXT = '.pdf,.jpg,.jpeg,.png';
+
+const formatFileSize = (bytes: number) => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+};
 
 interface Branch {
   id: string;
@@ -40,6 +53,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [submitting, setSubmitting] = useState(false);
   const [insertedId, setInsertedId] = useState<string | null>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [nomeResponsavel, setNomeResponsavel] = useState('');
   const [secao, setSecao] = useState('');
@@ -54,6 +70,36 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [tipo, setTipo] = useState('reuniao');
   const [descricao, setDescricao] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const addPendingFiles = useCallback((files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    if (pendingFiles.length + fileArray.length > MAX_FILES) {
+      toast({ title: 'Limite excedido', description: `Máximo de ${MAX_FILES} arquivos.`, variant: 'destructive' });
+      return;
+    }
+    for (const f of fileArray) {
+      if (!ACCEPTED_TYPES.includes(f.type)) {
+        toast({ title: 'Tipo não aceito', description: `"${f.name}" — aceito apenas PDF, JPG e PNG.`, variant: 'destructive' });
+        return;
+      }
+      if (f.size > MAX_SIZE_BYTES) {
+        toast({ title: 'Arquivo muito grande', description: `"${f.name}" excede 5 MB.`, variant: 'destructive' });
+        return;
+      }
+    }
+    setPendingFiles(prev => [...prev, ...fileArray]);
+  }, [pendingFiles]);
+
+  const removePendingFile = (index: number) => {
+    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const onDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (submitting) return;
+    addPendingFiles(e.dataTransfer.files);
+  }, [submitting, addPendingFiles]);
 
   useEffect(() => {
     supabase.from('branches').select('id, display_name, icon').order('sort_order')
@@ -169,12 +215,38 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       }
     }).catch(err => console.error('Failed to fetch admin emails', err));
 
+    // Upload pending files
+    const uploadedAttachments: Attachment[] = [];
+    if (pendingFiles.length > 0) {
+      for (const file of pendingFiles) {
+        const ext = file.name.split('.').pop() ?? '';
+        const storagePath = `${user.id}/${inserted.id}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from('anexos-agendamentos')
+          .upload(storagePath, file, { contentType: file.type, upsert: false });
+        if (uploadError) {
+          console.error('Attachment upload failed', uploadError.message);
+          continue;
+        }
+        const { data: row, error: insertErr } = await supabase
+          .from('agendamento_anexos')
+          .insert({ agendamento_id: inserted.id, file_path: storagePath, file_name: file.name, file_size: file.size, content_type: file.type })
+          .select('id, file_name, file_path, file_size, content_type')
+          .single();
+        if (!insertErr && row) uploadedAttachments.push(row);
+      }
+      if (uploadedAttachments.length > 0) {
+        toast({ title: `${uploadedAttachments.length} anexo(s) enviado(s)` });
+      }
+    }
+
     setSubmitting(false);
     setInsertedId(inserted.id);
     setSubmitted(true);
+    setAttachments(uploadedAttachments);
     toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
-    setAttachments([]);
+    setPendingFiles([]);
     onSuccess?.();
   };
 
@@ -347,7 +419,55 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             {errors.descricao && <p className="text-sm text-destructive">{errors.descricao}</p>}
           </div>
 
-          <p className="text-xs text-muted-foreground">Após enviar, você poderá anexar arquivos (PDF, JPG, PNG) na tela de confirmação.</p>
+          {/* Anexos inline */}
+          <div className="space-y-3">
+            <Label>Anexos (máx. {MAX_FILES} arquivos, 5 MB cada)</Label>
+
+            {pendingFiles.length < MAX_FILES && (
+              <div
+                onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                onClick={() => !submitting && fileInputRef.current?.click()}
+                className={cn(
+                  'flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 cursor-pointer transition-colors text-sm',
+                  dragOver ? 'border-primary bg-primary/5' : 'border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/30',
+                  submitting && 'pointer-events-none opacity-60'
+                )}
+              >
+                <Upload className="h-6 w-6 text-muted-foreground" />
+                <span className="text-muted-foreground">Arraste arquivos aqui ou clique para selecionar</span>
+                <span className="text-xs text-muted-foreground">PDF, JPG ou PNG</span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={ACCEPTED_EXT}
+                  multiple
+                  className="hidden"
+                  onChange={e => { if (e.target.files?.length) addPendingFiles(e.target.files); e.target.value = ''; }}
+                />
+              </div>
+            )}
+
+            {pendingFiles.length > 0 && (
+              <div className="space-y-2">
+                {pendingFiles.map((file, idx) => (
+                  <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
+                    {file.type === 'application/pdf'
+                      ? <FileText className="h-5 w-5 text-destructive shrink-0" />
+                      : <ImageIcon className="h-5 w-5 text-primary shrink-0" />}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{file.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+                    </div>
+                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => removePendingFile(idx)}>
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-end pt-2">
             <Button type="submit" size="lg" disabled={submitting} className="gap-2">
