@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Loader2, CheckCircle2, XCircle, Clock, Calendar, MapPin, User } from 'lucide-react';
 
-import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,6 +16,8 @@ interface RequestSummary {
   tipo: string;
   descricao: string;
 }
+
+const BASE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/confirm-scheduling`;
 
 const ConfirmScheduling = () => {
   const [params] = useSearchParams();
@@ -33,24 +34,12 @@ const ConfirmScheduling = () => {
     }
 
     (async () => {
-      const { data, error } = await supabase.functions.invoke('confirm-scheduling', {
-        method: 'GET',
-        body: undefined,
-        // pass token via query param
-      } as any);
-
-      // The supabase-js invoke uses POST by default; do a manual fetch for GET
       try {
-        const url = `https://idrhcwxrifmmvdaitjiz.supabase.co/functions/v1/confirm-scheduling?token=${encodeURIComponent(token)}`;
-        const resp = await fetch(url, { method: 'GET' });
+        const resp = await fetch(`${BASE_URL}?token=${encodeURIComponent(token)}`, { method: 'GET' });
         const json = await resp.json();
         if (resp.ok && json.valid) {
           setRequest(json.request);
-          if (json.alreadyConfirmed) {
-            setStatus('already');
-          } else {
-            setStatus('valid');
-          }
+          setStatus(json.alreadyConfirmed ? 'already' : 'valid');
         } else if (json.error === 'expired') {
           setStatus('expired');
           setErrorMsg(json.message);
@@ -58,7 +47,7 @@ const ConfirmScheduling = () => {
           setStatus('invalid');
           setErrorMsg(json.message || 'Solicitação não encontrada.');
         }
-      } catch (e: any) {
+      } catch {
         setStatus('error');
         setErrorMsg('Falha ao validar o link. Tente novamente mais tarde.');
       }
@@ -69,8 +58,7 @@ const ConfirmScheduling = () => {
     if (!token) return;
     setStatus('confirming');
     try {
-      const url = `https://idrhcwxrifmmvdaitjiz.supabase.co/functions/v1/confirm-scheduling`;
-      const resp = await fetch(url, {
+      const resp = await fetch(BASE_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token }),
