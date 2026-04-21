@@ -578,7 +578,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 ))}
               </div>
             )}
-
+            {pendingFiles.length > 0 && !isUploadingAttachments && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
