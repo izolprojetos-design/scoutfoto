@@ -356,17 +356,40 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         toast({ title: 'Falha ao enviar anexos', description: 'Nenhum anexo foi enviado com sucesso.', variant: 'destructive' });
       }
       setIsUploadingAttachments(false);
+      // Keep uploadStates visible if there are errors so user can retry
+      if (errorCount === 0) {
+        setUploadStates([]);
+      }
     }
 
     setSubmitting(false);
     setInsertedId(inserted.id);
-    setSubmitted(true);
-    setAttachments(uploadedAttachments);
-    toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
+    // Only show success screen if no upload errors remain
+    const hasUploadErrors = uploadStates.length > 0 || pendingFiles.some((_, i) => {
+      const s = uploadStates[i]; // won't exist after clearing but check states array
+      return false;
+    });
+    const finalStates = pendingFiles.length > 0 
+      ? pendingFiles.map((f, i) => {
+          const s = uploadStates[i] ?? { file: f, status: 'pending' as FileUploadStatus, progress: 0 };
+          return s;
+        }).filter(s => s.status === 'error')
+      : [];
+    
+    if (finalStates.length > 0) {
+      // Keep form visible with error states for retry
+      setAttachments(prev => [...prev, ...uploadedAttachments]);
+      toast({ title: 'Solicitação enviada!', description: 'Alguns anexos falharam. Você pode tentar reenviá-los.' });
+    } else {
+      setSubmitted(true);
+      setAttachments(uploadedAttachments);
+      toast({ title: 'Solicitação enviada!', description: 'Verifique seu e-mail para confirmar a solicitação.' });
+      setPendingFiles([]);
+      setUploadStates([]);
+    }
     setData(''); setHorario(''); setLocal(''); setBranchId(''); setTipo('reuniao'); setDescricao(''); setDestinatarioEmail(''); setSecao(''); setCargo1(''); setCargo2('');
-    setPendingFiles([]);
-    setUploadStates([]);
     onSuccess?.();
+  };
   };
 
   if (submitted) {
