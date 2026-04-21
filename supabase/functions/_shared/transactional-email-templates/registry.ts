@@ -13,10 +13,12 @@ import { template as welcome } from './welcome.tsx'
 import { template as securityNewDevice } from './security-new-device.tsx'
 import { template as securityAccountLocked } from './security-account-locked.tsx'
 import { template as schedulingConfirmation } from './scheduling-confirmation.tsx'
+import { template as schedulingAdminNotification } from './scheduling-admin-notification.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcome,
   'security-new-device': securityNewDevice,
   'security-account-locked': securityAccountLocked,
   'scheduling-confirmation': schedulingConfirmation,
+  'scheduling-admin-notification': schedulingAdminNotification,
 }
