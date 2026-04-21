@@ -700,8 +700,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               </div>
             )}
 
-            {/* Lista de arquivos pendentes (visível quando não está enviando) */}
-            {pendingFiles.length > 0 && !isUploadingAttachments && (
+            {/* Lista de arquivos pendentes (visível quando não está enviando e sem erros de upload) */}
+            {pendingFiles.length > 0 && !isUploadingAttachments && !uploadStates.some(s => s.status === 'error') && (
               <div className="space-y-2">
                 {pendingFiles.map((file, idx) => (
                   <div key={`${file.name}-${idx}`} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
@@ -763,6 +763,51 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                     </div>
                   );
                 })()}
+              </div>
+            )}
+
+            {/* Failed uploads - retry panel */}
+            {!isUploadingAttachments && uploadStates.length > 0 && uploadStates.some(s => s.status === 'error') && (
+              <div className="space-y-3 rounded-md border border-destructive/30 bg-destructive/5 p-4">
+                <div className="flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                  <p className="text-sm font-medium text-destructive">
+                    {uploadStates.filter(s => s.status === 'error').length} arquivo(s) falharam no envio
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {uploadStates.filter(s => s.status === 'error').map((state, idx) => (
+                    <div key={`failed-${idx}`} className="flex items-center gap-3 rounded-md border border-destructive/20 bg-background p-3">
+                      <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{state.file.name}</p>
+                        <p className="text-xs text-destructive">{state.error ?? 'Erro no envio'}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={retryFailedUploads}
+                    disabled={submitting}
+                    className="gap-1.5"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Reenviar {uploadStates.filter(s => s.status === 'error').length === 1 ? 'arquivo' : 'arquivos'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setUploadStates([]); setPendingFiles([]); setSubmitted(true); }}
+                    className="text-muted-foreground"
+                  >
+                    Ignorar e continuar
+                  </Button>
+                </div>
               </div>
             )}
           </div>
