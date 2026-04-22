@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,6 +16,8 @@ import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parse
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
+import { lazy } from 'react';
+const DashboardMetrics = lazy(() => import('@/components/DashboardMetrics'));
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
@@ -48,6 +50,7 @@ interface Scout {
   photo_url: string | null;
   manual_branch: string | null;
   section: string | null;
+  created_at?: string;
 }
 
 interface UserProfile {
@@ -127,6 +130,8 @@ const Dashboard = () => {
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
   const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
   const [onlineUsers, setOnlineUsers] = useState<RecentLogin[]>([]);
+  const [allImages, setAllImages] = useState<any[]>([]);
+  const [allEventsRaw, setAllEventsRaw] = useState<{ id: string; created_at: string }[]>([]);
 
   interface EventWithCount {
     id: string;
@@ -149,9 +154,9 @@ const Dashboard = () => {
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
-      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
-      supabase.from('images').select('branch_id, event_id, media_type').limit(5000),
+      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(200),
+      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active, created_at').eq('is_active', true).order('name'),
+      supabase.from('images').select('branch_id, event_id, media_type, created_at, user_id').limit(5000),
     ] as const;
 
     const adminPromises = isAdmin
@@ -166,9 +171,10 @@ const Dashboard = () => {
       ...(adminPromises ?? []),
     ]);
 
-    const allImages = (allImgRes as any).data || [];
-    const memberImages = allImages.filter((img: any) => !img.event_id);
-    const eventImages = allImages.filter((img: any) => img.event_id);
+    const allImagesData = (allImgRes as any).data || [];
+    setAllImages(allImagesData);
+    const memberImages = allImagesData.filter((img: any) => !img.event_id);
+    const eventImages = allImagesData.filter((img: any) => img.event_id);
 
     if (branchRes.data) {
       const withCounts = branchRes.data.map(branch => ({
@@ -194,6 +200,7 @@ const Dashboard = () => {
       });
       setEventsWithPhotos(evtsWithCounts);
       setTotalEvents(evtRes.data.length);
+      setAllEventsRaw(evtRes.data.map(e => ({ id: e.id, created_at: e.created_at })));
     }
 
     setScouts((scoutRes.data as any) || []);
@@ -863,6 +870,21 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+      )}
+
+      {/* Metrics Section */}
+      {!loading && (
+        <div className="mb-8">
+          <Suspense fallback={<div className="h-40 animate-pulse rounded-lg bg-muted/50" />}>
+            <DashboardMetrics
+              images={allImages}
+              events={allEventsRaw}
+              scouts={scouts.map(s => ({ id: s.id, created_at: s.created_at || '' }))}
+              profiles={allProfiles.map(p => ({ user_id: p.user_id, name: p.name }))}
+              isAdmin={isAdmin}
+            />
+          </Suspense>
+        </div>
       )}
 
       {/* Branch Cards */}
