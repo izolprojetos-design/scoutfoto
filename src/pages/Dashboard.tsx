@@ -199,6 +199,7 @@ const Dashboard = () => {
       });
       setEventsWithPhotos(evtsWithCounts);
       setTotalEvents(evtRes.data.length);
+      setAllEventsRaw(evtRes.data.map(e => ({ id: e.id, created_at: e.created_at })));
     }
 
     setScouts((scoutRes.data as any) || []);
