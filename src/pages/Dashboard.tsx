@@ -50,6 +50,7 @@ interface Scout {
   photo_url: string | null;
   manual_branch: string | null;
   section: string | null;
+  created_at?: string;
 }
 
 interface UserProfile {
