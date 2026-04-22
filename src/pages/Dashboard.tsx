@@ -871,6 +871,21 @@ const Dashboard = () => {
       </div>
       )}
 
+      {/* Metrics Section */}
+      {!loading && (
+        <div className="mb-8">
+          <Suspense fallback={<div className="h-40 animate-pulse rounded-lg bg-muted/50" />}>
+            <DashboardMetrics
+              images={allImages}
+              events={allEventsRaw}
+              scouts={scouts.map(s => ({ id: s.id, created_at: '' }))}
+              profiles={allProfiles.map(p => ({ user_id: p.user_id, name: p.name }))}
+              isAdmin={isAdmin}
+            />
+          </Suspense>
+        </div>
+      )}
+
       {/* Branch Cards */}
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-lg font-semibold tracking-tight">Galerias de Integrantes por Ramo</h2>
