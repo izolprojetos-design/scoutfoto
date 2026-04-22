@@ -170,9 +170,10 @@ const Dashboard = () => {
       ...(adminPromises ?? []),
     ]);
 
-    const allImages = (allImgRes as any).data || [];
-    const memberImages = allImages.filter((img: any) => !img.event_id);
-    const eventImages = allImages.filter((img: any) => img.event_id);
+    const allImagesData = (allImgRes as any).data || [];
+    setAllImages(allImagesData);
+    const memberImages = allImagesData.filter((img: any) => !img.event_id);
+    const eventImages = allImagesData.filter((img: any) => img.event_id);
 
     if (branchRes.data) {
       const withCounts = branchRes.data.map(branch => ({
