@@ -879,7 +879,7 @@ const Dashboard = () => {
             <DashboardMetrics
               images={allImages}
               events={allEventsRaw}
-              scouts={scouts.map(s => ({ id: s.id, created_at: '' }))}
+              scouts={scouts.map(s => ({ id: s.id, created_at: s.created_at || '' }))}
               profiles={allProfiles.map(p => ({ user_id: p.user_id, name: p.name }))}
               isAdmin={isAdmin}
             />
