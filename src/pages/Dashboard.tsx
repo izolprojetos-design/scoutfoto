@@ -153,7 +153,7 @@ const Dashboard = () => {
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
-      supabase.from('images').select('branch_id, event_id, media_type').limit(5000),
+      supabase.from('images').select('branch_id, event_id, media_type, created_at, user_id').limit(5000),
     ] as const;
 
     const adminPromises = isAdmin
