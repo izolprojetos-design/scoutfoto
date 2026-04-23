@@ -32,34 +32,38 @@ export const usePushNotifications = () => {
 
   // Fetch VAPID public key from edge function
   useEffect(() => {
-    (async () => {
+    let cancelled = false;
+    const fetchKey = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('get-vapid-public-key');
-        if (!error && data?.publicKey) {
+        if (!cancelled && !error && data?.publicKey) {
           setVapidPublicKey(data.publicKey);
-        } else {
-          console.error('Failed to fetch VAPID public key:', error);
         }
       } catch (err) {
         console.error('Error fetching VAPID key:', err);
       }
-    })();
+    };
+    fetchKey();
+    return () => { cancelled = true; };
   }, []);
 
   // Check if already subscribed
   useEffect(() => {
     if (!isSupported || !user) return;
-    
-    (async () => {
+    let cancelled = false;
+
+    const checkSubscription = async () => {
       try {
         const registration = await navigator.serviceWorker.getRegistration('/sw-push.js');
-        if (!registration) { setIsSubscribed(false); return; }
+        if (!registration) { if (!cancelled) setIsSubscribed(false); return; }
         const sub = await registration.pushManager.getSubscription();
-        setIsSubscribed(!!sub);
+        if (!cancelled) setIsSubscribed(!!sub);
       } catch {
-        setIsSubscribed(false);
+        if (!cancelled) setIsSubscribed(false);
       }
-    })();
+    };
+    checkSubscription();
+    return () => { cancelled = true; };
   }, [isSupported, user]);
 
   const subscribe = useCallback(async () => {
@@ -80,11 +84,9 @@ export const usePushNotifications = () => {
         return false;
       }
 
-      // Register service worker
       const registration = await navigator.serviceWorker.register('/sw-push.js', { scope: '/' });
       await navigator.serviceWorker.ready;
 
-      // Subscribe
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey) as BufferSource,
@@ -92,7 +94,6 @@ export const usePushNotifications = () => {
 
       const subJson = subscription.toJSON();
 
-      // Save to DB (upsert by endpoint)
       const { error } = await supabase
         .from('push_subscriptions')
         .upsert({
