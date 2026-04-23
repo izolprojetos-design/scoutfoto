@@ -17,6 +17,7 @@ import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import DevicesSection from '@/components/profile/DevicesSection';
 import UpdateCheckCard from '@/components/profile/UpdateCheckCard';
 import MFASetup from '@/components/MFASetup';
+import PushNotificationCard from '@/components/profile/PushNotificationCard';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 
 const Profile = () => {
@@ -331,6 +332,7 @@ const Profile = () => {
         </Card>
 
         <MFASetup />
+        <PushNotificationCard />
         <DevicesSection />
         <UpdateCheckCard />
       </div>
