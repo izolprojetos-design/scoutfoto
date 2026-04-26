@@ -1390,10 +1390,15 @@ const Scouts = () => {
           ))}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-1.5 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg ring-2 ring-primary/30 ring-offset-2 ring-offset-background font-semibold transition-all"
+                disabled={filteredScouts.length === 0}
+              >
                 <Download className="h-4 w-4" />
                 Exportar ({filteredScouts.length})
-                <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+                <ChevronDown className="h-3.5 w-3.5 opacity-80" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
