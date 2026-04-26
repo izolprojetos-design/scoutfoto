@@ -105,8 +105,49 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
     setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
+    setDestSuggestions([]); setDestDropdownOpen(false);
     setErrors({});
   };
+
+  // Busca usuários no banco para sugerir destinatário (com debounce)
+  const handleDestNomeChange = (value: string) => {
+    setDestNome(value);
+    setDestDropdownOpen(true);
+
+    if (destSearchTimeout.current) window.clearTimeout(destSearchTimeout.current);
+
+    const q = value.trim();
+    if (q.length < 2) {
+      setDestSuggestions([]);
+      setDestSearching(false);
+      return;
+    }
+
+    setDestSearching(true);
+    destSearchTimeout.current = window.setTimeout(async () => {
+      const { data, error } = await supabase.rpc('search_users_for_scheduling', { p_query: q });
+      if (!error && Array.isArray(data)) {
+        setDestSuggestions(data as DestSuggestion[]);
+      } else {
+        setDestSuggestions([]);
+      }
+      setDestSearching(false);
+    }, 250);
+  };
+
+  const handleSelectDestSuggestion = (s: DestSuggestion) => {
+    setDestNome(s.name ?? '');
+    setEmailPara(s.email ?? '');
+    if (s.section) {
+      const parsed = parseVolunteerSection(s.section);
+      if (parsed.secao) setDestSecao(parsed.secao);
+      if (parsed.cargo1) setDestCargo1(parsed.cargo1);
+      if (parsed.cargo2) setDestCargo2(parsed.cargo2);
+    }
+    setDestSuggestions([]);
+    setDestDropdownOpen(false);
+  };
+
 
   const validate = () => {
     const e: Record<string, string> = {};
