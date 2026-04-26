@@ -1394,12 +1394,33 @@ const Scouts = () => {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Buscar por nome, seção ou equipe..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <Button variant={branchFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter('all')}>
+        <div className="flex gap-2 flex-wrap items-center" ref={branchPickerRef}>
+          <Button
+            variant={branchFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setBranchFilter('all')}
+          >
             Todos
           </Button>
-          {ALL_CATEGORIES.map(b => (
-            <Button key={b.key} variant={branchFilter === b.key ? 'default' : 'outline'} size="sm" onClick={() => setBranchFilter(b.key)}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setBranchPickerOpen(prev => !prev)}
+            className="gap-1.5"
+          >
+            Ramos
+            {branchPickerOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </Button>
+          {branchPickerOpen && ALL_CATEGORIES.map(b => (
+            <Button
+              key={b.key}
+              variant={branchFilter === b.key ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => {
+                setBranchFilter(b.key);
+                setBranchPickerOpen(false);
+              }}
+            >
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
