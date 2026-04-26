@@ -1410,7 +1410,7 @@ const Scouts = () => {
                   setBranchFilter('all');
                   setBranchAnnouncement(`Ramo selecionado: Todos. ${scouts.length} integrantes.`);
                 }}
-                className={`cursor-pointer ${branchFilter === 'all' ? 'bg-accent font-semibold' : ''}`}
+                className={`cursor-pointer ${branchFilter === 'all' ? 'bg-primary text-primary-foreground font-semibold focus:bg-primary focus:text-primary-foreground' : ''}`}
               >
                 Todos ({scouts.length})
               </DropdownMenuItem>
@@ -1422,7 +1422,7 @@ const Scouts = () => {
                     const count = branchCounts[b.key] ?? 0;
                     setBranchAnnouncement(`Ramo selecionado: ${b.name}. ${count} ${count === 1 ? 'integrante' : 'integrantes'}.`);
                   }}
-                  className={`cursor-pointer ${branchFilter === b.key ? 'bg-accent font-semibold' : ''}`}
+                  className={`cursor-pointer ${branchFilter === b.key ? 'bg-primary text-primary-foreground font-semibold focus:bg-primary focus:text-primary-foreground' : ''}`}
                 >
                   {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
                 </DropdownMenuItem>
