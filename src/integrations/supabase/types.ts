@@ -1251,6 +1251,15 @@ export type Database = {
           remaining_seconds: number
         }[]
       }
+      search_users_for_scheduling: {
+        Args: { p_query: string }
+        Returns: {
+          email: string
+          name: string
+          section: string
+          user_id: string
+        }[]
+      }
     }
     Enums: {
       app_role:
