@@ -181,6 +181,18 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Auto-close branch picker when clicking outside
+  useEffect(() => {
+    if (!branchPickerOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (branchPickerRef.current && !branchPickerRef.current.contains(e.target as Node)) {
+        setBranchPickerOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [branchPickerOpen]);
+
   // Auto-open edit dialog when navigated with ?edit=scoutId
   useEffect(() => {
     const editId = searchParams.get('edit');
