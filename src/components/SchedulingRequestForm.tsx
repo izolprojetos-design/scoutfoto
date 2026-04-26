@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
