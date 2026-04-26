@@ -113,7 +113,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     }
 
     setSubmitting(true);
-    const { error } = await supabase
+    const { data: inserted, error } = await supabase
       .from('agendamentos')
       .insert({
         user_id: user.id,
@@ -131,16 +131,82 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         tipo_atividade: tipoAtividade,
         observacoes: observacoes.trim(),
         status: 'confirmado',
-      });
-
-    setSubmitting(false);
+      })
+      .select('id')
+      .single();
 
     if (error) {
+      setSubmitting(false);
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
       return;
     }
 
-    toast({ title: 'Agendamento criado com sucesso!', description: 'Seu agendamento foi registrado e está confirmado.' });
+    // Envio de e-mail (não bloqueia o fluxo principal)
+    const tipoLabel = SCHEDULING_TYPES.find(t => t.value === tipoAtividade)?.label ?? tipoAtividade;
+    const ramoLabel = branches.find(b => b.id === ramoEscoteiro)
+      ? `${branches.find(b => b.id === ramoEscoteiro)!.icon} ${branches.find(b => b.id === ramoEscoteiro)!.display_name}`
+      : ramoEscoteiro;
+    const dataFormatada = (() => {
+      const [y, m, d] = dataSecao.split('-').map(Number);
+      return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    })();
+
+    const templateData = {
+      nomeAssociado: nomeAssociado.trim(),
+      secao,
+      dirigente: dirigente.trim(),
+      cargo1,
+      cargo2,
+      data: dataFormatada,
+      horario,
+      local: local.trim(),
+      ramo: ramoLabel,
+      tipoAtividade: tipoLabel,
+      observacoes: observacoes.trim(),
+      emailDe: emailDe.trim(),
+      emailPara: emailPara.trim(),
+    };
+
+    const recipients: string[] = [];
+    if (emailPara.trim()) recipients.push(emailPara.trim());
+    if (emailDe.trim() && emailDe.trim().toLowerCase() !== emailPara.trim().toLowerCase()) {
+      recipients.push(emailDe.trim());
+    }
+
+    let emailOk = true;
+    try {
+      await Promise.all(
+        recipients.map((to, idx) =>
+          supabase.functions.invoke('send-transactional-email', {
+            body: {
+              templateName: 'agendamento-notificacao',
+              recipientEmail: to,
+              idempotencyKey: `agendamento-${inserted?.id}-${idx}`,
+              templateData,
+            },
+          }),
+        ),
+      );
+    } catch (err) {
+      console.error('Falha no envio do e-mail de agendamento', err);
+      emailOk = false;
+    }
+
+    setSubmitting(false);
+
+    if (emailOk) {
+      toast({
+        title: 'Agendamento criado e e-mail enviado',
+        description: 'O agendamento foi confirmado e a notificação foi enviada aos contatos.',
+      });
+    } else {
+      toast({
+        title: 'Agendamento criado, mas falha no envio do e-mail',
+        description: 'Seu agendamento foi salvo, porém não conseguimos enviar a notificação por e-mail.',
+        variant: 'destructive',
+      });
+    }
+
     setSubmitted(true);
     resetForm();
     onSuccess?.();
