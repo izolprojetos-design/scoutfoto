@@ -143,7 +143,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         cargo_1: cargo1,
         cargo_2: cargo2,
         email_de: emailDe.trim(),
-        email_para: emailPara.trim(),
+        email_para: '',
         data_secao: dataSecao,
         horario,
         local: local.trim(),
@@ -184,14 +184,10 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       tipoAtividade: tipoLabel,
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
-      emailPara: emailPara.trim(),
     };
 
     const recipients: string[] = [];
-    if (emailPara.trim()) recipients.push(emailPara.trim());
-    if (emailDe.trim() && emailDe.trim().toLowerCase() !== emailPara.trim().toLowerCase()) {
-      recipients.push(emailDe.trim());
-    }
+    if (emailDe.trim()) recipients.push(emailDe.trim());
 
     let emailOk = true;
     try {
