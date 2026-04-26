@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +58,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Autocomplete do destinatário
+  type DestSuggestion = { user_id: string; name: string; email: string; section: string | null };
+  const [destSuggestions, setDestSuggestions] = useState<DestSuggestion[]>([]);
+  const [destSearching, setDestSearching] = useState(false);
+  const [destDropdownOpen, setDestDropdownOpen] = useState(false);
+  const destSearchTimeout = useRef<number | null>(null);
+  const destBlurTimeout = useRef<number | null>(null);
+
   useEffect(() => {
     supabase.from('branches').select('id, key, display_name, icon').order('sort_order')
       .then(({ data }) => setBranches((data as Branch[]) ?? []));
@@ -97,8 +105,49 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
     setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
+    setDestSuggestions([]); setDestDropdownOpen(false);
     setErrors({});
   };
+
+  // Busca usuários no banco para sugerir destinatário (com debounce)
+  const handleDestNomeChange = (value: string) => {
+    setDestNome(value);
+    setDestDropdownOpen(true);
+
+    if (destSearchTimeout.current) window.clearTimeout(destSearchTimeout.current);
+
+    const q = value.trim();
+    if (q.length < 2) {
+      setDestSuggestions([]);
+      setDestSearching(false);
+      return;
+    }
+
+    setDestSearching(true);
+    destSearchTimeout.current = window.setTimeout(async () => {
+      const { data, error } = await supabase.rpc('search_users_for_scheduling', { p_query: q });
+      if (!error && Array.isArray(data)) {
+        setDestSuggestions(data as DestSuggestion[]);
+      } else {
+        setDestSuggestions([]);
+      }
+      setDestSearching(false);
+    }, 250);
+  };
+
+  const handleSelectDestSuggestion = (s: DestSuggestion) => {
+    setDestNome(s.name ?? '');
+    setEmailPara(s.email ?? '');
+    if (s.section) {
+      const parsed = parseVolunteerSection(s.section);
+      if (parsed.secao) setDestSecao(parsed.secao);
+      if (parsed.cargo1) setDestCargo1(parsed.cargo1);
+      if (parsed.cargo2) setDestCargo2(parsed.cargo2);
+    }
+    setDestSuggestions([]);
+    setDestDropdownOpen(false);
+  };
+
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -356,18 +405,52 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 relative">
             <Label htmlFor="destNome">Nome do destinatário <span className="text-destructive">*</span></Label>
-            <Input
-              id="destNome"
-              value={destNome}
-              onChange={(e) => setDestNome(e.target.value)}
-              placeholder="Nome completo do destinatário"
-              className={cn('mt-1.5', errCls('destNome'))}
-              aria-invalid={!!errors.destNome}
-            />
+            <div className="relative mt-1.5">
+              <Input
+                id="destNome"
+                value={destNome}
+                onChange={(e) => handleDestNomeChange(e.target.value)}
+                onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
+                onBlur={() => {
+                  if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
+                  destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
+                }}
+                placeholder="Digite o nome para buscar usuários cadastrados"
+                autoComplete="off"
+                className={cn(errCls('destNome'))}
+                aria-invalid={!!errors.destNome}
+                aria-autocomplete="list"
+                aria-expanded={destDropdownOpen}
+              />
+              {destSearching && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+              {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
+                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-72 overflow-y-auto">
+                  {destSuggestions.length === 0 && !destSearching ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum usuário encontrado</div>
+                  ) : (
+                    destSuggestions.map((s) => (
+                      <button
+                        key={s.user_id}
+                        type="button"
+                        onMouseDown={(ev) => ev.preventDefault()}
+                        onClick={() => handleSelectDestSuggestion(s)}
+                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground border-b last:border-b-0"
+                      >
+                        <div className="text-sm font-medium">{s.name}</div>
+                        <div className="text-xs text-muted-foreground">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
             {fieldError('destNome')}
           </div>
+
 
           <div>
             <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
