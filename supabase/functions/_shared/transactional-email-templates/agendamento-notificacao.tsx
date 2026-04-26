@@ -34,6 +34,10 @@ interface Props {
   observacoes?: string
   emailDe?: string
   emailPara?: string
+  destinatarioNome?: string
+  destinatarioSecao?: string
+  destinatarioCargo1?: string
+  destinatarioCargo2?: string
 }
 
 const AgendamentoNotificacaoEmail = ({
@@ -50,6 +54,10 @@ const AgendamentoNotificacaoEmail = ({
   observacoes,
   emailDe,
   emailPara,
+  destinatarioNome,
+  destinatarioSecao,
+  destinatarioCargo1,
+  destinatarioCargo2,
 }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
