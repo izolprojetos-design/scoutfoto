@@ -54,8 +54,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    supabase.from('branches').select('id, display_name, icon').order('sort_order')
-      .then(({ data }) => setBranches(data ?? []));
+    supabase.from('branches').select('id, key, display_name, icon').order('sort_order')
+      .then(({ data }) => setBranches((data as Branch[]) ?? []));
   }, []);
 
   // Mapeia o cargo do perfil para a key do ramo escoteiro
