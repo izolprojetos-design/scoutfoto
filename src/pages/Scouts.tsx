@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power } from 'lucide-react';
 import { logAudit } from '@/lib/auditLog';
@@ -85,6 +86,7 @@ const Scouts = () => {
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | null>(null);
   const [branchFilter, setBranchFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -1282,43 +1284,54 @@ const Scouts = () => {
               {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
             </Button>
           ))}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
+                <Download className="h-4 w-4" />
+                Exportar ({filteredScouts.length})
+                <ChevronDown className="h-3.5 w-3.5 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem onSelect={() => setExportConfirm('pdf')} className="gap-2 cursor-pointer">
                 <FileDown className="h-4 w-4" />
-                Exportar PDF ({filteredScouts.length})
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Exportar PDF</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para PDF?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleExportPDF}>Exportar</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-1.5" disabled={filteredScouts.length === 0}>
+                <span>PDF</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setExportConfirm('excel')} className="gap-2 cursor-pointer">
                 <FileSpreadsheet className="h-4 w-4" />
-                Exportar Excel ({filteredScouts.length})
-              </Button>
-            </AlertDialogTrigger>
+                <span>Excel</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled className="gap-2 opacity-60">
+                <FileDown className="h-4 w-4" />
+                <span>Documentos Google</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">em breve</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled className="gap-2 opacity-60">
+                <FileSpreadsheet className="h-4 w-4" />
+                <span>Planilhas Google</span>
+                <span className="ml-auto text-[10px] text-muted-foreground">em breve</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <AlertDialog open={exportConfirm !== null} onOpenChange={(open) => !open && setExportConfirm(null)}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Exportar Excel</AlertDialogTitle>
+                <AlertDialogTitle>
+                  Exportar {exportConfirm === 'pdf' ? 'PDF' : 'Excel'}
+                </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para Excel?
+                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para {exportConfirm === 'pdf' ? 'PDF' : 'Excel'}?
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleExportExcel}>Exportar</AlertDialogAction>
+                <AlertDialogAction onClick={() => {
+                  if (exportConfirm === 'pdf') handleExportPDF();
+                  else if (exportConfirm === 'excel') handleExportExcel();
+                  setExportConfirm(null);
+                }}>
+                  Exportar
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
