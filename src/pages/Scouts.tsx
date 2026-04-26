@@ -181,17 +181,7 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Auto-close branch picker when clicking outside
-  useEffect(() => {
-    if (!branchPickerOpen) return;
-    const handleClickOutside = (e: MouseEvent) => {
-      if (branchPickerRef.current && !branchPickerRef.current.contains(e.target as Node)) {
-        setBranchPickerOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [branchPickerOpen]);
+  // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
 
   // Auto-open edit dialog when navigated with ?edit=scoutId
   useEffect(() => {
