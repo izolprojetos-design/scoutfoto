@@ -103,8 +103,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (nomeAssociado.trim().length < 2) e.nomeAssociado = 'Informe o nome completo do associado';
     if (!secao) e.secao = 'Selecione a seção';
     if (!cargo1) e.cargo1 = 'Selecione o cargo principal';
-    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail de origem inválido';
-    if (emailPara.trim() && !emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail de destino inválido';
+    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail inválido';
 
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
