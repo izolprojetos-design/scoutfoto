@@ -87,7 +87,7 @@ const Scouts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | 'docx' | 'sheets' | null>(null);
-  const [branchFilter, setBranchFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
@@ -501,6 +501,7 @@ const Scouts = () => {
     const matchSearch = s.name.toLowerCase().includes(term) ||
       (s.section || '').toLowerCase().includes(term) ||
       subgroupName.toLowerCase().includes(term);
+    if (branchFilter === '') return false;
     if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
     return matchSearch && branch?.key === branchFilter;
@@ -1461,6 +1462,14 @@ const Scouts = () => {
       {loading ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-xl bg-muted" />)}
+        </div>
+      ) : branchFilter === '' ? (
+        <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
+            <Users className="h-8 w-8" />
+          </div>
+          <p className="text-lg font-medium text-foreground">Selecione um ramo para visualizar os integrantes</p>
+          <p className="mt-1 text-sm">Use os botões acima (Todos, Lobinho, Escoteiro, Sênior, Pioneiro ou Voluntário)</p>
         </div>
       ) : filteredScouts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-muted-foreground">
