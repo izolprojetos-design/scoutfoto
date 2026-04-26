@@ -86,7 +86,7 @@ const Scouts = () => {
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | null>(null);
+  const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | 'docx' | 'sheets' | null>(null);
   const [branchFilter, setBranchFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -742,6 +742,110 @@ const Scouts = () => {
     toast.success(`${filteredScouts.length} integrantes exportados em Excel!`);
   };
 
+  const handleExportDocx = async () => {
+    const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, HeadingLevel, AlignmentType, WidthType, BorderStyle, ShadingType, PageOrientation } = await import('docx');
+    const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
+    const isVoluntario = branchFilter === 'voluntario';
+
+    const headers = isVoluntario
+      ? ['ID', 'Nome', 'Ramo', 'Seção', '1ª Função', '2ª Função', 'Celular', 'Nascimento', 'Idade']
+      : ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Nascimento', 'Idade', 'Responsável'];
+
+    const rowsData = filteredScouts.map(scout => {
+      const branch = getEffectiveBranch(scout);
+      const sg = subgroups.find(s => s.id === scout.subgroup_id);
+      const scoutGuards = getGuardiansForScout(scout.id);
+      const responsavel = scoutGuards.map(g => g.name.toUpperCase()).join('; ') || '';
+      if (isVoluntario) {
+        const { secao, cargo1, cargo2 } = parseVolunteerSection(scout.section);
+        return [
+          scout.registration_id || '',
+          scout.name.toUpperCase(),
+          branch?.name || '',
+          secao,
+          cargo1,
+          cargo2,
+          scout.phone || '',
+          parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+          formatAge(parseLocalDate(scout.birth_date)),
+        ];
+      }
+      return [
+        scout.registration_id || '',
+        scout.name.toUpperCase(),
+        branch?.name || '',
+        scout.section || '',
+        sg?.name || '',
+        scout.phone || '',
+        parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
+        formatAge(parseLocalDate(scout.birth_date)),
+        responsavel,
+      ];
+    });
+
+    const border = { style: BorderStyle.SINGLE, size: 4, color: 'CCCCCC' };
+    const borders = { top: border, bottom: border, left: border, right: border };
+
+    const headerRow = new TableRow({
+      tableHeader: true,
+      children: headers.map(h => new TableCell({
+        borders,
+        shading: { fill: 'E8E8E8', type: ShadingType.CLEAR, color: 'auto' },
+        margins: { top: 80, bottom: 80, left: 100, right: 100 },
+        children: [new Paragraph({ children: [new TextRun({ text: h, bold: true, size: 18 })] })],
+      })),
+    });
+
+    const bodyRows = rowsData.map(row => new TableRow({
+      children: row.map(cellText => new TableCell({
+        borders,
+        margins: { top: 60, bottom: 60, left: 100, right: 100 },
+        children: [new Paragraph({ children: [new TextRun({ text: String(cellText), size: 16 })] })],
+      })),
+    }));
+
+    const doc = new Document({
+      styles: {
+        default: { document: { run: { font: 'Arial', size: 18 } } },
+      },
+      sections: [{
+        properties: {
+          page: {
+            size: { width: 15840, height: 12240, orientation: PageOrientation.LANDSCAPE },
+            margin: { top: 720, right: 720, bottom: 720, left: 720 },
+          },
+        },
+        children: [
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: `Integrantes - ${filterLabel}`, bold: true, size: 32 })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            spacing: { after: 200 },
+            children: [new TextRun({ text: `Total: ${filteredScouts.length} • Gerado em ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+          }),
+          new Table({
+            width: { size: 14400, type: WidthType.DXA },
+            rows: [headerRow, ...bodyRows],
+          }),
+        ],
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `integrantes_${filterLabel.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`${filteredScouts.length} integrantes exportados em .docx! Você pode abrir no Google Docs (Drive → Novo → Upload).`);
+  };
+
   const renderScoutForm = (
     onSubmit: (e: React.FormEvent) => Promise<void>,
     name: string, setName: (v: string) => void,
@@ -1301,15 +1405,13 @@ const Scouts = () => {
                 <FileSpreadsheet className="h-4 w-4" />
                 <span>Excel</span>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled className="gap-2 opacity-60">
+              <DropdownMenuItem onSelect={() => setExportConfirm('docx')} className="gap-2 cursor-pointer">
                 <FileDown className="h-4 w-4" />
                 <span>Documentos Google</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">em breve</span>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled className="gap-2 opacity-60">
+              <DropdownMenuItem onSelect={() => setExportConfirm('sheets')} className="gap-2 cursor-pointer">
                 <FileSpreadsheet className="h-4 w-4" />
                 <span>Planilhas Google</span>
-                <span className="ml-auto text-[10px] text-muted-foreground">em breve</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -1317,10 +1419,21 @@ const Scouts = () => {
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>
-                  Exportar {exportConfirm === 'pdf' ? 'PDF' : 'Excel'}
+                  {exportConfirm === 'pdf' && 'Exportar PDF'}
+                  {exportConfirm === 'excel' && 'Exportar Excel'}
+                  {exportConfirm === 'docx' && 'Exportar para Documentos Google'}
+                  {exportConfirm === 'sheets' && 'Exportar para Planilhas Google'}
                 </AlertDialogTitle>
                 <AlertDialogDescription>
-                  Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para {exportConfirm === 'pdf' ? 'PDF' : 'Excel'}?
+                  {(exportConfirm === 'pdf' || exportConfirm === 'excel') && (
+                    <>Deseja exportar {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''} para {exportConfirm === 'pdf' ? 'PDF' : 'Excel'}?</>
+                  )}
+                  {exportConfirm === 'docx' && (
+                    <>Será baixado um arquivo <strong>.docx</strong> com {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''}. Para abrir no <strong>Google Docs</strong>: acesse <strong>drive.google.com</strong> → <strong>Novo</strong> → <strong>Upload de arquivo</strong> → selecione o .docx → clique com o botão direito → <strong>Abrir com → Documentos Google</strong>.</>
+                  )}
+                  {exportConfirm === 'sheets' && (
+                    <>Será baixado um arquivo <strong>.xlsx</strong> com {filteredScouts.length} integrante{filteredScouts.length !== 1 ? 's' : ''}. Para abrir no <strong>Google Sheets</strong>: acesse <strong>drive.google.com</strong> → <strong>Novo</strong> → <strong>Upload de arquivo</strong> → selecione o .xlsx → clique com o botão direito → <strong>Abrir com → Planilhas Google</strong>.</>
+                  )}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -1328,9 +1441,11 @@ const Scouts = () => {
                 <AlertDialogAction onClick={() => {
                   if (exportConfirm === 'pdf') handleExportPDF();
                   else if (exportConfirm === 'excel') handleExportExcel();
+                  else if (exportConfirm === 'docx') handleExportDocx();
+                  else if (exportConfirm === 'sheets') handleExportExcel();
                   setExportConfirm(null);
                 }}>
-                  Exportar
+                  {exportConfirm === 'docx' || exportConfirm === 'sheets' ? 'Baixar arquivo' : 'Exportar'}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
