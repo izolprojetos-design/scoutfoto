@@ -87,7 +87,7 @@ const Scouts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | 'docx' | 'sheets' | null>(null);
-  const [branchFilter, setBranchFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('');
   const [branchPickerOpen, setBranchPickerOpen] = useState(false);
   const [branchAnnouncement, setBranchAnnouncement] = useState('');
   const branchPickerRef = useRef<HTMLDivElement>(null);
@@ -1393,11 +1393,13 @@ const Scouts = () => {
                 size="sm"
                 className="gap-1.5"
               >
-                {branchFilter === 'all'
+                {branchFilter === ''
+                  ? 'Nenhum'
+                  : branchFilter === 'all'
                   ? `Todos (${scouts.length})`
                   : (() => {
                       const b = ALL_CATEGORIES.find(c => c.key === branchFilter);
-                      return b ? `${b.icon} ${b.name}${branchCounts[b.key] ? ` (${branchCounts[b.key]})` : ''}` : 'Todos';
+                      return b ? `${b.icon} ${b.name}${branchCounts[b.key] ? ` (${branchCounts[b.key]})` : ''}` : 'Nenhum';
                     })()}
                 {branchPickerOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               </Button>
@@ -1405,6 +1407,15 @@ const Scouts = () => {
             <DropdownMenuContent align="start" className="w-52">
               <DropdownMenuLabel>Escolha um Ramo</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => {
+                  setBranchFilter('');
+                  setBranchAnnouncement('Nenhum ramo selecionado. Lista oculta.');
+                }}
+                className={`cursor-pointer ${branchFilter === '' ? 'bg-primary text-primary-foreground font-semibold focus:bg-primary focus:text-primary-foreground' : ''}`}
+              >
+                Nenhum
+              </DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={() => {
                   setBranchFilter('all');
