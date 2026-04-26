@@ -86,6 +86,7 @@ const Scouts = () => {
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | null>(null);
   const [branchFilter, setBranchFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
   const [dialogOpen, setDialogOpen] = useState(false);
