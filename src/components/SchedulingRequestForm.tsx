@@ -39,7 +39,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [cargo1, setCargo1] = useState('');
   const [cargo2, setCargo2] = useState('');
   const [emailDe, setEmailDe] = useState('');
-  const [emailPara, setEmailPara] = useState('');
 
   // Evento
   const [dataSecao, setDataSecao] = useState('');
@@ -92,7 +91,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const resetForm = () => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
-    setTipoAtividade('reuniao'); setObservacoes(''); setEmailPara('');
+    setTipoAtividade('reuniao'); setObservacoes('');
     setDirigente(''); setCargo2('');
     setErrors({});
   };
@@ -104,8 +103,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (nomeAssociado.trim().length < 2) e.nomeAssociado = 'Informe o nome completo do associado';
     if (!secao) e.secao = 'Selecione a seção';
     if (!cargo1) e.cargo1 = 'Selecione o cargo principal';
-    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail de origem inválido';
-    if (emailPara.trim() && !emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail de destino inválido';
+    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail inválido';
 
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
@@ -145,7 +143,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         cargo_1: cargo1,
         cargo_2: cargo2,
         email_de: emailDe.trim(),
-        email_para: emailPara.trim(),
+        email_para: '',
         data_secao: dataSecao,
         horario,
         local: local.trim(),
@@ -186,14 +184,10 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       tipoAtividade: tipoLabel,
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
-      emailPara: emailPara.trim(),
     };
 
     const recipients: string[] = [];
-    if (emailPara.trim()) recipients.push(emailPara.trim());
-    if (emailDe.trim() && emailDe.trim().toLowerCase() !== emailPara.trim().toLowerCase()) {
-      recipients.push(emailDe.trim());
-    }
+    if (emailDe.trim()) recipients.push(emailDe.trim());
 
     let emailOk = true;
     try {
@@ -356,7 +350,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </select>
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <Label htmlFor="emailDe">E-mail de <span className="text-destructive">*</span></Label>
             <Input
               id="emailDe"
@@ -368,20 +362,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               aria-invalid={!!errors.emailDe}
             />
             {fieldError('emailDe')}
-          </div>
-
-          <div>
-            <Label htmlFor="emailPara">E-mail para <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input
-              id="emailPara"
-              type="email"
-              value={emailPara}
-              onChange={(e) => setEmailPara(e.target.value)}
-              placeholder="destinatario@email.com"
-              className={cn('mt-1.5', errCls('emailPara'))}
-              aria-invalid={!!errors.emailPara}
-            />
-            {fieldError('emailPara')}
           </div>
         </CardContent>
       </Card>
