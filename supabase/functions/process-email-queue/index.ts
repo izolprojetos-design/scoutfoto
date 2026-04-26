@@ -7,6 +7,56 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+// Structured log helper — emits a single JSON line so logs are easily filterable.
+type LogLevel = 'info' | 'warn' | 'error'
+function logEvent(
+  runId: string,
+  level: LogLevel,
+  event: string,
+  data: Record<string, unknown> = {}
+): void {
+  const line = JSON.stringify({
+    ts: new Date().toISOString(),
+    run_id: runId,
+    level,
+    event,
+    ...data,
+  })
+  if (level === 'error') console.error(line)
+  else if (level === 'warn') console.warn(line)
+  else console.log(line)
+}
+
+interface QueueSummary {
+  queue: string
+  read: number
+  sent: number
+  failed: number
+  rate_limited: number
+  dlq_ttl: number
+  dlq_max_retries: number
+  dlq_forbidden: number
+  duplicates_skipped: number
+  read_errors: number
+  delete_errors: number
+}
+
+function newQueueSummary(queue: string): QueueSummary {
+  return {
+    queue,
+    read: 0,
+    sent: 0,
+    failed: 0,
+    rate_limited: 0,
+    dlq_ttl: 0,
+    dlq_max_retries: 0,
+    dlq_forbidden: 0,
+    duplicates_skipped: 0,
+    read_errors: 0,
+    delete_errors: 0,
+  }
+}
+
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
