@@ -46,7 +46,7 @@ const SchedulingApprovedEmail = ({
           {nomeResponsavel ? `Parabéns, ${nomeResponsavel}!` : 'Parabéns!'}
         </Heading>
         <Text style={text}>
-          Sua solicitação de agendamento de seção foi <strong style={{ color: '#2B6E3F' }}>aprovada</strong> pela coordenação do <strong>{SITE_NAME}</strong>.
+          Sua solicitação de agendamento foi <strong style={{ color: '#2B6E3F' }}>aprovada</strong> pela coordenação do <strong>{SITE_NAME}</strong>.
           O evento já foi adicionado ao Calendário Escoteiro.
         </Text>
 
