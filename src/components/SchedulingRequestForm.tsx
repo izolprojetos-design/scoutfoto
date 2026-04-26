@@ -153,7 +153,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         cargo_1: cargo1,
         cargo_2: cargo2,
         email_de: emailDe.trim(),
-        email_para: '',
+        email_para: emailPara.trim(),
         data_secao: dataSecao,
         horario,
         local: local.trim(),
