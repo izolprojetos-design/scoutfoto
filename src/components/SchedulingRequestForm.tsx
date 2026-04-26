@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -32,12 +32,19 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Dados pessoais
+  // Dados pessoais (do usuário logado, somente leitura)
   const [nomeAssociado, setNomeAssociado] = useState('');
   const [secao, setSecao] = useState('');
   const [cargo1, setCargo1] = useState('');
   const [cargo2, setCargo2] = useState('');
   const [emailDe, setEmailDe] = useState('');
+
+  // Dados do destinatário (editáveis)
+  const [destNome, setDestNome] = useState('');
+  const [destSecao, setDestSecao] = useState('');
+  const [destCargo1, setDestCargo1] = useState('');
+  const [destCargo2, setDestCargo2] = useState('');
+  const [emailPara, setEmailPara] = useState('');
 
   // Evento
   const [dataSecao, setDataSecao] = useState('');
@@ -89,7 +96,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const resetForm = () => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
-    setCargo2('');
+    setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
     setErrors({});
   };
 
@@ -101,6 +108,12 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!secao) e.secao = 'Selecione a seção';
     if (!cargo1) e.cargo1 = 'Selecione o cargo principal';
     if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail inválido';
+
+    // Destinatário
+    if (destNome.trim().length < 2) e.destNome = 'Informe o nome do destinatário';
+    if (!destSecao) e.destSecao = 'Selecione a seção do destinatário';
+    if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
+    if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
 
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
@@ -140,7 +153,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         cargo_1: cargo1,
         cargo_2: cargo2,
         email_de: emailDe.trim(),
-        email_para: '',
+        email_para: emailPara.trim(),
         data_secao: dataSecao,
         horario,
         local: local.trim(),
@@ -181,10 +194,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       tipoAtividade: tipoLabel,
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
+      destinatarioNome: destNome.trim(),
+      destinatarioSecao: destSecao,
+      destinatarioCargo1: destCargo1,
+      destinatarioCargo2: destCargo2,
+      emailPara: emailPara.trim(),
     };
 
     const recipients: string[] = [];
-    if (emailDe.trim()) recipients.push(emailDe.trim());
+    if (emailPara.trim()) recipients.push(emailPara.trim());
 
     let emailOk = true;
     try {
@@ -252,7 +270,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto" noValidate>
-      {/* Seção 1: Dados Pessoais */}
+      {/* Seção 1: Dados Pessoais (somente leitura - usuário logado) */}
       <Card className="border shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -261,53 +279,125 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </div>
             <div>
               <CardTitle className="text-lg">Dados Pessoais</CardTitle>
-              <CardDescription>Identificação do solicitante e contatos</CardDescription>
+              <CardDescription>Identificação do solicitante (carregado do seu perfil)</CardDescription>
             </div>
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
-            <Label htmlFor="nomeAssociado">Nome do associado <span className="text-destructive">*</span></Label>
+            <Label htmlFor="nomeAssociado">Nome do associado</Label>
             <Input
               id="nomeAssociado"
               value={nomeAssociado}
-              onChange={(e) => setNomeAssociado(e.target.value)}
-              placeholder="Nome completo"
-              className={cn('mt-1.5', errCls('nomeAssociado'))}
-              aria-invalid={!!errors.nomeAssociado}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
             />
-            {fieldError('nomeAssociado')}
           </div>
 
           <div>
-            <Label htmlFor="secao">Seção <span className="text-destructive">*</span></Label>
-            <select
+            <Label htmlFor="secao">Seção</Label>
+            <Input
               id="secao"
               value={secao}
-              onChange={(e) => setSecao(e.target.value)}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="cargo1">Cargo 1</Label>
+            <Input
+              id="cargo1"
+              value={cargo1}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="cargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
+            <Input
+              id="cargo2"
+              value={cargo2 || 'Nenhum'}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="emailDe">E-mail de</Label>
+            <Input
+              id="emailDe"
+              type="email"
+              value={emailDe}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Seção 1b: Dados do Destinatário (editáveis) */}
+      <Card className="border shadow-sm">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <div className="rounded-md bg-primary/10 p-2">
+              <Mail className="h-5 w-5 text-primary" />
+            </div>
+            <div>
+              <CardTitle className="text-lg">Dados do Destinatário</CardTitle>
+              <CardDescription>Para quem este agendamento será enviado</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <Label htmlFor="destNome">Nome do destinatário <span className="text-destructive">*</span></Label>
+            <Input
+              id="destNome"
+              value={destNome}
+              onChange={(e) => setDestNome(e.target.value)}
+              placeholder="Nome completo do destinatário"
+              className={cn('mt-1.5', errCls('destNome'))}
+              aria-invalid={!!errors.destNome}
+            />
+            {fieldError('destNome')}
+          </div>
+
+          <div>
+            <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
+            <select
+              id="destSecao"
+              value={destSecao}
+              onChange={(e) => setDestSecao(e.target.value)}
               className={cn(
                 'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('secao'),
+                errCls('destSecao'),
               )}
-              aria-invalid={!!errors.secao}
+              aria-invalid={!!errors.destSecao}
             >
               <option value="">Selecione...</option>
               {VOLUNTEER_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            {fieldError('secao')}
+            {fieldError('destSecao')}
           </div>
 
           <div>
-            <Label htmlFor="cargo1">Cargo 1 <span className="text-destructive">*</span></Label>
+            <Label htmlFor="destCargo1">Cargo 1 <span className="text-destructive">*</span></Label>
             <select
-              id="cargo1"
-              value={cargo1}
-              onChange={(e) => setCargo1(e.target.value)}
+              id="destCargo1"
+              value={destCargo1}
+              onChange={(e) => setDestCargo1(e.target.value)}
               className={cn(
                 'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-h-[300px]',
-                errCls('cargo1'),
+                errCls('destCargo1'),
               )}
-              aria-invalid={!!errors.cargo1}
+              aria-invalid={!!errors.destCargo1}
             >
               <option value="">Selecione...</option>
               {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
@@ -316,15 +406,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 </optgroup>
               ))}
             </select>
-            {fieldError('cargo1')}
+            {fieldError('destCargo1')}
           </div>
 
           <div>
-            <Label htmlFor="cargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
+            <Label htmlFor="destCargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
             <select
-              id="cargo2"
-              value={cargo2}
-              onChange={(e) => setCargo2(e.target.value)}
+              id="destCargo2"
+              value={destCargo2}
+              onChange={(e) => setDestCargo2(e.target.value)}
               className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-h-[300px]"
             >
               <option value="">Nenhum</option>
@@ -337,17 +427,17 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
 
           <div>
-            <Label htmlFor="emailDe">E-mail de <span className="text-destructive">*</span></Label>
+            <Label htmlFor="emailPara">E-mail do destinatário <span className="text-destructive">*</span></Label>
             <Input
-              id="emailDe"
+              id="emailPara"
               type="email"
-              value={emailDe}
-              onChange={(e) => setEmailDe(e.target.value)}
-              placeholder="seu@email.com"
-              className={cn('mt-1.5', errCls('emailDe'))}
-              aria-invalid={!!errors.emailDe}
+              value={emailPara}
+              onChange={(e) => setEmailPara(e.target.value)}
+              placeholder="destinatario@email.com"
+              className={cn('mt-1.5', errCls('emailPara'))}
+              aria-invalid={!!errors.emailPara}
             />
-            {fieldError('emailDe')}
+            {fieldError('emailPara')}
           </div>
         </CardContent>
       </Card>

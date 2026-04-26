@@ -34,6 +34,10 @@ interface Props {
   observacoes?: string
   emailDe?: string
   emailPara?: string
+  destinatarioNome?: string
+  destinatarioSecao?: string
+  destinatarioCargo1?: string
+  destinatarioCargo2?: string
 }
 
 const AgendamentoNotificacaoEmail = ({
@@ -50,6 +54,10 @@ const AgendamentoNotificacaoEmail = ({
   observacoes,
   emailDe,
   emailPara,
+  destinatarioNome,
+  destinatarioSecao,
+  destinatarioCargo1,
+  destinatarioCargo2,
 }: Props) => (
   <Html lang="pt-BR" dir="ltr">
     <Head />
@@ -63,13 +71,24 @@ const AgendamentoNotificacaoEmail = ({
         </Text>
 
         <Section style={card}>
-          <Heading as="h2" style={h2}>Dados do associado</Heading>
+          <Heading as="h2" style={h2}>Dados do remetente</Heading>
           {nomeAssociado && <Text style={detail}><strong>Nome:</strong> {nomeAssociado}</Text>}
           {secao && <Text style={detail}><strong>Seção:</strong> {secao}</Text>}
-          {dirigente && <Text style={detail}><strong>Dirigente:</strong> {dirigente}</Text>}
           {cargo1 && <Text style={detail}><strong>Cargo 1:</strong> {cargo1}</Text>}
           {cargo2 && <Text style={detail}><strong>Cargo 2:</strong> {cargo2}</Text>}
+          {emailDe && <Text style={detail}><strong>E-mail:</strong> {emailDe}</Text>}
         </Section>
+
+        {(destinatarioNome || destinatarioSecao || destinatarioCargo1 || emailPara) && (
+          <Section style={card}>
+            <Heading as="h2" style={h2}>Dados do destinatário</Heading>
+            {destinatarioNome && <Text style={detail}><strong>Nome:</strong> {destinatarioNome}</Text>}
+            {destinatarioSecao && <Text style={detail}><strong>Seção:</strong> {destinatarioSecao}</Text>}
+            {destinatarioCargo1 && <Text style={detail}><strong>Cargo 1:</strong> {destinatarioCargo1}</Text>}
+            {destinatarioCargo2 && <Text style={detail}><strong>Cargo 2:</strong> {destinatarioCargo2}</Text>}
+            {emailPara && <Text style={detail}><strong>E-mail:</strong> {emailPara}</Text>}
+          </Section>
+        )}
 
         <Section style={cardAccent}>
           <Heading as="h2" style={h2}>Detalhes do evento</Heading>
