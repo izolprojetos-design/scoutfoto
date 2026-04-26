@@ -366,9 +366,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </CardContent>
       </Card>
 
-        </CardContent>
-      </Card>
-
       {/* Seção 2: Evento */}
       <Card className="border shadow-sm">
         <CardHeader>
