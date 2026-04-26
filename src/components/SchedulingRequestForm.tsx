@@ -454,59 +454,41 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
           <div>
             <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
-            <select
+            <Input
               id="destSecao"
               value={destSecao}
-              onChange={(e) => setDestSecao(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('destSecao'),
-              )}
+              readOnly
+              disabled
+              placeholder="Será preenchido ao selecionar o destinatário"
+              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('destSecao'))}
               aria-invalid={!!errors.destSecao}
-            >
-              <option value="">Selecione...</option>
-              {VOLUNTEER_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            />
             {fieldError('destSecao')}
           </div>
 
           <div>
             <Label htmlFor="destCargo1">Cargo 1 <span className="text-destructive">*</span></Label>
-            <select
+            <Input
               id="destCargo1"
               value={destCargo1}
-              onChange={(e) => setDestCargo1(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-h-[300px]',
-                errCls('destCargo1'),
-              )}
+              readOnly
+              disabled
+              placeholder="Será preenchido ao selecionar o destinatário"
+              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('destCargo1'))}
               aria-invalid={!!errors.destCargo1}
-            >
-              <option value="">Selecione...</option>
-              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
-                <optgroup key={cat} label={cat}>
-                  {list.map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-              ))}
-            </select>
+            />
             {fieldError('destCargo1')}
           </div>
 
           <div>
             <Label htmlFor="destCargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <select
+            <Input
               id="destCargo2"
-              value={destCargo2}
-              onChange={(e) => setDestCargo2(e.target.value)}
-              className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring max-h-[300px]"
-            >
-              <option value="">Nenhum</option>
-              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
-                <optgroup key={cat} label={cat}>
-                  {list.map(c => <option key={c} value={c}>{c}</option>)}
-                </optgroup>
-              ))}
-            </select>
+              value={destCargo2 || 'Nenhum'}
+              readOnly
+              disabled
+              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+            />
           </div>
 
           <div>
@@ -515,13 +497,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               id="emailPara"
               type="email"
               value={emailPara}
-              onChange={(e) => setEmailPara(e.target.value)}
-              placeholder="destinatario@email.com"
-              className={cn('mt-1.5', errCls('emailPara'))}
+              readOnly
+              disabled
+              placeholder="Será preenchido ao selecionar o destinatário"
+              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('emailPara'))}
               aria-invalid={!!errors.emailPara}
             />
             {fieldError('emailPara')}
           </div>
+
         </CardContent>
       </Card>
 
