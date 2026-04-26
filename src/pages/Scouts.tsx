@@ -1395,35 +1395,43 @@ const Scouts = () => {
           <Input placeholder="Buscar por nome, seção ou equipe..." value={search} onChange={e => setSearch(e.target.value)} className="h-9 pl-10 text-sm" />
         </div>
         <div className="flex gap-2 flex-wrap items-center" ref={branchPickerRef}>
-          <Button
-            variant={branchFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setBranchFilter('all')}
-          >
-            Todos
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setBranchPickerOpen(prev => !prev)}
-            className="gap-1.5"
-          >
-            Ramos
-            {branchPickerOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-          </Button>
-          {branchPickerOpen && ALL_CATEGORIES.map(b => (
-            <Button
-              key={b.key}
-              variant={branchFilter === b.key ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => {
-                setBranchFilter(b.key);
-                setBranchPickerOpen(false);
-              }}
-            >
-              {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
-            </Button>
-          ))}
+          <DropdownMenu open={branchPickerOpen} onOpenChange={setBranchPickerOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="default"
+                size="sm"
+                className="gap-1.5"
+              >
+                {branchFilter === 'all'
+                  ? `Todos (${scouts.length})`
+                  : (() => {
+                      const b = ALL_CATEGORIES.find(c => c.key === branchFilter);
+                      return b ? `${b.icon} ${b.name}${branchCounts[b.key] ? ` (${branchCounts[b.key]})` : ''}` : 'Todos';
+                    })()}
+                {branchPickerOpen ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-52">
+              <DropdownMenuLabel>Escolha um Ramo</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => setBranchFilter('all')}
+                className={`cursor-pointer ${branchFilter === 'all' ? 'bg-accent font-semibold' : ''}`}
+              >
+                Todos ({scouts.length})
+              </DropdownMenuItem>
+              {ALL_CATEGORIES.map(b => (
+                <DropdownMenuItem
+                  key={b.key}
+                  onSelect={() => setBranchFilter(b.key)}
+                  className={`cursor-pointer ${branchFilter === b.key ? 'bg-accent font-semibold' : ''}`}
+                >
+                  {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
