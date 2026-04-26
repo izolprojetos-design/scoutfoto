@@ -7,6 +7,56 @@ const DEFAULT_SEND_DELAY_MS = 200
 const DEFAULT_AUTH_TTL_MINUTES = 15
 const DEFAULT_TRANSACTIONAL_TTL_MINUTES = 60
 
+// Structured log helper — emits a single JSON line so logs are easily filterable.
+type LogLevel = 'info' | 'warn' | 'error'
+function logEvent(
+  runId: string,
+  level: LogLevel,
+  event: string,
+  data: Record<string, unknown> = {}
+): void {
+  const line = JSON.stringify({
+    ts: new Date().toISOString(),
+    run_id: runId,
+    level,
+    event,
+    ...data,
+  })
+  if (level === 'error') console.error(line)
+  else if (level === 'warn') console.warn(line)
+  else console.log(line)
+}
+
+interface QueueSummary {
+  queue: string
+  read: number
+  sent: number
+  failed: number
+  rate_limited: number
+  dlq_ttl: number
+  dlq_max_retries: number
+  dlq_forbidden: number
+  duplicates_skipped: number
+  read_errors: number
+  delete_errors: number
+}
+
+function newQueueSummary(queue: string): QueueSummary {
+  return {
+    queue,
+    read: 0,
+    sent: 0,
+    failed: 0,
+    rate_limited: 0,
+    dlq_ttl: 0,
+    dlq_max_retries: 0,
+    dlq_forbidden: 0,
+    duplicates_skipped: 0,
+    read_errors: 0,
+    delete_errors: 0,
+  }
+}
+
 // Check if an error is a rate-limit (429) response.
 // Uses EmailAPIError.status when available (email-js >=0.x with structured errors),
 // falls back to parsing the error message for older versions.
@@ -54,12 +104,23 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ReturnType<typeof createClient>,
+  supabase: ReturnType<typeof createClient<any>>,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
-  reason: string
+  msg: { msg_id: number; message: Record<string, any> },
+  reason: string,
+  runId: string,
+  dlqKind: 'ttl' | 'max_retries' | 'forbidden' | 'other'
 ): Promise<void> {
   const payload = msg.message
+  logEvent(runId, 'warn', 'message.dlq', {
+    queue,
+    msg_id: msg.msg_id,
+    message_id: payload.message_id,
+    recipient: payload.to,
+    template: payload.label || queue,
+    dlq_kind: dlqKind,
+    reason,
+  })
   await supabase.from('email_send_log').insert({
     message_id: payload.message_id,
     template_name: (payload.label || queue) as string,
@@ -74,7 +135,12 @@ async function moveToDlq(
     payload,
   })
   if (error) {
-    console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
+    logEvent(runId, 'error', 'message.dlq.move_failed', {
+      queue,
+      msg_id: msg.msg_id,
+      reason,
+      error: error.message,
+    })
   }
 }
 
@@ -112,6 +178,9 @@ Deno.serve(async (req) => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+  const runId = crypto.randomUUID()
+  const runStartedAt = Date.now()
+  logEvent(runId, 'info', 'run.start', {})
 
   // 1. Check rate-limit cooldown and read queue config
   const { data: state } = await supabase
@@ -120,8 +189,12 @@ Deno.serve(async (req) => {
     .single()
 
   if (state?.retry_after_until && new Date(state.retry_after_until) > new Date()) {
+    logEvent(runId, 'info', 'run.skip', {
+      reason: 'rate_limited',
+      retry_after_until: state.retry_after_until,
+    })
     return new Response(
-      JSON.stringify({ skipped: true, reason: 'rate_limited' }),
+      JSON.stringify({ run_id: runId, skipped: true, reason: 'rate_limited' }),
       { headers: { 'Content-Type': 'application/json' } }
     )
   }
@@ -134,9 +207,14 @@ Deno.serve(async (req) => {
   }
 
   let totalProcessed = 0
+  const summaries: QueueSummary[] = []
+  let stoppedReason: string | null = null
 
   // 2. Process auth_emails first (priority), then transactional_emails
   for (const queue of ['auth_emails', 'transactional_emails']) {
+    const summary = newQueueSummary(queue)
+    summaries.push(summary)
+
     const { data: messages, error: readError } = await supabase.rpc('read_email_batch', {
       queue_name: queue,
       batch_size: batchSize,
@@ -144,21 +222,28 @@ Deno.serve(async (req) => {
     })
 
     if (readError) {
-      console.error('Failed to read email batch', { queue, error: readError })
+      summary.read_errors++
+      logEvent(runId, 'error', 'queue.read_failed', { queue, error: readError.message })
       continue
     }
 
-    if (!messages?.length) continue
+    if (!messages?.length) {
+      logEvent(runId, 'info', 'queue.empty', { queue })
+      continue
+    }
+
+    summary.read = messages.length
+    logEvent(runId, 'info', 'queue.batch_read', { queue, count: messages.length })
 
     // Retry budget is based on real send failures, not pgmq read_ct.
     // read_ct increments for every message in a claimed batch, including
     // messages not attempted when a 429 stops processing early.
     const messageIds = Array.from(
       new Set(
-        messages
+        (messages as Array<{ message: Record<string, any> }>)
           .map((msg) =>
             msg?.message?.message_id && typeof msg.message.message_id === 'string'
-              ? msg.message.message_id
+              ? (msg.message.message_id as string)
               : null
           )
           .filter((id): id is string => Boolean(id))
@@ -173,13 +258,13 @@ Deno.serve(async (req) => {
         .eq('status', 'failed')
 
       if (failedRowsError) {
-        console.error('Failed to load failed-attempt counters', {
+        logEvent(runId, 'error', 'queue.failed_counter_load_failed', {
           queue,
-          error: failedRowsError,
+          error: failedRowsError.message,
         })
       } else {
         for (const row of failedRows ?? []) {
-          const messageId = row?.message_id
+          const messageId = (row as { message_id: string | null })?.message_id
           if (typeof messageId !== 'string' || !messageId) continue
           failedAttemptsByMessageId.set(
             messageId,
@@ -190,32 +275,52 @@ Deno.serve(async (req) => {
     }
 
     for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i]
+      const msg = messages[i] as { msg_id: number; read_ct: number; message: Record<string, any> }
       const payload = msg.message
       const failedAttempts =
         payload?.message_id && typeof payload.message_id === 'string'
           ? (failedAttemptsByMessageId.get(payload.message_id) ?? 0)
           : 0
 
+      const baseLog = {
+        queue,
+        msg_id: msg.msg_id,
+        message_id: payload.message_id,
+        recipient: payload.to,
+        template: payload.label || queue,
+        read_ct: msg.read_ct,
+        failed_attempts: failedAttempts,
+      }
+
       // Drop expired messages (TTL exceeded)
       if (payload.queued_at) {
         const ageMs = Date.now() - new Date(payload.queued_at).getTime()
         const maxAgeMs = ttlMinutes[queue] * 60 * 1000
         if (ageMs > maxAgeMs) {
-          console.warn('Email expired (TTL exceeded)', {
+          summary.dlq_ttl++
+          await moveToDlq(
+            supabase,
             queue,
-            msg_id: msg.msg_id,
-            queued_at: payload.queued_at,
-            ttl_minutes: ttlMinutes[queue],
-          })
-          await moveToDlq(supabase, queue, msg, `TTL exceeded (${ttlMinutes[queue]} minutes)`)
+            msg,
+            `TTL exceeded (${ttlMinutes[queue]} minutes)`,
+            runId,
+            'ttl'
+          )
           continue
         }
       }
 
       // Move to DLQ if max failed send attempts reached.
       if (failedAttempts >= MAX_RETRIES) {
-        await moveToDlq(supabase, queue, msg, `Max retries (${MAX_RETRIES}) exceeded (attempted ${failedAttempts} times)`)
+        summary.dlq_max_retries++
+        await moveToDlq(
+          supabase,
+          queue,
+          msg,
+          `Max retries (${MAX_RETRIES}) exceeded (attempted ${failedAttempts} times)`,
+          runId,
+          'max_retries'
+        )
         continue
       }
 
@@ -229,21 +334,26 @@ Deno.serve(async (req) => {
           .maybeSingle()
 
         if (alreadySent) {
-          console.warn('Skipping duplicate send (already sent)', {
-            queue,
-            msg_id: msg.msg_id,
-            message_id: payload.message_id,
-          })
+          summary.duplicates_skipped++
+          logEvent(runId, 'warn', 'message.duplicate_skipped', baseLog)
           const { error: dupDelError } = await supabase.rpc('delete_email', {
             queue_name: queue,
             message_id: msg.msg_id,
           })
           if (dupDelError) {
-            console.error('Failed to delete duplicate message from queue', { queue, msg_id: msg.msg_id, error: dupDelError })
+            summary.delete_errors++
+            logEvent(runId, 'error', 'message.delete_failed', {
+              ...baseLog,
+              kind: 'duplicate',
+              error: dupDelError.message,
+            })
           }
           continue
         }
       }
+
+      const sendStart = Date.now()
+      logEvent(runId, 'info', 'message.send_start', baseLog)
 
       try {
         await sendLovableEmail(
@@ -267,6 +377,12 @@ Deno.serve(async (req) => {
           { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
         )
 
+        summary.sent++
+        logEvent(runId, 'info', 'message.sent', {
+          ...baseLog,
+          duration_ms: Date.now() - sendStart,
+        })
+
         // Log success
         await supabase.from('email_send_log').insert({
           message_id: payload.message_id,
@@ -281,20 +397,31 @@ Deno.serve(async (req) => {
           message_id: msg.msg_id,
         })
         if (delError) {
-          console.error('Failed to delete sent message from queue', { queue, msg_id: msg.msg_id, error: delError })
+          summary.delete_errors++
+          logEvent(runId, 'error', 'message.delete_failed', {
+            ...baseLog,
+            kind: 'sent',
+            error: delError.message,
+          })
         }
         totalProcessed++
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error)
-        console.error('Email send failed', {
-          queue,
-          msg_id: msg.msg_id,
-          read_ct: msg.read_ct,
-          failed_attempts: failedAttempts,
-          error: errorMsg,
-        })
+        const errorStatus =
+          error && typeof error === 'object' && 'status' in error
+            ? (error as { status: unknown }).status
+            : undefined
 
         if (isRateLimited(error)) {
+          summary.rate_limited++
+          const retryAfterSecs = getRetryAfterSeconds(error)
+          logEvent(runId, 'warn', 'message.rate_limited', {
+            ...baseLog,
+            duration_ms: Date.now() - sendStart,
+            retry_after_seconds: retryAfterSecs,
+            error: errorMsg,
+          })
+
           await supabase.from('email_send_log').insert({
             message_id: payload.message_id,
             template_name: payload.label || queue,
@@ -303,7 +430,6 @@ Deno.serve(async (req) => {
             error_message: errorMsg.slice(0, 1000),
           })
 
-          const retryAfterSecs = getRetryAfterSeconds(error)
           await supabase
             .from('email_send_state')
             .update({
@@ -314,9 +440,21 @@ Deno.serve(async (req) => {
             })
             .eq('id', 1)
 
+          stoppedReason = 'rate_limited'
+          logEvent(runId, 'info', 'run.stop', {
+            reason: stoppedReason,
+            processed: totalProcessed,
+            duration_ms: Date.now() - runStartedAt,
+            summaries,
+          })
           // Stop processing — remaining messages stay in queue (VT expires, retried next cycle)
           return new Response(
-            JSON.stringify({ processed: totalProcessed, stopped: 'rate_limited' }),
+            JSON.stringify({
+              run_id: runId,
+              processed: totalProcessed,
+              stopped: stoppedReason,
+              summaries,
+            }),
             { headers: { 'Content-Type': 'application/json' } }
           )
         }
@@ -324,12 +462,46 @@ Deno.serve(async (req) => {
         // 403 means emails are disabled for this project — retrying won't help.
         // Move straight to DLQ and stop processing the rest of the batch.
         if (isForbidden(error)) {
-          await moveToDlq(supabase, queue, msg, 'Emails disabled for this project')
+          summary.dlq_forbidden++
+          logEvent(runId, 'error', 'message.forbidden', {
+            ...baseLog,
+            duration_ms: Date.now() - sendStart,
+            error: errorMsg,
+          })
+          await moveToDlq(
+            supabase,
+            queue,
+            msg,
+            'Emails disabled for this project',
+            runId,
+            'forbidden'
+          )
+          stoppedReason = 'emails_disabled'
+          logEvent(runId, 'info', 'run.stop', {
+            reason: stoppedReason,
+            processed: totalProcessed,
+            duration_ms: Date.now() - runStartedAt,
+            summaries,
+          })
           return new Response(
-            JSON.stringify({ processed: totalProcessed, stopped: 'emails_disabled' }),
+            JSON.stringify({
+              run_id: runId,
+              processed: totalProcessed,
+              stopped: stoppedReason,
+              summaries,
+            }),
             { headers: { 'Content-Type': 'application/json' } }
           )
         }
+
+        // Generic send failure (template render, network, 5xx, etc.)
+        summary.failed++
+        logEvent(runId, 'error', 'message.failed', {
+          ...baseLog,
+          duration_ms: Date.now() - sendStart,
+          status: errorStatus,
+          error: errorMsg,
+        })
 
         // Log non-429 failures to track real retry attempts.
         await supabase.from('email_send_log').insert({
@@ -351,10 +523,23 @@ Deno.serve(async (req) => {
         await new Promise((r) => setTimeout(r, sendDelayMs))
       }
     }
+
+    logEvent(runId, 'info', 'queue.summary', summary as unknown as Record<string, unknown>)
   }
 
+  logEvent(runId, 'info', 'run.complete', {
+    processed: totalProcessed,
+    duration_ms: Date.now() - runStartedAt,
+    summaries,
+  })
+
   return new Response(
-    JSON.stringify({ processed: totalProcessed }),
+    JSON.stringify({
+      run_id: runId,
+      processed: totalProcessed,
+      duration_ms: Date.now() - runStartedAt,
+      summaries,
+    }),
     { headers: { 'Content-Type': 'application/json' } }
   )
 })
