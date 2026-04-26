@@ -45,23 +45,18 @@ interface Branch {
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const ScoutCalendar = () => {
-  const { roles, isAdmin } = useAuth();
+  const { roles } = useAuth();
   const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
-  const [requestsRefreshKey, setRequestsRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState('calendar');
   const [scheduleMounted, setScheduleMounted] = useState(false);
-  const [requestsMounted, setRequestsMounted] = useState(false);
-  const [approvalMounted, setApprovalMounted] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'schedule') setScheduleMounted(true);
-    if (activeTab === 'my-requests') setRequestsMounted(true);
-    if (activeTab === 'approval') setApprovalMounted(true);
   }, [activeTab]);
 
   useEffect(() => {
