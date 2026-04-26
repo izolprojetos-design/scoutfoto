@@ -1,7 +1,7 @@
 // Public endpoint to confirm a scheduling request via token.
 // No JWT required — confirmation links are sent by email and validated by token.
 
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient } from 'npm:@supabase/supabase-js@2.45.4'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
