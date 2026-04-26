@@ -103,48 +103,20 @@ const ScoutCalendar = () => {
           <CalIcon className="h-4 w-4" /> Calendário
         </button>
         {canRequestScheduling && (
-          <>
-            <button
-              type="button"
-              onClick={() => setActiveTab('schedule')}
-              className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
-            >
-              <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('my-requests')}
-              className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'my-requests' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
-            >
-              <ListChecks className="h-4 w-4" /> Minhas Solicitações
-            </button>
-          </>
-        )}
-        {isAdmin && (
           <button
             type="button"
-            onClick={() => setActiveTab('approval')}
-            className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'approval' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+            onClick={() => setActiveTab('schedule')}
+            className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
           >
-            <ShieldCheck className="h-4 w-4" /> Aprovações
+            <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
           </button>
         )}
       </div>
 
       <div className={activeTab === 'schedule' ? '' : 'hidden'}>
         {canRequestScheduling && scheduleMounted && (
-          <SchedulingRequestForm onSuccess={() => setRequestsRefreshKey(k => k + 1)} />
+          <SchedulingRequestForm />
         )}
-      </div>
-
-      <div className={activeTab === 'my-requests' ? '' : 'hidden'}>
-        {canRequestScheduling && requestsMounted && (
-          <MySchedulingRequests refreshKey={requestsRefreshKey} />
-        )}
-      </div>
-
-      <div className={activeTab === 'approval' ? '' : 'hidden'}>
-        {isAdmin && approvalMounted && <SchedulingApprovalPanel />}
       </div>
 
       <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
