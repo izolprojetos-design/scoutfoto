@@ -50,7 +50,7 @@ const SchedulingConfirmationEmail = ({
           {nomeResponsavel ? `Olá, ${nomeResponsavel}!` : 'Olá!'}
         </Heading>
         <Text style={text}>
-          Recebemos sua solicitação de agendamento de seção no <strong>{SITE_NAME}</strong>.
+          Recebemos sua solicitação de agendamento no <strong>{SITE_NAME}</strong>.
           Para que ela seja analisada pela coordenação, é necessário confirmar
           que você é o(a) responsável por esta solicitação.
         </Text>

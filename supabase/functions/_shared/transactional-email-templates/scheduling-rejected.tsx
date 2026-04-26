@@ -48,7 +48,7 @@ const SchedulingRejectedEmail = ({
           {nomeResponsavel ? `Olá, ${nomeResponsavel}` : 'Olá'}
         </Heading>
         <Text style={text}>
-          Infelizmente, sua solicitação de agendamento de seção foi <strong style={{ color: '#DC2626' }}>recusada</strong> pela coordenação do <strong>{SITE_NAME}</strong>.
+          Infelizmente, sua solicitação de agendamento foi <strong style={{ color: '#DC2626' }}>recusada</strong> pela coordenação do <strong>{SITE_NAME}</strong>.
         </Text>
 
         <Section style={card}>
