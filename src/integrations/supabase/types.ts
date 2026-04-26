@@ -52,6 +52,69 @@ export type Database = {
           },
         ]
       }
+      agendamentos: {
+        Row: {
+          cargo_1: string
+          cargo_2: string
+          created_at: string
+          data_secao: string
+          dirigente: string
+          email_de: string
+          email_para: string
+          horario: string
+          id: string
+          local: string
+          nome_associado: string
+          observacoes: string
+          ramo_escoteiro: string
+          secao: string
+          status: string
+          tipo_atividade: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cargo_1?: string
+          cargo_2?: string
+          created_at?: string
+          data_secao: string
+          dirigente?: string
+          email_de: string
+          email_para?: string
+          horario: string
+          id?: string
+          local?: string
+          nome_associado: string
+          observacoes?: string
+          ramo_escoteiro?: string
+          secao?: string
+          status?: string
+          tipo_atividade?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cargo_1?: string
+          cargo_2?: string
+          created_at?: string
+          data_secao?: string
+          dirigente?: string
+          email_de?: string
+          email_para?: string
+          horario?: string
+          id?: string
+          local?: string
+          nome_associado?: string
+          observacoes?: string
+          ramo_escoteiro?: string
+          secao?: string
+          status?: string
+          tipo_atividade?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       aprovacoes: {
         Row: {
           agendamento_id: string
