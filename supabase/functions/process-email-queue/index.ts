@@ -104,12 +104,23 @@ function parseJwtClaims(token: string): Record<string, unknown> | null {
 
 // Move a message to the dead letter queue and log the reason.
 async function moveToDlq(
-  supabase: ReturnType<typeof createClient>,
+  supabase: ReturnType<typeof createClient<any>>,
   queue: string,
-  msg: { msg_id: number; message: Record<string, unknown> },
-  reason: string
+  msg: { msg_id: number; message: Record<string, any> },
+  reason: string,
+  runId: string,
+  dlqKind: 'ttl' | 'max_retries' | 'forbidden' | 'other'
 ): Promise<void> {
   const payload = msg.message
+  logEvent(runId, 'warn', 'message.dlq', {
+    queue,
+    msg_id: msg.msg_id,
+    message_id: payload.message_id,
+    recipient: payload.to,
+    template: payload.label || queue,
+    dlq_kind: dlqKind,
+    reason,
+  })
   await supabase.from('email_send_log').insert({
     message_id: payload.message_id,
     template_name: (payload.label || queue) as string,
@@ -124,7 +135,12 @@ async function moveToDlq(
     payload,
   })
   if (error) {
-    console.error('Failed to move message to DLQ', { queue, msg_id: msg.msg_id, reason, error })
+    logEvent(runId, 'error', 'message.dlq.move_failed', {
+      queue,
+      msg_id: msg.msg_id,
+      reason,
+      error: error.message,
+    })
   }
 }
 
