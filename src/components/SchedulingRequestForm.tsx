@@ -58,6 +58,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Autocomplete do destinatário
+  type DestSuggestion = { user_id: string; name: string; email: string; section: string | null };
+  const [destSuggestions, setDestSuggestions] = useState<DestSuggestion[]>([]);
+  const [destSearching, setDestSearching] = useState(false);
+  const [destDropdownOpen, setDestDropdownOpen] = useState(false);
+  const destSearchTimeout = useRef<number | null>(null);
+  const destBlurTimeout = useRef<number | null>(null);
+
   useEffect(() => {
     supabase.from('branches').select('id, key, display_name, icon').order('sort_order')
       .then(({ data }) => setBranches((data as Branch[]) ?? []));
