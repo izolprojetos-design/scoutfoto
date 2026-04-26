@@ -1410,7 +1410,7 @@ const Scouts = () => {
                   setBranchFilter('all');
                   setBranchAnnouncement(`Ramo selecionado: Todos. ${scouts.length} integrantes.`);
                 }}
-                className={`cursor-pointer ${branchFilter === 'all' ? 'bg-accent font-semibold' : ''}`}
+                className={`cursor-pointer ${branchFilter === 'all' ? 'bg-primary text-primary-foreground font-semibold focus:bg-primary focus:text-primary-foreground' : ''}`}
               >
                 Todos ({scouts.length})
               </DropdownMenuItem>
