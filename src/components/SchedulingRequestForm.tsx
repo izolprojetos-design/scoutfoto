@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 
 interface Branch {
   id: string;
+  key: string;
   display_name: string;
   icon: string;
 }
@@ -53,12 +54,24 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    supabase.from('branches').select('id, display_name, icon').order('sort_order')
-      .then(({ data }) => setBranches(data ?? []));
+    supabase.from('branches').select('id, key, display_name, icon').order('sort_order')
+      .then(({ data }) => setBranches((data as Branch[]) ?? []));
   }, []);
+
+  // Mapeia o cargo do perfil para a key do ramo escoteiro
+  const deriveBranchKeyFromCargo = (cargo: string): string => {
+    if (!cargo) return 'voluntario';
+    if (/Alcateia/i.test(cargo)) return 'lobinho';
+    if (/Tropa Escoteira/i.test(cargo)) return 'escoteiro';
+    if (/Tropa S[êe]nior/i.test(cargo)) return 'senior';
+    if (/Cl[ãa] Pioneiro/i.test(cargo)) return 'pioneiro';
+    return 'voluntario';
+  };
 
   useEffect(() => {
     if (profile?.name && !nomeAssociado) setNomeAssociado(profile.name);
+    // Dirigente também é o usuário logado (mesmo nome do associado)
+    if (profile?.name && !dirigente) setDirigente(profile.name);
     if ((profile?.email || user?.email) && !emailDe) setEmailDe(profile?.email ?? user?.email ?? '');
     if (profile?.section && !secao && !cargo1) {
       const parsed = parseVolunteerSection(profile.section);
@@ -66,7 +79,16 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       if (parsed.cargo1) setCargo1(parsed.cargo1);
       if (parsed.cargo2) setCargo2(parsed.cargo2);
     }
-  }, [profile, user, nomeAssociado, emailDe, secao, cargo1]);
+  }, [profile, user, nomeAssociado, dirigente, emailDe, secao, cargo1]);
+
+  // Auto-preenche o ramo escoteiro a partir do cargo1, quando os ramos carregarem
+  useEffect(() => {
+    if (!ramoEscoteiro && cargo1 && branches.length > 0) {
+      const targetKey = deriveBranchKeyFromCargo(cargo1);
+      const match = branches.find(b => b.key === targetKey);
+      if (match) setRamoEscoteiro(match.id);
+    }
+  }, [cargo1, branches, ramoEscoteiro]);
 
   const resetForm = () => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
