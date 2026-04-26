@@ -115,6 +115,63 @@ export type Database = {
         }
         Relationships: []
       }
+      app_push_notifications: {
+        Row: {
+          agendamento_id: string
+          agendamento_source: Database["public"]["Enums"]["agendamento_source"]
+          attempts: number
+          body: string
+          created_at: string
+          delivered_count: number
+          failed_count: number
+          id: string
+          last_error: string | null
+          max_attempts: number
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_channel_status"]
+          title: string
+          updated_at: string
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          agendamento_id: string
+          agendamento_source?: Database["public"]["Enums"]["agendamento_source"]
+          attempts?: number
+          body: string
+          created_at?: string
+          delivered_count?: number
+          failed_count?: number
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_channel_status"]
+          title: string
+          updated_at?: string
+          url?: string | null
+          user_id: string
+        }
+        Update: {
+          agendamento_id?: string
+          agendamento_source?: Database["public"]["Enums"]["agendamento_source"]
+          attempts?: number
+          body?: string
+          created_at?: string
+          delivered_count?: number
+          failed_count?: number
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_channel_status"]
+          title?: string
+          updated_at?: string
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       aprovacoes: {
         Row: {
           agendamento_id: string
@@ -1116,9 +1173,94 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_notifications: {
+        Row: {
+          agendamento_id: string
+          agendamento_source: Database["public"]["Enums"]["agendamento_source"]
+          attempts: number
+          created_at: string
+          id: string
+          last_error: string | null
+          max_attempts: number
+          message: string
+          provider_message_sid: string | null
+          recipient_name: string
+          recipient_phone: string
+          scheduled_for: string
+          sent_at: string | null
+          status: Database["public"]["Enums"]["notification_channel_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agendamento_id: string
+          agendamento_source?: Database["public"]["Enums"]["agendamento_source"]
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          message: string
+          provider_message_sid?: string | null
+          recipient_name?: string
+          recipient_phone: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_channel_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agendamento_id?: string
+          agendamento_source?: Database["public"]["Enums"]["agendamento_source"]
+          attempts?: number
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          message?: string
+          provider_message_sid?: string | null
+          recipient_name?: string
+          recipient_phone?: string
+          scheduled_for?: string
+          sent_at?: string | null
+          status?: Database["public"]["Enums"]["notification_channel_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      agendamento_notification_status: {
+        Row: {
+          agendamento_id: string | null
+          agendamento_source:
+            | Database["public"]["Enums"]["agendamento_source"]
+            | null
+          email_status: string | null
+          push_status: string | null
+          user_id: string | null
+          whatsapp_status: string | null
+        }
+        Insert: {
+          agendamento_id?: string | null
+          agendamento_source?: never
+          email_status?: never
+          push_status?: never
+          user_id?: string | null
+          whatsapp_status?: never
+        }
+        Update: {
+          agendamento_id?: string | null
+          agendamento_source?: never
+          email_status?: never
+          push_status?: never
+          user_id?: string | null
+          whatsapp_status?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       admin_clear_inactive_sessions: { Args: never; Returns: number }
@@ -1251,6 +1393,10 @@ export type Database = {
           remaining_seconds: number
         }[]
       }
+      requeue_notification: {
+        Args: { p_channel: string; p_notification_id: string }
+        Returns: undefined
+      }
       search_users_for_scheduling: {
         Args: { p_query: string }
         Returns: {
@@ -1262,6 +1408,7 @@ export type Database = {
       }
     }
     Enums: {
+      agendamento_source: "agendamento" | "scheduling_request"
       app_role:
         | "admin"
         | "viewer"
@@ -1271,6 +1418,7 @@ export type Database = {
         | "dirigente_gestor"
         | "voluntario"
       image_visibility: "private" | "group" | "public"
+      notification_channel_status: "pending" | "sent" | "error" | "discarded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1398,6 +1546,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      agendamento_source: ["agendamento", "scheduling_request"],
       app_role: [
         "admin",
         "viewer",
@@ -1408,6 +1557,7 @@ export const Constants = {
         "voluntario",
       ],
       image_visibility: ["private", "group", "public"],
+      notification_channel_status: ["pending", "sent", "error", "discarded"],
     },
   },
 } as const
