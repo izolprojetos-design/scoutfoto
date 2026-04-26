@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 
 interface Branch {
   id: string;
+  key: string;
   display_name: string;
   icon: string;
 }
