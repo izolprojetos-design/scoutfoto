@@ -32,12 +32,19 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Dados pessoais
+  // Dados pessoais (do usuário logado, somente leitura)
   const [nomeAssociado, setNomeAssociado] = useState('');
   const [secao, setSecao] = useState('');
   const [cargo1, setCargo1] = useState('');
   const [cargo2, setCargo2] = useState('');
   const [emailDe, setEmailDe] = useState('');
+
+  // Dados do destinatário (editáveis)
+  const [destNome, setDestNome] = useState('');
+  const [destSecao, setDestSecao] = useState('');
+  const [destCargo1, setDestCargo1] = useState('');
+  const [destCargo2, setDestCargo2] = useState('');
+  const [emailPara, setEmailPara] = useState('');
 
   // Evento
   const [dataSecao, setDataSecao] = useState('');
