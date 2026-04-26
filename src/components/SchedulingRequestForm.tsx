@@ -91,7 +91,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   const resetForm = () => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
-    setTipoAtividade('reuniao'); setObservacoes(''); setEmailPara('');
+    setTipoAtividade('reuniao'); setObservacoes('');
     setDirigente(''); setCargo2('');
     setErrors({});
   };
