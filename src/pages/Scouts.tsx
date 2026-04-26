@@ -1406,7 +1406,10 @@ const Scouts = () => {
               <DropdownMenuLabel>Escolha um Ramo</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onSelect={() => setBranchFilter('all')}
+                onSelect={() => {
+                  setBranchFilter('all');
+                  setBranchAnnouncement(`Ramo selecionado: Todos. ${scouts.length} integrantes.`);
+                }}
                 className={`cursor-pointer ${branchFilter === 'all' ? 'bg-accent font-semibold' : ''}`}
               >
                 Todos ({scouts.length})
@@ -1414,7 +1417,11 @@ const Scouts = () => {
               {ALL_CATEGORIES.map(b => (
                 <DropdownMenuItem
                   key={b.key}
-                  onSelect={() => setBranchFilter(b.key)}
+                  onSelect={() => {
+                    setBranchFilter(b.key);
+                    const count = branchCounts[b.key] ?? 0;
+                    setBranchAnnouncement(`Ramo selecionado: ${b.name}. ${count} ${count === 1 ? 'integrante' : 'integrantes'}.`);
+                  }}
                   className={`cursor-pointer ${branchFilter === b.key ? 'bg-accent font-semibold' : ''}`}
                 >
                   {b.icon} {b.name} {branchCounts[b.key] ? `(${branchCounts[b.key]})` : ''}
@@ -1422,6 +1429,9 @@ const Scouts = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {branchAnnouncement}
+          </span>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
