@@ -405,18 +405,52 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 relative">
             <Label htmlFor="destNome">Nome do destinatário <span className="text-destructive">*</span></Label>
-            <Input
-              id="destNome"
-              value={destNome}
-              onChange={(e) => setDestNome(e.target.value)}
-              placeholder="Nome completo do destinatário"
-              className={cn('mt-1.5', errCls('destNome'))}
-              aria-invalid={!!errors.destNome}
-            />
+            <div className="relative mt-1.5">
+              <Input
+                id="destNome"
+                value={destNome}
+                onChange={(e) => handleDestNomeChange(e.target.value)}
+                onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
+                onBlur={() => {
+                  if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
+                  destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
+                }}
+                placeholder="Digite o nome para buscar usuários cadastrados"
+                autoComplete="off"
+                className={cn(errCls('destNome'))}
+                aria-invalid={!!errors.destNome}
+                aria-autocomplete="list"
+                aria-expanded={destDropdownOpen}
+              />
+              {destSearching && (
+                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+              )}
+              {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
+                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-72 overflow-y-auto">
+                  {destSuggestions.length === 0 && !destSearching ? (
+                    <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum usuário encontrado</div>
+                  ) : (
+                    destSuggestions.map((s) => (
+                      <button
+                        key={s.user_id}
+                        type="button"
+                        onMouseDown={(ev) => ev.preventDefault()}
+                        onClick={() => handleSelectDestSuggestion(s)}
+                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground border-b last:border-b-0"
+                      >
+                        <div className="text-sm font-medium">{s.name}</div>
+                        <div className="text-xs text-muted-foreground">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
             {fieldError('destNome')}
           </div>
+
 
           <div>
             <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
