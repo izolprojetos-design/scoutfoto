@@ -350,7 +350,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </select>
           </div>
 
-          <div>
+          <div className="md:col-span-2">
             <Label htmlFor="emailDe">E-mail de <span className="text-destructive">*</span></Label>
             <Input
               id="emailDe"
