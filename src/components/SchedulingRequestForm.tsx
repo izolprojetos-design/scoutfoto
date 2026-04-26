@@ -363,20 +363,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             />
             {fieldError('emailDe')}
           </div>
+        </CardContent>
+      </Card>
 
-          <div>
-            <Label htmlFor="emailPara">E-mail para <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input
-              id="emailPara"
-              type="email"
-              value={emailPara}
-              onChange={(e) => setEmailPara(e.target.value)}
-              placeholder="destinatario@email.com"
-              className={cn('mt-1.5', errCls('emailPara'))}
-              aria-invalid={!!errors.emailPara}
-            />
-            {fieldError('emailPara')}
-          </div>
         </CardContent>
       </Card>
 
