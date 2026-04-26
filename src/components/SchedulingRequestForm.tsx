@@ -85,8 +85,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   useEffect(() => {
     if (!ramoEscoteiro && cargo1 && branches.length > 0) {
       const targetKey = deriveBranchKeyFromCargo(cargo1);
-      const match = branches.find((b: any) => (b as any).key === targetKey)
-        ?? branches.find(b => b.display_name.toLowerCase() === targetKey);
+      const match = branches.find(b => b.key === targetKey);
       if (match) setRamoEscoteiro(match.id);
     }
   }, [cargo1, branches, ramoEscoteiro]);
