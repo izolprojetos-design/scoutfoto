@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
