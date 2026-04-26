@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
+import AgendamentosManager from '@/components/AgendamentosManager';
 
 import {
   format,
@@ -54,9 +55,11 @@ const ScoutCalendar = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('calendar');
   const [scheduleMounted, setScheduleMounted] = useState(false);
+  const [manageMounted, setManageMounted] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'schedule') setScheduleMounted(true);
+    if (activeTab === 'manage') setManageMounted(true);
   }, [activeTab]);
 
   useEffect(() => {
@@ -111,12 +114,23 @@ const ScoutCalendar = () => {
             <CalendarPlus className="h-4 w-4" /> Agendamento de Seção
           </button>
         )}
+        <button
+          type="button"
+          onClick={() => setActiveTab('manage')}
+          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'manage' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+        >
+          <ListChecks className="h-4 w-4" /> Meus Agendamentos
+        </button>
       </div>
 
       <div className={activeTab === 'schedule' ? '' : 'hidden'}>
         {canRequestScheduling && scheduleMounted && (
           <SchedulingRequestForm />
         )}
+      </div>
+
+      <div className={activeTab === 'manage' ? '' : 'hidden'}>
+        {manageMounted && <AgendamentosManager />}
       </div>
 
       <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
