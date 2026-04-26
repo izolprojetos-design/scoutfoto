@@ -109,6 +109,12 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!cargo1) e.cargo1 = 'Selecione o cargo principal';
     if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail inválido';
 
+    // Destinatário
+    if (destNome.trim().length < 2) e.destNome = 'Informe o nome do destinatário';
+    if (!destSecao) e.destSecao = 'Selecione a seção do destinatário';
+    if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
+    if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
+
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
