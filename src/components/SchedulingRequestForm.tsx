@@ -194,10 +194,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       tipoAtividade: tipoLabel,
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
+      destinatarioNome: destNome.trim(),
+      destinatarioSecao: destSecao,
+      destinatarioCargo1: destCargo1,
+      destinatarioCargo2: destCargo2,
+      emailPara: emailPara.trim(),
     };
 
     const recipients: string[] = [];
-    if (emailDe.trim()) recipients.push(emailDe.trim());
+    if (emailPara.trim()) recipients.push(emailPara.trim());
 
     let emailOk = true;
     try {
