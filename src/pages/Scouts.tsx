@@ -1458,21 +1458,13 @@ const Scouts = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuItem onSelect={() => setExportConfirm('pdf')} className="gap-2 cursor-pointer">
-                <FileDown className="h-4 w-4" />
-                <span>PDF</span>
-              </DropdownMenuItem>
               <DropdownMenuItem onSelect={() => setExportConfirm('excel')} className="gap-2 cursor-pointer">
-                <FileSpreadsheet className="h-4 w-4" />
+                <FileSpreadsheet className="h-4 w-4 text-[#1D6F42]" />
                 <span>Excel</span>
               </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setExportConfirm('docx')} className="gap-2 cursor-pointer">
-                <FileDown className="h-4 w-4" />
-                <span>Documentos Google</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => setExportConfirm('sheets')} className="gap-2 cursor-pointer">
-                <FileSpreadsheet className="h-4 w-4" />
-                <span>Planilhas Google</span>
+              <DropdownMenuItem onSelect={() => setExportConfirm('pdf')} className="gap-2 cursor-pointer">
+                <FileDown className="h-4 w-4 text-[#D93025]" />
+                <span>PDF</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
