@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
+import AgendamentosManager from '@/components/AgendamentosManager';
 
 import {
   format,
