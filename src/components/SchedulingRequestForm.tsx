@@ -35,7 +35,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   // Dados pessoais
   const [nomeAssociado, setNomeAssociado] = useState('');
   const [secao, setSecao] = useState('');
-  const [dirigente, setDirigente] = useState('');
   const [cargo1, setCargo1] = useState('');
   const [cargo2, setCargo2] = useState('');
   const [emailDe, setEmailDe] = useState('');
@@ -69,8 +68,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   useEffect(() => {
     if (profile?.name && !nomeAssociado) setNomeAssociado(profile.name);
-    // Dirigente também é o usuário logado (mesmo nome do associado)
-    if (profile?.name && !dirigente) setDirigente(profile.name);
     if ((profile?.email || user?.email) && !emailDe) setEmailDe(profile?.email ?? user?.email ?? '');
     if (profile?.section && !secao && !cargo1) {
       const parsed = parseVolunteerSection(profile.section);
@@ -78,7 +75,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       if (parsed.cargo1) setCargo1(parsed.cargo1);
       if (parsed.cargo2) setCargo2(parsed.cargo2);
     }
-  }, [profile, user, nomeAssociado, dirigente, emailDe, secao, cargo1]);
+  }, [profile, user, nomeAssociado, emailDe, secao, cargo1]);
 
   // Auto-preenche o ramo escoteiro a partir do cargo1, quando os ramos carregarem
   useEffect(() => {
@@ -92,7 +89,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const resetForm = () => {
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
-    setDirigente(''); setCargo2('');
+    setCargo2('');
     setErrors({});
   };
 
@@ -139,7 +136,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         user_id: user.id,
         nome_associado: nomeAssociado.trim(),
         secao,
-        dirigente: dirigente.trim(),
+        dirigente: nomeAssociado.trim(),
         cargo_1: cargo1,
         cargo_2: cargo2,
         email_de: emailDe.trim(),
@@ -174,7 +171,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     const templateData = {
       nomeAssociado: nomeAssociado.trim(),
       secao,
-      dirigente: dirigente.trim(),
+      dirigente: nomeAssociado.trim(),
       cargo1,
       cargo2,
       data: dataFormatada,
@@ -298,17 +295,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               {VOLUNTEER_SECTIONS.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             {fieldError('secao')}
-          </div>
-
-          <div>
-            <Label htmlFor="dirigente">Dirigente</Label>
-            <Input
-              id="dirigente"
-              value={dirigente}
-              onChange={(e) => setDirigente(e.target.value)}
-              placeholder="Nome do dirigente responsável"
-              className="mt-1.5"
-            />
           </div>
 
           <div>
