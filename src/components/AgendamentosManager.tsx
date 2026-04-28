@@ -309,10 +309,11 @@ const AgendamentosManager = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-md border divide-y bg-card">
-          {filtered.map(a => {
+        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
+          {filtered.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
+            const isFocused = focusedIndex === index || (focusedIndex === -1 && index === 0);
             const dateLabel = format(parseLocalDate(a.data_secao), "dd/MM", { locale: ptBR });
             const subject = a.observacoes?.trim() || `${tipoLabel(a.tipo_atividade)} — ${a.local || 'sem local'}`;
             return (
@@ -320,8 +321,15 @@ const AgendamentosManager = () => {
                 {/* Linha colapsada (estilo e-mail) */}
                 <button
                   type="button"
+                  ref={el => { rowRefs.current[index] = el; }}
+                  role="option"
+                  aria-expanded={isOpen}
+                  aria-selected={isOpen}
+                  tabIndex={isFocused ? 0 : -1}
+                  onFocus={() => setFocusedIndex(index)}
+                  onKeyDown={e => handleRowKeyDown(e, index, filtered)}
                   onClick={() => setExpandedId(isOpen ? null : a.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <Badge variant={mine ? 'default' : 'secondary'} className="text-[10px] shrink-0">
                     {mine ? 'Meu' : 'Equipe'}
