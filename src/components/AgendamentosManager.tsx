@@ -419,13 +419,28 @@ const AgendamentosManager = () => {
               </div>
 
               <div className="md:col-span-2 mt-2 rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
-                <div className="space-y-0.5">
-                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                    Destinatário
-                  </p>
-                  <p className="text-[11px] text-muted-foreground/80">
-                    Estes dados aparecem no bloco "Destinatário" do card deste agendamento.
-                  </p>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Destinatário
+                    </p>
+                    <p className="text-[11px] text-muted-foreground/80">
+                      Estes dados aparecem no bloco "Destinatário" do card deste agendamento.
+                    </p>
+                  </div>
+                  <label
+                    htmlFor="ed-lock-recipient"
+                    className="flex items-center gap-2 rounded-md border border-border/60 bg-background px-2.5 py-1.5 text-xs font-medium cursor-pointer select-none whitespace-nowrap"
+                  >
+                    <input
+                      id="ed-lock-recipient"
+                      type="checkbox"
+                      checked={lockRecipient}
+                      onChange={(e) => setLockRecipient(e.target.checked)}
+                      className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
+                    />
+                    Não permitir alterar
+                  </label>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="md:col-span-2">
@@ -434,7 +449,8 @@ const AgendamentosManager = () => {
                       id="ed-dest-nome"
                       value={editing.destinatario_nome ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_nome: e.target.value })}
-                      className="mt-1.5 uppercase"
+                      readOnly={lockRecipient}
+                      className={cn('mt-1.5 uppercase', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
                       placeholder="Não informado"
                     />
                   </div>
@@ -444,7 +460,8 @@ const AgendamentosManager = () => {
                       id="ed-dest-secao"
                       value={editing.destinatario_secao ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_secao: e.target.value })}
-                      className="mt-1.5"
+                      readOnly={lockRecipient}
+                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
                       placeholder="Não informada"
                     />
                   </div>
@@ -454,7 +471,8 @@ const AgendamentosManager = () => {
                       id="ed-dest-cargo1"
                       value={editing.destinatario_cargo_1 ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_cargo_1: e.target.value })}
-                      className="mt-1.5"
+                      readOnly={lockRecipient}
+                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
                       placeholder="Não informado"
                     />
                   </div>
@@ -465,11 +483,17 @@ const AgendamentosManager = () => {
                       type="email"
                       value={editing.email_para}
                       onChange={(e) => setEditing({ ...editing, email_para: e.target.value })}
-                      className="mt-1.5"
+                      readOnly={lockRecipient}
+                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
                       placeholder="email@exemplo.com"
                     />
                   </div>
                 </div>
+                {lockRecipient && (
+                  <p className="text-[11px] italic text-muted-foreground">
+                    🔒 Campos travados. Desmarque "Não permitir alterar" para editar.
+                  </p>
+                )}
               </div>
 
               <div className="md:col-span-2">
