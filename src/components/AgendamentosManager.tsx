@@ -171,7 +171,7 @@ const AgendamentosManager = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, local, dirigente, seção..."
+            placeholder="Buscar por nome, destinatário, e-mail, local, seção..."
             className="pl-9 h-11"
           />
         </div>
