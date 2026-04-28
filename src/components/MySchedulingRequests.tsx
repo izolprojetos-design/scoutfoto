@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle, AlertTriangle, Eye } from 'lucide-react';
 import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -79,6 +79,10 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectError, setRejectError] = useState('');
   const [rejecting, setRejecting] = useState(false);
+
+  // View rejection details
+  const [viewRejectOpen, setViewRejectOpen] = useState(false);
+  const [viewRejectReq, setViewRejectReq] = useState<Request | null>(null);
 
   const load = async () => {
     if (!user) return;
@@ -316,9 +320,31 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Assunto:</strong> {r.descricao}</p>
                   )}
 
-                  {r.rejection_reason && (
-                    <div className="mt-3 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                      <strong>Motivo da rejeição:</strong> {r.rejection_reason}
+                  {r.status === 'rejeitado' && (
+                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm">
+                      <div className="flex items-start gap-2 text-destructive">
+                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold">Solicitação rejeitada</p>
+                          {r.rejection_reason ? (
+                            <p className="mt-1 line-clamp-2 text-destructive/90">{r.rejection_reason}</p>
+                          ) : (
+                            <p className="mt-1 italic text-destructive/80">Sem justificativa registrada.</p>
+                          )}
+                        </div>
+                      </div>
+                      {r.rejection_reason && r.rejection_reason.length > 80 && (
+                        <div className="mt-2 flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                            onClick={() => { setViewRejectReq(r); setViewRejectOpen(true); }}
+                          >
+                            <Eye className="h-3.5 w-3.5" /> Ver justificativa completa
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -515,6 +541,33 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
               >
                 {rejecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Recusando...</> : <><XCircle className="h-4 w-4" /> Confirmar recusa</>}
               </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Rejection Details Dialog */}
+      <Dialog open={viewRejectOpen} onOpenChange={setViewRejectOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" /> Justificativa da rejeição
+            </DialogTitle>
+            <DialogDescription>
+              {viewRejectReq && (
+                <>
+                  {getSchedulingTypeLabel(viewRejectReq.tipo)} —{' '}
+                  {format(parseLocalDate(viewRejectReq.data), "dd/MM/yyyy", { locale: ptBR })} às {viewRejectReq.horario}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-2">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground whitespace-pre-wrap break-words">
+              {viewRejectReq?.rejection_reason || 'Sem justificativa registrada.'}
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button variant="outline" onClick={() => setViewRejectOpen(false)}>Fechar</Button>
             </div>
           </div>
         </DialogContent>
