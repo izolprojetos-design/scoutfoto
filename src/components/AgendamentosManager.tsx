@@ -104,7 +104,12 @@ const AgendamentosManager = () => {
         a.local.toLowerCase().includes(term) ||
         a.dirigente.toLowerCase().includes(term) ||
         a.secao.toLowerCase().includes(term) ||
-        tipoLabel(a.tipo_atividade).toLowerCase().includes(term)
+        tipoLabel(a.tipo_atividade).toLowerCase().includes(term) ||
+        (a.destinatario_nome ?? '').toLowerCase().includes(term) ||
+        (a.email_para ?? '').toLowerCase().includes(term) ||
+        (a.destinatario_secao ?? '').toLowerCase().includes(term) ||
+        (a.destinatario_cargo_1 ?? '').toLowerCase().includes(term) ||
+        (a.destinatario_cargo_2 ?? '').toLowerCase().includes(term)
       );
     });
   }, [agendamentos, search, filter, user?.id]);
