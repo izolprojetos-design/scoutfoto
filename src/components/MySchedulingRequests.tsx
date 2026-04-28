@@ -545,6 +545,33 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* View Rejection Details Dialog */}
+      <Dialog open={viewRejectOpen} onOpenChange={setViewRejectOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-5 w-5" /> Justificativa da rejeição
+            </DialogTitle>
+            <DialogDescription>
+              {viewRejectReq && (
+                <>
+                  {getSchedulingTypeLabel(viewRejectReq.tipo)} —{' '}
+                  {format(parseLocalDate(viewRejectReq.data), "dd/MM/yyyy", { locale: ptBR })} às {viewRejectReq.horario}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="pt-2">
+            <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm text-foreground whitespace-pre-wrap break-words">
+              {viewRejectReq?.rejection_reason || 'Sem justificativa registrada.'}
+            </div>
+            <div className="flex justify-end pt-4">
+              <Button variant="outline" onClick={() => setViewRejectOpen(false)}>Fechar</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
