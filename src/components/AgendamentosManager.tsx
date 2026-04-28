@@ -413,15 +413,53 @@ const AgendamentosManager = () => {
                 </select>
               </div>
 
-              <div>
-                <Label htmlFor="ed-emailpara">E-mail para</Label>
-                <Input
-                  id="ed-emailpara"
-                  type="email"
-                  value={editing.email_para}
-                  onChange={(e) => setEditing({ ...editing, email_para: e.target.value })}
-                  className="mt-1.5"
-                />
+              <div className="md:col-span-2 mt-2 rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Destinatário
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="md:col-span-2">
+                    <Label htmlFor="ed-dest-nome">Nome do destinatário</Label>
+                    <Input
+                      id="ed-dest-nome"
+                      value={editing.destinatario_nome ?? ''}
+                      onChange={(e) => setEditing({ ...editing, destinatario_nome: e.target.value })}
+                      className="mt-1.5 uppercase"
+                      placeholder="Nome completo"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ed-dest-secao">Seção</Label>
+                    <Input
+                      id="ed-dest-secao"
+                      value={editing.destinatario_secao ?? ''}
+                      onChange={(e) => setEditing({ ...editing, destinatario_secao: e.target.value })}
+                      className="mt-1.5"
+                      placeholder="Ex: Escoteiro"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ed-dest-cargo1">Cargo 1</Label>
+                    <Input
+                      id="ed-dest-cargo1"
+                      value={editing.destinatario_cargo_1 ?? ''}
+                      onChange={(e) => setEditing({ ...editing, destinatario_cargo_1: e.target.value })}
+                      className="mt-1.5"
+                      placeholder="Cargo principal"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="ed-emailpara">E-mail</Label>
+                    <Input
+                      id="ed-emailpara"
+                      type="email"
+                      value={editing.email_para}
+                      onChange={(e) => setEditing({ ...editing, email_para: e.target.value })}
+                      className="mt-1.5"
+                      placeholder="email@exemplo.com"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="md:col-span-2">
