@@ -65,6 +65,7 @@ const AgendamentosManager = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<Agendamento | null>(null);
   const [saving, setSaving] = useState(false);
