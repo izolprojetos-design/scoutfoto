@@ -80,6 +80,10 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [rejectError, setRejectError] = useState('');
   const [rejecting, setRejecting] = useState(false);
 
+  // View rejection details
+  const [viewRejectOpen, setViewRejectOpen] = useState(false);
+  const [viewRejectReq, setViewRejectReq] = useState<Request | null>(null);
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
