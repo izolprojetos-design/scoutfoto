@@ -442,9 +442,42 @@ const AgendamentosManager = () => {
                     Não permitir alterar
                   </label>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="md:col-span-2">
-                    <Label htmlFor="ed-dest-nome">Nome</Label>
+                    <div className="flex items-center justify-between gap-2">
+                      <Label htmlFor="ed-dest-nome">Nome</Label>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 px-2 text-xs"
+                        disabled={lockRecipient || !editing.email_para?.trim()}
+                        onClick={async () => {
+                          const email = editing.email_para?.trim().toLowerCase();
+                          if (!email) {
+                            toast({ title: 'Informe o e-mail', description: 'Preencha o e-mail do destinatário primeiro.', variant: 'destructive' });
+                            return;
+                          }
+                          const { data, error } = await supabase
+                            .from('profiles')
+                            .select('name, section')
+                            .ilike('email', email)
+                            .maybeSingle();
+                          if (error || !data) {
+                            toast({ title: 'Não encontrado', description: 'Nenhum cadastro com este e-mail.', variant: 'destructive' });
+                            return;
+                          }
+                          setEditing((prev: any) => ({
+                            ...prev,
+                            destinatario_nome: (data.name ?? '').toUpperCase(),
+                            destinatario_secao: prev.destinatario_secao || (data.section ?? ''),
+                          }));
+                          toast({ title: 'Carregado', description: 'Nome carregado conforme cadastro.' });
+                        }}
+                      >
+                        Carregar do cadastro
+                      </Button>
+                    </div>
                     <Input
                       id="ed-dest-nome"
                       value={editing.destinatario_nome ?? ''}
