@@ -484,6 +484,41 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={rejectOpen} onOpenChange={(open) => { if (!rejecting) setRejectOpen(open); }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Recusar solicitação</DialogTitle>
+            <DialogDescription>
+              Informe o motivo da recusa. Esta justificativa ficará registrada no histórico da solicitação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Label htmlFor="reject-reason">Justificativa *</Label>
+            <Textarea
+              id="reject-reason"
+              rows={4}
+              value={rejectReason}
+              onChange={(e) => { setRejectReason(e.target.value); if (rejectError) setRejectError(''); }}
+              placeholder="Ex: conflito de agenda, mudança de planos, atividade cancelada..."
+              autoFocus
+            />
+            {rejectError && <p className="text-sm text-destructive">{rejectError}</p>}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={rejecting}>Cancelar</Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={rejecting}
+                className="gap-2"
+              >
+                {rejecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Recusando...</> : <><XCircle className="h-4 w-4" /> Confirmar recusa</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
