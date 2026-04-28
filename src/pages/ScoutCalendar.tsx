@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
+import RlsTestChecklist from '@/components/RlsTestChecklist';
 
 import {
   format,
@@ -129,8 +130,9 @@ const ScoutCalendar = () => {
         )}
       </div>
 
-      <div className={activeTab === 'manage' ? '' : 'hidden'}>
+      <div className={activeTab === 'manage' ? 'space-y-6' : 'hidden'}>
         {manageMounted && <AgendamentosManager />}
+        {manageMounted && <RlsTestChecklist />}
       </div>
 
       <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
