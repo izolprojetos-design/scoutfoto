@@ -72,6 +72,14 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   const [attachOpen, setAttachOpen] = useState(false);
   const [attachReq, setAttachReq] = useState<Request | null>(null);
 
+  // Confirm / Reject state
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReq, setRejectReq] = useState<Request | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectError, setRejectError] = useState('');
+  const [rejecting, setRejecting] = useState(false);
+
   const load = async () => {
     if (!user) return;
     setLoading(true);
