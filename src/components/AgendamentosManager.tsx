@@ -251,27 +251,42 @@ const AgendamentosManager = () => {
                       <span>{branchLabel(a.ramo_escoteiro)}</span>
                     </div>
                   )}
-                  {(a.destinatario_nome || a.email_para || a.destinatario_secao || a.destinatario_cargo_1) && (
-                    <div className="mt-2 rounded-md border border-border/60 bg-muted/40 p-2.5 space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        Destinatário
-                      </p>
-                      {a.destinatario_nome && (
+                  <div className="mt-2 rounded-md border border-border/60 bg-muted/40 p-2.5 space-y-1.5">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Destinatário
+                    </p>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
+                      {a.destinatario_nome ? (
                         <p className="text-sm font-medium uppercase break-words">{a.destinatario_nome}</p>
-                      )}
-                      {(a.destinatario_secao || a.destinatario_cargo_1 || a.destinatario_cargo_2) && (
-                        <p className="text-xs text-muted-foreground break-words">
-                          {[a.destinatario_secao, a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ')}
-                        </p>
-                      )}
-                      {a.email_para && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                          <Mail className="h-3.5 w-3.5 shrink-0" />
-                          <span className="break-all">{a.email_para}</span>
-                        </div>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">Não informado</p>
                       )}
                     </div>
-                  )}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
+                      <p className={`text-xs break-words ${a.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                        {a.destinatario_secao || 'Não informada'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargos</p>
+                      <p className={`text-xs break-words ${(a.destinatario_cargo_1 || a.destinatario_cargo_2) ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                        {[a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ') || 'Não informados'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        {a.email_para ? (
+                          <span className="break-all text-foreground/90">{a.email_para}</span>
+                        ) : (
+                          <span className="italic text-muted-foreground">Não informado</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                   {a.observacoes && (
                     <p className="text-xs text-muted-foreground line-clamp-2 pt-1 border-t mt-2">
                       {a.observacoes}
