@@ -12,6 +12,15 @@ import { Loader2, Play, Trash2, CheckCircle2, XCircle, FlaskConical } from 'luci
 
 type Persona = 'remetente' | 'destinatario' | 'admin' | 'terceiro';
 
+interface RpcResult {
+  is_sender: boolean;
+  is_recipient: boolean;
+  has_admin_role: boolean;
+  can_view: boolean;
+  reason: string;
+  persona_user_id: string | null;
+}
+
 interface Scenario {
   persona: Persona;
   label: string;
@@ -20,6 +29,7 @@ interface Scenario {
   email: string;
   status: 'idle' | 'running' | 'pass' | 'fail';
   detail?: string;
+  rpc?: RpcResult;
 }
 
 const DEFAULT_SCENARIOS = (currentEmail: string): Scenario[] => [
@@ -125,14 +135,14 @@ const RlsTestChecklist = () => {
     setRunning(true);
 
     // Marca todos como running
-    setScenarios(prev => prev.map(s => ({ ...s, status: 'running' as const, detail: undefined })));
+    setScenarios(prev => prev.map(s => ({ ...s, status: 'running' as const, detail: undefined, rpc: undefined })));
 
     // Validação server-side: a função RPC reproduz a regra da policy no banco
     // (SECURITY DEFINER, restrita a admins) e retorna o veredito real.
     const results = await Promise.all(
       scenarios.map(async (s) => {
         if (!s.email.trim()) {
-          return { persona: s.persona, ok: false, detail: 'E-mail não informado' };
+          return { persona: s.persona, ok: false, detail: 'E-mail não informado', rpc: undefined as RpcResult | undefined };
         }
 
         const { data, error } = await supabase.rpc('admin_check_agendamento_visibility', {
@@ -141,12 +151,12 @@ const RlsTestChecklist = () => {
         });
 
         if (error) {
-          return { persona: s.persona, ok: false, detail: 'Erro RPC: ' + error.message };
+          return { persona: s.persona, ok: false, detail: 'Erro RPC: ' + error.message, rpc: undefined };
         }
 
-        const row = Array.isArray(data) ? data[0] : data;
+        const row = (Array.isArray(data) ? data[0] : data) as RpcResult | undefined;
         if (!row) {
-          return { persona: s.persona, ok: false, detail: 'Sem retorno do servidor' };
+          return { persona: s.persona, ok: false, detail: 'Sem retorno do servidor', rpc: undefined };
         }
 
         const podeVer = !!row.can_view;
@@ -156,7 +166,8 @@ const RlsTestChecklist = () => {
         return {
           persona: s.persona,
           ok,
-          detail: `${podeVer ? '✓ Visível' : '✗ Oculto'} — ${row.reason}`,
+          detail: row.reason,
+          rpc: row,
         };
       })
     );
@@ -165,7 +176,7 @@ const RlsTestChecklist = () => {
       prev.map(s => {
         const r = results.find(x => x.persona === s.persona);
         return r
-          ? { ...s, status: r.ok ? 'pass' : 'fail', detail: r.detail }
+          ? { ...s, status: r.ok ? 'pass' : 'fail', detail: r.detail, rpc: r.rpc }
           : s;
       })
     );
@@ -257,16 +268,42 @@ const RlsTestChecklist = () => {
                   <TableCell>
                     {s.status === 'idle' && <span className="text-xs text-muted-foreground">—</span>}
                     {s.status === 'running' && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {s.status === 'pass' && (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span className="text-xs">PASS — {s.detail}</span>
-                      </div>
-                    )}
-                    {s.status === 'fail' && (
-                      <div className="flex items-center gap-1 text-destructive">
-                        <XCircle className="h-4 w-4" />
-                        <span className="text-xs">FAIL — {s.detail}</span>
+                    {(s.status === 'pass' || s.status === 'fail') && (
+                      <div className="space-y-2 min-w-[260px]">
+                        <div className={`flex items-center gap-1 font-semibold ${s.status === 'pass' ? 'text-green-600' : 'text-destructive'}`}>
+                          {s.status === 'pass' ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                          <span className="text-xs">{s.status === 'pass' ? 'PASS' : 'FAIL'}</span>
+                          {s.rpc && (
+                            <Badge variant={s.rpc.can_view ? 'default' : 'secondary'} className="ml-1 text-[10px]">
+                              {s.rpc.can_view ? 'Visível' : 'Oculto'}
+                            </Badge>
+                          )}
+                        </div>
+                        {s.rpc && (
+                          <div className="flex flex-wrap gap-1">
+                            <Badge
+                              variant={s.rpc.is_sender ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.is_sender ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.is_sender ? '✓' : '✗'} user_id
+                            </Badge>
+                            <Badge
+                              variant={s.rpc.is_recipient ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.is_recipient ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.is_recipient ? '✓' : '✗'} email_para
+                            </Badge>
+                            <Badge
+                              variant={s.rpc.has_admin_role ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.has_admin_role ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.has_admin_role ? '✓' : '✗'} admin
+                            </Badge>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground break-words">
+                          {s.detail}
+                        </p>
                       </div>
                     )}
                   </TableCell>
