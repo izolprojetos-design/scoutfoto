@@ -320,9 +320,31 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Assunto:</strong> {r.descricao}</p>
                   )}
 
-                  {r.rejection_reason && (
-                    <div className="mt-3 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                      <strong>Motivo da rejeição:</strong> {r.rejection_reason}
+                  {r.status === 'rejeitado' && (
+                    <div className="mt-3 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm">
+                      <div className="flex items-start gap-2 text-destructive">
+                        <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold">Solicitação rejeitada</p>
+                          {r.rejection_reason ? (
+                            <p className="mt-1 line-clamp-2 text-destructive/90">{r.rejection_reason}</p>
+                          ) : (
+                            <p className="mt-1 italic text-destructive/80">Sem justificativa registrada.</p>
+                          )}
+                        </div>
+                      </div>
+                      {r.rejection_reason && r.rejection_reason.length > 80 && (
+                        <div className="mt-2 flex justify-end">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 gap-1 text-destructive hover:bg-destructive/15 hover:text-destructive"
+                            onClick={() => { setViewRejectReq(r); setViewRejectOpen(true); }}
+                          >
+                            <Eye className="h-3.5 w-3.5" /> Ver justificativa completa
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
 
