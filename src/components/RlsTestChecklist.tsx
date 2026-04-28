@@ -12,6 +12,15 @@ import { Loader2, Play, Trash2, CheckCircle2, XCircle, FlaskConical } from 'luci
 
 type Persona = 'remetente' | 'destinatario' | 'admin' | 'terceiro';
 
+interface RpcResult {
+  is_sender: boolean;
+  is_recipient: boolean;
+  has_admin_role: boolean;
+  can_view: boolean;
+  reason: string;
+  persona_user_id: string | null;
+}
+
 interface Scenario {
   persona: Persona;
   label: string;
@@ -20,6 +29,7 @@ interface Scenario {
   email: string;
   status: 'idle' | 'running' | 'pass' | 'fail';
   detail?: string;
+  rpc?: RpcResult;
 }
 
 const DEFAULT_SCENARIOS = (currentEmail: string): Scenario[] => [
