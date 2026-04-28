@@ -33,6 +33,10 @@ interface Agendamento {
   cargo_2: string;
   email_de: string;
   email_para: string;
+  destinatario_nome: string;
+  destinatario_secao: string;
+  destinatario_cargo_1: string;
+  destinatario_cargo_2: string;
   data_secao: string;
   horario: string;
   local: string;
@@ -242,10 +246,25 @@ const AgendamentosManager = () => {
                       <span>{branchLabel(a.ramo_escoteiro)}</span>
                     </div>
                   )}
-                  {a.email_para && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Mail className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate">{a.email_para}</span>
+                  {(a.destinatario_nome || a.email_para || a.destinatario_secao || a.destinatario_cargo_1) && (
+                    <div className="mt-2 rounded-md border border-border/60 bg-muted/40 p-2.5 space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Destinatário
+                      </p>
+                      {a.destinatario_nome && (
+                        <p className="text-sm font-medium uppercase break-words">{a.destinatario_nome}</p>
+                      )}
+                      {(a.destinatario_secao || a.destinatario_cargo_1 || a.destinatario_cargo_2) && (
+                        <p className="text-xs text-muted-foreground break-words">
+                          {[a.destinatario_secao, a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      {a.email_para && (
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Mail className="h-3.5 w-3.5 shrink-0" />
+                          <span className="break-all">{a.email_para}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                   {a.observacoes && (

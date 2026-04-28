@@ -58,6 +58,10 @@ export type Database = {
           cargo_2: string
           created_at: string
           data_secao: string
+          destinatario_cargo_1: string
+          destinatario_cargo_2: string
+          destinatario_nome: string
+          destinatario_secao: string
           dirigente: string
           email_de: string
           email_para: string
@@ -78,6 +82,10 @@ export type Database = {
           cargo_2?: string
           created_at?: string
           data_secao: string
+          destinatario_cargo_1?: string
+          destinatario_cargo_2?: string
+          destinatario_nome?: string
+          destinatario_secao?: string
           dirigente?: string
           email_de: string
           email_para?: string
@@ -98,6 +106,10 @@ export type Database = {
           cargo_2?: string
           created_at?: string
           data_secao?: string
+          destinatario_cargo_1?: string
+          destinatario_cargo_2?: string
+          destinatario_nome?: string
+          destinatario_secao?: string
           dirigente?: string
           email_de?: string
           email_para?: string
