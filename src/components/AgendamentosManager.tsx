@@ -328,7 +328,7 @@ const AgendamentosManager = () => {
       )}
 
       {/* Edit Dialog */}
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+      <Dialog open={!!editing} onOpenChange={(o) => { if (!o) { setEditing(null); setLockRecipient(false); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar agendamento</DialogTitle>
