@@ -210,6 +210,58 @@ const AgendamentosManager = () => {
     });
   }, [agendamentos, search, filter, user?.id]);
 
+  // Mantém foco e linha expandida consistentes ao mudar filtros/pesquisa.
+  // Se o item focado/expandido continuar na lista, preserva sua posição.
+  // Se sumir, foca o vizinho mais próximo do índice anterior, sem rolar para o topo.
+  const prevFocusedIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (filtered.length === 0) {
+      setFocusedIndex(-1);
+      prevFocusedIdRef.current = null;
+      return;
+    }
+
+    // Reconciliar expandedId: limpa apenas se o item saiu do conjunto filtrado.
+    if (expandedId && !filtered.some(a => a.id === expandedId)) {
+      setExpandedId(null);
+    }
+
+    // Reconciliar focusedIndex usando o id anteriormente focado.
+    const prevId = prevFocusedIdRef.current;
+    let nextIndex = -1;
+    if (prevId) {
+      nextIndex = filtered.findIndex(a => a.id === prevId);
+    }
+    if (nextIndex === -1 && focusedIndex >= 0) {
+      // item sumiu — clamp ao mesmo índice (vizinho mais próximo).
+      nextIndex = Math.min(focusedIndex, filtered.length - 1);
+    }
+
+    if (nextIndex !== -1 && nextIndex !== focusedIndex) {
+      setFocusedIndex(nextIndex);
+    }
+
+    // Reaplica o foco somente se o usuário já estava navegando pela lista
+    // (evita roubar foco do campo de busca enquanto digita).
+    const active = document.activeElement as HTMLElement | null;
+    const isRowFocused = active?.getAttribute('role') === 'option';
+    if (isRowFocused && nextIndex !== -1) {
+      requestAnimationFrame(() => {
+        rowRefs.current[nextIndex]?.focus({ preventScroll: true });
+      });
+    }
+
+    prevFocusedIdRef.current = nextIndex !== -1 ? filtered[nextIndex].id : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filtered]);
+
+  // Atualiza o id focado sempre que o índice muda por interação do teclado.
+  useEffect(() => {
+    if (focusedIndex >= 0 && filtered[focusedIndex]) {
+      prevFocusedIdRef.current = filtered[focusedIndex].id;
+    }
+  }, [focusedIndex, filtered]);
+
   const handleDelete = async (id: string) => {
     setSaving(true);
     const { error } = await supabase.from('agendamentos').delete().eq('id', id);
