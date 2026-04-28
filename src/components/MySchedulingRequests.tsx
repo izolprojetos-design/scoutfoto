@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle } from 'lucide-react';
 import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -71,6 +71,14 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
   // Attachments panel
   const [attachOpen, setAttachOpen] = useState(false);
   const [attachReq, setAttachReq] = useState<Request | null>(null);
+
+  // Confirm / Reject state
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReq, setRejectReq] = useState<Request | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectError, setRejectError] = useState('');
+  const [rejecting, setRejecting] = useState(false);
 
   const load = async () => {
     if (!user) return;
@@ -203,6 +211,51 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
     setAttachOpen(true);
   };
 
+  const handleConfirm = async (r: Request) => {
+    setConfirmingId(r.id);
+    const { error } = await supabase
+      .from('scheduling_requests')
+      .update({ status: 'confirmado_email' })
+      .eq('id', r.id);
+    setConfirmingId(null);
+    if (error) {
+      toast({ title: 'Erro ao confirmar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Solicitação confirmada', description: 'Sua solicitação seguirá para aprovação da coordenação.' });
+    load();
+  };
+
+  const openReject = (r: Request) => {
+    setRejectReq(r);
+    setRejectReason('');
+    setRejectError('');
+    setRejectOpen(true);
+  };
+
+  const handleReject = async () => {
+    if (!rejectReq) return;
+    const reason = rejectReason.trim();
+    if (reason.length < 5) {
+      setRejectError('Informe uma justificativa com pelo menos 5 caracteres.');
+      return;
+    }
+    setRejecting(true);
+    const { error } = await supabase
+      .from('scheduling_requests')
+      .update({ status: 'rejeitado', rejection_reason: reason })
+      .eq('id', rejectReq.id);
+    setRejecting(false);
+    if (error) {
+      toast({ title: 'Erro ao recusar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Solicitação recusada', description: 'Sua justificativa foi registrada.' });
+    setRejectOpen(false);
+    setRejectReq(null);
+    load();
+  };
+
   if (loading) return <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>;
 
   if (requests.length === 0) {
@@ -277,11 +330,34 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     </div>
                   )}
 
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className="mt-4 flex flex-wrap justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => openAttachments(r)} className="gap-1">
                       <Paperclip className="h-4 w-4" />
                       Anexos{attCount > 0 && ` (${attCount})`}
                     </Button>
+                    {r.status === 'pendente' && (
+                      <>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleConfirm(r)}
+                          disabled={confirmingId === r.id}
+                          className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {confirmingId === r.id
+                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Confirmando...</>
+                            : <><CheckCircle2 className="h-4 w-4" /> Confirmar</>}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReject(r)}
+                          className="gap-1 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <XCircle className="h-4 w-4" /> Não
+                        </Button>
+                      </>
+                    )}
                     {canEdit && (
                       <>
                         <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-1">
@@ -406,6 +482,41 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
               }}
             />
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={rejectOpen} onOpenChange={(open) => { if (!rejecting) setRejectOpen(open); }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Recusar solicitação</DialogTitle>
+            <DialogDescription>
+              Informe o motivo da recusa. Esta justificativa ficará registrada no histórico da solicitação.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 pt-2">
+            <Label htmlFor="reject-reason">Justificativa *</Label>
+            <Textarea
+              id="reject-reason"
+              rows={4}
+              value={rejectReason}
+              onChange={(e) => { setRejectReason(e.target.value); if (rejectError) setRejectError(''); }}
+              placeholder="Ex: conflito de agenda, mudança de planos, atividade cancelada..."
+              autoFocus
+            />
+            {rejectError && <p className="text-sm text-destructive">{rejectError}</p>}
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setRejectOpen(false)} disabled={rejecting}>Cancelar</Button>
+              <Button
+                variant="destructive"
+                onClick={handleReject}
+                disabled={rejecting}
+                className="gap-2"
+              >
+                {rejecting ? <><Loader2 className="h-4 w-4 animate-spin" /> Recusando...</> : <><XCircle className="h-4 w-4" /> Confirmar recusa</>}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </>
