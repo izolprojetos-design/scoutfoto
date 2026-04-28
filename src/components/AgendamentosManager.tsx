@@ -33,6 +33,10 @@ interface Agendamento {
   cargo_2: string;
   email_de: string;
   email_para: string;
+  destinatario_nome: string;
+  destinatario_secao: string;
+  destinatario_cargo_1: string;
+  destinatario_cargo_2: string;
   data_secao: string;
   horario: string;
   local: string;
