@@ -69,6 +69,7 @@ const AgendamentosManager = () => {
   const [editing, setEditing] = useState<Agendamento | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [lockRecipient, setLockRecipient] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
