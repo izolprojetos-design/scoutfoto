@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle, AlertTriangle, Eye } from 'lucide-react';
 import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
