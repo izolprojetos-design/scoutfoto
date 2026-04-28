@@ -135,14 +135,14 @@ const RlsTestChecklist = () => {
     setRunning(true);
 
     // Marca todos como running
-    setScenarios(prev => prev.map(s => ({ ...s, status: 'running' as const, detail: undefined })));
+    setScenarios(prev => prev.map(s => ({ ...s, status: 'running' as const, detail: undefined, rpc: undefined })));
 
     // Validação server-side: a função RPC reproduz a regra da policy no banco
     // (SECURITY DEFINER, restrita a admins) e retorna o veredito real.
     const results = await Promise.all(
       scenarios.map(async (s) => {
         if (!s.email.trim()) {
-          return { persona: s.persona, ok: false, detail: 'E-mail não informado' };
+          return { persona: s.persona, ok: false, detail: 'E-mail não informado', rpc: undefined as RpcResult | undefined };
         }
 
         const { data, error } = await supabase.rpc('admin_check_agendamento_visibility', {
@@ -151,12 +151,12 @@ const RlsTestChecklist = () => {
         });
 
         if (error) {
-          return { persona: s.persona, ok: false, detail: 'Erro RPC: ' + error.message };
+          return { persona: s.persona, ok: false, detail: 'Erro RPC: ' + error.message, rpc: undefined };
         }
 
-        const row = Array.isArray(data) ? data[0] : data;
+        const row = (Array.isArray(data) ? data[0] : data) as RpcResult | undefined;
         if (!row) {
-          return { persona: s.persona, ok: false, detail: 'Sem retorno do servidor' };
+          return { persona: s.persona, ok: false, detail: 'Sem retorno do servidor', rpc: undefined };
         }
 
         const podeVer = !!row.can_view;
@@ -166,7 +166,8 @@ const RlsTestChecklist = () => {
         return {
           persona: s.persona,
           ok,
-          detail: `${podeVer ? '✓ Visível' : '✗ Oculto'} — ${row.reason}`,
+          detail: row.reason,
+          rpc: row,
         };
       })
     );
@@ -175,7 +176,7 @@ const RlsTestChecklist = () => {
       prev.map(s => {
         const r = results.find(x => x.persona === s.persona);
         return r
-          ? { ...s, status: r.ok ? 'pass' : 'fail', detail: r.detail }
+          ? { ...s, status: r.ok ? 'pass' : 'fail', detail: r.detail, rpc: r.rpc }
           : s;
       })
     );
