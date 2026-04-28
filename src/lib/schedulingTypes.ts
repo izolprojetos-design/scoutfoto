@@ -9,7 +9,7 @@ export type SchedulingType = typeof SCHEDULING_TYPES[number]['value'];
 
 export const SCHEDULING_STATUS_LABELS: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
   pendente: { label: 'Pendente', variant: 'secondary' },
-  confirmado_email: { label: 'E-mail confirmado', variant: 'outline' },
+  confirmado_email: { label: 'Aguardando Confirmação', variant: 'outline' },
   em_aprovacao: { label: 'Em aprovação', variant: 'outline' },
   aprovado: { label: 'Aprovado', variant: 'default' },
   rejeitado: { label: 'Rejeitado', variant: 'destructive' },

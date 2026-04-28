@@ -398,7 +398,7 @@ const SchedulingApprovalPanel = () => {
       {/* KPI cards */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         {[
-          { key: 'confirmado_email', label: 'Aguardando início', color: 'text-amber-600' },
+          { key: 'confirmado_email', label: 'Aguardando Confirmação', color: 'text-amber-600' },
           { key: 'em_aprovacao', label: 'Em aprovação', color: 'text-blue-600' },
           { key: 'aprovado', label: 'Aprovados', color: 'text-primary' },
           { key: 'rejeitado', label: 'Rejeitados', color: 'text-destructive' },
@@ -432,7 +432,7 @@ const SchedulingApprovalPanel = () => {
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
             <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="confirmado_email">Aguardando aprovação</SelectItem>
+            <SelectItem value="confirmado_email">Aguardando Confirmação</SelectItem>
             <SelectItem value="em_aprovacao">Em aprovação</SelectItem>
             <SelectItem value="aprovado">Aprovado</SelectItem>
             <SelectItem value="rejeitado">Rejeitado</SelectItem>
