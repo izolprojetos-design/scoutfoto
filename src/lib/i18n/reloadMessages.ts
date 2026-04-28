@@ -42,7 +42,7 @@ const normalize = (lang: string | null | undefined): ReloadLocale => {
 
 export const detectLocale = (): ReloadLocale => {
   try {
-    // 1) Explicit override (matches whatever future i18n layer the app adopts)
+    // 1) Explicit user choice (future i18n layer / settings)
     const stored =
       typeof localStorage !== "undefined"
         ? localStorage.getItem("scoutfoto_locale") ||
@@ -50,14 +50,15 @@ export const detectLocale = (): ReloadLocale => {
         : null;
     if (stored) return normalize(stored);
 
-    // 2) <html lang="…"> set by the app
+    // 2) Interface language declared on <html lang="…"> — the source of truth
+    //    for what the user is actually seeing in the UI.
     const htmlLang =
       typeof document !== "undefined"
         ? document.documentElement.getAttribute("lang")
         : null;
     if (htmlLang) return normalize(htmlLang);
 
-    // 3) Browser preference
+    // 3) Browser preference (fallback when the app hasn't declared a lang)
     if (typeof navigator !== "undefined") {
       const nav = navigator.languages?.[0] || navigator.language;
       return normalize(nav);
