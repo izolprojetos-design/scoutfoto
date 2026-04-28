@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { toast } from "sonner";
 import App from "./App.tsx";
 import "./index.css";
+import { getReloadMessages } from "./lib/i18n/reloadMessages";
 
 // Auto-recover from stale dynamic-import chunks after deploys.
 // When a lazy()-loaded module fails to fetch (old hash no longer on server),
@@ -28,12 +29,13 @@ const hardReload = async () => {
 };
 
 const showManualReloadToast = () => {
-  toast.error("Não foi possível carregar parte do app", {
+  const t = getReloadMessages();
+  toast.error(t.failureTitle, {
     id: "chunk-load-failed",
-    description: "Pode haver uma nova versão disponível. Recarregue para atualizar.",
+    description: t.failureDescription,
     duration: Infinity,
     action: {
-      label: "Recarregar agora",
+      label: t.reloadAction,
       onClick: () => {
         sessionStorage.setItem(RELOAD_FLAG, "1");
         void hardReload();
@@ -68,9 +70,10 @@ if (sessionStorage.getItem(RELOAD_FLAG) === "1") {
   sessionStorage.removeItem(RELOAD_FLAG);
   // Defer until after Toaster mounts
   setTimeout(() => {
-    toast.success("Página atualizada", {
+    const t = getReloadMessages();
+    toast.success(t.successTitle, {
       id: "chunk-reload-success",
-      description: "Carregamos a versão mais recente do ScoutFoto.",
+      description: t.successDescription,
       duration: 5000,
     });
   }, 800);
