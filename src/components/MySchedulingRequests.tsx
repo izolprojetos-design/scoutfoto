@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle, AlertTriangle, Eye } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Trash2, Inbox, Pencil, Loader2, Save, Paperclip, CheckCircle2, XCircle, AlertTriangle, Eye, Mail } from 'lucide-react';
 import ApprovalTimeline, { type ApprovalStep } from '@/components/ApprovalTimeline';
 
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,6 +31,10 @@ interface Request {
   nome_responsavel: string;
   email: string;
   destinatario_email: string;
+  destinatario_nome?: string | null;
+  destinatario_secao?: string | null;
+  destinatario_cargo_1?: string | null;
+  destinatario_cargo_2?: string | null;
   data: string;
   horario: string;
   local: string;
@@ -315,6 +319,44 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                       {branch.icon} {branch.display_name}
                     </Badge>
                   )}
+
+                  {/* Destinatário */}
+                  <div className="mt-3 rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Destinatário
+                    </p>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
+                      {r.destinatario_nome ? (
+                        <p className="text-sm font-medium uppercase break-words">{r.destinatario_nome}</p>
+                      ) : (
+                        <p className="text-sm italic text-muted-foreground">Não informado</p>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
+                      <p className={`text-xs break-words ${r.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                        {r.destinatario_secao || 'Não informada'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargo 1</p>
+                      <p className={`text-xs break-words ${r.destinatario_cargo_1 ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                        {r.destinatario_cargo_1 || 'Não informado'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
+                      <div className="flex items-center gap-1.5 text-xs">
+                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        {r.destinatario_email ? (
+                          <span className="break-all text-foreground/90">{r.destinatario_email}</span>
+                        ) : (
+                          <span className="italic text-muted-foreground">Não informado</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
                   {r.descricao && (
                     <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Assunto:</strong> {r.descricao}</p>

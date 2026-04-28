@@ -845,7 +845,11 @@ export type Database = {
           created_at: string
           data: string
           descricao: string
+          destinatario_cargo_1: string
+          destinatario_cargo_2: string
           destinatario_email: string
+          destinatario_nome: string
+          destinatario_secao: string
           email: string
           event_id: string | null
           horario: string
@@ -867,7 +871,11 @@ export type Database = {
           created_at?: string
           data: string
           descricao?: string
+          destinatario_cargo_1?: string
+          destinatario_cargo_2?: string
           destinatario_email?: string
+          destinatario_nome?: string
+          destinatario_secao?: string
           email: string
           event_id?: string | null
           horario: string
@@ -889,7 +897,11 @@ export type Database = {
           created_at?: string
           data?: string
           descricao?: string
+          destinatario_cargo_1?: string
+          destinatario_cargo_2?: string
           destinatario_email?: string
+          destinatario_nome?: string
+          destinatario_secao?: string
           email?: string
           event_id?: string | null
           horario?: string
