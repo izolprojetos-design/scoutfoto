@@ -303,7 +303,7 @@ const AgendamentosManager = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditing(a)}
+                        onClick={() => { setLockRecipient(false); setEditing(a); }}
                         className="h-8 gap-1"
                       >
                         <Pencil className="h-3.5 w-3.5" /> Editar
