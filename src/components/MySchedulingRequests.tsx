@@ -330,11 +330,34 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     </div>
                   )}
 
-                  <div className="mt-4 flex justify-end gap-2">
+                  <div className="mt-4 flex flex-wrap justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => openAttachments(r)} className="gap-1">
                       <Paperclip className="h-4 w-4" />
                       Anexos{attCount > 0 && ` (${attCount})`}
                     </Button>
+                    {r.status === 'pendente' && (
+                      <>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => handleConfirm(r)}
+                          disabled={confirmingId === r.id}
+                          className="gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                          {confirmingId === r.id
+                            ? <><Loader2 className="h-4 w-4 animate-spin" /> Confirmando...</>
+                            : <><CheckCircle2 className="h-4 w-4" /> Confirmar</>}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openReject(r)}
+                          className="gap-1 text-destructive border-destructive/40 hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <XCircle className="h-4 w-4" /> Não
+                        </Button>
+                      </>
+                    )}
                     {canEdit && (
                       <>
                         <Button variant="outline" size="sm" onClick={() => openEdit(r)} className="gap-1">
