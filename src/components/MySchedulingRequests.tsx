@@ -31,6 +31,10 @@ interface Request {
   nome_responsavel: string;
   email: string;
   destinatario_email: string;
+  destinatario_nome?: string | null;
+  destinatario_secao?: string | null;
+  destinatario_cargo_1?: string | null;
+  destinatario_cargo_2?: string | null;
   data: string;
   horario: string;
   local: string;
