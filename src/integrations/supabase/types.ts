@@ -1287,6 +1287,18 @@ export type Database = {
       }
     }
     Functions: {
+      admin_check_agendamento_visibility: {
+        Args: { p_agendamento_id: string; p_email: string }
+        Returns: {
+          can_view: boolean
+          has_admin_role: boolean
+          is_recipient: boolean
+          is_sender: boolean
+          persona_email: string
+          persona_user_id: string
+          reason: string
+        }[]
+      }
       admin_clear_inactive_sessions: { Args: never; Returns: number }
       admin_clear_login_history: { Args: never; Returns: number }
       admin_list_locked_logins: {
