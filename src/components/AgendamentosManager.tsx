@@ -70,6 +70,50 @@ const AgendamentosManager = () => {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [lockRecipient, setLockRecipient] = useState(false);
+  const [autoFillingRecipient, setAutoFillingRecipient] = useState(false);
+
+  // Auto-preencher Nome e Seção do destinatário a partir do e-mail (debounced)
+  useEffect(() => {
+    if (!editing) return;
+    if (lockRecipient) return;
+    const email = (editing.email_para ?? '').trim().toLowerCase();
+    const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isValid) return;
+
+    let cancelled = false;
+    setAutoFillingRecipient(true);
+    const handle = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('name, section')
+        .ilike('email', email)
+        .maybeSingle();
+      if (cancelled) return;
+      setAutoFillingRecipient(false);
+      if (error || !data) return;
+      setEditing((prev) => {
+        if (!prev) return prev;
+        if ((prev.email_para ?? '').trim().toLowerCase() !== email) return prev;
+        const nextName = (data.name ?? '').toUpperCase();
+        const nextSection = data.section ?? '';
+        const nameChanged = nextName && nextName !== (prev.destinatario_nome ?? '');
+        const sectionChanged = nextSection && nextSection !== (prev.destinatario_secao ?? '');
+        if (!nameChanged && !sectionChanged) return prev;
+        return {
+          ...prev,
+          destinatario_nome: nextName || prev.destinatario_nome,
+          destinatario_secao: nextSection || prev.destinatario_secao,
+        };
+      });
+    }, 500);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+      setAutoFillingRecipient(false);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editing?.email_para, editing?.id, lockRecipient]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -510,7 +554,14 @@ const AgendamentosManager = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <Label htmlFor="ed-emailpara">E-mail</Label>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="ed-emailpara">E-mail</Label>
+                      {autoFillingRecipient && (
+                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Loader2 className="h-3 w-3 animate-spin" /> buscando cadastro…
+                        </span>
+                      )}
+                    </div>
                     <Input
                       id="ed-emailpara"
                       type="email"
