@@ -127,62 +127,36 @@ const RlsTestChecklist = () => {
     // Marca todos como running
     setScenarios(prev => prev.map(s => ({ ...s, status: 'running' as const, detail: undefined })));
 
-    // Para cada cenário, simulamos via RPC SQL: a sessão atual é admin (auth.uid() = admin),
-    // então usamos a lógica equivalente da policy via consulta direta para cada email.
+    // Validação server-side: a função RPC reproduz a regra da policy no banco
+    // (SECURITY DEFINER, restrita a admins) e retorna o veredito real.
     const results = await Promise.all(
       scenarios.map(async (s) => {
         if (!s.email.trim()) {
           return { persona: s.persona, ok: false, detail: 'E-mail não informado' };
         }
 
-        // Buscar profile do email para obter user_id
-        const { data: prof } = await supabase
-          .from('profiles')
-          .select('user_id, email')
-          .ilike('email', s.email.trim())
-          .maybeSingle();
+        const { data, error } = await supabase.rpc('admin_check_agendamento_visibility', {
+          p_agendamento_id: testRecordId,
+          p_email: s.email.trim(),
+        });
 
-        if (!prof && s.persona !== 'terceiro') {
-          return { persona: s.persona, ok: false, detail: 'Usuário não encontrado em profiles' };
+        if (error) {
+          return { persona: s.persona, ok: false, detail: 'Erro RPC: ' + error.message };
         }
 
-        // Buscar registro de teste
-        const { data: rec } = await supabase
-          .from('agendamentos')
-          .select('user_id, email_para')
-          .eq('id', testRecordId)
-          .maybeSingle();
-
-        if (!rec) {
-          return { persona: s.persona, ok: false, detail: 'Registro de teste não encontrado' };
+        const row = Array.isArray(data) ? data[0] : data;
+        if (!row) {
+          return { persona: s.persona, ok: false, detail: 'Sem retorno do servidor' };
         }
 
-        // Verificar role admin
-        let hasAdmin = false;
-        if (prof?.user_id) {
-          const { data: roles } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', prof.user_id)
-            .eq('role', 'admin');
-          hasAdmin = (roles?.length ?? 0) > 0;
-        }
-
-        // Aplica regra da RLS:
-        // visível se: user_id == prof.user_id  OR  lower(email_para)==lower(prof.email)  OR  prof tem role admin
-        const podeVer = !!prof && (
-          rec.user_id === prof.user_id ||
-          rec.email_para?.toLowerCase() === prof.email?.toLowerCase() ||
-          hasAdmin
-        );
-
+        const podeVer = !!row.can_view;
         const expectedVisible = s.expected === 'visivel';
         const ok = podeVer === expectedVisible;
 
         return {
           persona: s.persona,
           ok,
-          detail: podeVer ? '✓ Acesso concedido' : '✗ Acesso negado',
+          detail: `${podeVer ? '✓ Visível' : '✗ Oculto'} — ${row.reason}`,
         };
       })
     );
