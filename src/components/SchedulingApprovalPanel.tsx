@@ -432,7 +432,7 @@ const SchedulingApprovalPanel = () => {
           <SelectContent>
             <SelectItem value="all">Todos os status</SelectItem>
             <SelectItem value="pendente">Pendente</SelectItem>
-            <SelectItem value="confirmado_email">Aguardando aprovação</SelectItem>
+            <SelectItem value="confirmado_email">Aguardando Confirmação</SelectItem>
             <SelectItem value="em_aprovacao">Em aprovação</SelectItem>
             <SelectItem value="aprovado">Aprovado</SelectItem>
             <SelectItem value="rejeitado">Rejeitado</SelectItem>
