@@ -284,9 +284,11 @@ const RlsTestChecklist = () => {
         </div>
 
         <p className="text-xs text-muted-foreground">
-          Nota: a validação é realizada do lado do cliente reproduzindo a regra da policy
-          <code className="mx-1 px-1 rounded bg-muted">Users can view own or recipient agendamentos</code>
-          (user_id = auth.uid() OU email_para = profile.email OU role admin). Lembre-se de remover o registro ao final.
+          Validação executada no servidor via função
+          <code className="mx-1 px-1 rounded bg-muted">admin_check_agendamento_visibility</code>
+          (SECURITY DEFINER, restrita a admins), reproduzindo a regra real da policy
+          <code className="mx-1 px-1 rounded bg-muted">Users can view own or recipient agendamentos</code>.
+          Lembre-se de remover o registro ao final.
         </p>
       </CardContent>
     </Card>
