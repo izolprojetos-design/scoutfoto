@@ -417,18 +417,23 @@ const AgendamentosManager = () => {
               </div>
 
               <div className="md:col-span-2 mt-2 rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Destinatário
-                </p>
+                <div className="space-y-0.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                    Destinatário
+                  </p>
+                  <p className="text-[11px] text-muted-foreground/80">
+                    Estes dados aparecem no bloco "Destinatário" do card deste agendamento.
+                  </p>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className="md:col-span-2">
-                    <Label htmlFor="ed-dest-nome">Nome do destinatário</Label>
+                    <Label htmlFor="ed-dest-nome">Nome</Label>
                     <Input
                       id="ed-dest-nome"
                       value={editing.destinatario_nome ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_nome: e.target.value })}
                       className="mt-1.5 uppercase"
-                      placeholder="Nome completo"
+                      placeholder="Não informado"
                     />
                   </div>
                   <div>
@@ -438,7 +443,7 @@ const AgendamentosManager = () => {
                       value={editing.destinatario_secao ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_secao: e.target.value })}
                       className="mt-1.5"
-                      placeholder="Ex: Escoteiro"
+                      placeholder="Não informada"
                     />
                   </div>
                   <div>
@@ -448,7 +453,7 @@ const AgendamentosManager = () => {
                       value={editing.destinatario_cargo_1 ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_cargo_1: e.target.value })}
                       className="mt-1.5"
-                      placeholder="Cargo principal"
+                      placeholder="Não informado"
                     />
                   </div>
                   <div className="md:col-span-2">
