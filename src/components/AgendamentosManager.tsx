@@ -66,6 +66,56 @@ const AgendamentosManager = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const focusRow = (idx: number, list: Agendamento[]) => {
+    if (!list.length) return;
+    const next = (idx + list.length) % list.length;
+    setFocusedIndex(next);
+    requestAnimationFrame(() => rowRefs.current[next]?.focus());
+  };
+
+  const handleRowKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number, list: Agendamento[]) => {
+    const a = list[index];
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        focusRow(index + 1, list);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        focusRow(index - 1, list);
+        break;
+      case 'Home':
+        e.preventDefault();
+        focusRow(0, list);
+        break;
+      case 'End':
+        e.preventDefault();
+        focusRow(list.length - 1, list);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        setExpandedId(a.id);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (expandedId === a.id) setExpandedId(null);
+        break;
+      case 'Escape':
+        if (expandedId) {
+          e.preventDefault();
+          setExpandedId(null);
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        setExpandedId(expandedId === a.id ? null : a.id);
+        break;
+    }
+  };
 
   const [editing, setEditing] = useState<Agendamento | null>(null);
   const [saving, setSaving] = useState(false);
