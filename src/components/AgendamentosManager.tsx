@@ -142,6 +142,9 @@ const AgendamentosManager = () => {
         ramo_escoteiro: editing.ramo_escoteiro,
         observacoes: editing.observacoes.trim(),
         email_para: editing.email_para.trim(),
+        destinatario_nome: (editing.destinatario_nome ?? '').trim(),
+        destinatario_secao: (editing.destinatario_secao ?? '').trim(),
+        destinatario_cargo_1: (editing.destinatario_cargo_1 ?? '').trim(),
       })
       .eq('id', editing.id);
     setSaving(false);
