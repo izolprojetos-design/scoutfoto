@@ -65,6 +65,7 @@ const AgendamentosManager = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const [editing, setEditing] = useState<Agendamento | null>(null);
   const [saving, setSaving] = useState(false);
@@ -258,114 +259,144 @@ const AgendamentosManager = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="rounded-md border divide-y bg-card">
           {filtered.map(a => {
             const mine = a.user_id === user?.id;
+            const isOpen = expandedId === a.id;
+            const dateLabel = format(parseLocalDate(a.data_secao), "dd/MM", { locale: ptBR });
+            const subject = a.observacoes?.trim() || `${tipoLabel(a.tipo_atividade)} — ${a.local || 'sem local'}`;
             return (
-              <Card key={a.id} className="border shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1 min-w-0">
-                      <CardTitle className="text-base font-semibold truncate">
-                        {a.nome_associado}
-                      </CardTitle>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+              <div key={a.id} className={cn('transition-colors', isOpen && 'bg-muted/40')}>
+                {/* Linha colapsada (estilo e-mail) */}
+                <button
+                  type="button"
+                  onClick={() => setExpandedId(isOpen ? null : a.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
+                >
+                  <Badge variant={mine ? 'default' : 'secondary'} className="text-[10px] shrink-0">
+                    {mine ? 'Meu' : 'Equipe'}
+                  </Badge>
+                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0 w-24">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    <span>{dateLabel}</span>
+                    <Clock className="h-3.5 w-3.5 ml-1" />
+                    <span>{a.horario.slice(0, 5)}</span>
+                  </div>
+                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                    <span className="text-sm font-medium truncate">{subject}</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 max-w-[40%]">
+                    <User className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate uppercase">
+                      {a.destinatario_nome || a.email_para || 'Sem destinatário'}
+                    </span>
+                  </div>
+                  <Badge variant="outline" className="text-[10px] shrink-0 hidden md:inline-flex">
+                    {tipoLabel(a.tipo_atividade)}
+                  </Badge>
+                </button>
+
+                {/* Painel expandido */}
+                {isOpen && (
+                  <div className="px-4 pb-4 pt-1 space-y-3 border-t bg-background/50">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm pt-2">
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="h-4 w-4 text-primary" />
+                        <span>{format(parseLocalDate(a.data_secao), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-primary" />
+                        <span>{a.horario.slice(0, 5)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-primary" />
+                        <span>{a.local}</span>
+                      </div>
+                      {a.ramo_escoteiro && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span>Ramo:</span>
+                          <span className="text-foreground">{branchLabel(a.ramo_escoteiro)}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div>
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</p>
+                      <p className="text-sm font-medium uppercase break-words">{a.nome_associado}</p>
+                      <p className="text-xs text-muted-foreground">
                         {a.secao} {a.dirigente && `· Dirigente: ${a.dirigente}`}
                       </p>
                     </div>
-                    <div className="flex flex-col items-end gap-1">
-                      <Badge variant={mine ? 'default' : 'secondary'} className="text-[10px]">
-                        {mine ? 'Meu' : 'Equipe'}
-                      </Badge>
-                      <Badge variant="outline" className="text-[10px]">
-                        {tipoLabel(a.tipo_atividade)}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 pb-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <CalendarDays className="h-4 w-4 text-primary shrink-0" />
-                    <span>{format(parseLocalDate(a.data_secao), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
-                    <Clock className="h-4 w-4 text-primary shrink-0 ml-2" />
-                    <span>{a.horario.slice(0, 5)}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <MapPin className="h-4 w-4 text-primary shrink-0" />
-                    <span className="truncate">{a.local}</span>
-                  </div>
-                  {a.ramo_escoteiro && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="text-xs text-muted-foreground">Ramo:</span>
-                      <span>{branchLabel(a.ramo_escoteiro)}</span>
-                    </div>
-                  )}
-                  <div className="mt-2 rounded-md border border-border/60 bg-muted/40 p-2.5 space-y-1.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Destinatário
-                    </p>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
-                      {a.destinatario_nome ? (
-                        <p className="text-sm font-medium uppercase break-words">{a.destinatario_nome}</p>
-                      ) : (
-                        <p className="text-sm italic text-muted-foreground">Não informado</p>
-                      )}
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
-                      <p className={`text-xs break-words ${a.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                        {a.destinatario_secao || 'Não informada'}
+
+                    <div className="rounded-md border border-border/60 bg-muted/40 p-3 space-y-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Destinatário
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargos</p>
-                      <p className={`text-xs break-words ${(a.destinatario_cargo_1 || a.destinatario_cargo_2) ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                        {[a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ') || 'Não informados'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
-                      <div className="flex items-center gap-1.5 text-xs">
-                        <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                        {a.email_para ? (
-                          <span className="break-all text-foreground/90">{a.email_para}</span>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
+                        {a.destinatario_nome ? (
+                          <p className="text-sm font-medium uppercase break-words">{a.destinatario_nome}</p>
                         ) : (
-                          <span className="italic text-muted-foreground">Não informado</span>
+                          <p className="text-sm italic text-muted-foreground">Não informado</p>
                         )}
                       </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
+                        <p className={`text-xs break-words ${a.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                          {a.destinatario_secao || 'Não informada'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargos</p>
+                        <p className={`text-xs break-words ${(a.destinatario_cargo_1 || a.destinatario_cargo_2) ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                          {[a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ') || 'Não informados'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
+                        <div className="flex items-center gap-1.5 text-xs">
+                          <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          {a.email_para ? (
+                            <span className="break-all text-foreground/90">{a.email_para}</span>
+                          ) : (
+                            <span className="italic text-muted-foreground">Não informado</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {a.observacoes && (
+                      <div className="pt-2 border-t">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Observações</p>
+                        <p className="text-sm text-foreground/90 whitespace-pre-wrap">{a.observacoes}</p>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      {canEdit(a) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); setLockRecipient(false); setEditing(a); }}
+                          className="h-8 gap-1"
+                        >
+                          <Pencil className="h-3.5 w-3.5" /> Editar
+                        </Button>
+                      )}
+                      {canDelete(a) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); setDeletingId(a.id); }}
+                          className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" /> Excluir
+                        </Button>
+                      )}
                     </div>
                   </div>
-                  {a.observacoes && (
-                    <p className="text-xs text-muted-foreground line-clamp-2 pt-1 border-t mt-2">
-                      {a.observacoes}
-                    </p>
-                  )}
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    {canEdit(a) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => { setLockRecipient(false); setEditing(a); }}
-                        className="h-8 gap-1"
-                      >
-                        <Pencil className="h-3.5 w-3.5" /> Editar
-                      </Button>
-                    )}
-                    {canDelete(a) && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setDeletingId(a.id)}
-                        className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" /> Excluir
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+                )}
+              </div>
             );
           })}
         </div>
