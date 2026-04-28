@@ -211,6 +211,51 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
     setAttachOpen(true);
   };
 
+  const handleConfirm = async (r: Request) => {
+    setConfirmingId(r.id);
+    const { error } = await supabase
+      .from('scheduling_requests')
+      .update({ status: 'confirmado_email' })
+      .eq('id', r.id);
+    setConfirmingId(null);
+    if (error) {
+      toast({ title: 'Erro ao confirmar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Solicitação confirmada', description: 'Sua solicitação seguirá para aprovação da coordenação.' });
+    load();
+  };
+
+  const openReject = (r: Request) => {
+    setRejectReq(r);
+    setRejectReason('');
+    setRejectError('');
+    setRejectOpen(true);
+  };
+
+  const handleReject = async () => {
+    if (!rejectReq) return;
+    const reason = rejectReason.trim();
+    if (reason.length < 5) {
+      setRejectError('Informe uma justificativa com pelo menos 5 caracteres.');
+      return;
+    }
+    setRejecting(true);
+    const { error } = await supabase
+      .from('scheduling_requests')
+      .update({ status: 'rejeitado', rejection_reason: reason })
+      .eq('id', rejectReq.id);
+    setRejecting(false);
+    if (error) {
+      toast({ title: 'Erro ao recusar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    toast({ title: 'Solicitação recusada', description: 'Sua justificativa foi registrada.' });
+    setRejectOpen(false);
+    setRejectReq(null);
+    load();
+  };
+
   if (loading) return <div className="text-center py-8 text-muted-foreground text-sm">Carregando...</div>;
 
   if (requests.length === 0) {
