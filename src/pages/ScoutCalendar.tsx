@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
+import RlsTestChecklist from '@/components/RlsTestChecklist';
 
 import {
   format,
