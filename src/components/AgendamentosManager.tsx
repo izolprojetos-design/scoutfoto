@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -66,6 +66,56 @@ const AgendamentosManager = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  const focusRow = (idx: number, list: Agendamento[]) => {
+    if (!list.length) return;
+    const next = (idx + list.length) % list.length;
+    setFocusedIndex(next);
+    requestAnimationFrame(() => rowRefs.current[next]?.focus());
+  };
+
+  const handleRowKeyDown = (e: KeyboardEvent<HTMLButtonElement>, index: number, list: Agendamento[]) => {
+    const a = list[index];
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        focusRow(index + 1, list);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        focusRow(index - 1, list);
+        break;
+      case 'Home':
+        e.preventDefault();
+        focusRow(0, list);
+        break;
+      case 'End':
+        e.preventDefault();
+        focusRow(list.length - 1, list);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        setExpandedId(a.id);
+        break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        if (expandedId === a.id) setExpandedId(null);
+        break;
+      case 'Escape':
+        if (expandedId) {
+          e.preventDefault();
+          setExpandedId(null);
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        e.preventDefault();
+        setExpandedId(expandedId === a.id ? null : a.id);
+        break;
+    }
+  };
 
   const [editing, setEditing] = useState<Agendamento | null>(null);
   const [saving, setSaving] = useState(false);
@@ -259,10 +309,11 @@ const AgendamentosManager = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-md border divide-y bg-card">
-          {filtered.map(a => {
+        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
+          {filtered.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
+            const isFocused = focusedIndex === index || (focusedIndex === -1 && index === 0);
             const dateLabel = format(parseLocalDate(a.data_secao), "dd/MM", { locale: ptBR });
             const subject = a.observacoes?.trim() || `${tipoLabel(a.tipo_atividade)} — ${a.local || 'sem local'}`;
             return (
@@ -270,8 +321,15 @@ const AgendamentosManager = () => {
                 {/* Linha colapsada (estilo e-mail) */}
                 <button
                   type="button"
+                  ref={el => { rowRefs.current[index] = el; }}
+                  role="option"
+                  aria-expanded={isOpen}
+                  aria-selected={isOpen}
+                  tabIndex={isFocused ? 0 : -1}
+                  onFocus={() => setFocusedIndex(index)}
+                  onKeyDown={e => handleRowKeyDown(e, index, filtered)}
                   onClick={() => setExpandedId(isOpen ? null : a.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
                   <Badge variant={mine ? 'default' : 'secondary'} className="text-[10px] shrink-0">
                     {mine ? 'Meu' : 'Equipe'}
