@@ -268,16 +268,42 @@ const RlsTestChecklist = () => {
                   <TableCell>
                     {s.status === 'idle' && <span className="text-xs text-muted-foreground">—</span>}
                     {s.status === 'running' && <Loader2 className="h-4 w-4 animate-spin" />}
-                    {s.status === 'pass' && (
-                      <div className="flex items-center gap-1 text-green-600">
-                        <CheckCircle2 className="h-4 w-4" />
-                        <span className="text-xs">PASS — {s.detail}</span>
-                      </div>
-                    )}
-                    {s.status === 'fail' && (
-                      <div className="flex items-center gap-1 text-destructive">
-                        <XCircle className="h-4 w-4" />
-                        <span className="text-xs">FAIL — {s.detail}</span>
+                    {(s.status === 'pass' || s.status === 'fail') && (
+                      <div className="space-y-2 min-w-[260px]">
+                        <div className={`flex items-center gap-1 font-semibold ${s.status === 'pass' ? 'text-green-600' : 'text-destructive'}`}>
+                          {s.status === 'pass' ? <CheckCircle2 className="h-4 w-4" /> : <XCircle className="h-4 w-4" />}
+                          <span className="text-xs">{s.status === 'pass' ? 'PASS' : 'FAIL'}</span>
+                          {s.rpc && (
+                            <Badge variant={s.rpc.can_view ? 'default' : 'secondary'} className="ml-1 text-[10px]">
+                              {s.rpc.can_view ? 'Visível' : 'Oculto'}
+                            </Badge>
+                          )}
+                        </div>
+                        {s.rpc && (
+                          <div className="flex flex-wrap gap-1">
+                            <Badge
+                              variant={s.rpc.is_sender ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.is_sender ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.is_sender ? '✓' : '✗'} user_id
+                            </Badge>
+                            <Badge
+                              variant={s.rpc.is_recipient ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.is_recipient ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.is_recipient ? '✓' : '✗'} email_para
+                            </Badge>
+                            <Badge
+                              variant={s.rpc.has_admin_role ? 'default' : 'outline'}
+                              className={`text-[10px] ${s.rpc.has_admin_role ? 'bg-green-600 hover:bg-green-700' : 'opacity-60'}`}
+                            >
+                              {s.rpc.has_admin_role ? '✓' : '✗'} admin
+                            </Badge>
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground break-words">
+                          {s.detail}
+                        </p>
                       </div>
                     )}
                   </TableCell>
