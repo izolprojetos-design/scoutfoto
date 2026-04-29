@@ -512,7 +512,23 @@ const AgendamentosManager = () => {
                       </div>
                     )}
 
-                    <div className="flex justify-end gap-2 pt-1">
+                    <div className="flex flex-wrap justify-end gap-2 pt-1">
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRlsTestId(a.id);
+                            setRlsEmail(a.email_para || '');
+                            setRlsResult(null);
+                          }}
+                          className="h-8 gap-1"
+                          title="Validar visibilidade RLS deste registro para um e-mail"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" /> Testar RLS
+                        </Button>
+                      )}
                       {canEdit(a) && (
                         <Button
                           variant="outline"
