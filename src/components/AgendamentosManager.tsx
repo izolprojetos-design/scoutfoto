@@ -71,6 +71,7 @@ const AgendamentosManager = () => {
 
   // RLS quick test
   const [rlsTestId, setRlsTestId] = useState<string | null>(null);
+  const [rlsTestRecord, setRlsTestRecord] = useState<Agendamento | null>(null);
   const [rlsEmail, setRlsEmail] = useState('');
   const [rlsLoading, setRlsLoading] = useState(false);
   const [rlsResult, setRlsResult] = useState<{
