@@ -439,57 +439,38 @@ const AgendamentosManager = () => {
                       </p>
                     </div>
 
-                    <div className="rounded-md border border-border/60 bg-muted/40 p-3 space-y-2">
-                      <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                        Destinatário
-                      </p>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
-                        {a.destinatario_nome ? (
-                          <p className="text-sm font-medium uppercase break-words">{a.destinatario_nome}</p>
-                        ) : (
-                          <p className="text-sm italic text-muted-foreground">Não informado</p>
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
-                        <p className={`text-xs break-words ${a.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                          {a.destinatario_secao || 'Não informada'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargos</p>
-                        {(() => {
-                          const nome = (a.destinatario_nome || '').trim().toLowerCase();
-                          const cargos = Array.from(new Set(
-                            [a.destinatario_cargo_1, a.destinatario_cargo_2]
-                              .map(c => (c || '').trim())
-                              .filter(c => c && c.toLowerCase() !== nome)
-                          ));
-                          return (
-                            <p className={`text-xs break-words ${cargos.length ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                              {cargos.length ? cargos.join(' · ') : 'Não informados'}
-                            </p>
-                          );
-                        })()}
-                      </div>
-                      <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
-                        <div className="flex items-center gap-1.5 text-xs">
-                          <Mail className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          {a.email_para ? (
-                            <span className="break-all text-foreground/90">{a.email_para}</span>
+                    {(() => {
+                      const nome = (a.destinatario_nome || '').trim();
+                      const nomeLower = nome.toLowerCase();
+                      const cargos = Array.from(new Set(
+                        [a.destinatario_cargo_1, a.destinatario_cargo_2]
+                          .map(c => (c || '').trim())
+                          .filter(c => c && c.toLowerCase() !== nomeLower)
+                      ));
+                      const resumo = [a.destinatario_secao?.trim(), ...cargos].filter(Boolean).join(' · ');
+                      return (
+                        <div>
+                          <p className="text-xs uppercase tracking-wide text-muted-foreground">Destinatário</p>
+                          {nome ? (
+                            <p className="text-sm font-medium uppercase break-words">{nome}</p>
                           ) : (
-                            <span className="italic text-muted-foreground">Não informado</span>
+                            <p className="text-sm italic text-muted-foreground">Não informado</p>
+                          )}
+                          {resumo && <p className="text-xs text-muted-foreground break-words">{resumo}</p>}
+                          {a.email_para && (
+                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 break-all mt-0.5">
+                              <Mail className="h-3 w-3 shrink-0" />
+                              {a.email_para}
+                            </p>
                           )}
                         </div>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {a.observacoes && (
-                      <div className="pt-2 border-t">
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Observações</p>
-                        <p className="text-sm text-foreground/90 whitespace-pre-wrap">{a.observacoes}</p>
+                      <div>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Observações</p>
+                        <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{a.observacoes}</p>
                       </div>
                     )}
 
