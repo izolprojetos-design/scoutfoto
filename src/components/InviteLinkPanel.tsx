@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Link2, Copy, Send, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
+import { Link2, Copy, Mail, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SECTION_OPTIONS } from '@/lib/sectionOptions';
