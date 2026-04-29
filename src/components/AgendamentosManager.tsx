@@ -459,9 +459,19 @@ const AgendamentosManager = () => {
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Cargos</p>
-                        <p className={`text-xs break-words ${(a.destinatario_cargo_1 || a.destinatario_cargo_2) ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                          {[a.destinatario_cargo_1, a.destinatario_cargo_2].filter(Boolean).join(' · ') || 'Não informados'}
-                        </p>
+                        {(() => {
+                          const nome = (a.destinatario_nome || '').trim().toLowerCase();
+                          const cargos = Array.from(new Set(
+                            [a.destinatario_cargo_1, a.destinatario_cargo_2]
+                              .map(c => (c || '').trim())
+                              .filter(c => c && c.toLowerCase() !== nome)
+                          ));
+                          return (
+                            <p className={`text-xs break-words ${cargos.length ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
+                              {cargos.length ? cargos.join(' · ') : 'Não informados'}
+                            </p>
+                          );
+                        })()}
                       </div>
                       <div>
                         <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">E-mail</p>
