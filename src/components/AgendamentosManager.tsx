@@ -71,6 +71,7 @@ const AgendamentosManager = () => {
 
   // RLS quick test
   const [rlsTestId, setRlsTestId] = useState<string | null>(null);
+  const [rlsTestRecord, setRlsTestRecord] = useState<Agendamento | null>(null);
   const [rlsEmail, setRlsEmail] = useState('');
   const [rlsLoading, setRlsLoading] = useState(false);
   const [rlsResult, setRlsResult] = useState<{
@@ -520,6 +521,7 @@ const AgendamentosManager = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setRlsTestId(a.id);
+                            setRlsTestRecord(a);
                             setRlsEmail(a.email_para || '');
                             setRlsResult(null);
                           }}
@@ -814,7 +816,7 @@ const AgendamentosManager = () => {
       </AlertDialog>
 
       {/* Teste rápido de RLS (admin) */}
-      <Dialog open={!!rlsTestId} onOpenChange={(open) => { if (!open) { setRlsTestId(null); setRlsResult(null); setRlsEmail(''); } }}>
+      <Dialog open={!!rlsTestId} onOpenChange={(open) => { if (!open) { setRlsTestId(null); setRlsTestRecord(null); setRlsResult(null); setRlsEmail(''); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -824,6 +826,21 @@ const AgendamentosManager = () => {
               Simula se o usuário com este e-mail conseguiria visualizar este agendamento.
             </DialogDescription>
           </DialogHeader>
+
+          {rlsTestRecord && (
+            <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-muted-foreground">Agendamento testado</span>
+                <code className="font-mono text-[11px] text-foreground/80 break-all">
+                  #{rlsTestRecord.id.slice(0, 8)}
+                </code>
+              </div>
+              <div className="text-foreground/90">
+                {format(parseLocalDate(rlsTestRecord.data_secao), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                {rlsTestRecord.horario && <> • {rlsTestRecord.horario.slice(0, 5)}</>}
+              </div>
+            </div>
+          )}
 
           <div className="space-y-3">
             <div className="space-y-1.5">
@@ -865,7 +882,7 @@ const AgendamentosManager = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setRlsTestId(null); setRlsResult(null); setRlsEmail(''); }}>
+            <Button variant="outline" onClick={() => { setRlsTestId(null); setRlsTestRecord(null); setRlsResult(null); setRlsEmail(''); }}>
               Fechar
             </Button>
           </DialogFooter>
