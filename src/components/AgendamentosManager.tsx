@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail,
+  CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
