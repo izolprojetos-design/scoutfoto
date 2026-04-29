@@ -69,6 +69,44 @@ const AgendamentosManager = () => {
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
+  // RLS quick test
+  const [rlsTestId, setRlsTestId] = useState<string | null>(null);
+  const [rlsEmail, setRlsEmail] = useState('');
+  const [rlsLoading, setRlsLoading] = useState(false);
+  const [rlsResult, setRlsResult] = useState<{
+    can_view: boolean;
+    is_sender: boolean;
+    is_recipient: boolean;
+    has_admin_role: boolean;
+    reason: string;
+  } | null>(null);
+
+  const runRlsTest = async () => {
+    if (!rlsTestId || !rlsEmail.trim()) return;
+    setRlsLoading(true);
+    setRlsResult(null);
+    try {
+      const { data, error } = await (supabase as any).rpc('admin_check_agendamento_visibility', {
+        p_agendamento_id: rlsTestId,
+        p_email: rlsEmail.trim(),
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error('Sem retorno do servidor');
+      setRlsResult({
+        can_view: !!row.can_view,
+        is_sender: !!row.is_sender,
+        is_recipient: !!row.is_recipient,
+        has_admin_role: !!row.has_admin_role,
+        reason: row.reason ?? '',
+      });
+    } catch (err: any) {
+      toast({ title: 'Erro no teste', description: err?.message ?? 'Falha ao executar', variant: 'destructive' });
+    } finally {
+      setRlsLoading(false);
+    }
+  };
+
   const focusRow = (idx: number, list: Agendamento[]) => {
     if (!list.length) return;
     const next = (idx + list.length) % list.length;
