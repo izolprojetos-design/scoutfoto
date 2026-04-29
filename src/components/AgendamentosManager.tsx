@@ -520,6 +520,7 @@ const AgendamentosManager = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             setRlsTestId(a.id);
+                            setRlsTestRecord(a);
                             setRlsEmail(a.email_para || '');
                             setRlsResult(null);
                           }}
