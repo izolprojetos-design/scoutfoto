@@ -160,7 +160,7 @@ const InviteLinkPanel = () => {
             <Link2 className="h-5 w-5" />
             Links de Convite
           </CardTitle>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Link2 className="h-4 w-4" />
@@ -169,43 +169,85 @@ const InviteLinkPanel = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Gerar link de convite</DialogTitle>
+                <DialogTitle>{generatedToken ? 'Link gerado com sucesso' : 'Gerar link de convite'}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-2">
-                <p className="text-sm text-muted-foreground">
-                  O link terá validade de <strong>6 horas</strong> e poderá ser usado apenas uma vez.
-                </p>
-                <div className="space-y-2">
-                  <Label>Cargo</Label>
-                  <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="voluntario">Voluntário</SelectItem>
-                      <SelectItem value="chefe">Chefe</SelectItem>
-                      <SelectItem value="dirigente">Dirigente</SelectItem>
-                      <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                      <SelectItem value="parent">Pai/Responsável</SelectItem>
-                      <SelectItem value="viewer">Visualizador</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {!generatedToken ? (
+                <div className="space-y-4 pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    O link terá validade de <strong>6 horas</strong> e poderá ser usado apenas uma vez.
+                  </p>
+                  <div className="space-y-2">
+                    <Label>Cargo</Label>
+                    <Select value={role} onValueChange={setRole}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="voluntario">Voluntário</SelectItem>
+                        <SelectItem value="chefe">Chefe</SelectItem>
+                        <SelectItem value="dirigente">Dirigente</SelectItem>
+                        <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
+                        <SelectItem value="parent">Pai/Responsável</SelectItem>
+                        <SelectItem value="viewer">Visualizador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Seção</Label>
+                    <Select value={section || 'none'} onValueChange={(v) => setSection(v === 'none' ? '' : v)}>
+                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhuma</SelectItem>
+                        {SECTION_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleCreate} className="w-full gap-2" disabled={creating}>
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                    Gerar Link
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Seção</Label>
-                  <Select value={section || 'none'} onValueChange={(v) => setSection(v === 'none' ? '' : v)}>
-                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhuma</SelectItem>
-                      {SECTION_OPTIONS.map(opt => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              ) : (
+                <div className="space-y-4 pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Compartilhe este link com a pessoa convidada. Ele expira em <strong>6 horas</strong> e pode ser usado apenas uma vez.
+                  </p>
+                  <div className="rounded-md border bg-muted/40 p-3">
+                    <code className="block break-all text-xs text-foreground/90">
+                      {getInviteUrl(generatedToken)}
+                    </code>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCopy(generatedToken)}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copiar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleWhatsApp(generatedToken)}
+                      className="gap-2 text-green-600 hover:text-green-700"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEmail(generatedToken)}
+                      className="gap-2"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Button>
+                  </div>
+                  <Button variant="ghost" onClick={() => handleDialogOpenChange(false)} className="w-full">
+                    Fechar
+                  </Button>
                 </div>
-                <Button onClick={handleCreate} className="w-full gap-2" disabled={creating}>
-                  {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                  Gerar Link
-                </Button>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
