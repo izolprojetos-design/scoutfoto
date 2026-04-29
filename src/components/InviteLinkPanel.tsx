@@ -34,6 +34,7 @@ const InviteLinkPanel = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
 
   // Form state
   const [role, setRole] = useState<string>('voluntario');
@@ -64,23 +65,36 @@ const InviteLinkPanel = () => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 6);
 
-    const { error } = await supabase.from('invite_links').insert({
-      role,
-      section: section || '',
-      expires_at: expiresAt.toISOString(),
-      created_by: user.id,
-    } as any);
+    const { data, error } = await supabase
+      .from('invite_links')
+      .insert({
+        role,
+        section: section || '',
+        expires_at: expiresAt.toISOString(),
+        created_by: user.id,
+      } as any)
+      .select('token')
+      .single();
 
     if (error) {
       toast.error('Erro ao criar link: ' + error.message);
     } else {
       toast.success('Link de convite criado com sucesso!');
-      setDialogOpen(false);
-      setRole('voluntario');
-      setSection('');
+      setGeneratedToken((data as any)?.token ?? null);
       fetchLinks();
     }
     setCreating(false);
+  };
+
+  const resetDialog = () => {
+    setGeneratedToken(null);
+    setRole('voluntario');
+    setSection('');
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) resetDialog();
   };
 
   const handleCopy = async (token: string) => {
@@ -94,7 +108,12 @@ const InviteLinkPanel = () => {
     const text = encodeURIComponent(
       `Olá! Você foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}`
     );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    // api.whatsapp.com/send funciona tanto em desktop (WhatsApp Web) quanto mobile (app)
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const waUrl = isMobile
+      ? `whatsapp://send?text=${text}`
+      : `https://api.whatsapp.com/send?text=${text}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = (token: string) => {
@@ -103,7 +122,7 @@ const InviteLinkPanel = () => {
     const body = encodeURIComponent(
       `Olá!\n\nVocê foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}\n\nAtenciosamente,\nEquipe ScoutFoto`
     );
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleDelete = async (id: string) => {
