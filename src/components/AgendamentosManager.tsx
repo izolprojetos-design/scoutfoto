@@ -5,7 +5,7 @@ import { toast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
-  CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail,
+  CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,6 +68,44 @@ const AgendamentosManager = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+  // RLS quick test
+  const [rlsTestId, setRlsTestId] = useState<string | null>(null);
+  const [rlsEmail, setRlsEmail] = useState('');
+  const [rlsLoading, setRlsLoading] = useState(false);
+  const [rlsResult, setRlsResult] = useState<{
+    can_view: boolean;
+    is_sender: boolean;
+    is_recipient: boolean;
+    has_admin_role: boolean;
+    reason: string;
+  } | null>(null);
+
+  const runRlsTest = async () => {
+    if (!rlsTestId || !rlsEmail.trim()) return;
+    setRlsLoading(true);
+    setRlsResult(null);
+    try {
+      const { data, error } = await (supabase as any).rpc('admin_check_agendamento_visibility', {
+        p_agendamento_id: rlsTestId,
+        p_email: rlsEmail.trim(),
+      });
+      if (error) throw error;
+      const row = Array.isArray(data) ? data[0] : data;
+      if (!row) throw new Error('Sem retorno do servidor');
+      setRlsResult({
+        can_view: !!row.can_view,
+        is_sender: !!row.is_sender,
+        is_recipient: !!row.is_recipient,
+        has_admin_role: !!row.has_admin_role,
+        reason: row.reason ?? '',
+      });
+    } catch (err: any) {
+      toast({ title: 'Erro no teste', description: err?.message ?? 'Falha ao executar', variant: 'destructive' });
+    } finally {
+      setRlsLoading(false);
+    }
+  };
 
   const focusRow = (idx: number, list: Agendamento[]) => {
     if (!list.length) return;
@@ -474,7 +512,23 @@ const AgendamentosManager = () => {
                       </div>
                     )}
 
-                    <div className="flex justify-end gap-2 pt-1">
+                    <div className="flex flex-wrap justify-end gap-2 pt-1">
+                      {isAdmin && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRlsTestId(a.id);
+                            setRlsEmail(a.email_para || '');
+                            setRlsResult(null);
+                          }}
+                          className="h-8 gap-1"
+                          title="Validar visibilidade RLS deste registro para um e-mail"
+                        >
+                          <ShieldCheck className="h-3.5 w-3.5" /> Testar RLS
+                        </Button>
+                      )}
                       {canEdit(a) && (
                         <Button
                           variant="outline"
@@ -758,6 +812,65 @@ const AgendamentosManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Teste rápido de RLS (admin) */}
+      <Dialog open={!!rlsTestId} onOpenChange={(open) => { if (!open) { setRlsTestId(null); setRlsResult(null); setRlsEmail(''); } }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-primary" /> Testar RLS
+            </DialogTitle>
+            <DialogDescription>
+              Simula se o usuário com este e-mail conseguiria visualizar este agendamento.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="rls-email">E-mail do usuário a simular</Label>
+              <Input
+                id="rls-email"
+                type="email"
+                value={rlsEmail}
+                onChange={(e) => setRlsEmail(e.target.value)}
+                placeholder="usuario@exemplo.com"
+                className="h-12 text-base"
+              />
+            </div>
+
+            <Button
+              onClick={runRlsTest}
+              disabled={rlsLoading || !rlsEmail.trim()}
+              className="w-full"
+            >
+              {rlsLoading ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Testando...</> : 'Executar teste'}
+            </Button>
+
+            {rlsResult && (
+              <div className="rounded-md border p-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Resultado</span>
+                  <Badge variant={rlsResult.can_view ? 'default' : 'secondary'}>
+                    {rlsResult.can_view ? 'Visível' : 'Oculto'}
+                  </Badge>
+                </div>
+                <ul className="text-xs space-y-1 text-muted-foreground">
+                  <li>Remetente: <span className="text-foreground">{rlsResult.is_sender ? 'Sim' : 'Não'}</span></li>
+                  <li>Destinatário: <span className="text-foreground">{rlsResult.is_recipient ? 'Sim' : 'Não'}</span></li>
+                  <li>Admin: <span className="text-foreground">{rlsResult.has_admin_role ? 'Sim' : 'Não'}</span></li>
+                </ul>
+                <p className="text-xs pt-1 border-t">{rlsResult.reason}</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRlsTestId(null); setRlsResult(null); setRlsEmail(''); }}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
