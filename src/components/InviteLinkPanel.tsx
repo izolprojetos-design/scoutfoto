@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Link2, Copy, Send, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
+import { Link2, Copy, Mail, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SECTION_OPTIONS } from '@/lib/sectionOptions';
@@ -34,6 +34,7 @@ const InviteLinkPanel = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [generatedToken, setGeneratedToken] = useState<string | null>(null);
 
   // Form state
   const [role, setRole] = useState<string>('voluntario');
@@ -64,23 +65,36 @@ const InviteLinkPanel = () => {
     const expiresAt = new Date();
     expiresAt.setHours(expiresAt.getHours() + 6);
 
-    const { error } = await supabase.from('invite_links').insert({
-      role,
-      section: section || '',
-      expires_at: expiresAt.toISOString(),
-      created_by: user.id,
-    } as any);
+    const { data, error } = await supabase
+      .from('invite_links')
+      .insert({
+        role,
+        section: section || '',
+        expires_at: expiresAt.toISOString(),
+        created_by: user.id,
+      } as any)
+      .select('token')
+      .single();
 
     if (error) {
       toast.error('Erro ao criar link: ' + error.message);
     } else {
       toast.success('Link de convite criado com sucesso!');
-      setDialogOpen(false);
-      setRole('voluntario');
-      setSection('');
+      setGeneratedToken((data as any)?.token ?? null);
       fetchLinks();
     }
     setCreating(false);
+  };
+
+  const resetDialog = () => {
+    setGeneratedToken(null);
+    setRole('voluntario');
+    setSection('');
+  };
+
+  const handleDialogOpenChange = (open: boolean) => {
+    setDialogOpen(open);
+    if (!open) resetDialog();
   };
 
   const handleCopy = async (token: string) => {
@@ -94,7 +108,12 @@ const InviteLinkPanel = () => {
     const text = encodeURIComponent(
       `Olá! Você foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}`
     );
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+    // api.whatsapp.com/send funciona tanto em desktop (WhatsApp Web) quanto mobile (app)
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const waUrl = isMobile
+      ? `whatsapp://send?text=${text}`
+      : `https://api.whatsapp.com/send?text=${text}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
   const handleEmail = (token: string) => {
@@ -103,7 +122,7 @@ const InviteLinkPanel = () => {
     const body = encodeURIComponent(
       `Olá!\n\nVocê foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}\n\nAtenciosamente,\nEquipe ScoutFoto`
     );
-    window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
   const handleDelete = async (id: string) => {
@@ -141,7 +160,7 @@ const InviteLinkPanel = () => {
             <Link2 className="h-5 w-5" />
             Links de Convite
           </CardTitle>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen} onOpenChange={handleDialogOpenChange}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <Link2 className="h-4 w-4" />
@@ -150,43 +169,85 @@ const InviteLinkPanel = () => {
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Gerar link de convite</DialogTitle>
+                <DialogTitle>{generatedToken ? 'Link gerado com sucesso' : 'Gerar link de convite'}</DialogTitle>
               </DialogHeader>
-              <div className="space-y-4 pt-2">
-                <p className="text-sm text-muted-foreground">
-                  O link terá validade de <strong>6 horas</strong> e poderá ser usado apenas uma vez.
-                </p>
-                <div className="space-y-2">
-                  <Label>Cargo</Label>
-                  <Select value={role} onValueChange={setRole}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="voluntario">Voluntário</SelectItem>
-                      <SelectItem value="chefe">Chefe</SelectItem>
-                      <SelectItem value="dirigente">Dirigente</SelectItem>
-                      <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                      <SelectItem value="parent">Pai/Responsável</SelectItem>
-                      <SelectItem value="viewer">Visualizador</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {!generatedToken ? (
+                <div className="space-y-4 pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    O link terá validade de <strong>6 horas</strong> e poderá ser usado apenas uma vez.
+                  </p>
+                  <div className="space-y-2">
+                    <Label>Cargo</Label>
+                    <Select value={role} onValueChange={setRole}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="voluntario">Voluntário</SelectItem>
+                        <SelectItem value="chefe">Chefe</SelectItem>
+                        <SelectItem value="dirigente">Dirigente</SelectItem>
+                        <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
+                        <SelectItem value="parent">Pai/Responsável</SelectItem>
+                        <SelectItem value="viewer">Visualizador</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Seção</Label>
+                    <Select value={section || 'none'} onValueChange={(v) => setSection(v === 'none' ? '' : v)}>
+                      <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Nenhuma</SelectItem>
+                        {SECTION_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button onClick={handleCreate} className="w-full gap-2" disabled={creating}>
+                    {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                    Gerar Link
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label>Seção</Label>
-                  <Select value={section || 'none'} onValueChange={(v) => setSection(v === 'none' ? '' : v)}>
-                    <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Nenhuma</SelectItem>
-                      {SECTION_OPTIONS.map(opt => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              ) : (
+                <div className="space-y-4 pt-2">
+                  <p className="text-sm text-muted-foreground">
+                    Compartilhe este link com a pessoa convidada. Ele expira em <strong>6 horas</strong> e pode ser usado apenas uma vez.
+                  </p>
+                  <div className="rounded-md border bg-muted/40 p-3">
+                    <code className="block break-all text-xs text-foreground/90">
+                      {getInviteUrl(generatedToken)}
+                    </code>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => handleCopy(generatedToken)}
+                      className="gap-2"
+                    >
+                      <Copy className="h-4 w-4" />
+                      Copiar
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleWhatsApp(generatedToken)}
+                      className="gap-2 text-green-600 hover:text-green-700"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEmail(generatedToken)}
+                      className="gap-2"
+                    >
+                      <Mail className="h-4 w-4" />
+                      Email
+                    </Button>
+                  </div>
+                  <Button variant="ghost" onClick={() => handleDialogOpenChange(false)} className="w-full">
+                    Fechar
+                  </Button>
                 </div>
-                <Button onClick={handleCreate} className="w-full gap-2" disabled={creating}>
-                  {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
-                  Gerar Link
-                </Button>
-              </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>
@@ -241,7 +302,7 @@ const InviteLinkPanel = () => {
                                 <MessageCircle className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleEmail(link.token)} title="Enviar por email">
-                                <Send className="h-4 w-4" />
+                                <Mail className="h-4 w-4" />
                               </Button>
                             </>
                           )}
