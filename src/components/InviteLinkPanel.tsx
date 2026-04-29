@@ -241,7 +241,7 @@ const InviteLinkPanel = () => {
                                 <MessageCircle className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleEmail(link.token)} title="Enviar por email">
-                                <Send className="h-4 w-4" />
+                                <Mail className="h-4 w-4" />
                               </Button>
                             </>
                           )}
