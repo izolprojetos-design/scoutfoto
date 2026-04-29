@@ -714,7 +714,7 @@ const AgendamentosManager = () => {
               </div>
 
               <div className="md:col-span-2">
-                <Label htmlFor="ed-obs">Observações</Label>
+                <Label htmlFor="ed-obs">Assunto</Label>
                 <Textarea
                   id="ed-obs"
                   value={editing.observacoes}
