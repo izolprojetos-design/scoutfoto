@@ -434,7 +434,8 @@ const AgendamentosManager = () => {
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</p>
                       <p className="text-sm font-medium uppercase break-words">{a.nome_associado}</p>
                       <p className="text-xs text-muted-foreground">
-                        {a.secao} {a.dirigente && `· Dirigente: ${a.dirigente}`}
+                        {a.secao}
+                        {a.dirigente && a.dirigente.trim().toLowerCase() !== a.nome_associado.trim().toLowerCase() && ` · Dirigente: ${a.dirigente}`}
                       </p>
                     </div>
 
