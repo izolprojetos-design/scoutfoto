@@ -882,7 +882,7 @@ const AgendamentosManager = () => {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => { setRlsTestId(null); setRlsResult(null); setRlsEmail(''); }}>
+            <Button variant="outline" onClick={() => { setRlsTestId(null); setRlsTestRecord(null); setRlsResult(null); setRlsEmail(''); }}>
               Fechar
             </Button>
           </DialogFooter>
