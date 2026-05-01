@@ -215,6 +215,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         local: local.trim(),
         ramo_escoteiro: ramoEscoteiro,
         tipo_atividade: tipoAtividade,
+        nome_evento: nomeEvento.trim(),
         observacoes: observacoes.trim(),
         status: 'confirmado',
       })
