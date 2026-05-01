@@ -240,7 +240,7 @@ const ScoutCalendar = () => {
               {selectedAgendamentos.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Aba "Meus Agendamentos"
+                    Meus Agendamentos
                   </h4>
                   <div className="space-y-3">
                     {selectedAgendamentos.map(agendamento => {
