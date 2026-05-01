@@ -35,6 +35,8 @@ interface CalendarEvent {
   event_date: string | null;
   location: string | null;
   branch_id: string | null;
+  source?: string | null;
+  created_by?: string | null;
 }
 
 interface Branch {
@@ -66,7 +68,7 @@ const ScoutCalendar = () => {
 
   useEffect(() => {
     const promises: Promise<any>[] = [
-      supabase.from('events').select('*').neq('source', 'scheduling').order('event_date'),
+      supabase.from('events').select('*').order('event_date'),
       supabase.from('branches').select('*'),
     ];
 
@@ -92,11 +94,20 @@ const ScoutCalendar = () => {
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const getEventsForDay = (day: Date) =>
-    events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
-
   const getAgendamentosForDay = (day: Date) =>
     myAgendamentos.filter(a => a.data && isSameDay(parseLocalDate(a.data), day));
+
+  const getEventsForDay = (day: Date) => {
+    const rawEvents = events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
+    // Se o evento foi gerado automaticamente por um agendamento DO PRÓPRIO usuário,
+    // ele já aparece em "Meus Agendamentos", então removemos de "Eventos" para não duplicar.
+    return rawEvents.filter(e => {
+      if (e.source === 'scheduling' && user && e.created_by === user.id) {
+        return false;
+      }
+      return true;
+    });
+  };
 
   const selectedEvents = selectedDate ? getEventsForDay(selectedDate) : [];
   const selectedAgendamentos = selectedDate ? getAgendamentosForDay(selectedDate) : [];
@@ -317,6 +328,7 @@ const ScoutCalendar = () => {
                   <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
                   {events
                     .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
+                    .filter(e => !(e.source === 'scheduling' && user && e.created_by === user.id))
                     .slice(0, 5)
                     .map(event => (
                       <div key={event.id} className="rounded-lg border bg-muted/30 p-3">

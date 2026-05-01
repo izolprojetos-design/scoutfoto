@@ -75,7 +75,7 @@ const Events = () => {
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
-      supabase.from('events').select('*').neq('source', 'scheduling').order('event_date', { ascending: false }),
+      supabase.from('events').select('*').order('event_date', { ascending: false }),
       supabase.from('event_permissions').select('event_id'),
       supabase.from('images').select('event_id, media_type').not('event_id', 'is', null),
     ]);
