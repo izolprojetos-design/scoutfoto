@@ -150,8 +150,7 @@ const Dashboard = () => {
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
-      supabase.from('scouts').select('id, name, birth_date, scout_group, photo_url, manual_branch, section, is_active').eq('is_active', true).order('name'),
-      supabase.from('images').select('branch_id, event_id, media_type').limit(5000),
+      supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active').eq('is_active', true).order('name'),
     ] as const;
 
     const adminPromises = isAdmin
@@ -161,17 +160,29 @@ const Dashboard = () => {
         ] as const
       : null;
 
-    const [branchRes, evtRes, scoutRes, allImgRes, ...adminResults] = await Promise.all([
+    const [branchRes, evtRes, scoutRes, ...adminResults] = await Promise.all([
       ...corePromises,
       ...(adminPromises ?? []),
     ]);
 
-    const allImages = (allImgRes as any).data || [];
-    const memberImages = allImages.filter((img: any) => !img.event_id);
-    const eventImages = allImages.filter((img: any) => img.event_id);
+    const branchesData = branchRes.data || [];
+    const eventsData = evtRes.data || [];
 
-    if (branchRes.data) {
-      const withCounts = branchRes.data.map(branch => ({
+    // Otimização: Buscar apenas as imagens dos 20 eventos retornados
+    const eventIds = eventsData.map(e => e.id);
+    const [eventImagesRes, memberImagesRes] = await Promise.all([
+      eventIds.length > 0 
+        ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
+        : Promise.resolve({ data: [] }),
+      // Buscar apenas os metadados necessários para ramos
+      supabase.from('images').select('branch_id').is('event_id', null)
+    ]);
+
+    const eventImages = eventImagesRes.data || [];
+    const memberImages = memberImagesRes.data || [];
+
+    if (branchesData) {
+      const withCounts = branchesData.map(branch => ({
         ...branch,
         imageCount: memberImages.filter((img: any) => img.branch_id === branch.id).length,
       }));
@@ -179,10 +190,10 @@ const Dashboard = () => {
       setTotalImages(memberImages.length);
     }
 
-    if (evtRes.data) {
+    if (eventsData) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const recentEvents = evtRes.data.filter(evt => {
+      const recentEvents = eventsData.filter(evt => {
         if (!evt.event_date) return false;
         return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
       });
@@ -193,7 +204,7 @@ const Dashboard = () => {
         return { ...evt, imageCount: evtImgs.length, photoCount, videoCount };
       });
       setEventsWithPhotos(evtsWithCounts);
-      setTotalEvents(evtRes.data.length);
+      setTotalEvents(eventsData.length);
     }
 
     setScouts((scoutRes.data as any) || []);

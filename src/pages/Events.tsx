@@ -74,17 +74,31 @@ const Events = () => {
   const [filterYear, setFilterYear] = useState<string>('all');
 
   const fetchEvents = async () => {
-    const [{ data }, { data: permsData }, { data: imgData }] = await Promise.all([
+    const [{ data }, { data: permsData }] = await Promise.all([
       supabase.from('events').select('*').order('event_date', { ascending: false }),
       supabase.from('event_permissions').select('event_id'),
-      supabase.from('images').select('event_id, media_type').not('event_id', 'is', null),
     ]);
-    setEvents(data || []);
+    
+    const fetchedEvents = data || [];
+    setEvents(fetchedEvents);
     setEventsWithPerms(new Set((permsData || []).map(p => p.event_id)));
     
+    // Otimização: Buscar imagens apenas para os eventos encontrados, divididos em lotes (segurança de URL)
+    const eventIds = fetchedEvents.map(e => e.id);
+    const BATCH_SIZE = 100;
+    const imgPromises = [];
+    
+    for (let i = 0; i < eventIds.length; i += BATCH_SIZE) {
+      const batch = eventIds.slice(i, i + BATCH_SIZE);
+      imgPromises.push(supabase.from('images').select('event_id, media_type').in('event_id', batch));
+    }
+    
+    const imgResults = await Promise.all(imgPromises);
+    const imgData = imgResults.flatMap(r => r.data || []);
+
     // Count media by type per event
     const counts: Record<string, EventMediaCount> = {};
-    (imgData || []).forEach(img => {
+    imgData.forEach(img => {
       if (!img.event_id) return;
 
       if (!counts[img.event_id]) {
