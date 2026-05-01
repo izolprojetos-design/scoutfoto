@@ -166,7 +166,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
     if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
 
-    if (nomeEvento.trim().length < 2) e.nomeEvento = 'Informe o nome do evento';
+    const nomeEventoTrim = nomeEvento.trim();
+    if (!nomeEventoTrim) {
+      e.nomeEvento = 'O nome do evento é obrigatório.';
+    } else if (nomeEventoTrim.length < 3) {
+      e.nomeEvento = 'O nome do evento deve ter pelo menos 3 caracteres.';
+    } else if (nomeEventoTrim.length > 120) {
+      e.nomeEvento = 'O nome do evento deve ter no máximo 120 caracteres.';
+    }
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
