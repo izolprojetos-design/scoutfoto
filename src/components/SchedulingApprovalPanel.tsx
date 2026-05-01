@@ -218,10 +218,14 @@ const SchedulingApprovalPanel = () => {
       const nextLevel = APPROVAL_LEVELS.find(l => l.nivel > pendingStep.nivel);
       if (!nextLevel) {
         // All levels approved — create the event
+        const assunto = (req.descricao || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        const eventName = assunto
+          ? `${getSchedulingTypeLabel(req.tipo)} — ${assunto} — ${req.nome_responsavel}`
+          : `${getSchedulingTypeLabel(req.tipo)} — ${req.nome_responsavel}`;
         const { data: newEvent, error: eventError } = await supabase
           .from('events')
           .insert({
-            name: `${getSchedulingTypeLabel(req.tipo)} — ${req.nome_responsavel}`,
+            name: eventName,
             description: req.descricao || '',
             event_date: req.data,
             location: req.local,
