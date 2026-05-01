@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
-
+import { getSchedulingTypeLabel } from '@/lib/schedulingTypes';
 
 import {
   format,
@@ -47,9 +47,10 @@ interface Branch {
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const ScoutCalendar = () => {
-  const { roles } = useAuth();
+  const { roles, user } = useAuth();
   const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [myAgendamentos, setMyAgendamentos] = useState<any[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -64,15 +65,26 @@ const ScoutCalendar = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    Promise.all([
+    const promises: Promise<any>[] = [
       supabase.from('events').select('*').order('event_date'),
       supabase.from('branches').select('*'),
-    ]).then(([{ data: evts }, { data: br }]) => {
-      setEvents(evts || []);
-      setBranches(br || []);
+    ];
+
+    if (user) {
+      promises.push(
+        supabase.from('scheduling_requests').select('*').eq('user_id', user.id).order('data')
+      );
+    }
+
+    Promise.all(promises).then((results) => {
+      setEvents(results[0].data || []);
+      setBranches(results[1].data || []);
+      if (user && results[2]) {
+        setMyAgendamentos(results[2].data || []);
+      }
       setLoading(false);
     });
-  }, []);
+  }, [user]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -83,9 +95,11 @@ const ScoutCalendar = () => {
   const getEventsForDay = (day: Date) =>
     events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
 
-  const selectedEvents = selectedDate
-    ? getEventsForDay(selectedDate)
-    : [];
+  const getAgendamentosForDay = (day: Date) =>
+    myAgendamentos.filter(a => a.data && isSameDay(parseLocalDate(a.data), day));
+
+  const selectedEvents = selectedDate ? getEventsForDay(selectedDate) : [];
+  const selectedAgendamentos = selectedDate ? getAgendamentosForDay(selectedDate) : [];
 
   const getBranch = (bId: string | null) =>
     bId ? branches.find(b => b.id === bId) : null;
@@ -106,19 +120,10 @@ const ScoutCalendar = () => {
         >
           <CalIcon className="h-4 w-4" /> Calendário
         </button>
-        {activeTab === 'schedule' && canRequestScheduling && (
-          <button
-            type="button"
-            onClick={() => setActiveTab('schedule')}
-            className="inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium bg-background text-foreground shadow-sm"
-          >
-            <CalendarPlus className="h-4 w-4" /> Agendamento
-          </button>
-        )}
         <button
           type="button"
           onClick={() => setActiveTab('manage')}
-          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'manage' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'manage' || activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
         >
           <ListChecks className="h-4 w-4" /> Meus Agendamentos
         </button>
@@ -172,6 +177,8 @@ const ScoutCalendar = () => {
             <div className="grid grid-cols-7 gap-1">
               {days.map((day, i) => {
                 const dayEvents = getEventsForDay(day);
+                const dayAgendamentos = getAgendamentosForDay(day);
+                const totalItems = dayEvents.length + dayAgendamentos.length;
                 const isCurrentMonth = isSameMonth(day, currentMonth);
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 const today = isToday(day);
@@ -194,9 +201,9 @@ const ScoutCalendar = () => {
                     <span className={`text-sm ${today && !isSelected ? 'font-bold' : ''}`}>
                       {format(day, 'd')}
                     </span>
-                    {dayEvents.length > 0 && (
+                    {totalItems > 0 && (
                       <div className="mt-1 flex gap-0.5">
-                        {dayEvents.slice(0, 3).map((_, idx) => (
+                        {Array.from({ length: Math.min(totalItems, 3) }).map((_, idx) => (
                           <div
                             key={idx}
                             className={`h-1.5 w-1.5 rounded-full ${
@@ -222,62 +229,108 @@ const ScoutCalendar = () => {
                 : 'Selecione um dia'}
             </h3>
 
-            {selectedDate && selectedEvents.length === 0 && (
+            {selectedDate && selectedEvents.length === 0 && selectedAgendamentos.length === 0 && (
               <div className="flex flex-col items-center py-8 text-muted-foreground">
                 <CalIcon className="h-8 w-8 mb-2" />
                 <p className="text-sm">Nenhum evento neste dia</p>
               </div>
             )}
 
-            <div className="space-y-3">
-              {selectedEvents.map(event => {
-                const branch = getBranch(event.branch_id);
-                return (
-                  <div
-                    key={event.id}
-                    className="rounded-lg border bg-muted/30 p-4"
-                  >
-                    <h4 className="font-semibold">{event.name}</h4>
-                    {event.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {event.location && (
-                        <Badge variant="outline" className="gap-1 font-normal text-xs">
-                          <MapPin className="h-3 w-3" />
-                          {event.location}
-                        </Badge>
-                      )}
-                      {branch && (
-                        <Badge variant="secondary" className="font-normal text-xs">
-                          {branch.icon} {branch.display_name}
-                        </Badge>
-                      )}
-                    </div>
+            <div className="space-y-6">
+              {selectedAgendamentos.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Aba "Meus Agendamentos"
+                  </h4>
+                  <div className="space-y-3">
+                    {selectedAgendamentos.map(agendamento => {
+                      const branch = getBranch(agendamento.branch_id);
+                      return (
+                        <div
+                          key={agendamento.id}
+                          className="rounded-lg border bg-muted/30 p-4 border-l-4 border-l-primary/60"
+                        >
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-semibold text-foreground">Nome do evento:</span> {getSchedulingTypeLabel(agendamento.tipo)}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            <span className="font-semibold text-foreground">Data:</span> {format(parseLocalDate(agendamento.data), "dd/MM/yyyy", { locale: ptBR })} às {agendamento.horario}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            <span className="font-semibold text-foreground">Local:</span> {agendamento.local || "Não informado"}
+                          </div>
+                          
+                          {branch && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="font-normal text-[10px]">
+                                {branch.icon} {branch.display_name}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              )}
 
-            {/* Upcoming events */}
-            {!selectedDate && (
-              <div className="space-y-3">
-                <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
-                {events
-                  .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
-                  .slice(0, 5)
-                  .map(event => (
-                    <div key={event.id} className="rounded-lg border bg-muted/30 p-3">
-                      <p className="font-medium text-sm">{event.name}</p>
-                      {event.event_date && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-              </div>
-            )}
+              {selectedEvents.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+                    Em Eventos
+                  </h4>
+                  <div className="space-y-3">
+                    {selectedEvents.map(event => {
+                      const branch = getBranch(event.branch_id);
+                      return (
+                        <div
+                          key={event.id}
+                          className="rounded-lg border bg-muted/30 p-4 border-l-4 border-l-blue-500"
+                        >
+                          <div className="text-sm text-muted-foreground">
+                            <span className="font-semibold text-foreground">Nome do evento:</span> {event.name}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            <span className="font-semibold text-foreground">Data:</span> {event.event_date ? format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR }) : "Não informada"}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            <span className="font-semibold text-foreground">Local:</span> {event.location || "Não informado"}
+                          </div>
+                          
+                          {branch && (
+                            <div className="mt-2">
+                              <Badge variant="secondary" className="font-normal text-[10px]">
+                                {branch.icon} {branch.display_name}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Upcoming events (when no date is selected) */}
+              {!selectedDate && (
+                <div className="space-y-3">
+                  <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
+                  {events
+                    .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
+                    .slice(0, 5)
+                    .map(event => (
+                      <div key={event.id} className="rounded-lg border bg-muted/30 p-3">
+                        <p className="font-medium text-sm">{event.name}</p>
+                        {event.event_date && (
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -286,3 +339,4 @@ const ScoutCalendar = () => {
 };
 
 export default ScoutCalendar;
+
