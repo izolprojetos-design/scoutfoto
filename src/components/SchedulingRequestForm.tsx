@@ -166,7 +166,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
     if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
 
-    if (nomeEvento.trim().length < 2) e.nomeEvento = 'Informe o nome do evento';
+    const nomeEventoTrim = nomeEvento.trim();
+    if (!nomeEventoTrim) {
+      e.nomeEvento = 'O nome do evento é obrigatório.';
+    } else if (nomeEventoTrim.length < 3) {
+      e.nomeEvento = 'O nome do evento deve ter pelo menos 3 caracteres.';
+    } else if (nomeEventoTrim.length > 120) {
+      e.nomeEvento = 'O nome do evento deve ter no máximo 120 caracteres.';
+    }
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
@@ -537,13 +544,26 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             <Input
               id="nomeEvento"
               value={nomeEvento}
-              onChange={(e) => setNomeEvento(e.target.value)}
+              onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
               placeholder="Ex: Reunião ordinária da Alcateia"
-              maxLength={200}
+              required
+              maxLength={120}
               className={cn('mt-1.5', errCls('nomeEvento'))}
               aria-invalid={!!errors.nomeEvento}
+              aria-describedby="nomeEvento-counter"
             />
-            {fieldError('nomeEvento')}
+            <div className="mt-1 flex items-center justify-between gap-2">
+              <div className="flex-1">{fieldError('nomeEvento')}</div>
+              <span
+                id="nomeEvento-counter"
+                className={cn(
+                  'text-xs tabular-nums',
+                  nomeEvento.trim().length > 120 ? 'text-destructive' : 'text-muted-foreground',
+                )}
+              >
+                {nomeEvento.trim().length}/120
+              </span>
+            </div>
           </div>
 
           <div>
