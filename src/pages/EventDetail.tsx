@@ -809,6 +809,56 @@ const EventDetail = () => {
           <Plus className="h-6 w-6" />
         </button>
       )}
+
+      {/* Edit Event Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nome do evento</Label>
+              <Input value={editName} onChange={e => setEditName(e.target.value)} required className="h-12 text-base" />
+            </div>
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} placeholder="Detalhes da atividade..." />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data</Label>
+                <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} className="h-12 text-base" />
+              </div>
+              <div className="space-y-2">
+                <Label>Local</Label>
+                <Input value={editLocation} onChange={e => setEditLocation(e.target.value)} className="h-12 text-base" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Ramo (opcional)</Label>
+              <Select value={editBranchId || 'all'} onValueChange={setEditBranchId}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Todos os ramos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os ramos</SelectItem>
+                  {branches.map(b => (
+                    <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Grupo Escoteiro (opcional)</Label>
+              <Input value={editScoutGroup} onChange={e => setEditScoutGroup(e.target.value)} placeholder="Ex: GE 015" className="h-12 text-base" />
+            </div>
+            <Button type="submit" disabled={savingEdit} className="w-full h-12 font-semibold">
+              {savingEdit ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
