@@ -47,6 +47,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [emailPara, setEmailPara] = useState('');
 
   // Evento
+  const [nomeEvento, setNomeEvento] = useState('');
   const [dataSecao, setDataSecao] = useState('');
   const [horario, setHorario] = useState('');
   const [local, setLocal] = useState('');
