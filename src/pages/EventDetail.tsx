@@ -122,11 +122,46 @@ const EventDetail = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!event) return;
+
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      toast.error('O nome do evento é obrigatório.');
+      return;
+    }
+    if (trimmedName.length > 200) {
+      toast.error('O nome do evento deve ter no máximo 200 caracteres.');
+      return;
+    }
+
+    if (editEventDate) {
+      // Expect YYYY-MM-DD from <input type="date">
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(editEventDate)) {
+        toast.error('Data inválida. Use o formato AAAA-MM-DD.');
+        return;
+      }
+      const parsed = parseLocalDate(editEventDate);
+      if (Number.isNaN(parsed.getTime())) {
+        toast.error('Data inválida.');
+        return;
+      }
+      const [y, m, d] = editEventDate.split('-').map(Number);
+      if (
+        parsed.getFullYear() !== y ||
+        parsed.getMonth() !== m - 1 ||
+        parsed.getDate() !== d ||
+        y < 1900 ||
+        y > 2100
+      ) {
+        toast.error('Data inválida.');
+        return;
+      }
+    }
+
     setSavingEdit(true);
     const { error } = await supabase
       .from('events')
       .update({
-        name: editName,
+        name: trimmedName,
         description: editDescription,
         event_date: editEventDate || null,
         location: editLocation,
@@ -819,7 +854,7 @@ const EventDetail = () => {
           <form onSubmit={handleEditSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label>Nome do evento</Label>
-              <Input value={editName} onChange={e => setEditName(e.target.value)} required className="h-12 text-base" />
+              <Input value={editName} onChange={e => setEditName(e.target.value)} required maxLength={200} className="h-12 text-base" />
             </div>
             <div className="space-y-2">
               <Label>Descrição</Label>
@@ -828,7 +863,7 @@ const EventDetail = () => {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Data</Label>
-                <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} className="h-12 text-base" />
+                <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} min="1900-01-01" max="2100-12-31" className="h-12 text-base" />
               </div>
               <div className="space-y-2">
                 <Label>Local</Label>
