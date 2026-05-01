@@ -66,7 +66,7 @@ const ScoutCalendar = () => {
 
   useEffect(() => {
     const promises: Promise<any>[] = [
-      supabase.from('events').select('*').order('event_date'),
+      supabase.from('events').select('*').neq('source', 'scheduling').order('event_date'),
       supabase.from('branches').select('*'),
     ];
 
