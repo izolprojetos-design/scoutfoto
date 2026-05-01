@@ -70,8 +70,9 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB for videos
 const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user, canUpload, canViewMinors } = useAuth();
-  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos } = usePermissions();
+  const { user, canUpload, canViewMinors, isAdmin, isVoluntario } = useAuth();
+  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos, canEditEvents } = usePermissions();
+  const canEditThisEvent = isAdmin || isVoluntario || canEditEvents;
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
