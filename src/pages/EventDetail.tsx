@@ -122,11 +122,46 @@ const EventDetail = () => {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!event) return;
+
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      toast.error('O nome do evento é obrigatório.');
+      return;
+    }
+    if (trimmedName.length > 200) {
+      toast.error('O nome do evento deve ter no máximo 200 caracteres.');
+      return;
+    }
+
+    if (editEventDate) {
+      // Expect YYYY-MM-DD from <input type="date">
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(editEventDate)) {
+        toast.error('Data inválida. Use o formato AAAA-MM-DD.');
+        return;
+      }
+      const parsed = parseLocalDate(editEventDate);
+      if (Number.isNaN(parsed.getTime())) {
+        toast.error('Data inválida.');
+        return;
+      }
+      const [y, m, d] = editEventDate.split('-').map(Number);
+      if (
+        parsed.getFullYear() !== y ||
+        parsed.getMonth() !== m - 1 ||
+        parsed.getDate() !== d ||
+        y < 1900 ||
+        y > 2100
+      ) {
+        toast.error('Data inválida.');
+        return;
+      }
+    }
+
     setSavingEdit(true);
     const { error } = await supabase
       .from('events')
       .update({
-        name: editName,
+        name: trimmedName,
         description: editDescription,
         event_date: editEventDate || null,
         location: editLocation,
