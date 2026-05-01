@@ -131,6 +131,14 @@ const ScoutCalendar = () => {
       </div>
 
       <div className={activeTab === 'manage' ? 'space-y-6' : 'hidden'}>
+        {canRequestScheduling && (
+          <div className="flex justify-end">
+            <Button onClick={() => setActiveTab('schedule')} className="gap-2">
+              <CalendarPlus className="h-4 w-4" />
+              Novo agendamento
+            </Button>
+          </div>
+        )}
         {manageMounted && <AgendamentosManager />}
       </div>
 
