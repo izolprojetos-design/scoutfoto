@@ -235,6 +235,23 @@ const InviteLinkPanel = () => {
                       {getInviteUrl(generatedToken)}
                     </code>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="wa-phone">
+                      WhatsApp do destinatário <span className="text-muted-foreground font-normal">(opcional)</span>
+                    </Label>
+                    <Input
+                      id="wa-phone"
+                      type="tel"
+                      inputMode="tel"
+                      placeholder="Ex: (11) 91234-5678"
+                      value={waPhone}
+                      onChange={(e) => setWaPhone(e.target.value)}
+                      maxLength={20}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Se informado, abre a conversa direto com o contato. DDI 55 (Brasil) é assumido quando ausente.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
@@ -246,7 +263,7 @@ const InviteLinkPanel = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleWhatsApp(generatedToken)}
+                      onClick={() => handleWhatsApp(generatedToken, waPhone)}
                       className="gap-2 text-green-600 hover:text-green-700"
                     >
                       <MessageCircle className="h-4 w-4" />
