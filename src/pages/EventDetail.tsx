@@ -98,6 +98,52 @@ const EventDetail = () => {
   const [progress, setProgress] = useState(0);
   const [uploadingIndex, setUploadingIndex] = useState(0);
 
+  // Edit event state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editEventDate, setEditEventDate] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editBranchId, setEditBranchId] = useState('');
+  const [editScoutGroup, setEditScoutGroup] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEditDialog = () => {
+    if (!event) return;
+    setEditName(event.name);
+    setEditDescription(event.description || '');
+    setEditEventDate(event.event_date || '');
+    setEditLocation(event.location || '');
+    setEditBranchId(event.branch_id || '');
+    setEditScoutGroup(event.scout_group || '');
+    setEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!event) return;
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from('events')
+      .update({
+        name: editName,
+        description: editDescription,
+        event_date: editEventDate || null,
+        location: editLocation,
+        branch_id: editBranchId && editBranchId !== 'all' ? editBranchId : null,
+        scout_group: editScoutGroup || '',
+      })
+      .eq('id', event.id);
+    setSavingEdit(false);
+    if (error) {
+      toast.error('Erro ao salvar: ' + error.message);
+      return;
+    }
+    toast.success('Evento atualizado!');
+    setEditOpen(false);
+    fetchEvent();
+  };
+
   const fetchEvent = async () => {
     if (!eventId) return;
     const { data } = await supabase.from('events').select('*').eq('id', eventId).single();
