@@ -47,6 +47,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [emailPara, setEmailPara] = useState('');
 
   // Evento
+  const [nomeEvento, setNomeEvento] = useState('');
   const [dataSecao, setDataSecao] = useState('');
   const [horario, setHorario] = useState('');
   const [local, setLocal] = useState('');
@@ -102,6 +103,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   }, [cargo1, branches, ramoEscoteiro]);
 
   const resetForm = () => {
+    setNomeEvento('');
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
     setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
@@ -164,6 +166,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
     if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
 
+    if (nomeEvento.trim().length < 2) e.nomeEvento = 'Informe o nome do evento';
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
@@ -212,6 +215,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         local: local.trim(),
         ramo_escoteiro: ramoEscoteiro,
         tipo_atividade: tipoAtividade,
+        nome_evento: nomeEvento.trim(),
         observacoes: observacoes.trim(),
         status: 'confirmado',
       })
@@ -245,6 +249,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       local: local.trim(),
       ramo: ramoLabel,
       tipoAtividade: tipoLabel,
+      nomeEvento: nomeEvento.trim(),
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
       destinatarioNome: destNome.trim(),
@@ -527,6 +532,20 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <Label htmlFor="nomeEvento">Nome do evento <span className="text-destructive">*</span></Label>
+            <Input
+              id="nomeEvento"
+              value={nomeEvento}
+              onChange={(e) => setNomeEvento(e.target.value)}
+              placeholder="Ex: Reunião ordinária da Alcateia"
+              maxLength={200}
+              className={cn('mt-1.5', errCls('nomeEvento'))}
+              aria-invalid={!!errors.nomeEvento}
+            />
+            {fieldError('nomeEvento')}
+          </div>
+
           <div>
             <Label htmlFor="dataSecao">Data da seção <span className="text-destructive">*</span></Label>
             <Input
