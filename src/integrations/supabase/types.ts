@@ -69,6 +69,7 @@ export type Database = {
           id: string
           local: string
           nome_associado: string
+          nome_evento: string
           observacoes: string
           ramo_escoteiro: string
           secao: string
@@ -93,6 +94,7 @@ export type Database = {
           id?: string
           local?: string
           nome_associado: string
+          nome_evento?: string
           observacoes?: string
           ramo_escoteiro?: string
           secao?: string
@@ -117,6 +119,7 @@ export type Database = {
           id?: string
           local?: string
           nome_associado?: string
+          nome_evento?: string
           observacoes?: string
           ramo_escoteiro?: string
           secao?: string
