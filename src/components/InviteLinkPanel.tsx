@@ -106,16 +106,31 @@ const InviteLinkPanel = () => {
     toast.success('Link copiado!');
   };
 
-  const handleWhatsApp = (token: string) => {
+  // Normaliza telefone: remove tudo que não é dígito. Se começar com 0, remove.
+  // Se tiver 10-11 dígitos (formato BR sem DDI), prefixa com 55.
+  const normalizePhone = (raw: string): string | null => {
+    const digits = (raw || '').replace(/\D/g, '').replace(/^0+/, '');
+    if (!digits) return null;
+    if (digits.length < 8 || digits.length > 15) return null;
+    if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+    return digits;
+  };
+
+  const handleWhatsApp = (token: string, phoneRaw?: string) => {
     const url = getInviteUrl(token);
     const text = encodeURIComponent(
       `Olá! Você foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}`
     );
-    // api.whatsapp.com/send funciona tanto em desktop (WhatsApp Web) quanto mobile (app)
+    const phone = phoneRaw ? normalizePhone(phoneRaw) : null;
+    if (phoneRaw && !phone) {
+      toast.error('Número de telefone inválido. Use DDD + número (ex: 11 91234-5678).');
+      return;
+    }
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const waUrl = isMobile
-      ? `whatsapp://send?text=${text}`
-      : `https://api.whatsapp.com/send?text=${text}`;
+    const base = isMobile ? 'whatsapp://send' : 'https://api.whatsapp.com/send';
+    const waUrl = phone
+      ? `${base}?phone=${phone}&text=${text}`
+      : `${base}?text=${text}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
