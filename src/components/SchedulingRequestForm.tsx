@@ -166,6 +166,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
     if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
 
+    if (nomeEvento.trim().length < 2) e.nomeEvento = 'Informe o nome do evento';
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
