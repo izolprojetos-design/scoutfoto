@@ -106,11 +106,11 @@ const ScoutCalendar = () => {
         >
           <CalIcon className="h-4 w-4" /> Calendário
         </button>
-        {canRequestScheduling && (
+        {activeTab === 'schedule' && canRequestScheduling && (
           <button
             type="button"
             onClick={() => setActiveTab('schedule')}
-            className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+            className="inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium bg-background text-foreground shadow-sm"
           >
             <CalendarPlus className="h-4 w-4" /> Agendamento
           </button>
