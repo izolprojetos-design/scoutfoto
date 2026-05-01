@@ -943,7 +943,7 @@ const Dashboard = () => {
       })()}
 
       <div className="mt-8 mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Galerias de Eventos <span className="text-sm font-normal text-muted-foreground">(últimos 30 dias)</span></h2>
+        <h2 className="text-lg font-semibold tracking-tight">Próximos Eventos</h2>
         <Button variant="ghost" size="sm" className="gap-1.5" onClick={() => navigate('/events')}>
           Ver todos <ArrowRight className="h-4 w-4" />
         </Button>
@@ -951,77 +951,55 @@ const Dashboard = () => {
 
       {loading ? (
         <GalleryCardsSkeleton count={3} />
-      ) : eventsWithPhotos.length === 0 ? (
-        <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento nos últimos 30 dias</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {eventsWithPhotos.slice(0, 6).map((evt, index) => {
-            const branch = branches.find(b => b.id === evt.branch_id);
-            const isUpcoming = evt.event_date && parseLocalDate(evt.event_date) > startOfDay(new Date());
-            return (
-              <motion.div key={evt.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
-                <Card
-                  className={`group cursor-pointer border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${
-                    isUpcoming
-                      ? 'bg-gradient-to-br from-amber-50 to-orange-50/50 border-amber-300 dark:from-amber-950/30 dark:to-orange-950/20 dark:border-amber-700'
-                      : 'bg-gradient-to-br from-primary/5 to-primary/0 border-primary/10 hover:border-primary/30'
-                  }`}
-                  onClick={() => navigate(`/events/${evt.id}`)}
-                >
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl">{branch?.icon || '📅'}</span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
-                          {isUpcoming && (
+      ) : (() => {
+        const upcomingAll = eventsWithPhotos.filter(evt => evt.event_date && parseLocalDate(evt.event_date) >= startOfDay(new Date()));
+        if (upcomingAll.length === 0) {
+          return <p className="text-sm text-muted-foreground text-center py-8">Nenhum evento programado.</p>;
+        }
+        return (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingAll.slice(0, 6).map((evt, index) => {
+              const branch = branches.find(b => b.id === evt.branch_id);
+              const isUpcoming = true; // All are upcoming now
+              return (
+                <motion.div key={evt.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
+                  <Card
+                    className={`group cursor-pointer border transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 bg-gradient-to-br from-amber-50 to-orange-50/50 border-amber-300 dark:from-amber-950/30 dark:to-orange-950/20 dark:border-amber-700`}
+                    onClick={() => navigate(`/events/${evt.id}`)}
+                  >
+                    <CardContent className="flex items-center justify-between p-6">
+                      <div className="flex items-center gap-4">
+                        <span className="text-4xl">{branch?.icon || '📅'}</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold tracking-tight">{evt.name}</h3>
                             <Badge className="bg-amber-500 text-white text-[10px] px-1.5 py-0">Próximo</Badge>
-                          )}
-                        </div>
-                        <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
-                          <span className="text-xs">Cadastro: {format(new Date(evt.created_at), "dd/MM/yyyy")}</span>
-                          {evt.event_date && (
-                            <span className={`text-xs flex items-center gap-1 ${isUpcoming ? 'text-amber-700 dark:text-amber-300 font-medium' : ''}`}>
-                              <Calendar className="h-3 w-3" />
-                              Evento: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
-                            </span>
-                          )}
-                          {evt.location && (
-                            <span className="text-xs flex items-center gap-1">
-                              <MapPin className="h-3 w-3" />
-                              Local: {evt.location}
-                            </span>
-                          )}
-                          {evt.photoCount > 0 && (
-                            <div className="flex items-center gap-1">
-                              <ImageIcon className="h-3.5 w-3.5" />
-                              <span>{evt.photoCount} foto{evt.photoCount !== 1 ? 's' : ''}</span>
-                            </div>
-                          )}
-                          {evt.photoCount > 0 && evt.videoCount > 0 && <span>•</span>}
-                          {evt.videoCount > 0 && (
-                            <div className="flex items-center gap-1">
-                              <Film className="h-3.5 w-3.5" />
-                              <span>{evt.videoCount} vídeo{evt.videoCount !== 1 ? 's' : ''}</span>
-                            </div>
-                          )}
-                          {evt.photoCount === 0 && evt.videoCount === 0 && (
-                            <div className="flex items-center gap-1">
-                              <ImageIcon className="h-3.5 w-3.5" />
-                              <span>0 fotos</span>
-                            </div>
-                          )}
+                          </div>
+                          <div className="mt-1 flex flex-col gap-0.5 text-sm text-muted-foreground">
+                            {evt.event_date && (
+                              <span className="text-xs flex items-center gap-1 text-amber-700 dark:text-amber-300 font-medium">
+                                <Calendar className="h-3 w-3" />
+                                Data: {format(parseLocalDate(evt.event_date), "dd/MM/yyyy")}
+                              </span>
+                            )}
+                            {evt.location && (
+                              <span className="text-xs flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                Local: {evt.location}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Photo Dialog */}
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
