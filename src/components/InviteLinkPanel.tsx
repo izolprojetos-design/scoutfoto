@@ -92,6 +92,7 @@ const InviteLinkPanel = () => {
     setGeneratedToken(null);
     setRole('voluntario');
     setSection('');
+    setWaPhone('');
   };
 
   const handleDialogOpenChange = (open: boolean) => {
