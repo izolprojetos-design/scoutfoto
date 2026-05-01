@@ -532,6 +532,20 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <Label htmlFor="nomeEvento">Nome do evento <span className="text-destructive">*</span></Label>
+            <Input
+              id="nomeEvento"
+              value={nomeEvento}
+              onChange={(e) => setNomeEvento(e.target.value)}
+              placeholder="Ex: Reunião ordinária da Alcateia"
+              maxLength={200}
+              className={cn('mt-1.5', errCls('nomeEvento'))}
+              aria-invalid={!!errors.nomeEvento}
+            />
+            {fieldError('nomeEvento')}
+          </div>
+
           <div>
             <Label htmlFor="dataSecao">Data da seção <span className="text-destructive">*</span></Label>
             <Input
