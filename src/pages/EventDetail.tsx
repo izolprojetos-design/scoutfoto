@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film, Pencil } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -70,8 +70,9 @@ const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB for videos
 const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { user, canUpload, canViewMinors } = useAuth();
-  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos } = usePermissions();
+  const { user, canUpload, canViewMinors, isAdmin, isVoluntario } = useAuth();
+  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos, canEditEvents } = usePermissions();
+  const canEditThisEvent = isAdmin || isVoluntario || canEditEvents;
 
   const [event, setEvent] = useState<EventData | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -96,6 +97,52 @@ const EventDetail = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadingIndex, setUploadingIndex] = useState(0);
+
+  // Edit event state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editEventDate, setEditEventDate] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editBranchId, setEditBranchId] = useState('');
+  const [editScoutGroup, setEditScoutGroup] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEditDialog = () => {
+    if (!event) return;
+    setEditName(event.name);
+    setEditDescription(event.description || '');
+    setEditEventDate(event.event_date || '');
+    setEditLocation(event.location || '');
+    setEditBranchId(event.branch_id || '');
+    setEditScoutGroup(event.scout_group || '');
+    setEditOpen(true);
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!event) return;
+    setSavingEdit(true);
+    const { error } = await supabase
+      .from('events')
+      .update({
+        name: editName,
+        description: editDescription,
+        event_date: editEventDate || null,
+        location: editLocation,
+        branch_id: editBranchId && editBranchId !== 'all' ? editBranchId : null,
+        scout_group: editScoutGroup || '',
+      })
+      .eq('id', event.id);
+    setSavingEdit(false);
+    if (error) {
+      toast.error('Erro ao salvar: ' + error.message);
+      return;
+    }
+    toast.success('Evento atualizado!');
+    setEditOpen(false);
+    fetchEvent();
+  };
 
   const fetchEvent = async () => {
     if (!eventId) return;
@@ -350,6 +397,12 @@ const EventDetail = () => {
               <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>
             )}
           </div>
+          {event && canEditThisEvent && (
+            <Button variant="outline" size="sm" onClick={openEditDialog} className="gap-2">
+              <Pencil className="h-4 w-4" />
+              <span className="hidden sm:inline">Editar</span>
+            </Button>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -756,6 +809,56 @@ const EventDetail = () => {
           <Plus className="h-6 w-6" />
         </button>
       )}
+
+      {/* Edit Event Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nome do evento</Label>
+              <Input value={editName} onChange={e => setEditName(e.target.value)} required className="h-12 text-base" />
+            </div>
+            <div className="space-y-2">
+              <Label>Descrição</Label>
+              <Textarea value={editDescription} onChange={e => setEditDescription(e.target.value)} placeholder="Detalhes da atividade..." />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Data</Label>
+                <Input type="date" value={editEventDate} onChange={e => setEditEventDate(e.target.value)} className="h-12 text-base" />
+              </div>
+              <div className="space-y-2">
+                <Label>Local</Label>
+                <Input value={editLocation} onChange={e => setEditLocation(e.target.value)} className="h-12 text-base" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Ramo (opcional)</Label>
+              <Select value={editBranchId || 'all'} onValueChange={setEditBranchId}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder="Todos os ramos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos os ramos</SelectItem>
+                  {branches.map(b => (
+                    <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Grupo Escoteiro (opcional)</Label>
+              <Input value={editScoutGroup} onChange={e => setEditScoutGroup(e.target.value)} placeholder="Ex: GE 015" className="h-12 text-base" />
+            </div>
+            <Button type="submit" disabled={savingEdit} className="w-full h-12 font-semibold">
+              {savingEdit ? 'Salvando...' : 'Salvar Alterações'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
