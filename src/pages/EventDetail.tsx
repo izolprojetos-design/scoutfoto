@@ -397,6 +397,12 @@ const EventDetail = () => {
               <p className="mt-1 text-sm text-muted-foreground">{event.description}</p>
             )}
           </div>
+          {event && canEditThisEvent && (
+            <Button variant="outline" size="sm" onClick={openEditDialog} className="gap-2">
+              <Pencil className="h-4 w-4" />
+              <span className="hidden sm:inline">Editar</span>
+            </Button>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
