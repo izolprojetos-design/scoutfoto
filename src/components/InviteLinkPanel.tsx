@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { Link2, Copy, Mail, Loader2, Trash2, Clock, CheckCircle2, XCircle, MessageCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -35,6 +36,7 @@ const InviteLinkPanel = () => {
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [waPhone, setWaPhone] = useState('');
 
   // Form state
   const [role, setRole] = useState<string>('voluntario');
@@ -90,6 +92,7 @@ const InviteLinkPanel = () => {
     setGeneratedToken(null);
     setRole('voluntario');
     setSection('');
+    setWaPhone('');
   };
 
   const handleDialogOpenChange = (open: boolean) => {
@@ -103,16 +106,31 @@ const InviteLinkPanel = () => {
     toast.success('Link copiado!');
   };
 
-  const handleWhatsApp = (token: string) => {
+  // Normaliza telefone: remove tudo que não é dígito. Se começar com 0, remove.
+  // Se tiver 10-11 dígitos (formato BR sem DDI), prefixa com 55.
+  const normalizePhone = (raw: string): string | null => {
+    const digits = (raw || '').replace(/\D/g, '').replace(/^0+/, '');
+    if (!digits) return null;
+    if (digits.length < 8 || digits.length > 15) return null;
+    if (digits.length === 10 || digits.length === 11) return `55${digits}`;
+    return digits;
+  };
+
+  const handleWhatsApp = (token: string, phoneRaw?: string) => {
     const url = getInviteUrl(token);
     const text = encodeURIComponent(
       `Olá! Você foi convidado para acessar o ScoutFoto. Crie sua conta através do link abaixo (válido por 6 horas):\n\n${url}`
     );
-    // api.whatsapp.com/send funciona tanto em desktop (WhatsApp Web) quanto mobile (app)
+    const phone = phoneRaw ? normalizePhone(phoneRaw) : null;
+    if (phoneRaw && !phone) {
+      toast.error('Número de telefone inválido. Use DDD + número (ex: 11 91234-5678).');
+      return;
+    }
     const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-    const waUrl = isMobile
-      ? `whatsapp://send?text=${text}`
-      : `https://api.whatsapp.com/send?text=${text}`;
+    const base = isMobile ? 'whatsapp://send' : 'https://api.whatsapp.com/send';
+    const waUrl = phone
+      ? `${base}?phone=${phone}&text=${text}`
+      : `${base}?text=${text}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
   };
 
@@ -217,6 +235,23 @@ const InviteLinkPanel = () => {
                       {getInviteUrl(generatedToken)}
                     </code>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="wa-phone">
+                      WhatsApp do destinatário <span className="text-muted-foreground font-normal">(opcional)</span>
+                    </Label>
+                    <Input
+                      id="wa-phone"
+                      type="tel"
+                      inputMode="tel"
+                      placeholder="Ex: (11) 91234-5678"
+                      value={waPhone}
+                      onChange={(e) => setWaPhone(e.target.value)}
+                      maxLength={20}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Se informado, abre a conversa direto com o contato. DDI 55 (Brasil) é assumido quando ausente.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-3 gap-2">
                     <Button
                       variant="outline"
@@ -228,7 +263,7 @@ const InviteLinkPanel = () => {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() => handleWhatsApp(generatedToken)}
+                      onClick={() => handleWhatsApp(generatedToken, waPhone)}
                       className="gap-2 text-green-600 hover:text-green-700"
                     >
                       <MessageCircle className="h-4 w-4" />
