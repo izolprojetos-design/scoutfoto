@@ -36,6 +36,7 @@ const InviteLinkPanel = () => {
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generatedToken, setGeneratedToken] = useState<string | null>(null);
+  const [waPhone, setWaPhone] = useState('');
 
   // Form state
   const [role, setRole] = useState<string>('voluntario');
