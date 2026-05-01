@@ -249,6 +249,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       local: local.trim(),
       ramo: ramoLabel,
       tipoAtividade: tipoLabel,
+      nomeEvento: nomeEvento.trim(),
       observacoes: observacoes.trim(),
       emailDe: emailDe.trim(),
       destinatarioNome: destNome.trim(),
