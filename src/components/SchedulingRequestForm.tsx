@@ -103,6 +103,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   }, [cargo1, branches, ramoEscoteiro]);
 
   const resetForm = () => {
+    setNomeEvento('');
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
     setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
