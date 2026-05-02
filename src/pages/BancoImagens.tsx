@@ -200,11 +200,6 @@ const BancoImagens = () => {
 
   return (
     <>
-      <Helmet>
-        <title>Banco de Imagens — Google Drive | ScoutFoto</title>
-        <meta name="description" content="Salve fotos no Google Drive organizadas por ramo, integrante e data." />
-      </Helmet>
-
       <div className="container mx-auto p-4 md:p-6 space-y-6 max-w-5xl">
         <header className="space-y-1">
           <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
