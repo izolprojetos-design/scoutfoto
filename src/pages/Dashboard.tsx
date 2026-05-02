@@ -981,7 +981,7 @@ const Dashboard = () => {
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <img src={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" loading="lazy" />
+              <ScoutPhoto photoUrl={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" fallback={<div className="w-64 h-64 rounded-xl bg-muted flex items-center justify-center"><User className="h-12 w-12 text-muted-foreground" /></div>} />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>
           )}
