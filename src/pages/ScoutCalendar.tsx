@@ -68,13 +68,13 @@ const ScoutCalendar = () => {
 
   useEffect(() => {
     const promises: Promise<any>[] = [
-      supabase.from('events').select('*').order('event_date'),
-      supabase.from('branches').select('*'),
+      Promise.resolve(supabase.from('events').select('*').order('event_date')),
+      Promise.resolve(supabase.from('branches').select('*')),
     ];
 
     if (user) {
       promises.push(
-        supabase.from('scheduling_requests').select('*').eq('user_id', user.id).neq('status', 'aprovado').order('data')
+        Promise.resolve(supabase.from('scheduling_requests').select('*').eq('user_id', user.id).neq('status', 'aprovado').order('data'))
       );
     }
 

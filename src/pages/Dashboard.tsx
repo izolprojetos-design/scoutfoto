@@ -16,6 +16,7 @@ import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parse
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
+import ScoutPhoto from '@/components/ScoutPhoto';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import ScoutPhoto from '@/components/ScoutPhoto';
@@ -80,7 +81,7 @@ const getEffectiveBranchKey = (scout: Scout) => {
   if (ageYears >= 21) {
     return ALL_CATEGORIES.find(b => b.key === 'voluntario') || null;
   }
-  
+
   return null;
 };
 
@@ -170,9 +171,9 @@ const Dashboard = () => {
 
     const adminPromises = isAdmin
       ? [
-          supabase.from('profiles').select('user_id, name, is_active, section'),
-          supabase.from('user_roles').select('user_id, role'),
-        ] as const
+        supabase.from('profiles').select('user_id, name, is_active, section'),
+        supabase.from('user_roles').select('user_id, role'),
+      ] as const
       : null;
 
     const [branchRes, evtRes, scoutRes, ...adminResults] = await Promise.all([
@@ -186,7 +187,7 @@ const Dashboard = () => {
     // Otimização: Buscar apenas as imagens dos 20 eventos retornados
     const eventIds = eventsData.map(e => e.id);
     const [eventImagesRes, memberImagesRes] = await Promise.all([
-      eventIds.length > 0 
+      eventIds.length > 0
         ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
         : Promise.resolve({ data: [] }),
       // Buscar apenas os metadados necessários para ramos
@@ -432,30 +433,30 @@ const Dashboard = () => {
 
       {/* KPI Stats Grid */}
       {loading ? <StatsSkeleton /> : (
-      <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
-        {[
-          { icon: Users, value: totalUsers, label: 'Total de Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
-          { icon: UserCheck, value: activeUsers, label: 'Usuários Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
-          { icon: UserX, value: inactiveUsers, label: 'Usuários Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
-          { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
-          { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
-        ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
-          <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
-            <Card className="border bg-card shadow-sm">
-              <CardContent className="flex items-center gap-3 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                  <stat.icon className={`h-4.5 w-4.5 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-xl font-bold tracking-tight">{stat.value}</p>
-                  <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  <p className="text-[10px] text-muted-foreground/60">Fonte: {stat.source}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+        <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
+          {[
+            { icon: Users, value: totalUsers, label: 'Total de Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
+            { icon: UserCheck, value: activeUsers, label: 'Usuários Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
+            { icon: UserX, value: inactiveUsers, label: 'Usuários Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
+            { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
+            { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
+          ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
+              <Card className="border bg-card shadow-sm">
+                <CardContent className="flex items-center gap-3 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                    <stat.icon className={`h-4.5 w-4.5 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold tracking-tight">{stat.value}</p>
+                    <p className="text-xs text-muted-foreground">{stat.label}</p>
+                    <p className="text-[10px] text-muted-foreground/60">Fonte: {stat.source}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       )}
 
       {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
@@ -466,223 +467,223 @@ const Dashboard = () => {
           <PieChartSkeleton />
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-        {/* Role Distribution Pie */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {roleDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
-            ) : (
-              <div className="space-y-4">
-                <LazyPieChart
-                  data={roleDistribution}
-                  dataKey="count"
-                  nameKey="label"
-                  colors={(entry: any) => entry.color}
-                  tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  {roleDistribution.map(r => (
-                    <div key={r.role} className="flex items-center gap-1.5 text-xs">
-                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
-                      <span className="text-muted-foreground">{r.label}</span>
-                      <span className="font-semibold">{r.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Branch Distribution Pie */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Users className="h-4 w-4" /> Integrantes por Ramo
-              <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {scouts.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
-            ) : (
-              <div className="space-y-4">
-                <LazyPieChart
-                  data={branchDistribution.filter(b => b.count > 0)}
-                  dataKey="count"
-                  nameKey="name"
-                  colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
-                  tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  {branchDistribution.map(b => (
-                    <div key={b.key} className="flex items-center gap-1.5 text-xs">
-                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
-                      <span className="text-muted-foreground">{b.icon} {b.name}</span>
-                      <span className="font-semibold">{b.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Online & Recent Logins */}
-        <Card className="border shadow-sm">
-          <CardContent className="p-0">
-            {/* Online Now Section */}
-            <div className="px-4 pt-4 pb-2">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-sm font-semibold">Online Agora</span>
-                <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-                  {onlineUsers.length}
-                </Badge>
-                {isAdmin && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        title="Encerrar sessões antigas"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Encerrar sessões antigas?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta ação encerrará todas as sessões inativas há mais de 30 minutos. Os usuários afetados precisarão entrar novamente.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={async () => {
-                            const { data, error } = await supabase.rpc('admin_clear_inactive_sessions' as any);
-                            if (error) {
-                              toast.error('Erro ao encerrar sessões');
-                              return;
-                            }
-                            toast.success(`Sessões encerradas (${data ?? 0})`);
-                            const { data: onlineData } = await supabase.rpc('admin_list_online_users');
-                            if (onlineData) {
-                              setOnlineUsers(
-                                onlineData.map((u: any) => ({
-                                  user_id: u.user_id,
-                                  name: u.name,
-                                  last_login: u.last_active,
-                                }))
-                              );
-                            }
-                          }}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Encerrar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
-              {onlineUsers.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+          {/* Role Distribution Pie */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {roleDistribution.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
               ) : (
-                <div className="space-y-1.5">
-                  {onlineUsers.map(login => (
-                    <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
-                        <User className="h-3 w-3 text-emerald-600" />
+                <div className="space-y-4">
+                  <LazyPieChart
+                    data={roleDistribution}
+                    dataKey="count"
+                    nameKey="label"
+                    colors={(entry: any) => entry.color}
+                    tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {roleDistribution.map(r => (
+                      <div key={r.role} className="flex items-center gap-1.5 text-xs">
+                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
+                        <span className="text-muted-foreground">{r.label}</span>
+                        <span className="font-semibold">{r.count}</span>
                       </div>
-                      <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
+            </CardContent>
+          </Card>
 
-            {/* Divider */}
-            <div className="mx-4 my-2 border-t" />
-
-            {/* Recent Logins Section */}
-            <div className="px-4 pb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="text-sm font-semibold">Últimos Acessos</span>
-                <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
-                {isAdmin && recentLogins.length > 0 && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        title="Limpar histórico"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Limpar histórico de acessos?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Esta ação removerá permanentemente todos os registros de login do histórico de auditoria. Não é possível desfazer.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={async () => {
-                            const { data, error } = await supabase.rpc('admin_clear_login_history' as any);
-                            if (error) {
-                              toast.error('Erro ao limpar histórico');
-                              return;
-                            }
-                            setRecentLogins([]);
-                            toast.success(`Histórico limpo (${data ?? 0} registros)`);
-                          }}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Limpar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
-              {recentLogins.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
+          {/* Branch Distribution Pie */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" /> Integrantes por Ramo
+                <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {scouts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
               ) : (
-                <div className="max-h-[180px] overflow-y-auto space-y-1">
-                  {recentLogins.map((login) => (
-                    <div key={login.user_id} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors">
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                        <User className="h-3 w-3 text-primary" />
+                <div className="space-y-4">
+                  <LazyPieChart
+                    data={branchDistribution.filter(b => b.count > 0)}
+                    dataKey="count"
+                    nameKey="name"
+                    colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
+                    tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {branchDistribution.map(b => (
+                      <div key={b.key} className="flex items-center gap-1.5 text-xs">
+                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                        <span className="text-muted-foreground">{b.icon} {b.name}</span>
+                        <span className="font-semibold">{b.count}</span>
                       </div>
-                      <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
-                      <div className="flex items-center gap-1 flex-shrink-0">
-                        <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                        <span className="text-[10px] text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-      </div>
+          {/* Online & Recent Logins */}
+          <Card className="border shadow-sm">
+            <CardContent className="p-0">
+              {/* Online Now Section */}
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-semibold">Online Agora</span>
+                  <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                    {onlineUsers.length}
+                  </Badge>
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          title="Encerrar sessões antigas"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Encerrar sessões antigas?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação encerrará todas as sessões inativas há mais de 30 minutos. Os usuários afetados precisarão entrar novamente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              const { data, error } = await supabase.rpc('admin_clear_inactive_sessions' as any);
+                              if (error) {
+                                toast.error('Erro ao encerrar sessões');
+                                return;
+                              }
+                              toast.success(`Sessões encerradas (${data ?? 0})`);
+                              const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+                              if (onlineData) {
+                                setOnlineUsers(
+                                  onlineData.map((u: any) => ({
+                                    user_id: u.user_id,
+                                    name: u.name,
+                                    last_login: u.last_active,
+                                  }))
+                                );
+                              }
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Encerrar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+                {onlineUsers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {onlineUsers.map(login => (
+                      <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
+                          <User className="h-3 w-3 text-emerald-600" />
+                        </div>
+                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="mx-4 my-2 border-t" />
+
+              {/* Recent Logins Section */}
+              <div className="px-4 pb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm font-semibold">Últimos Acessos</span>
+                  <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
+                  {isAdmin && recentLogins.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          title="Limpar histórico"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Limpar histórico de acessos?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação removerá permanentemente todos os registros de login do histórico de auditoria. Não é possível desfazer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              const { data, error } = await supabase.rpc('admin_clear_login_history' as any);
+                              if (error) {
+                                toast.error('Erro ao limpar histórico');
+                                return;
+                              }
+                              setRecentLogins([]);
+                              toast.success(`Histórico limpo (${data ?? 0} registros)`);
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Limpar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+                {recentLogins.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
+                ) : (
+                  <div className="max-h-[180px] overflow-y-auto space-y-1">
+                    {recentLogins.map((login) => (
+                      <div key={login.user_id} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                          <User className="h-3 w-3 text-primary" />
+                        </div>
+                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
       ))}
 
       {/* Operational Cards Row */}
@@ -693,217 +694,207 @@ const Dashboard = () => {
           <ListCardSkeleton />
         </div>
       ) : (
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-        {/* Overdue Branch Changes */}
-        <Card className="order-2 lg:order-1 border-t-4 border-t-destructive border shadow-sm flex flex-col">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <ArrowRightLeft className="h-5 w-5 text-destructive" /> Mudanças de Ramo
-              {overdueChanges.length > 0 && (
-                <Badge variant="destructive" className="ml-auto text-xs">{overdueChanges.length}</Badge>
-              )}
-            </CardTitle>
-            <p className="text-sm font-medium text-muted-foreground">Integrantes que já completaram a idade</p>
-          </CardHeader>
-          <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
-            {overdueChanges.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Check className="h-8 w-8 text-emerald-500 mb-2" />
-                <p className="text-sm text-muted-foreground">Todos os integrantes estão no ramo correto</p>
-              </div>
-            ) : (
-              overdueChanges.map(s => {
-                const currentBranch = getEffectiveBranchKey(s);
-                const [birthYear, birthMonth, birthDay] = s.birth_date.split('-').map(Number);
-                const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-                const changeDate = startOfDay(addMonths(birthDate, SCOUT_BRANCHES.find(b => b.key === currentBranch?.key)?.maxAge || 0));
-                const ageAtChange = changeDate.getFullYear() - birthYear;
-                return (
-                  <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
-                    <div className="flex items-start gap-2">
-                      {s.photo_url ? (
-                        <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                          <ScoutPhoto 
-                            photoUrl={s.photo_url} 
-                            alt={s.name} 
-                            className="h-full w-full object-cover" 
-                            fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
-                          />
-                        </button>
-                      ) : (
-                        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                          <User className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name} · {ageAtChange} anos
-                        </p>
-                        <div className="flex items-center gap-1.5 mt-1.5">
-                          <Badge variant="destructive" className="text-xs">Pendente</Badge>
-                          {canTransfer && (
-                            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
-                              <ArrowRightLeft className="h-3 w-3" /> Transferir
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Upcoming 6 months */}
-        <Card className="order-3 lg:order-2 border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-amber-500" /> Próximos 3 Meses
-              {upcomingChanges.length > 0 && (
-                <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
-              )}
-            </CardTitle>
-            <p className="text-sm font-medium text-muted-foreground">Mudanças de ramo previstas</p>
-          </CardHeader>
-          <CardContent className="space-y-1 overflow-y-auto max-h-[380px] flex-1">
-            {upcomingChanges.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Calendar className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 3 meses</p>
-              </div>
-            ) : (
-              (() => {
-                let lastMonth = -1;
-                return upcomingChanges.map(s => {
-                  const [birthYear] = s.birth_date.split('-').map(Number);
-                  const ageAtChange = s.change.date.getFullYear() - birthYear;
-                  const currentBranch = getCurrentBranch(parseLocalDate(s.birth_date));
-                  const monthIdx = s.change.date.getMonth();
-                  const showHeader = monthIdx !== lastMonth;
-                  lastMonth = monthIdx;
-                  const monthName = format(s.change.date, 'MMMM', { locale: ptBR });
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+          {/* Overdue Branch Changes */}
+          <Card className="order-2 lg:order-1 border-t-4 border-t-destructive border shadow-sm flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <ArrowRightLeft className="h-5 w-5 text-destructive" /> Mudanças de Ramo
+                {overdueChanges.length > 0 && (
+                  <Badge variant="destructive" className="ml-auto text-xs">{overdueChanges.length}</Badge>
+                )}
+              </CardTitle>
+              <p className="text-sm font-medium text-muted-foreground">Integrantes que já completaram a idade</p>
+            </CardHeader>
+            <CardContent className="space-y-2 overflow-y-auto max-h-[380px] flex-1">
+              {overdueChanges.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Check className="h-8 w-8 text-emerald-500 mb-2" />
+                  <p className="text-sm text-muted-foreground">Todos os integrantes estão no ramo correto</p>
+                </div>
+              ) : (
+                overdueChanges.map(s => {
+                  const currentBranch = getEffectiveBranchKey(s);
+                  const [birthYear, birthMonth, birthDay] = s.birth_date.split('-').map(Number);
+                  const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
+                  const changeDate = startOfDay(addMonths(birthDate, SCOUT_BRANCHES.find(b => b.key === currentBranch?.key)?.maxAge || 0));
+                  const ageAtChange = changeDate.getFullYear() - birthYear;
                   return (
-                    <div key={s.id}>
-                      {showHeader && (
-                        <div className="flex items-center gap-2 py-2 mt-1 first:mt-0">
-                          <Calendar className="h-4 w-4 text-amber-500" />
-                          <span className="text-sm font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">{monthName}</span>
-                          <div className="flex-1 h-px bg-amber-200 dark:bg-amber-800" />
-                        </div>
-                      )}
-                      <div className="rounded-lg bg-muted/50 p-3">
-                        <div className="flex items-start gap-2">
-                          {s.photo_url ? (
-                            <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                              <ScoutPhoto 
-                                photoUrl={s.photo_url} 
-                                alt={s.name} 
-                                className="h-full w-full object-cover" 
-                                fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
-                              />
-                            </button>
-                          ) : (
-                            <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                              <User className="h-4 w-4 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
-                              <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
-                                {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {currentBranch?.icon} {currentBranch?.name} → {s.change.branch.icon} {s.change.branch.name} · {ageAtChange} anos
-                            </p>
+                    <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
+                      <div className="flex items-start gap-2">
+                        {s.photo_url ? (
+                          <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
+                            <ScoutPhoto
+                              photoUrl={s.photo_url}
+                              alt={s.name}
+                              className="h-full w-full object-cover"
+                              fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
+                            />
+                          </button>
+                        ) : (
+                          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {currentBranch?.icon} {currentBranch?.name} → {s.targetBranch.icon} {s.targetBranch.name} · {ageAtChange} anos
+                          </p>
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <Badge variant="destructive" className="text-xs">Pendente</Badge>
+                            {canTransfer && (
+                              <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={() => navigate(`/scouts?edit=${s.id}`)}>
+                                <ArrowRightLeft className="h-3 w-3" /> Transferir
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
                   );
-                });
-              })()
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Birthdays */}
-        <Card className="order-1 lg:order-3 border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg font-bold flex items-center gap-2">
-              <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
-              {upcomingBirthdays.length > 0 && (
-                <Badge variant="outline" className="ml-auto text-xs">{upcomingBirthdays.length}</Badge>
+                })
               )}
-            </CardTitle>
-            <p className="text-sm font-medium text-muted-foreground">Próximos 30 dias</p>
-          </CardHeader>
-          <CardContent className="space-y-1 overflow-y-auto max-h-[380px] flex-1">
-            {upcomingBirthdays.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-8 text-center">
-                <Cake className="h-8 w-8 text-muted-foreground/50 mb-2" />
-                <p className="text-sm text-muted-foreground">Nenhum aniversário nos próximos 30 dias</p>
-              </div>
-            ) : (
-              (() => {
-                let lastMonth = -1;
-                return upcomingBirthdays.map(s => {
-                  const branch = getEffectiveBranchKey(s);
-                  const monthIdx = s.nextBday.getMonth();
-                  const showHeader = monthIdx !== lastMonth;
-                  lastMonth = monthIdx;
-                  const monthName = format(s.nextBday, 'MMMM', { locale: ptBR });
-                  return (
-                    <div key={s.id}>
-                      {showHeader && (
-                        <div className="flex items-center gap-2 py-2 mt-1 first:mt-0">
-                          <Calendar className="h-4 w-4 text-pink-500" />
-                          <span className="text-sm font-bold uppercase tracking-wide text-pink-600 dark:text-pink-400">{monthName}</span>
-                          <div className="flex-1 h-px bg-pink-200 dark:bg-pink-800" />
-                        </div>
-                      )}
-                      <div className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
-                        <div className="flex items-start gap-2">
-                          {s.photo_url ? (
-                            <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                              <ScoutPhoto 
-                                photoUrl={s.photo_url} 
-                                alt={s.name} 
-                                className="h-full w-full object-cover" 
-                                fallback={<div className={`h-full w-full flex items-center justify-center ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}><User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} /></div>}
-                              />
-                            </button>
-                          ) : (
-                            <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
-                              <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
+            </CardContent>
+          </Card>
+
+          {/* Upcoming 6 months */}
+          <Card className="order-3 lg:order-2 border-t-4 border-t-amber-500 border shadow-sm flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-amber-500" /> Próximos 3 Meses
+                {upcomingChanges.length > 0 && (
+                  <Badge variant="secondary" className="ml-auto text-xs">{upcomingChanges.length}</Badge>
+                )}
+              </CardTitle>
+              <p className="text-sm font-medium text-muted-foreground">Mudanças de ramo previstas</p>
+            </CardHeader>
+            <CardContent className="space-y-1 overflow-y-auto max-h-[380px] flex-1">
+              {upcomingChanges.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Calendar className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhuma mudança nos próximos 3 meses</p>
+                </div>
+              ) : (
+                (() => {
+                  let lastMonth = -1;
+                  return upcomingChanges.map(s => {
+                    const [birthYear] = s.birth_date.split('-').map(Number);
+                    const ageAtChange = s.change.date.getFullYear() - birthYear;
+                    const currentBranch = getCurrentBranch(parseLocalDate(s.birth_date));
+                    const monthIdx = s.change.date.getMonth();
+                    const showHeader = monthIdx !== lastMonth;
+                    lastMonth = monthIdx;
+                    const monthName = format(s.change.date, 'MMMM', { locale: ptBR });
+                    return (
+                      <div key={s.id}>
+                        {showHeader && (
+                          <div className="flex items-center gap-2 py-2 mt-1 first:mt-0">
+                            <Calendar className="h-4 w-4 text-amber-500" />
+                            <span className="text-sm font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">{monthName}</span>
+                            <div className="flex-1 h-px bg-amber-200 dark:bg-amber-800" />
+                          </div>
+                        )}
+                        <div className="rounded-lg bg-muted/50 p-3">
+                          <div className="flex items-start gap-2">
+                            {s.photo_url ? (
+                              <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
+                                <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                              </button>
+                            ) : (
+                              <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                                <User className="h-4 w-4 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
+                                <Badge variant={s.change.monthsLeft <= 2 ? 'destructive' : 'secondary'} className="text-xs flex-shrink-0">
+                                  {formatTimeLeft(s.change.monthsLeft, s.change.daysLeft)}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {currentBranch?.icon} {currentBranch?.name} → {s.change.branch.icon} {s.change.branch.name} · {ageAtChange} anos
+                              </p>
                             </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
-                              <Badge variant={s.isToday ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.isToday ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
-                                {s.isToday ? '🎉 Hoje!' : `${s.daysUntil}d`}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })} · {s.nextAge} anos
-                              {branch && <span> · {branch.icon} {branch.name}</span>}
-                            </p>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                });
-              })()
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                    );
+                  });
+                })()
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Birthdays */}
+          <Card className="order-1 lg:order-3 border-t-4 border-t-pink-500 border shadow-sm flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Cake className="h-5 w-5 text-pink-500" /> Aniversariantes
+                {upcomingBirthdays.length > 0 && (
+                  <Badge variant="outline" className="ml-auto text-xs">{upcomingBirthdays.length}</Badge>
+                )}
+              </CardTitle>
+              <p className="text-sm font-medium text-muted-foreground">Próximos 30 dias</p>
+            </CardHeader>
+            <CardContent className="space-y-1 overflow-y-auto max-h-[380px] flex-1">
+              {upcomingBirthdays.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <Cake className="h-8 w-8 text-muted-foreground/50 mb-2" />
+                  <p className="text-sm text-muted-foreground">Nenhum aniversário nos próximos 30 dias</p>
+                </div>
+              ) : (
+                (() => {
+                  let lastMonth = -1;
+                  return upcomingBirthdays.map(s => {
+                    const branch = getEffectiveBranchKey(s);
+                    const monthIdx = s.nextBday.getMonth();
+                    const showHeader = monthIdx !== lastMonth;
+                    lastMonth = monthIdx;
+                    const monthName = format(s.nextBday, 'MMMM', { locale: ptBR });
+                    return (
+                      <div key={s.id}>
+                        {showHeader && (
+                          <div className="flex items-center gap-2 py-2 mt-1 first:mt-0">
+                            <Calendar className="h-4 w-4 text-pink-500" />
+                            <span className="text-sm font-bold uppercase tracking-wide text-pink-600 dark:text-pink-400">{monthName}</span>
+                            <div className="flex-1 h-px bg-pink-200 dark:bg-pink-800" />
+                          </div>
+                        )}
+                        <div className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
+                          <div className="flex items-start gap-2">
+                            {s.photo_url ? (
+                              <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
+                                <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                              </button>
+                            ) : (
+                              <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
+                                <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-2">
+                                <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
+                                <Badge variant={s.isToday ? 'default' : 'outline'} className={`text-xs flex-shrink-0 ${s.isToday ? 'bg-green-600 hover:bg-green-700 text-white border-0' : ''}`}>
+                                  {s.isToday ? '🎉 Hoje!' : `${s.daysUntil}d`}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {format(s.nextBday, "dd 'de' MMM", { locale: ptBR })} · {s.nextAge} anos
+                                {branch && <span> · {branch.icon} {branch.name}</span>}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  });
+                })()
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Branch Cards */}
@@ -1010,12 +1001,7 @@ const Dashboard = () => {
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <ScoutPhoto 
-                photoUrl={selectedPhoto.url} 
-                alt={selectedPhoto.name} 
-                className="w-64 h-64 rounded-xl object-cover shadow-lg" 
-                fallback={<div className="w-64 h-64 bg-muted flex items-center justify-center rounded-xl"><User className="h-16 w-16 text-muted-foreground" /></div>}
-              />
+              <img src={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" loading="lazy" />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>
           )}
