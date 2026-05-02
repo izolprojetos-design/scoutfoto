@@ -981,7 +981,14 @@ const Dashboard = () => {
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <ScoutPhoto photoUrl={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" fallback={<div className="w-64 h-64 rounded-xl bg-muted flex items-center justify-center"><User className="h-12 w-12 text-muted-foreground" /></div>} />
+              <div className="w-64 h-64 rounded-xl overflow-hidden shadow-lg bg-muted">
+                <ScoutPhoto
+                  photoUrl={selectedPhoto.url}
+                  alt={selectedPhoto.name}
+                  className="w-full h-full object-cover"
+                  fallback={<div className="w-full h-full flex items-center justify-center"><User className="h-12 w-12 text-muted-foreground" /></div>}
+                />
+              </div>
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>
           )}
