@@ -18,6 +18,7 @@ import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
+import ScoutPhoto from '@/components/ScoutPhoto';
 import { Trash2 } from 'lucide-react';
 import {
   AlertDialog,
@@ -66,7 +67,21 @@ const getEffectiveBranchKey = (scout: Scout) => {
   if (scout.manual_branch) {
     return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(parseLocalDate(scout.birth_date));
   }
-  return getCurrentBranch(parseLocalDate(scout.birth_date));
+  const current = getCurrentBranch(parseLocalDate(scout.birth_date));
+  if (current) return current;
+
+  // Fallback para adultos sem ramo manual (>= 21 anos)
+  const birthDate = parseLocalDate(scout.birth_date);
+  const now = new Date();
+  let ageYears = now.getFullYear() - birthDate.getFullYear();
+  if (now.getMonth() < birthDate.getMonth() || (now.getMonth() === birthDate.getMonth() && now.getDate() < birthDate.getDate())) {
+    ageYears--;
+  }
+  if (ageYears >= 21) {
+    return ALL_CATEGORIES.find(b => b.key === 'voluntario') || null;
+  }
+  
+  return null;
 };
 
 const branchColors: Record<string, string> = {
@@ -150,7 +165,7 @@ const Dashboard = () => {
     const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
-      supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active').eq('is_active', true).order('name'),
+      supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
     ] as const;
 
     const adminPromises = isAdmin
@@ -708,7 +723,12 @@ const Dashboard = () => {
                     <div className="flex items-start gap-2">
                       {s.photo_url ? (
                         <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                          <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                          <ScoutPhoto 
+                            photoUrl={s.photo_url} 
+                            alt={s.name} 
+                            className="h-full w-full object-cover" 
+                            fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
+                          />
                         </button>
                       ) : (
                         <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -778,7 +798,12 @@ const Dashboard = () => {
                         <div className="flex items-start gap-2">
                           {s.photo_url ? (
                             <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                              <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                              <ScoutPhoto 
+                                photoUrl={s.photo_url} 
+                                alt={s.name} 
+                                className="h-full w-full object-cover" 
+                                fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
+                              />
                             </button>
                           ) : (
                             <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
@@ -845,7 +870,12 @@ const Dashboard = () => {
                         <div className="flex items-start gap-2">
                           {s.photo_url ? (
                             <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                              <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                              <ScoutPhoto 
+                                photoUrl={s.photo_url} 
+                                alt={s.name} 
+                                className="h-full w-full object-cover" 
+                                fallback={<div className={`h-full w-full flex items-center justify-center ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}><User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} /></div>}
+                              />
                             </button>
                           ) : (
                             <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
@@ -980,7 +1010,12 @@ const Dashboard = () => {
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <img src={selectedPhoto.url} alt={selectedPhoto.name} className="w-64 h-64 rounded-xl object-cover shadow-lg" loading="lazy" />
+              <ScoutPhoto 
+                photoUrl={selectedPhoto.url} 
+                alt={selectedPhoto.name} 
+                className="w-64 h-64 rounded-xl object-cover shadow-lg" 
+                fallback={<div className="w-64 h-64 bg-muted flex items-center justify-center rounded-xl"><User className="h-16 w-16 text-muted-foreground" /></div>}
+              />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>
           )}
