@@ -870,7 +870,12 @@ const Dashboard = () => {
                           <div className="flex items-start gap-2">
                             {s.photo_url ? (
                               <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                                <img src={s.photo_url} alt={s.name} className="h-full w-full object-cover" loading="lazy" />
+                                <ScoutPhoto 
+                                  photoUrl={s.photo_url} 
+                                  alt={s.name} 
+                                  className="h-full w-full object-cover" 
+                                  fallback={<div className={`h-full w-full flex items-center justify-center ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}><User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} /></div>}
+                                />
                               </button>
                             ) : (
                               <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
