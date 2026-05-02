@@ -296,6 +296,63 @@ export type Database = {
         }
         Relationships: []
       }
+      drive_uploads: {
+        Row: {
+          branch: string
+          created_at: string
+          drive_file_id: string | null
+          drive_folder_id: string | null
+          drive_folder_url: string | null
+          error_message: string | null
+          file_name: string
+          file_size: number
+          id: string
+          mime_type: string
+          photo_date: string
+          scout_id: string | null
+          scout_name: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          branch?: string
+          created_at?: string
+          drive_file_id?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
+          error_message?: string | null
+          file_name: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          photo_date: string
+          scout_id?: string | null
+          scout_name?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          branch?: string
+          created_at?: string
+          drive_file_id?: string | null
+          drive_folder_id?: string | null
+          drive_folder_url?: string | null
+          error_message?: string | null
+          file_name?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          photo_date?: string
+          scout_id?: string | null
+          scout_name?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -1149,6 +1206,45 @@ export type Database = {
           is_trusted?: boolean
           last_login_at?: string
           os?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_google_tokens: {
+        Row: {
+          access_token: string
+          created_at: string
+          expires_at: string
+          google_email: string
+          id: string
+          refresh_token: string
+          scope: string
+          token_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          expires_at: string
+          google_email?: string
+          id?: string
+          refresh_token: string
+          scope?: string
+          token_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          expires_at?: string
+          google_email?: string
+          id?: string
+          refresh_token?: string
+          scope?: string
+          token_type?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
