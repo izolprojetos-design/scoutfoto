@@ -178,6 +178,7 @@ const App = () => {
                       <Route path="/events/:eventId" element={<ProtectedRoute requiredPermission="view_events"><EventDetail /></ProtectedRoute>} />
                       <Route path="/scouts" element={<ProtectedRoute requiredPermission="view_scouts"><Scouts /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
+                      <Route path="/banco-imagens" element={<BancoImagens />} />
                       <Route path="/admin" element={<ProtectedRoute requiredPermission="access_admin"><Admin /></ProtectedRoute>} />
                     </Route>
                     
