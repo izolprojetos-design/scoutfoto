@@ -39,6 +39,7 @@ const AppSidebar = () => {
     { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
+    { to: '/banco-imagens', label: 'Banco de Imagens', icon: Cloud, show: true },
     { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
   ];
 
