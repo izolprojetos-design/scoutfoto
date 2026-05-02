@@ -113,6 +113,10 @@ const BancoImagens = () => {
   };
 
   useEffect(() => {
+    document.title = 'Banco de Imagens — Google Drive | ScoutFoto';
+  }, []);
+
+  useEffect(() => {
     loadConnection();
     loadScouts();
     loadHistory();
