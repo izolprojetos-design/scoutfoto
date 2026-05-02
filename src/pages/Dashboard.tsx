@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -426,6 +426,20 @@ const Dashboard = () => {
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
             <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {(isAdmin || canUpload) && (
+              <Button onClick={() => navigate('/banco-imagens')} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+                <Cloud className="h-4 w-4" />
+                Banco de Imagens (Drive)
+              </Button>
+            )}
+            {canUpload && (
+              <Button onClick={() => navigate('/upload')} className="gap-2 shadow-sm">
+                <Upload className="h-4 w-4" />
+                Upload Fotos
+              </Button>
+            )}
           </div>
         </motion.div>
       </div>

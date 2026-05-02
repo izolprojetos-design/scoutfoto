@@ -1,53 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { SignJWT, importPKCS8 } from "https://deno.land/x/jose@v4.14.4/index.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function getGoogleDriveAccessToken() {
-  // O usuário deverá configurar as variáveis GOOGLE_CLIENT_EMAIL e GOOGLE_PRIVATE_KEY no Supabase Vault ou Secrets
-  const clientEmail = Deno.env.get('GOOGLE_CLIENT_EMAIL');
-  let privateKey = Deno.env.get('GOOGLE_PRIVATE_KEY');
-
-  if (!clientEmail || !privateKey) {
-    throw new Error("Credenciais do Google Drive não configuradas no servidor.");
-  }
-
-  // Corrigir quebras de linha na chave privada (caso tenha sido inserida numa única linha)
-  privateKey = privateKey.replace(/\\n/g, '\n');
-
-  const algorithm = 'RS256';
-  const privateKeyObj = await importPKCS8(privateKey, algorithm);
-
-  const jwt = await new SignJWT({ scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive' })
-    .setProtectedHeader({ alg: algorithm, typ: 'JWT' })
-    .setIssuer(clientEmail)
-    .setAudience('https://oauth2.googleapis.com/token')
-    .setIssuedAt()
-    .setExpirationTime('1h')
-    .sign(privateKeyObj);
-
+async function refreshGoogleAccessToken(refreshToken: string, clientId: string, clientSecret: string) {
   const response = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: jwt,
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
     }),
   });
 
   if (!response.ok) {
     const err = await response.text();
-    console.error("Erro ao obter token do Google:", err);
-    throw new Error("Falha ao autenticar com o Google Drive");
+    console.error("Erro ao renovar token do Google:", err);
+    throw new Error("Falha ao renovar token do Google Drive");
   }
 
   const data = await response.json();
-  return data.access_token;
+  return data;
 }
 
 // Helper para buscar ou criar pasta no Google Drive
@@ -91,10 +71,6 @@ async function getOrCreateFolder(accessToken: string, folderName: string, parent
   }
 
   const createData = await createRes.json();
-  
-  // Como estamos usando Service Account, precisamos dar permissão de visualização para o link funcionar (Opcional, mas útil para o admin ver o link)
-  // Mas como a pasta raiz já pode ter permissão, as subpastas herdam. Vamos assumir que herda.
-  
   return createData.id;
 }
 
@@ -119,20 +95,69 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Parâmetros incompletos' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    console.log(`Recebido upload para Ramo: ${ramo}, Nome: ${nome}, Data: ${dataEvento}, Arquivo: ${file.name}`);
+    // Inicializa Supabase e valida sessão
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
 
-    // 1. Autenticar no Google
-    const accessToken = await getOrCreateFolder.accessToken || await getGoogleDriveAccessToken();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized user' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // 1. Obter o token do Google do usuário do banco de dados
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    const { data: tokenRecord, error: tokenError } = await supabaseAdmin
+      .from('user_google_tokens')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
+
+    if (tokenError || !tokenRecord) {
+      return new Response(JSON.stringify({ error: 'Google Drive não conectado' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    let accessToken = tokenRecord.access_token;
+
+    // Verificar se expirou ou está perto de expirar (margem de 5 minutos)
+    const expiresAt = new Date(tokenRecord.expires_at).getTime();
+    if (Date.now() > expiresAt - 5 * 60 * 1000) {
+      // Renovar
+      const clientId = Deno.env.get('GOOGLE_OAUTH_CLIENT_ID');
+      const clientSecret = Deno.env.get('GOOGLE_OAUTH_CLIENT_SECRET');
+
+      if (!clientId || !clientSecret) {
+        throw new Error("Client ID ou Secret do Google não configurados no servidor.");
+      }
+
+      if (!tokenRecord.refresh_token) {
+        throw new Error("Refresh token ausente. Refaça o login no Google Drive.");
+      }
+
+      const refreshed = await refreshGoogleAccessToken(tokenRecord.refresh_token, clientId, clientSecret);
+      accessToken = refreshed.access_token;
+      
+      const newExpiresAt = new Date(Date.now() + refreshed.expires_in * 1000).toISOString();
+      
+      await supabaseAdmin.from('user_google_tokens').update({
+        access_token: accessToken,
+        expires_at: newExpiresAt
+      }).eq('user_id', user.id);
+    }
 
     // 2. Criar a estrutura ScoutFoto > Ramo > Nome > Data
-    // Opcional: Se houver um ID Fixo para a pasta RAIZ do ScoutFoto, o cliente pode colocar na variável de ambiente GOOGLE_DRIVE_ROOT_FOLDER_ID
-    const rootFolderId = Deno.env.get('GOOGLE_DRIVE_ROOT_FOLDER_ID') || await getOrCreateFolder(accessToken, 'ScoutFoto');
+    const rootFolderId = await getOrCreateFolder(accessToken, 'ScoutFoto');
     const ramoFolderId = await getOrCreateFolder(accessToken, ramo, rootFolderId);
     const nomeFolderId = await getOrCreateFolder(accessToken, nome, ramoFolderId);
     const dataFolderId = await getOrCreateFolder(accessToken, dataEvento, nomeFolderId);
 
     // 3. Fazer o Upload do arquivo
-    // Usamos o upload multipart para enviar metadata e o arquivo de uma vez
     const metadata = {
       name: file.name,
       parents: [dataFolderId]
@@ -144,7 +169,6 @@ serve(async (req) => {
 
     const fileBuffer = await file.arrayBuffer();
 
-    // Construir o corpo da requisição multipart (não é recomendado para arquivos super gigantes, mas fotos até 10MB é ok)
     const multipartBody = new Blob([
       delimiter,
       'Content-Type: application/json\r\n\r\n',
