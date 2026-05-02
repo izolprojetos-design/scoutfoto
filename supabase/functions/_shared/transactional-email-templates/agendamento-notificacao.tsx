@@ -18,7 +18,7 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'ScoutFoto'
-const SITE_URL = 'https://scoutfoto.com.br'
+const SITE_URL = 'https://scoutfoto.app'
 
 interface Props {
   nomeAssociado?: string

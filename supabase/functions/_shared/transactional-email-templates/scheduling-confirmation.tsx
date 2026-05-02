@@ -18,7 +18,7 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'ScoutFoto'
-const SITE_URL = 'https://scoutfoto.com.br'
+const SITE_URL = 'https://scoutfoto.app'
 
 interface SchedulingConfirmationProps {
   nomeResponsavel?: string
@@ -111,7 +111,7 @@ export const template = {
     tipo: 'Reunião',
     ramo: '🐺 Lobinho',
     descricao: 'Reunião ordinária da Alcateia.',
-    confirmUrl: 'https://scoutfoto.com.br/confirmar-agendamento?token=exemplo',
+    confirmUrl: 'https://scoutfoto.app/confirmar-agendamento?token=exemplo',
   },
 } satisfies TemplateEntry
 

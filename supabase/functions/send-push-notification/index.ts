@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
 
     // Create application server
     const appServer = await webpush.ApplicationServer.new({
-      contactInformation: "mailto:admin@scoutfoto.com.br",
+      contactInformation: "mailto:admin@scoutfoto.app",
       vapidKeys,
     });
 

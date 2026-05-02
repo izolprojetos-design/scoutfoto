@@ -17,7 +17,7 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'scoutfoto'
-const SITE_URL = 'https://scoutfoto.com.br'
+const SITE_URL = 'https://scoutfoto.app'
 
 interface SecurityAccountLockedProps {
   name?: string
