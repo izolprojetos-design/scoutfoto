@@ -133,7 +133,7 @@ const Login = () => {
           </div>
 
           <p className="text-sm text-white/50">
-            © {new Date().getFullYear()} ScoutFoto — Sempre Alerta!
+            © {new Date().getFullYear()} ScoutFoto - Todos os direitos reservados
           </p>
         </div>
 
@@ -252,7 +252,7 @@ const Login = () => {
           </Card>
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            © {new Date().getFullYear()} ScoutFoto — Sempre Alerta!
+            © {new Date().getFullYear()} ScoutFoto - Todos os direitos reservados
           </p>
         </motion.div>
       </div>
