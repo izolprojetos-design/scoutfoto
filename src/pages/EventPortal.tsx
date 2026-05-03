@@ -156,7 +156,9 @@ const EventPortal = () => {
       <header className="border-b bg-card/95 backdrop-blur sticky top-0 z-50">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg scout-gradient text-sm">⚜️</div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg scout-gradient shadow-sm overflow-hidden p-1">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-sm" />
+            </div>
             <span className="font-bold text-foreground tracking-tight">ScoutFoto</span>
           </div>
           {expiresAt && (
@@ -234,7 +236,9 @@ const EventPortal = () => {
 
         <div className="mt-16 border-t py-8 text-center">
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <span>⚜️</span>
+            <div className="w-6 h-6 rounded-md scout-gradient overflow-hidden p-0.5 inline-block align-middle mr-1 shadow-sm">
+              <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-sm" />
+            </div>
             <span>ScoutFoto — Compartilhamento seguro de fotos escoteiras</span>
           </div>
           <p className="mt-2 text-xs text-muted-foreground/70">

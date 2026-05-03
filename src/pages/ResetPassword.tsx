@@ -68,8 +68,8 @@ const ResetPassword = () => {
         className="w-full max-w-[420px]"
       >
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl scout-gradient text-3xl shadow-lg">
-            ⚜️
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl scout-gradient shadow-lg overflow-hidden p-2">
+            <img src="/logo.png" alt="ScoutFoto Logo" className="w-full h-full object-contain drop-shadow-sm" />
           </div>
           <h1 className="text-2xl font-bold text-foreground tracking-tight">Redefinir Senha</h1>
           <p className="mt-1 text-sm text-muted-foreground">

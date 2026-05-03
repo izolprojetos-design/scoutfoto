@@ -63,8 +63,8 @@ const AppSidebar = () => {
               className="hover:bg-sidebar-accent"
             >
               <NavLink to="/dashboard" className="flex items-center gap-2.5" onClick={() => isMobile && setOpenMobile(false)}>
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg scout-gradient text-base shadow-sm">
-                  ⚜️
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg scout-gradient shadow-sm overflow-hidden p-1">
+                  <img src="/logo.png" alt="Logo" className="w-full h-full object-contain drop-shadow-sm" />
                 </div>
                 {!collapsed && (
                   <span className="text-lg font-bold tracking-tight text-sidebar-primary">
