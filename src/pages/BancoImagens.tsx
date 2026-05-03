@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Upload, X, Cloud, CheckCircle2, Image as ImageIcon, Loader2, Link2, AlertCircle, Check } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,8 +17,9 @@ import { useAuth } from '@/contexts/AuthContext';
 const GOOGLE_CLIENT_ID = "570366684976-6mi3nusips173enerut0ap5jlsk6sghn.apps.googleusercontent.com";
 
 const BancoImagens = () => {
-  const { user } = useAuth();
+  const { user, canUpload } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   
   const [ramo, setRamo] = useState<string>('');
   const [nome, setNome] = useState<string>('');
@@ -241,14 +242,22 @@ const BancoImagens = () => {
 
   return (
     <div className="container max-w-3xl mx-auto py-8 space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <Cloud className="h-8 w-8 text-primary" />
-          Banco de Imagens
-        </h1>
-        <p className="text-muted-foreground">
-          Envie e organize fotos das atividades escoteiras automaticamente no seu Google Drive.
-        </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            <Cloud className="h-8 w-8 text-primary" />
+            Banco de Imagens
+          </h1>
+          <p className="text-muted-foreground">
+            Envie e organize fotos das atividades escoteiras automaticamente no seu Google Drive.
+          </p>
+        </div>
+        {canUpload && (
+          <Button onClick={() => navigate('/upload')} className="gap-2 shadow-sm shrink-0">
+            <Upload className="h-4 w-4" />
+            Upload para o Sistema
+          </Button>
+        )}
       </div>
 
       {/* Conexão Google */}
