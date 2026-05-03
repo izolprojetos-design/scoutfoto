@@ -14,7 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
-const GOOGLE_CLIENT_ID = "1049582988328-bfro4hn5v8grq8dj57q54b1la3s7jshc.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = "570366684976-6mi3nusips173enerut0ap5jlsk6sghn.apps.googleusercontent.com";
 
 const BancoImagens = () => {
   const { user } = useAuth();
@@ -70,10 +70,7 @@ const BancoImagens = () => {
     toast.loading('Autenticando com o Google...', { id: 'oauth-toast' });
     
     try {
-      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      const redirectUri = isLocalhost 
-        ? 'http://localhost:5173/banco-imagens' 
-        : 'https://scoutfoto.app/banco-imagens';
+      const redirectUri = `${window.location.origin}/banco-imagens`;
 
       const { data, error } = await supabase.functions.invoke('drive-auth', {
         body: { code, redirectUri }
@@ -98,10 +95,7 @@ const BancoImagens = () => {
   };
 
   const handleConnectDrive = () => {
-    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    const baseRedirectUri = isLocalhost 
-      ? 'http://localhost:5173/banco-imagens' 
-      : 'https://scoutfoto.app/banco-imagens';
+    const baseRedirectUri = `${window.location.origin}/banco-imagens`;
       
     const redirectUri = encodeURIComponent(baseRedirectUri);
     const scopes = encodeURIComponent('https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email');
