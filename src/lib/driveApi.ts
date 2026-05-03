@@ -67,15 +67,18 @@ export const uploadToGoogleDrive = async ({ ramo, nome, data, files, onProgress 
       });
     }
 
+    const userId = (await supabase.auth.getUser()).data.user?.id;
     const { error: dbError } = await supabase
-      .from('drive_uploads_log')
+      .from('drive_uploads')
       .insert({
-        ramo,
-        nome,
-        data_evento: data,
-        pasta_drive_id: lastFolderId,
-        total_fotos: successCount,
-        criado_por: (await supabase.auth.getUser()).data.user?.id
+        branch: ramo,
+        scout_name: nome,
+        photo_date: data,
+        drive_folder_id: lastFolderId,
+        drive_folder_url: lastFolderLink,
+        file_name: `${successCount} arquivo(s)`,
+        status: 'success',
+        user_id: userId!,
       });
 
     if (dbError) {
