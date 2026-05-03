@@ -100,7 +100,7 @@ const Login = () => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm overflow-hidden p-2 shadow-sm">
-                <img src="/images/logo-grupo.png" alt="ScoutFoto Logo" className="w-full h-full object-contain drop-shadow-md" />
+                <img src="/favicon.ico" alt="ScoutFoto Logo" className="w-full h-full object-contain drop-shadow-md" />
               </div>
               <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>ScoutFoto</span>
             </div>
@@ -157,7 +157,7 @@ const Login = () => {
               transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
               className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl scout-gradient shadow-lg overflow-hidden p-2.5"
             >
-              <img src="/images/logo-grupo.png" alt="ScoutFoto Logo" className="w-full h-full object-contain drop-shadow-sm" />
+              <img src="/favicon.ico" alt="ScoutFoto Logo" className="w-full h-full object-contain drop-shadow-sm" />
             </motion.div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">ScoutFoto</h1>
             <p className="mt-1 text-sm text-muted-foreground">Banco de imagens escoteiro</p>
