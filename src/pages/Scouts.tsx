@@ -2026,6 +2026,13 @@ const Scouts = () => {
                     ⚠️ Nenhum responsável cadastrado para este menor de idade.
                   </div>
                 )}
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" /> Fotos do Integrante
+                  </h4>
+                  <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                </div>
               </div>
             );
           })()}
