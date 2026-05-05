@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
     warmup: {
-      client: ['./src/main.tsx', './src/App.tsx'],
+      clientFiles: ['./src/main.tsx', './src/App.tsx'],
     },
   },
   build: {
