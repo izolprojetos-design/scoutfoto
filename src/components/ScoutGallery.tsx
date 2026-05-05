@@ -9,7 +9,7 @@ import { Loader2, Upload, Trash2, Download, ImageIcon, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { logAudit } from '@/lib/auditLog';
+
 
 interface ScoutPhotoRecord {
   id: string;
