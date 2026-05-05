@@ -31,6 +31,7 @@ import {
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
+import ScoutGallery from '@/components/ScoutGallery';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
@@ -1903,7 +1904,7 @@ const Scouts = () => {
 
       {/* Scout detail viewer dialog */}
       <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Dados do Integrante</DialogTitle>
           </DialogHeader>
@@ -2025,6 +2026,13 @@ const Scouts = () => {
                     ⚠️ Nenhum responsável cadastrado para este menor de idade.
                   </div>
                 )}
+
+                <div className="pt-4 border-t">
+                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4" /> Fotos do Integrante
+                  </h4>
+                  <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                </div>
               </div>
             );
           })()}

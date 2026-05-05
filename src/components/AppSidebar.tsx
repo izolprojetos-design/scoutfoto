@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, Cloud } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import {
@@ -39,7 +39,6 @@ const AppSidebar = () => {
     { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
-    { to: '/banco-imagens', label: 'Banco de Imagens', icon: Cloud, show: true },
     { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
   ];
 

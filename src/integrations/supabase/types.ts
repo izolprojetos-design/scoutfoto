@@ -993,6 +993,39 @@ export type Database = {
           },
         ]
       }
+      scout_photos: {
+        Row: {
+          caption: string
+          created_at: string
+          file_size: number
+          id: string
+          mime_type: string
+          scout_id: string
+          storage_path: string
+          uploaded_by: string
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          scout_id: string
+          storage_path: string
+          uploaded_by: string
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          file_size?: number
+          id?: string
+          mime_type?: string
+          scout_id?: string
+          storage_path?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       scouts: {
         Row: {
           birth_date: string
