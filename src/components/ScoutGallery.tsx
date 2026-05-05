@@ -122,7 +122,6 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     setProgress({ current: 0, total: 0 });
     if (success > 0) {
       toast.success(`${success} foto(s) enviada(s)`);
-      await logAudit('upload_scout_gallery_photo', undefined, { scout_id: scoutId, count: success });
       load();
     }
   };
@@ -134,7 +133,6 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       return;
     }
     await supabase.storage.from('scout-photos').remove([photo.storage_path]);
-    await logAudit('delete_scout_gallery_photo', undefined, { scout_id: scoutId, photo_id: photo.id });
     toast.success('Foto excluída');
     setDeleting(null);
     load();
