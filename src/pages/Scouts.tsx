@@ -1904,7 +1904,7 @@ const Scouts = () => {
 
       {/* Scout detail viewer dialog */}
       <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Dados do Integrante</DialogTitle>
           </DialogHeader>
