@@ -30,27 +30,27 @@ const persister = createSyncStoragePersister({
 });
 
 // Lazy-loaded pages for code splitting
-const Index = lazy(() => import("./pages/Index"));
-const Login = lazy(() => import("./pages/Login"));
-const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Upload = lazy(() => import("./pages/Upload"));
-const Gallery = lazy(() => import("./pages/Gallery"));
-const Events = lazy(() => import("./pages/Events"));
-const EventDetail = lazy(() => import("./pages/EventDetail"));
-const Admin = lazy(() => import("./pages/Admin"));
-const EventPortal = lazy(() => import("./pages/EventPortal"));
-const Scouts = lazy(() => import("./pages/Scouts"));
-const ScoutCalendar = lazy(() => import("./pages/ScoutCalendar"));
-const MyAgendamentos = lazy(() => import("./pages/MyAgendamentos"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const Login = lazyWithRetry(() => import("./pages/Login"));
+const ForgotPassword = lazyWithRetry(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazyWithRetry(() => import("./pages/ResetPassword"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Upload = lazyWithRetry(() => import("./pages/Upload"));
+const Gallery = lazyWithRetry(() => import("./pages/Gallery"));
+const Events = lazyWithRetry(() => import("./pages/Events"));
+const EventDetail = lazyWithRetry(() => import("./pages/EventDetail"));
+const Admin = lazyWithRetry(() => import("./pages/Admin"));
+const EventPortal = lazyWithRetry(() => import("./pages/EventPortal"));
+const Scouts = lazyWithRetry(() => import("./pages/Scouts"));
+const ScoutCalendar = lazyWithRetry(() => import("./pages/ScoutCalendar"));
+const MyAgendamentos = lazyWithRetry(() => import("./pages/MyAgendamentos"));
 
-const Profile = lazy(() => import("./pages/Profile"));
-const BranchScouts = lazy(() => import("./pages/BranchScouts"));
-const Register = lazy(() => import("./pages/Register"));
-const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
-const ConfirmScheduling = lazy(() => import("./pages/ConfirmScheduling"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
+const Register = lazyWithRetry(() => import("./pages/Register"));
+const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
+const ConfirmScheduling = lazyWithRetry(() => import("./pages/ConfirmScheduling"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 const isAuthError = (error: unknown): boolean => {
   if (!error) return false;
