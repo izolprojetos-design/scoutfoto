@@ -84,6 +84,8 @@ const AgendamentosManager = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // RLS quick test
