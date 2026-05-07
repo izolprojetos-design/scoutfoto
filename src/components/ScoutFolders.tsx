@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import {
   Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
   UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
-  CheckSquare, Square,
+  CheckSquare, Square, RotateCcw, Play,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
@@ -41,6 +41,50 @@ interface PendingFile {
   preview: string;
   status: FileStatus;
   message?: string;
+  loaded: number;     // bytes already uploaded for current attempt
+  total: number;      // total bytes (of compressed payload, fallback to original size)
+}
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
+/**
+ * Upload via XHR to expose byte progress + cancellation.
+ * Returns true on success. Throws on HTTP/network error.
+ */
+function xhrUploadToStorage(opts: {
+  bucket: string;
+  path: string;
+  file: Blob;
+  contentType: string;
+  accessToken: string;
+  onProgress: (loaded: number, total: number) => void;
+  registerXhr: (xhr: XMLHttpRequest) => void;
+}): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `${SUPABASE_URL}/storage/v1/object/${opts.bucket}/${opts.path}`;
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Authorization', `Bearer ${opts.accessToken}`);
+    xhr.setRequestHeader('apikey', SUPABASE_ANON);
+    xhr.setRequestHeader('Content-Type', opts.contentType);
+    xhr.setRequestHeader('x-upsert', 'false');
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) opts.onProgress(e.loaded, e.total);
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else {
+        let msg = `HTTP ${xhr.status}`;
+        try { const j = JSON.parse(xhr.responseText); if (j?.message) msg = j.message; } catch { /* */ }
+        reject(new Error(msg));
+      }
+    };
+    xhr.onerror = () => reject(new Error('Falha de rede'));
+    xhr.onabort = () => reject(new Error('Cancelado'));
+    opts.registerXhr(xhr);
+    xhr.send(opts.file);
+  });
 }
 
 const MAX_SIZE_MB = 10;
@@ -74,6 +118,12 @@ function isValidDate(s: string): boolean {
   return !isNaN(d.getTime());
 }
 
+function formatBytes(n: number): string {
+  if (!n || n < 1024) return `${n || 0} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
+
 export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
@@ -96,6 +146,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cancelUploadRef = useRef(false);
+  const activeXhrRef = useRef<XMLHttpRequest | null>(null);
 
   // Selection (bulk) state inside a date folder
   const [selectMode, setSelectMode] = useState(false);
@@ -203,6 +254,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         date: defaultDate,
         preview: URL.createObjectURL(f),
         status: 'pending',
+        loaded: 0,
+        total: f.size,
       });
     }
     return { pending, rejected };
@@ -264,6 +317,10 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, status, message } : p));
   };
 
+  const setFileProgress = (id: string, loaded: number, total: number) => {
+    setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, loaded, total } : p));
+  };
+
   // Validation summary
   const dateErrors = useMemo(() => {
     const errs: string[] = [];
@@ -276,35 +333,69 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     return errs;
   }, [applyToAll, photoDate, pendingFiles]);
 
-  const handleUpload = async () => {
-    if (!user || !pendingFiles.length) return;
+  const failedCount = useMemo(() => pendingFiles.filter(p => p.status === 'error').length, [pendingFiles]);
+  const pendingCount = useMemo(() => pendingFiles.filter(p => p.status === 'pending' || p.status === 'skipped').length, [pendingFiles]);
+
+  /**
+   * Process the queue. If `onlyIds` is provided, only those items are processed
+   * (used by Retry-failed and Resume). Otherwise, processes everything not yet 'success'.
+   */
+  const runUpload = async (onlyIds?: Set<string>) => {
+    if (!user) return;
     if (dateErrors.length) {
       toast.error(dateErrors[0]);
       return;
     }
 
+    // Snapshot of items to process (avoid stale closure on state)
+    const snapshot = pendingFiles.filter(p => {
+      if (onlyIds) return onlyIds.has(p.id);
+      return p.status !== 'success' && p.status !== 'uploading';
+    });
+    if (!snapshot.length) return;
+
+    // Reset their state to pending + zero progress
+    setPendingFiles(prev => prev.map(p =>
+      snapshot.some(s => s.id === p.id)
+        ? { ...p, status: 'pending', message: undefined, loaded: 0, total: p.file.size }
+        : p
+    ));
+
     cancelUploadRef.current = false;
     setUploading(true);
-    const total = pendingFiles.length;
+    const total = snapshot.length;
     setProgress({ current: 0, total });
     let success = 0;
-    let lastDate = applyToAll ? photoDate : pendingFiles[0].date;
+    let lastDate = applyToAll ? photoDate : snapshot[0].date;
 
-    for (let i = 0; i < pendingFiles.length; i++) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      toast.error('Sessão expirada. Faça login novamente.');
+      setUploading(false);
+      return;
+    }
+
+    for (let i = 0; i < snapshot.length; i++) {
       if (cancelUploadRef.current) {
-        // Mark remaining as skipped
-        setPendingFiles(prev => prev.map((p, idx) => idx >= i && p.status === 'pending'
-          ? { ...p, status: 'skipped', message: 'Cancelado' } : p));
-        toast('Upload cancelado.');
+        // Keep non-success items in queue so user can resume
+        setPendingFiles(prev => prev.map(p => {
+          const inBatch = snapshot.some(s => s.id === p.id);
+          if (!inBatch) return p;
+          if (p.status === 'success') return p;
+          return { ...p, status: 'pending', message: 'Pausado — pronto para retomar', loaded: 0 };
+        }));
+        toast('Upload cancelado. A fila foi mantida para você retomar.');
         break;
       }
 
-      const item = pendingFiles[i];
+      const item = snapshot[i];
       const date = applyToAll ? photoDate : item.date;
       lastDate = date;
       setProgress({ current: i + 1, total });
       setFileStatus(item.id, 'uploading');
 
+      let storedPath: string | null = null;
       try {
         if (!isValidDate(date)) {
           setFileStatus(item.id, 'error', 'Data inválida');
@@ -313,12 +404,22 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         const compressed = await compressImage(item.file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
-        const { error: upErr } = await supabase.storage
-          .from('scout-photos')
-          .upload(path, compressed, { upsert: false, contentType: compressed.type });
-        if (upErr) throw upErr;
+        // Initialize progress with compressed size
+        setFileProgress(item.id, 0, compressed.size);
+
+        await xhrUploadToStorage({
+          bucket: 'scout-photos',
+          path,
+          file: compressed,
+          contentType: compressed.type,
+          accessToken,
+          onProgress: (loaded, totalBytes) => setFileProgress(item.id, loaded, totalBytes),
+          registerXhr: (xhr) => { activeXhrRef.current = xhr; },
+        });
+        activeXhrRef.current = null;
 
         const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
           scout_id: scoutId,
@@ -333,14 +434,21 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           await supabase.storage.from('scout-photos').remove([path]);
           throw dbErr;
         }
+        setFileProgress(item.id, compressed.size, compressed.size);
         setFileStatus(item.id, 'success');
         success++;
       } catch (err: any) {
         console.error('upload err', err);
+        // If aborted by cancel, the loop will handle it on next iteration
+        if (cancelUploadRef.current) {
+          if (storedPath) { try { await supabase.storage.from('scout-photos').remove([storedPath]); } catch { /* */ } }
+          continue;
+        }
         setFileStatus(item.id, 'error', err.message || 'erro');
       }
     }
 
+    activeXhrRef.current = null;
     setUploading(false);
     setProgress({ current: 0, total: 0 });
 
@@ -354,7 +462,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
     // Auto-close if all succeeded
     setPendingFiles(prev => {
-      const allDone = prev.every(p => p.status === 'success');
+      const allDone = prev.length > 0 && prev.every(p => p.status === 'success');
       if (allDone) {
         cleanupPreviews(prev);
         setUploadOpen(false);
@@ -365,8 +473,28 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     });
   };
 
+  const handleUpload = () => runUpload();
+
+  const handleRetryFailed = () => {
+    const ids = new Set(pendingFiles.filter(p => p.status === 'error').map(p => p.id));
+    if (!ids.size) return;
+    runUpload(ids);
+  };
+
+  const handleResume = () => {
+    const ids = new Set(
+      pendingFiles.filter(p => p.status === 'pending' || p.status === 'skipped').map(p => p.id)
+    );
+    if (!ids.size) return;
+    runUpload(ids);
+  };
+
   const cancelOngoingUpload = () => {
     cancelUploadRef.current = true;
+    if (activeXhrRef.current) {
+      try { activeXhrRef.current.abort(); } catch { /* */ }
+      activeXhrRef.current = null;
+    }
   };
 
   // Direct drop on a folder card — skip dialog
@@ -1075,14 +1203,33 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                         <div className="flex-1 min-w-0 space-y-1">
                           <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
                           <p className="text-[10px] text-muted-foreground">
-                            {(p.file.size / 1024 / 1024).toFixed(2)} MB
-                            {p.status !== 'pending' && p.status !== 'uploading' && p.message && (
+                            {p.status === 'uploading' || (p.status === 'success' && p.total > 0) ? (
+                              <>
+                                {formatBytes(p.loaded)} / {formatBytes(p.total)}
+                                {' · '}
+                                <span className={p.status === 'success' ? 'text-green-600' : 'text-primary'}>
+                                  {Math.min(100, Math.round((p.loaded / Math.max(p.total, 1)) * 100))}%
+                                </span>
+                              </>
+                            ) : (
+                              <>{formatBytes(p.file.size)}</>
+                            )}
+                            {p.status !== 'pending' && p.status !== 'uploading' && p.status !== 'success' && p.message && (
                               <span className={p.status === 'error' ? ' text-destructive' : ''}> · {p.message}</span>
                             )}
                             {p.status === 'success' && <span className="text-green-600"> · enviada</span>}
                             {p.status === 'uploading' && <span className="text-primary"> · enviando…</span>}
                             {p.status === 'skipped' && <span> · ignorada</span>}
+                            {p.status === 'pending' && p.message && <span> · {p.message}</span>}
                           </p>
+                          {(p.status === 'uploading' || p.status === 'success') && p.total > 0 && (
+                            <div className="h-1 w-full bg-muted rounded overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${p.status === 'success' ? 'bg-green-500' : 'bg-primary'}`}
+                                style={{ width: `${Math.min(100, (p.loaded / Math.max(p.total, 1)) * 100)}%` }}
+                              />
+                            </div>
+                          )}
                           <Input
                             type="date"
                             value={effectiveDate}
@@ -1111,20 +1258,24 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               </div>
             )}
 
-            {uploading && (
-              <div className="space-y-1">
-                <p className="text-sm">Enviando {progress.current} de {progress.total}…</p>
-                <div className="h-2 w-full bg-muted rounded overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
-                  />
+            {uploading && (() => {
+              const totalBytes = pendingFiles.reduce((s, p) => s + (p.total || p.file.size), 0);
+              const loadedBytes = pendingFiles.reduce((s, p) => s + (p.status === 'success' ? (p.total || p.file.size) : p.loaded), 0);
+              const pct = totalBytes ? Math.min(100, (loadedBytes / totalBytes) * 100) : 0;
+              return (
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    Enviando {progress.current} de {progress.total} · {formatBytes(loadedBytes)} / {formatBytes(totalBytes)} ({pct.toFixed(1)}%)
+                  </p>
+                  <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
             {uploading ? (
               <Button variant="destructive" onClick={cancelOngoingUpload} className="gap-2">
                 <X className="h-4 w-4" /> Cancelar upload
@@ -1142,13 +1293,38 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 >
                   Fechar
                 </Button>
+                {failedCount > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleRetryFailed}
+                    disabled={dateErrors.length > 0}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Tentar novamente {failedCount} falha{failedCount !== 1 ? 's' : ''}
+                  </Button>
+                )}
+                {pendingCount > 0 && pendingFiles.some(p => p.status === 'success' || p.status === 'error') && (
+                  <Button
+                    variant="outline"
+                    onClick={handleResume}
+                    disabled={dateErrors.length > 0}
+                    className="gap-2"
+                  >
+                    <Play className="h-4 w-4" />
+                    Retomar {pendingCount} pendente{pendingCount !== 1 ? 's' : ''}
+                  </Button>
+                )}
                 <Button
                   onClick={handleUpload}
                   disabled={!pendingFiles.length || dateErrors.length > 0}
                   className="gap-2"
                 >
                   <Upload className="h-4 w-4" />
-                  Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
+                  {pendingFiles.every(p => p.status === 'success' || p.status === 'error' || p.status === 'pending' || p.status === 'skipped')
+                    && (pendingFiles.some(p => p.status === 'success') || pendingFiles.some(p => p.status === 'error'))
+                    ? `Reenviar todos (${pendingFiles.length})`
+                    : `Confirmar e enviar ${pendingFiles.length} foto${pendingFiles.length !== 1 ? 's' : ''}`}
                 </Button>
               </>
             )}
