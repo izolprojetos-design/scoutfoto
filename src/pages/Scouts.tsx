@@ -2102,6 +2102,16 @@ const Scouts = () => {
                     </Tabs>
                   </TabsContent>
 
+                  <TabsContent value="timeline" className="mt-4">
+                    <ScoutTimeline
+                      scoutId={viewingScout.id}
+                      scoutCreatedAt={viewingScout.created_at}
+                      scoutBirthDate={viewingScout.birth_date}
+                      transitionDate={viewingScout.transition_date}
+                      currentSection={viewingScout.section}
+                    />
+                  </TabsContent>
+
                   <TabsContent value="historico" className="mt-4">
                     <ScoutHistory scoutId={viewingScout.id} />
                   </TabsContent>
