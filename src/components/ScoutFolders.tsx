@@ -261,7 +261,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <Folder className="h-12 w-12 mb-2 opacity-40" />
           <p className="text-sm">Nenhuma foto cadastrada para gerar pastas</p>
           {canManage && (
-            <p className="text-xs mt-1">Clique em <strong>Enviar fotos</strong> acima para começar.</p>
+            <p className="text-xs mt-1">Clique em <strong>Enviar fotos</strong> ou <strong>arraste imagens</strong> aqui para começar.</p>
           )}
         </div>
       ) : (
