@@ -1,4 +1,6 @@
 import { lazy, Suspense, useState, useCallback, useEffect } from "react";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { useAppUpdate, usePeriodicUpdateCheck } from "@/hooks/useAppUpdate";
 import { useRemoteForceRefresh } from "@/hooks/useRemoteForceRefresh";
 import { useAuth } from "@/contexts/AuthContext";
