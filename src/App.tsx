@@ -139,7 +139,11 @@ const App = () => {
 
   return (
     <>
-      {!splashDone && <SplashScreen onFinished={handleSplashFinished} />}
+      {!splashDone && (
+        <Suspense fallback={null}>
+          <SplashScreen onFinished={handleSplashFinished} />
+        </Suspense>
+      )}
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <PersistQueryClientProvider
           client={queryClient}
@@ -153,7 +157,9 @@ const App = () => {
             <Toaster />
             <Sonner />
             <ConnectivityBanner />
-            <InstallPrompt />
+            <Suspense fallback={null}>
+              <InstallPrompt />
+            </Suspense>
             <BrowserRouter>
               <AuthProvider>
                 <RemoteRefreshWatcher />
