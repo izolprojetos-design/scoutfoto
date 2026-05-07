@@ -789,8 +789,8 @@ const AgendamentosManager = () => {
                   </div>
                   <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground min-w-0 max-w-[40%]">
                     <User className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate uppercase">
-                      {a.destinatario_nome || a.email_para || 'Sem destinatário'}
+                    <span className="truncate">
+                      {a.destinatario_nome ? toTitleCase(a.destinatario_nome) : (a.email_para || 'Sem destinatário')}
                     </span>
                   </div>
                   <Badge variant="outline" className="text-[10px] shrink-0 hidden md:inline-flex">
