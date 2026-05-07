@@ -1258,20 +1258,24 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               </div>
             )}
 
-            {uploading && (
-              <div className="space-y-1">
-                <p className="text-sm">Enviando {progress.current} de {progress.total}…</p>
-                <div className="h-2 w-full bg-muted rounded overflow-hidden">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${(progress.current / Math.max(progress.total, 1)) * 100}%` }}
-                  />
+            {uploading && (() => {
+              const totalBytes = pendingFiles.reduce((s, p) => s + (p.total || p.file.size), 0);
+              const loadedBytes = pendingFiles.reduce((s, p) => s + (p.status === 'success' ? (p.total || p.file.size) : p.loaded), 0);
+              const pct = totalBytes ? Math.min(100, (loadedBytes / totalBytes) * 100) : 0;
+              return (
+                <div className="space-y-1">
+                  <p className="text-sm">
+                    Enviando {progress.current} de {progress.total} · {formatBytes(loadedBytes)} / {formatBytes(totalBytes)} ({pct.toFixed(1)}%)
+                  </p>
+                  <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex-wrap gap-2">
             {uploading ? (
               <Button variant="destructive" onClick={cancelOngoingUpload} className="gap-2">
                 <X className="h-4 w-4" /> Cancelar upload
@@ -1289,13 +1293,38 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 >
                   Fechar
                 </Button>
+                {failedCount > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={handleRetryFailed}
+                    disabled={dateErrors.length > 0}
+                    className="gap-2"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Tentar novamente {failedCount} falha{failedCount !== 1 ? 's' : ''}
+                  </Button>
+                )}
+                {pendingCount > 0 && pendingFiles.some(p => p.status === 'success' || p.status === 'error') && (
+                  <Button
+                    variant="outline"
+                    onClick={handleResume}
+                    disabled={dateErrors.length > 0}
+                    className="gap-2"
+                  >
+                    <Play className="h-4 w-4" />
+                    Retomar {pendingCount} pendente{pendingCount !== 1 ? 's' : ''}
+                  </Button>
+                )}
                 <Button
                   onClick={handleUpload}
                   disabled={!pendingFiles.length || dateErrors.length > 0}
                   className="gap-2"
                 >
                   <Upload className="h-4 w-4" />
-                  Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
+                  {pendingFiles.every(p => p.status === 'success' || p.status === 'error' || p.status === 'pending' || p.status === 'skipped')
+                    && (pendingFiles.some(p => p.status === 'success') || pendingFiles.some(p => p.status === 'error'))
+                    ? `Reenviar todos (${pendingFiles.length})`
+                    : `Confirmar e enviar ${pendingFiles.length} foto${pendingFiles.length !== 1 ? 's' : ''}`}
                 </Button>
               </>
             )}
