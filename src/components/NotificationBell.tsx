@@ -91,7 +91,7 @@ const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; on
 };
 
 const NotificationBell = () => {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, markAllOfTypeAsRead, deleteNotification, deleteAllNotifications } = useNotifications();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState('all');
   const ref = useRef<HTMLDivElement>(null);
@@ -110,6 +110,7 @@ const NotificationBell = () => {
     : notifications.filter(n => n.type === filter);
 
   const availableTypes = [...new Set(notifications.map(n => n.type))];
+  const unreadAgendamentoCount = notifications.filter(n => n.type === 'agendamento_response' && !n.is_read).length;
 
   return (
     <div ref={ref} className="relative">
@@ -151,6 +152,18 @@ const NotificationBell = () => {
                   <Button variant="ghost" size="sm" className="h-7 text-xs gap-1 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={deleteAllNotifications}>
                     <Trash2 className="h-3.5 w-3.5" />
                     Limpar
+                  </Button>
+                )}
+                {unreadAgendamentoCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    title="Marcar todos os agendamentos como lidos"
+                    onClick={() => markAllOfTypeAsRead('agendamento_response')}
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    Agendamentos ({unreadAgendamentoCount})
                   </Button>
                 )}
                 {unreadCount > 0 && (
