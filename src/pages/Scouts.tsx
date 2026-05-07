@@ -2123,6 +2123,10 @@ const Scouts = () => {
                     </Tabs>
                   </TabsContent>
 
+                  <TabsContent value="eventos" className="mt-4">
+                    <ScoutEvents scoutId={viewingScout.id} />
+                  </TabsContent>
+
                   <TabsContent value="timeline" className="mt-4">
                     <ScoutTimeline
                       scoutId={viewingScout.id}
