@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered } from 'lucide-react';
 import { logAudit } from '@/lib/auditLog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,6 +101,7 @@ const Scouts = () => {
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
+  const [renumbering, setRenumbering] = useState(false);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -1315,7 +1316,31 @@ const Scouts = () => {
             {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
           </p>
         </div>
-        {(canManageScouts || canEditScouts) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              className="gap-2"
+              disabled={renumbering}
+              onClick={async () => {
+                setRenumbering(true);
+                const t = toast.loading('Renumerando integrantes...');
+                const { error } = await supabase.rpc('renumber_scouts' as any);
+                toast.dismiss(t);
+                if (error) {
+                  toast.error('Falha ao renumerar', { description: error.message });
+                } else {
+                  toast.success(`${scouts.length} integrante(s) renumerado(s) em sequência (0001…)`);
+                  await fetchData();
+                }
+                setRenumbering(false);
+              }}
+            >
+              <ListOrdered className="h-4 w-4" />
+              {renumbering ? 'Renumerando...' : 'Renumerar IDs'}
+            </Button>
+          )}
+          {(canManageScouts || canEditScouts) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
@@ -1364,7 +1389,8 @@ const Scouts = () => {
               )}
             </DialogContent>
           </Dialog>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Status filter */}
