@@ -21,8 +21,16 @@ export const toTitleCase = (s: string | null | undefined): string => {
     .map((token, idx, arr) => {
       if (/^\s+$/.test(token) || token === '/' || token === '·') return token;
 
-      // Acrônimos com dígitos (ex.: "12/rr" → "12/RR")
-      if (/\d/.test(token) && /^[\p{L}\d]+$/u.test(token)) {
+      // Acrônimos com dígitos (ex.: "12/rr" → "12/RR"):
+      // - token contendo dígitos
+      // - token curto (<=3 letras) imediatamente após "/" precedido por token com dígito
+      const hasDigit = /\d/.test(token);
+      const prev = idx > 0 ? arr[idx - 1] : '';
+      const prevPrev = idx > 1 ? arr[idx - 2] : '';
+      const isAfterSlashAcronym =
+        prev === '/' && /\d/.test(prevPrev) && token.length <= 3 && /^\p{L}+$/u.test(token);
+
+      if (hasDigit || isAfterSlashAcronym) {
         return token.toLocaleUpperCase('pt-BR');
       }
 
