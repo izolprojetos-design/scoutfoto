@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
+  CheckCircle2, XCircle, Clock3,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,6 +46,10 @@ interface Agendamento {
   observacoes: string;
   status: string;
   created_at: string;
+  recipient_response?: 'pendente' | 'confirmado' | 'recusado' | null;
+  recipient_response_reason?: string | null;
+  recipient_response_at?: string | null;
+  recipient_response_by?: string | null;
 }
 
 interface Branch {
@@ -217,6 +222,55 @@ const AgendamentosManager = () => {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // Realtime: refletir respostas do destinatário automaticamente
+  useEffect(() => {
+    const channel = supabase
+      .channel('agendamentos-responses')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agendamentos' }, (payload) => {
+        const updated = payload.new as Agendamento;
+        setAgendamentos(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Resposta do destinatário (Confirmar/Recusar)
+  const userEmail = (user?.email || '').toLowerCase();
+  const isRecipientOf = (a: Agendamento) =>
+    !!userEmail && (a.email_para || '').toLowerCase() === userEmail;
+
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Agendamento | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const sendResponse = async (a: Agendamento, response: 'confirmado' | 'recusado', reason?: string) => {
+    setRespondingId(a.id);
+    try {
+      const { data, error } = await (supabase as any).rpc('respond_agendamento', {
+        p_agendamento_id: a.id,
+        p_response: response,
+        p_reason: reason ?? null,
+      });
+      if (error) throw error;
+      const updated = (Array.isArray(data) ? data[0] : data) as Agendamento;
+      if (updated) {
+        setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...updated } : x));
+      }
+      toast({
+        title: response === 'confirmado' ? 'Agendamento confirmado' : 'Agendamento recusado',
+        description: response === 'confirmado'
+          ? 'O solicitante foi notificado.'
+          : 'O solicitante foi notificado com seu motivo.',
+      });
+      setRejectTarget(null);
+      setRejectReason('');
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha ao registrar resposta', variant: 'destructive' });
+    } finally {
+      setRespondingId(null);
+    }
+  };
 
   const branchLabel = (id: string) => {
     const b = branches.find(br => br.id === id);
@@ -443,6 +497,20 @@ const AgendamentosManager = () => {
                   <Badge variant="outline" className="text-[10px] shrink-0 hidden md:inline-flex">
                     {tipoLabel(a.tipo_atividade)}
                   </Badge>
+                  {(() => {
+                    const r = a.recipient_response ?? 'pendente';
+                    const cfg = r === 'confirmado'
+                      ? { icon: CheckCircle2, label: 'Confirmado', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' }
+                      : r === 'recusado'
+                      ? { icon: XCircle, label: 'Recusado', cls: 'border-destructive/40 bg-destructive/10 text-destructive' }
+                      : { icon: Clock3, label: 'Aguardando', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400' };
+                    const Icon = cfg.icon;
+                    return (
+                      <Badge variant="outline" className={cn('text-[10px] shrink-0 gap-1', cfg.cls)}>
+                        <Icon className="h-3 w-3" /> {cfg.label}
+                      </Badge>
+                    );
+                  })()}
                 </button>
 
                 {/* Painel expandido */}
@@ -512,6 +580,77 @@ const AgendamentosManager = () => {
                         <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{a.observacoes}</p>
                       </div>
                     )}
+
+                    {/* Resposta do destinatário */}
+                    {(() => {
+                      const r = a.recipient_response ?? 'pendente';
+                      const isRecipient = isRecipientOf(a);
+                      const isMine = a.user_id === user?.id;
+                      if (r === 'confirmado') {
+                        return (
+                          <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Destinatário confirmou{a.recipient_response_at ? ` em ${format(new Date(a.recipient_response_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : ''}.</span>
+                          </div>
+                        );
+                      }
+                      if (r === 'recusado') {
+                        return (
+                          <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">
+                            <div className="flex items-center gap-2 text-destructive font-medium">
+                              <XCircle className="h-4 w-4" />
+                              <span>Destinatário recusou{a.recipient_response_at ? ` em ${format(new Date(a.recipient_response_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : ''}.</span>
+                            </div>
+                            {a.recipient_response_reason && (
+                              <p className="mt-1 text-foreground/90 whitespace-pre-wrap break-words">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Motivo: </span>
+                                {a.recipient_response_reason}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      // pendente
+                      if (isRecipient) {
+                        return (
+                          <div className="rounded-md border bg-muted/30 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm flex items-center gap-2">
+                              <Clock3 className="h-4 w-4 text-amber-600" />
+                              <span>Você é o destinatário. Deseja confirmar?</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={(e) => { e.stopPropagation(); sendResponse(a, 'confirmado'); }}
+                                disabled={respondingId === a.id}
+                                className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                              >
+                                {respondingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                Confirmar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => { e.stopPropagation(); setRejectTarget(a); setRejectReason(''); }}
+                                disabled={respondingId === a.id}
+                                className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <XCircle className="h-3.5 w-3.5" /> Recusar
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (isMine) {
+                        return (
+                          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                            <Clock3 className="h-4 w-4" />
+                            <span>Aguardando resposta do destinatário.</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
                       {isAdmin && (
@@ -814,6 +953,43 @@ const AgendamentosManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Recusa do destinatário com motivo */}
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => { if (!o) { setRejectTarget(null); setRejectReason(''); } }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive" /> Recusar agendamento
+            </DialogTitle>
+            <DialogDescription>
+              Informe o motivo da recusa. O solicitante será notificado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reject-reason">Motivo</Label>
+            <Textarea
+              id="reject-reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Ex.: conflito de horário, indisponibilidade, etc."
+              rows={4}
+              className="text-base"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRejectTarget(null); setRejectReason(''); }} disabled={!!respondingId}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!rejectReason.trim() || !!respondingId}
+              onClick={() => rejectTarget && sendResponse(rejectTarget, 'recusado', rejectReason.trim())}
+            >
+              {respondingId ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Enviando...</> : 'Confirmar recusa'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Teste rápido de RLS (admin) */}
       <Dialog open={!!rlsTestId} onOpenChange={(open) => { if (!open) { setRlsTestId(null); setRlsTestRecord(null); setRlsResult(null); setRlsEmail(''); } }}>
