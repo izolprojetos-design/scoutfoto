@@ -2025,10 +2025,11 @@ const Scouts = () => {
                 </div>
 
                 <Tabs defaultValue="dados" className="w-full">
-                  <TabsList className="grid w-full grid-cols-5">
+                  <TabsList className="grid w-full grid-cols-6">
                     <TabsTrigger value="dados">Dados</TabsTrigger>
                     <TabsTrigger value="fotos">Fotos</TabsTrigger>
                     <TabsTrigger value="eventos">Eventos</TabsTrigger>
+                    <TabsTrigger value="conquistas">Conquistas</TabsTrigger>
                     <TabsTrigger value="timeline">Linha do Tempo</TabsTrigger>
                     <TabsTrigger value="historico">Histórico</TabsTrigger>
                   </TabsList>
