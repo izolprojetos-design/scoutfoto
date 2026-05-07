@@ -62,6 +62,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const dragCounter = useRef(0);
