@@ -420,17 +420,26 @@ const Dashboard = () => {
 
   return (
     <>
-      {/* Welcome Section */}
-      <div className="mb-6">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+      {/* Hero */}
+      <div className="mb-6 relative overflow-hidden rounded-xl border shadow-sm">
+        <img
+          src={heroInicio}
+          alt="Grupo Escoteiro Monte Caburaí em volta da fogueira"
+          className="h-48 sm:h-56 w-full object-cover"
+          width={1920}
+          height={640}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight drop-shadow">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
-          </div>
-
-        </motion.div>
+            <p className="mt-1 text-sm sm:text-base text-white/90 drop-shadow">
+              Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC
+            </p>
+          </motion.div>
+        </div>
       </div>
 
       {/* KPI Stats Grid */}
