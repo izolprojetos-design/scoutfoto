@@ -154,6 +154,18 @@ const NotificationBell = () => {
                     Limpar
                   </Button>
                 )}
+                {unreadAgendamentoCount > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    title="Marcar todos os agendamentos como lidos"
+                    onClick={() => markAllOfTypeAsRead('agendamento_response')}
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    Agendamentos ({unreadAgendamentoCount})
+                  </Button>
+                )}
                 {unreadCount > 0 && (
                   <Button variant="ghost" size="sm" className="h-7 text-xs gap-1" onClick={markAllAsRead}>
                     <CheckCheck className="h-3.5 w-3.5" />
