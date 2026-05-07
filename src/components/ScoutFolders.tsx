@@ -369,14 +369,26 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           </div>
 
           {(year !== null || dateKey) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { dateKey ? setDateKey(null) : setYear(null); }}
-              className="gap-1 h-8"
-            >
-              <ArrowLeft className="h-4 w-4" /> Voltar
-            </Button>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { dateKey ? setDateKey(null) : setYear(null); }}
+                className="gap-1 h-8"
+              >
+                <ArrowLeft className="h-4 w-4" /> Voltar
+              </Button>
+              {dateKey && canManage && photosOfDate.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteFolderOpen(true)}
+                  className="gap-1 h-8"
+                >
+                  <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
+                </Button>
+              )}
+            </div>
           )}
 
           {/* Level 1: Years */}
