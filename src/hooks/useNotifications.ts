@@ -87,5 +87,5 @@ export const useNotifications = () => {
     setNotifications([]);
   };
 
-  return { notifications, unreadCount, loading, markAsRead, markAllAsRead, deleteNotification, deleteAllNotifications, refetch: fetchNotifications };
+  return { notifications, unreadCount, loading, markAsRead, markAllAsRead, markAllOfTypeAsRead, deleteNotification, deleteAllNotifications, refetch: fetchNotifications };
 };
