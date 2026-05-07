@@ -121,33 +121,53 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     if (!files || !files.length) return;
     const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
     if (!valid.length) return toast.error('Selecione apenas imagens.');
-    setPendingFiles(valid);
-    // Pre-fill date from current view if user is inside a date folder/year
-    if (dateKey) {
-      setPhotoDate(dateKey);
-    } else if (year !== null) {
-      setPhotoDate(`${year}-${format(new Date(), 'MM-dd')}`);
-    } else {
-      setPhotoDate(format(new Date(), 'yyyy-MM-dd'));
-    }
+
+    let defaultDate: string;
+    if (dateKey) defaultDate = dateKey;
+    else if (year !== null) defaultDate = `${year}-${format(new Date(), 'MM-dd')}`;
+    else defaultDate = format(new Date(), 'yyyy-MM-dd');
+
+    setPhotoDate(defaultDate);
+    setApplyToAll(true);
+    setPendingFiles(valid.map(f => ({ file: f, date: defaultDate, preview: URL.createObjectURL(f) })));
     setUploadOpen(true);
+  };
+
+  const updateFileDate = (idx: number, newDate: string) => {
+    setPendingFiles(prev => prev.map((p, i) => i === idx ? { ...p, date: newDate } : p));
+  };
+
+  const removePendingFile = (idx: number) => {
+    setPendingFiles(prev => {
+      const removed = prev[idx];
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const cleanupPreviews = (items: { preview: string }[]) => {
+    items.forEach(p => { try { URL.revokeObjectURL(p.preview); } catch { /* noop */ } });
   };
 
   const handleUpload = async () => {
     if (!user || !pendingFiles.length) return;
-    if (!photoDate) return toast.error('Selecione a data da foto.');
+
+    const items = pendingFiles.map(p => ({
+      file: p.file,
+      date: applyToAll ? photoDate : p.date,
+    }));
+
+    if (items.some(it => !it.date)) return toast.error('Defina a data de todas as fotos.');
 
     setUploading(true);
-    setProgress({ current: 0, total: pendingFiles.length });
+    setProgress({ current: 0, total: items.length });
     let success = 0;
+    let lastDate = items[0].date;
 
-    // Build a timestamp that puts the photos in the chosen day's folder.
-    // Use noon UTC-safe timestamp from the YYYY-MM-DD string.
-    const baseTs = new Date(`${photoDate}T12:00:00`).toISOString();
-
-    for (let i = 0; i < pendingFiles.length; i++) {
-      const file = pendingFiles[i];
-      setProgress({ current: i + 1, total: pendingFiles.length });
+    for (let i = 0; i < items.length; i++) {
+      const { file, date } = items[i];
+      lastDate = date;
+      setProgress({ current: i + 1, total: items.length });
       try {
         if (file.size > MAX_SIZE_MB * 1024 * 1024 * 4) {
           toast.warning(`"${file.name}" muito grande, ignorado.`);
@@ -155,7 +175,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         }
         const compressed = await compressImage(file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const path = `gallery/${scoutId}/${photoDate}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
@@ -184,16 +205,61 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
     setUploading(false);
     setProgress({ current: 0, total: 0 });
+    cleanupPreviews(pendingFiles);
     setPendingFiles([]);
     setUploadOpen(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (success > 0) {
-      toast.success(`${success} foto(s) enviada(s) para ${format(new Date(`${photoDate}T12:00:00`), "dd/MM/yyyy")}`);
-      // Navigate user to the year/date folder of the upload
-      const newYear = new Date(`${photoDate}T12:00:00`).getFullYear();
+      toast.success(`${success} foto(s) enviada(s).`);
+      const newYear = new Date(`${lastDate}T12:00:00`).getFullYear();
       setYear(newYear);
-      setDateKey(photoDate);
+      setDateKey(lastDate);
       await load();
+    }
+  };
+
+  const handleDeleteFolder = async () => {
+    if (!dateKey) return;
+    setDeleting(true);
+    try {
+      const target = photosOfDate;
+      const paths = target.map(p => p.storage_path);
+      const ids = target.map(p => p.id);
+      if (paths.length) {
+        const { error: stErr } = await supabase.storage.from('scout-photos').remove(paths);
+        if (stErr) console.warn('storage remove', stErr);
+      }
+      if (ids.length) {
+        const { error: dbErr } = await supabase.from('scout_photos' as any).delete().in('id', ids);
+        if (dbErr) throw dbErr;
+      }
+      toast.success(`${ids.length} foto(s) excluída(s).`);
+      setDeleteFolderOpen(false);
+      setDateKey(null);
+      await load();
+    } catch (err: any) {
+      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteSingle = async () => {
+    if (!deleteSingleOpen) return;
+    setDeleting(true);
+    try {
+      const p = deleteSingleOpen;
+      await supabase.storage.from('scout-photos').remove([p.storage_path]);
+      const { error } = await supabase.from('scout_photos' as any).delete().eq('id', p.id);
+      if (error) throw error;
+      toast.success('Foto excluída.');
+      setDeleteSingleOpen(null);
+      setViewing(null);
+      await load();
+    } catch (err: any) {
+      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
