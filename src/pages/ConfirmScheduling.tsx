@@ -5,6 +5,7 @@ import { Loader2, CheckCircle2, XCircle, Clock, Calendar, MapPin, User } from 'l
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toTitleCase } from '@/lib/formatting';
 
 type Status = 'loading' | 'valid' | 'invalid' | 'expired' | 'already' | 'confirming' | 'confirmed' | 'error';
 
