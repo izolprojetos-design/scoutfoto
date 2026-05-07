@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import {
@@ -37,6 +37,7 @@ const AppSidebar = () => {
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
     { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
+    { to: '/calendar?tab=manage', label: 'Meus Agendamentos', icon: ListChecks, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
     { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },

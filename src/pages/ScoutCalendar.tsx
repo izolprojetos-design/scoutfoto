@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -57,7 +58,16 @@ const ScoutCalendar = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('calendar');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') === 'manage' ? 'manage' : 'calendar';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const t = searchParams.get('tab');
+    if (t === 'manage' && activeTab !== 'manage' && activeTab !== 'schedule') setActiveTab('manage');
+    if (!t && activeTab === 'manage') setActiveTab('calendar');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const [scheduleMounted, setScheduleMounted] = useState(false);
   const [manageMounted, setManageMounted] = useState(false);
 
