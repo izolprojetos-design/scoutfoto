@@ -43,11 +43,17 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
   // Upload dialog state
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<{ file: File; date: string; preview: string }[]>([]);
   const [photoDate, setPhotoDate] = useState<string>(() => format(new Date(), 'yyyy-MM-dd'));
+  const [applyToAll, setApplyToAll] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete confirmation state
+  const [deleteFolderOpen, setDeleteFolderOpen] = useState(false);
+  const [deleteSingleOpen, setDeleteSingleOpen] = useState<PhotoRec | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
