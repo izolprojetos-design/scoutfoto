@@ -247,6 +247,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         date: defaultDate,
         preview: URL.createObjectURL(f),
         status: 'pending',
+        loaded: 0,
+        total: f.size,
       });
     }
     return { pending, rejected };
