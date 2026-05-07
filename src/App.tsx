@@ -15,7 +15,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-const ProtectedRoute = lazy(() => import("@/components/ProtectedRoute"));
+const ProtectedRoute = lazyWithRetry(() => import("@/components/ProtectedRoute"));
 import ForceChangePassword from "@/components/ForceChangePassword";
 import SplashScreen from "@/components/SplashScreen";
 import InstallPrompt from "@/components/InstallPrompt";
