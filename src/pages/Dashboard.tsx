@@ -13,6 +13,8 @@ import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightL
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { getBranchImage } from '@/lib/branchImages';
+import heroInicio from '@/assets/hero-inicio.jpg';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
