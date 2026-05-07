@@ -1695,6 +1695,19 @@ const Scouts = () => {
             </Button>
           )}
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setCompareOpen(true)}
+            disabled={filteredScouts.length < 2}
+            title={filteredScouts.length < 2 ? 'Necessário pelo menos 2 integrantes na lista' : 'Comparar integrantes lado a lado'}
+          >
+            <GitCompare className="h-3.5 w-3.5" />
+            Comparar
+          </Button>
+
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
