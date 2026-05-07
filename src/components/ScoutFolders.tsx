@@ -187,6 +187,30 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     }
   };
 
+  // Drag & Drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (!canManage) return;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      openUploadDialog(files);
+    }
+  }, [canManage]);
+
   return (
     <div className="space-y-3">
       {/* Upload toolbar */}
