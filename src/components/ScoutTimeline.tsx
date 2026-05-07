@@ -16,7 +16,7 @@ interface Props {
   currentSection?: string | null;
 }
 
-type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario';
+type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario' | 'conquista';
 
 interface TimelineItem {
   id: string;
@@ -32,9 +32,10 @@ const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: 
   secao:       { icon: Sparkles,       color: 'text-indigo-600',  bg: 'bg-indigo-500/10',  ring: 'border-indigo-500',  label: 'Seção' },
   fotos:       { icon: Camera,         color: 'text-emerald-600', bg: 'bg-emerald-500/10', ring: 'border-emerald-500', label: 'Fotos' },
   aniversario: { icon: Calendar,       color: 'text-rose-600',    bg: 'bg-rose-500/10',    ring: 'border-rose-500',    label: 'Aniversário' },
+  conquista:   { icon: Trophy,         color: 'text-fuchsia-600', bg: 'bg-fuchsia-500/10', ring: 'border-fuchsia-500', label: 'Conquista' },
 };
 
-const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario'];
+const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario', 'conquista'];
 
 const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection }: Props) => {
   const [items, setItems] = useState<TimelineItem[]>([]);
