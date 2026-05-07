@@ -212,7 +212,12 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   }, [canManage]);
 
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {/* Upload toolbar */}
       {canManage && (
         <div className="flex items-center justify-between gap-2 flex-wrap">
