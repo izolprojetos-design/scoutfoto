@@ -497,6 +497,20 @@ const AgendamentosManager = () => {
                   <Badge variant="outline" className="text-[10px] shrink-0 hidden md:inline-flex">
                     {tipoLabel(a.tipo_atividade)}
                   </Badge>
+                  {(() => {
+                    const r = a.recipient_response ?? 'pendente';
+                    const cfg = r === 'confirmado'
+                      ? { icon: CheckCircle2, label: 'Confirmado', cls: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' }
+                      : r === 'recusado'
+                      ? { icon: XCircle, label: 'Recusado', cls: 'border-destructive/40 bg-destructive/10 text-destructive' }
+                      : { icon: Clock3, label: 'Aguardando', cls: 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400' };
+                    const Icon = cfg.icon;
+                    return (
+                      <Badge variant="outline" className={cn('text-[10px] shrink-0 gap-1', cfg.cls)}>
+                        <Icon className="h-3 w-3" /> {cfg.label}
+                      </Badge>
+                    );
+                  })()}
                 </button>
 
                 {/* Painel expandido */}
