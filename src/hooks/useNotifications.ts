@@ -59,6 +59,17 @@ export const useNotifications = () => {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   };
 
+  const markAllOfTypeAsRead = async (type: string) => {
+    if (!user) return;
+    await supabase
+      .from('security_notifications')
+      .update({ is_read: true })
+      .eq('user_id', user.id)
+      .eq('type', type)
+      .eq('is_read', false);
+    setNotifications(prev => prev.map(n => n.type === type ? { ...n, is_read: true } : n));
+  };
+
   const deleteNotification = async (id: string) => {
     await supabase
       .from('security_notifications')
