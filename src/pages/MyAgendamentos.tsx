@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { CalendarPlus, ArrowLeft } from 'lucide-react';
@@ -10,10 +10,16 @@ const MyAgendamentos = () => {
   const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
   const [showForm, setShowForm] = useState(false);
 
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Minha Agenda | ScoutFoto';
+    return () => { document.title = prev; };
+  }, []);
+
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Meus Agendamentos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Minha Agenda</h1>
         <p className="mt-1 text-muted-foreground">Gerencie seus agendamentos e solicitações</p>
       </div>
 
