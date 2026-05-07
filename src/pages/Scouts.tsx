@@ -120,6 +120,7 @@ const Scouts = () => {
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
   const [renumbering, setRenumbering] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
