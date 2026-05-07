@@ -140,6 +140,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cancelUploadRef = useRef(false);
+  const activeXhrRef = useRef<XMLHttpRequest | null>(null);
 
   // Selection (bulk) state inside a date folder
   const [selectMode, setSelectMode] = useState(false);
