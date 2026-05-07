@@ -862,7 +862,7 @@ const AgendamentosManager = () => {
 
                     {a.observacoes && (
                       <div>
-                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Assunto</p>
+                        <p className="text-xs uppercase tracking-wide text-muted-foreground">Observações</p>
                         <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{a.observacoes}</p>
                       </div>
                     )}
