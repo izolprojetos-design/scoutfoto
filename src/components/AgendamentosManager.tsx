@@ -78,7 +78,7 @@ const AgendamentosManager = () => {
   });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived'>('inbox');
+  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived' | 'trash'>('inbox');
   const [filter, setFilter] = useState<'todos' | 'pendentes' | 'confirmados' | 'recusados' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
