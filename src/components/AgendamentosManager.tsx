@@ -752,7 +752,7 @@ const AgendamentosManager = () => {
         </Card>
       ) : (
         <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
-          {filtered.map((a, index) => {
+          {paginated.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
             const isFocused = focusedIndex === index || (focusedIndex === -1 && index === 0);
