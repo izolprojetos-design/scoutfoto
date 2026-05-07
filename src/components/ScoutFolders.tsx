@@ -196,7 +196,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     const rejected: { name: string; reason: string }[] = [];
     for (const f of files) {
       const v = validateFile(f);
-      if (!v.ok) { rejected.push({ name: f.name, reason: v.reason }); continue; }
+      if (v.ok === false) { rejected.push({ name: f.name, reason: v.reason }); continue; }
       pending.push({
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         file: f,
