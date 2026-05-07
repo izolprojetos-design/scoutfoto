@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface ScoutHistoryProps {
   scoutId: string;
@@ -28,38 +29,80 @@ const ACTION_LABELS: Record<string, string> = {
   download: 'Download',
 };
 
+const PAGE_SIZE = 50;
+
 const ScoutHistory = ({ scoutId }: ScoutHistoryProps) => {
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      // Filter rows where details->>scout_id matches OR before/after has scout_id
-      const { data, error } = await supabase
+  const fetchPage = useCallback(
+    async (cursor: string | null) => {
+      let query = supabase
         .from('audit_logs')
         .select('id, action, created_at, details, before_data, after_data')
         .or(
           `details->>scout_id.eq.${scoutId},before_data->>scout_id.eq.${scoutId},after_data->>scout_id.eq.${scoutId},details->>id.eq.${scoutId}`,
         )
         .order('created_at', { ascending: false })
-        .limit(100);
+        .limit(PAGE_SIZE);
 
-      if (!cancelled) {
-        if (error) {
-          console.warn('[ScoutHistory] error:', error.message);
-          setEntries([]);
-        } else {
-          setEntries((data as AuditEntry[]) || []);
-        }
-        setLoading(false);
+      if (cursor) query = query.lt('created_at', cursor);
+
+      const { data, error } = await query;
+      if (error) {
+        console.warn('[ScoutHistory] error:', error.message);
+        return [];
       }
-    })();
+      return (data as AuditEntry[]) || [];
+    },
+    [scoutId],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setEntries([]);
+    setHasMore(true);
+    fetchPage(null).then((rows) => {
+      if (cancelled) return;
+      setEntries(rows);
+      setHasMore(rows.length === PAGE_SIZE);
+      setLoading(false);
+    });
     return () => {
       cancelled = true;
     };
-  }, [scoutId]);
+  }, [scoutId, fetchPage]);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || entries.length === 0) return;
+    setLoadingMore(true);
+    const last = entries[entries.length - 1];
+    const rows = await fetchPage(last.created_at);
+    setEntries((prev) => {
+      const seen = new Set(prev.map((e) => e.id));
+      return [...prev, ...rows.filter((r) => !seen.has(r.id))];
+    });
+    setHasMore(rows.length === PAGE_SIZE);
+    setLoadingMore(false);
+  }, [entries, fetchPage, hasMore, loadingMore]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore || loading) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: '200px' },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [loadMore, hasMore, loading]);
 
   if (loading) {
     return (
@@ -101,6 +144,32 @@ const ScoutHistory = ({ scoutId }: ScoutHistoryProps) => {
           </div>
         );
       })}
+
+      <div ref={sentinelRef} />
+
+      {hasMore ? (
+        <div className="flex justify-center pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadMore}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Carregando...
+              </>
+            ) : (
+              'Carregar mais'
+            )}
+          </Button>
+        </div>
+      ) : (
+        <p className="pt-2 text-center text-xs text-muted-foreground">
+          Fim do histórico • {entries.length} registros
+        </p>
+      )}
     </div>
   );
 };
