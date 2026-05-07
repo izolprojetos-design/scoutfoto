@@ -10,6 +10,12 @@ const MyAgendamentos = () => {
   const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
   const [showForm, setShowForm] = useState(false);
 
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Minha Agenda | ScoutFoto';
+    return () => { document.title = prev; };
+  }, []);
+
   return (
     <>
       <div className="mb-6">
