@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Sparkles, ArrowRightLeft, Camera, UserPlus, Calendar } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRightLeft, Camera, UserPlus, Calendar, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
