@@ -110,6 +110,7 @@ const NotificationBell = () => {
     : notifications.filter(n => n.type === filter);
 
   const availableTypes = [...new Set(notifications.map(n => n.type))];
+  const unreadAgendamentoCount = notifications.filter(n => n.type === 'agendamento_response' && !n.is_read).length;
 
   return (
     <div ref={ref} className="relative">
