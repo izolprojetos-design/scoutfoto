@@ -864,7 +864,7 @@ const AgendamentosManager = () => {
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</p>
                       <p className="text-sm font-medium break-words">{toTitleCase(a.nome_associado)}</p>
-                      {a.secao && <p className="text-xs text-muted-foreground">{a.secao}</p>}
+                      {a.secao && <p className="text-xs text-muted-foreground">{toTitleCase(a.secao)}</p>}
                     </div>
 
                     {(() => {
