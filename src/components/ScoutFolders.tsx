@@ -6,7 +6,7 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload } from 'lucide-react';
+import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload, UploadCloud } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
