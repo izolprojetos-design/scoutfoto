@@ -1849,6 +1849,26 @@ const Scouts = () => {
             editSection, setEditSection,
             editTransitionDate, setEditTransitionDate,
           )}
+
+          {editingScout && (
+            <div className="mt-6 border-t pt-4">
+              <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide text-muted-foreground">
+                Fotos do integrante
+              </h4>
+              <Tabs defaultValue="galeria" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                  <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                </TabsList>
+                <TabsContent value="galeria" className="mt-4">
+                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} />
+                </TabsContent>
+                <TabsContent value="pastas" className="mt-4">
+                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
