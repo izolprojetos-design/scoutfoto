@@ -36,8 +36,12 @@ const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; on
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0, padding: 0 }}
       layout
+      onClick={() => { if (!n.is_read) onRead(n.id); }}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !n.is_read) { e.preventDefault(); onRead(n.id); } }}
       className={cn(
-        'flex gap-3 rounded-lg border p-3 transition-colors',
+        'flex gap-3 rounded-lg border p-3 transition-colors cursor-pointer',
         n.is_read ? 'bg-muted/30 border-transparent opacity-60' : `${cfg.bg} ${cfg.border}`,
       )}
     >
@@ -47,12 +51,22 @@ const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; on
           <p className={cn('text-sm font-medium leading-tight', !n.is_read && 'text-foreground')}>
             {n.title}
           </p>
-          <div className="flex items-center gap-0.5 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
+            <span
+              className={cn(
+                'rounded-full px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide',
+                n.is_read
+                  ? 'bg-muted text-muted-foreground'
+                  : 'bg-primary/15 text-primary',
+              )}
+            >
+              {n.is_read ? 'Lida' : 'Não lida'}
+            </span>
             {!n.is_read && (
               <button
                 onClick={(e) => { e.stopPropagation(); onRead(n.id); }}
                 className="rounded p-0.5 text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                title="Marcar como lido"
+                title="Marcar como lida"
               >
                 <Check className="h-3.5 w-3.5" />
               </button>
