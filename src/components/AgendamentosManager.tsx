@@ -1309,6 +1309,7 @@ const AgendamentosManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };
