@@ -36,6 +36,7 @@ import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
 import ScoutTimeline from '@/components/ScoutTimeline';
 import ScoutStats from '@/components/ScoutStats';
+import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
