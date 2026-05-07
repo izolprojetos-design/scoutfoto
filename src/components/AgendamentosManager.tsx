@@ -68,6 +68,7 @@ const AgendamentosManager = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
+  const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const k = `agd:read:${user?.id ?? 'anon'}`;
