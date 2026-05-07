@@ -478,6 +478,42 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
         </DialogContent>
       </Dialog>
 
+      {/* Upload confirm — vincula ao integrante selecionado */}
+      <AlertDialog open={!!pendingFiles} onOpenChange={(o) => !o && setPendingFiles(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar envio</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Você está prestes a enviar <strong>{pendingFiles?.length || 0}</strong> foto(s) que serão vinculadas ao integrante:
+                </p>
+                <div className="rounded-md border bg-muted/50 p-3">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Integrante</div>
+                  <div className="font-semibold uppercase break-words">{scoutName}</div>
+                  <div className="text-xs text-muted-foreground mt-1 font-mono break-all">ID: {scoutId}</div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Confirme se este é o integrante correto antes de prosseguir.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const files = pendingFiles;
+                setPendingFiles(null);
+                if (files) handleFiles(files);
+              }}
+            >
+              Confirmar envio
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Delete confirm */}
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
         <AlertDialogContent>
