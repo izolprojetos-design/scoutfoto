@@ -32,6 +32,8 @@ import {
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
 import ScoutGallery from '@/components/ScoutGallery';
+import ScoutFolders from '@/components/ScoutFolders';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
@@ -2031,7 +2033,18 @@ const Scouts = () => {
                   <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                     <ImageIcon className="h-4 w-4" /> Fotos do Integrante
                   </h4>
-                  <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                  <Tabs defaultValue="galeria" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                      <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="galeria" className="mt-4">
+                      <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                    </TabsContent>
+                    <TabsContent value="pastas" className="mt-4">
+                      <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </div>
             );
