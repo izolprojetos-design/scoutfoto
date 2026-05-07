@@ -1598,11 +1598,7 @@ const Scouts = () => {
                             }
                           }}
                           onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
-                          fallback={
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                              {branch?.icon || '⚜️'}
-                            </div>
-                          }
+                          fallback={<BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={56} />}
                         />
                       ) : (
                         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
