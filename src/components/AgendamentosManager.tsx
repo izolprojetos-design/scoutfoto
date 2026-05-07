@@ -227,13 +227,14 @@ const AgendamentosManager = () => {
       supabase.from('agendamentos').select('*').order('data_secao', { ascending: false }),
       supabase.from('branches').select('id, display_name, icon').order('sort_order'),
       user?.id
-        ? (supabase as any).from('agendamento_archives').select('agendamento_id').eq('user_id', user.id)
+        ? (supabase as any).from('agendamento_archives').select('agendamento_id, kind').eq('user_id', user.id)
         : Promise.resolve({ data: [] }),
     ]);
     setAgendamentos((ags as Agendamento[]) ?? []);
     setBranches(br ?? []);
-    const ids = ((archives as any)?.data ?? []).map((r: any) => r.agendamento_id as string);
-    setArchivedIds(new Set(ids));
+    const rows = ((archives as any)?.data ?? []) as Array<{ agendamento_id: string; kind?: string }>;
+    setArchivedIds(new Set(rows.filter(r => (r.kind ?? 'archived') === 'archived').map(r => r.agendamento_id)));
+    setTrashedIds(new Set(rows.filter(r => r.kind === 'trashed').map(r => r.agendamento_id)));
     setLoading(false);
   };
 
