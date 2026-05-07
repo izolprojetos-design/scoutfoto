@@ -101,6 +101,7 @@ const Scouts = () => {
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
+  const [renumbering, setRenumbering] = useState(false);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
