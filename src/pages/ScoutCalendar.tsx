@@ -114,20 +114,20 @@ const ScoutCalendar = () => {
       </div>
 
       {/* Section Switcher */}
-      <div className="mb-6 inline-flex h-10 items-center gap-1 rounded-md bg-muted p-1 text-muted-foreground">
-        <button
-          type="button"
-          onClick={() => setActiveTab('calendar')}
-          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
-        >
-          <CalIcon className="h-4 w-4" /> Calendário
-        </button>
+      <div className="mb-6 inline-flex w-full max-w-xs flex-col items-stretch gap-1 rounded-md bg-muted p-1 text-muted-foreground sm:w-auto">
         <button
           type="button"
           onClick={() => setActiveTab('manage')}
-          className={`inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm font-medium transition-all ${activeTab === 'manage' || activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+          className={`inline-flex items-center justify-start gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-all ${activeTab === 'manage' || activeTab === 'schedule' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
         >
           <ListChecks className="h-4 w-4" /> Meus Agendamentos
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('calendar')}
+          className={`inline-flex items-center justify-start gap-2 rounded-sm px-3 py-2 text-sm font-medium transition-all ${activeTab === 'calendar' ? 'bg-background text-foreground shadow-sm' : 'hover:text-foreground'}`}
+        >
+          <CalIcon className="h-4 w-4" /> Calendário
         </button>
       </div>
 
