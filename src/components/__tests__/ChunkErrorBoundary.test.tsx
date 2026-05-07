@@ -110,7 +110,12 @@ describe("lazyWithRetry integração", () => {
 
     expect(sendBeaconMock).toHaveBeenCalled();
     const blob = sendBeaconMock.mock.calls[0][1] as Blob;
-    const text = await new Response(blob).text();
+    const text = await new Promise<string>((resolve, reject) => {
+      const fr = new FileReader();
+      fr.onload = () => resolve(String(fr.result));
+      fr.onerror = () => reject(fr.error);
+      fr.readAsText(blob);
+    });
     const payload = JSON.parse(text);
     expect(payload.type).toBe("ChunkLoadError");
     expect(payload.route).toBe("/login");
