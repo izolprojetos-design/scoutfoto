@@ -13,7 +13,7 @@ const MyAgendamentos = () => {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Meus Agendamentos</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Minha Agenda</h1>
         <p className="mt-1 text-muted-foreground">Gerencie seus agendamentos e solicitações</p>
       </div>
 
