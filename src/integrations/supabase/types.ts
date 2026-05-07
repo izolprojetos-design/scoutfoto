@@ -1029,6 +1029,42 @@ export type Database = {
           },
         ]
       }
+      scout_achievements: {
+        Row: {
+          achievement_date: string
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          name: string
+          scout_id: string
+          type: Database["public"]["Enums"]["achievement_type"]
+          updated_at: string
+        }
+        Insert: {
+          achievement_date: string
+          created_at?: string
+          created_by: string
+          description?: string
+          id?: string
+          name: string
+          scout_id: string
+          type?: Database["public"]["Enums"]["achievement_type"]
+          updated_at?: string
+        }
+        Update: {
+          achievement_date?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          name?: string
+          scout_id?: string
+          type?: Database["public"]["Enums"]["achievement_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       scout_photos: {
         Row: {
           caption: string
@@ -1658,6 +1694,12 @@ export type Database = {
       }
     }
     Enums: {
+      achievement_type:
+        | "especialidade"
+        | "insignia"
+        | "distintivo"
+        | "conquista"
+        | "outro"
       agendamento_source: "agendamento" | "scheduling_request"
       app_role:
         | "admin"
@@ -1796,6 +1838,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      achievement_type: [
+        "especialidade",
+        "insignia",
+        "distintivo",
+        "conquista",
+        "outro",
+      ],
       agendamento_source: ["agendamento", "scheduling_request"],
       app_role: [
         "admin",
