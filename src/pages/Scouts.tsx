@@ -542,9 +542,27 @@ const Scouts = () => {
       (s.section || '').toLowerCase().includes(term) ||
       subgroupName.toLowerCase().includes(term);
     if (branchFilter === '') return false;
-    if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
-    return matchSearch && branch?.key === branchFilter;
+    if (branchFilter !== 'all' && branch?.key !== branchFilter) return false;
+    if (!matchSearch) return false;
+
+    // Advanced filters
+    if (sectionFilter.length > 0 && !sectionFilter.includes(s.section || '')) return false;
+    if (subgroupFilter.length > 0) {
+      const sgKey = s.subgroup_id || '__none__';
+      if (!subgroupFilter.includes(sgKey)) return false;
+    }
+    const ageYears = differenceInYears(new Date(), parseLocalDate(s.birth_date));
+    if (ageMinFilter && ageYears < Number(ageMinFilter)) return false;
+    if (ageMaxFilter && ageYears > Number(ageMaxFilter)) return false;
+    if (tenureMinFilter) {
+      const tenureYears = differenceInYears(new Date(), new Date(s.created_at));
+      if (tenureYears < Number(tenureMinFilter)) return false;
+    }
+    if (photoFilter === 'with' && !s.photo_url) return false;
+    if (photoFilter === 'without' && s.photo_url) return false;
+
+    return true;
   }).sort((a, b) => {
     if (branchFilter !== 'all') return 0;
     const branchA = getEffectiveBranch(a);
@@ -553,6 +571,43 @@ const Scouts = () => {
     const idxB = branchB ? branchOrder.indexOf(branchB.key) : 999;
     return idxA - idxB;
   });
+
+  // Distinct values for advanced filter options (based on currently visible status + branch scope)
+  const scopedScouts = scouts.filter(s => {
+    if (statusFilter === 'active' && !s.is_active) return false;
+    if (statusFilter === 'inactive' && s.is_active) return false;
+    if (branchFilter && branchFilter !== 'all' && branchFilter !== '') {
+      const b = getEffectiveBranch(s);
+      if (b?.key !== branchFilter) return false;
+    }
+    return true;
+  });
+  const availableSections = Array.from(new Set(scopedScouts.map(s => s.section).filter(Boolean) as string[])).sort();
+  const availableSubgroups = Array.from(new Set(scopedScouts.map(s => s.subgroup_id || '__none__')))
+    .map(id => id === '__none__' ? { id: '__none__', name: '— Sem equipe —' } : subgroups.find(sg => sg.id === id))
+    .filter(Boolean) as { id: string; name: string }[];
+
+  const advancedActiveCount =
+    sectionFilter.length +
+    subgroupFilter.length +
+    (ageMinFilter ? 1 : 0) +
+    (ageMaxFilter ? 1 : 0) +
+    (tenureMinFilter ? 1 : 0) +
+    (photoFilter !== 'all' ? 1 : 0);
+
+  const clearAdvancedFilters = () => {
+    setSectionFilter([]);
+    setSubgroupFilter([]);
+    setAgeMinFilter('');
+    setAgeMaxFilter('');
+    setTenureMinFilter('');
+    setPhotoFilter('all');
+  };
+
+  const toggleArrayValue = (arr: string[], value: string, setter: (v: string[]) => void) => {
+    if (arr.includes(value)) setter(arr.filter(v => v !== value));
+    else setter([...arr, value]);
+  };
 
   const activeScouts = scouts.filter(s => s.is_active);
   const inactiveScouts = scouts.filter(s => !s.is_active);
