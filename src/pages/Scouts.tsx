@@ -1325,7 +1325,7 @@ const Scouts = () => {
                   .map(s => parseInt(s.registration_id, 10))
                   .filter(n => !isNaN(n));
                 const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-                setScoutRegistrationId(String(nextId).padStart(5, '0'));
+                setScoutRegistrationId(String(nextId).padStart(4, '0'));
               }
             }}>
             <DialogTrigger asChild>
