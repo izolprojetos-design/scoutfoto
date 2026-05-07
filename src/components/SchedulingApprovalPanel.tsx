@@ -545,7 +545,7 @@ const SchedulingApprovalPanel = () => {
                   <div><strong>Para E-mail:</strong> {selectedRequest.destinatario_email}</div>
                 )}
                 {selectedRequest.descricao && (
-                  <div><strong>Assunto:</strong> {selectedRequest.descricao}</div>
+                  <div><strong>Observações:</strong> {selectedRequest.descricao}</div>
                 )}
                 {selectedRequest.branch_id && (
                   <div><strong>Ramo:</strong> {getBranch(selectedRequest.branch_id)?.icon} {getBranch(selectedRequest.branch_id)?.display_name}</div>
