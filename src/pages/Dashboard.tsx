@@ -935,7 +935,14 @@ const Dashboard = () => {
               >
                 <CardContent className="flex items-center justify-between p-6">
                   <div className="flex items-center gap-4">
-                    <span className="text-4xl">{branch.icon}</span>
+                    {(() => {
+                      const img = getBranchImage(branch.key);
+                      return img ? (
+                        <img src={img} alt={branch.display_name} loading="lazy" className="h-14 w-14 rounded-full object-cover ring-2 ring-background shadow-sm" />
+                      ) : (
+                        <span className="text-4xl">{branch.icon}</span>
+                      );
+                    })()}
                     <div>
                       <h3 className="text-lg font-semibold tracking-tight">{branch.display_name}</h3>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
