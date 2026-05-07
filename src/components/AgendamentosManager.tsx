@@ -60,6 +60,11 @@ interface Branch {
 }
 
 const tipoLabel = (v: string) => SCHEDULING_TYPES.find(t => t.value === v)?.label ?? v;
+const toTitleCase = (s: string) =>
+  (s || '')
+    .toLowerCase()
+    .replace(/(^|[\s\-'])([\p{L}])/gu, (_, sep, ch) => sep + ch.toUpperCase())
+    .replace(/\b(de|da|do|das|dos|e)\b/gi, m => m.toLowerCase());
 
 const AgendamentosManager = () => {
   const { user, roles } = useAuth();
@@ -836,37 +841,22 @@ const AgendamentosManager = () => {
 
                     <div>
                       <p className="text-xs uppercase tracking-wide text-muted-foreground">Solicitante</p>
-                      <p className="text-sm font-medium uppercase break-words">{a.nome_associado}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {a.secao}
-                        {a.dirigente && a.dirigente.trim().toLowerCase() !== a.nome_associado.trim().toLowerCase() && ` · Dirigente: ${a.dirigente}`}
-                      </p>
+                      <p className="text-sm font-medium break-words">{toTitleCase(a.nome_associado)}</p>
+                      {a.secao && <p className="text-xs text-muted-foreground">{a.secao}</p>}
                     </div>
 
                     {(() => {
                       const nome = (a.destinatario_nome || '').trim();
-                      const nomeLower = nome.toLowerCase();
-                      const cargos = Array.from(new Set(
-                        [a.destinatario_cargo_1, a.destinatario_cargo_2]
-                          .map(c => (c || '').trim())
-                          .filter(c => c && c.toLowerCase() !== nomeLower)
-                      ));
-                      const resumo = [a.destinatario_secao?.trim(), ...cargos].filter(Boolean).join(' · ');
+                      const secao = (a.destinatario_secao || '').trim();
                       return (
                         <div>
                           <p className="text-xs uppercase tracking-wide text-muted-foreground">Destinatário</p>
                           {nome ? (
-                            <p className="text-sm font-medium uppercase break-words">{nome}</p>
+                            <p className="text-sm font-medium break-words">{toTitleCase(nome)}</p>
                           ) : (
                             <p className="text-sm italic text-muted-foreground">Não informado</p>
                           )}
-                          {resumo && <p className="text-xs text-muted-foreground break-words">{resumo}</p>}
-                          {a.email_para && (
-                            <p className="text-xs text-muted-foreground flex items-center gap-1.5 break-all mt-0.5">
-                              <Mail className="h-3 w-3 shrink-0" />
-                              {a.email_para}
-                            </p>
-                          )}
+                          {secao && <p className="text-xs text-muted-foreground break-words">{secao}</p>}
                         </div>
                       );
                     })()}
