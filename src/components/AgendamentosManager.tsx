@@ -878,7 +878,7 @@ const AgendamentosManager = () => {
                           ) : (
                             <p className="text-sm italic text-muted-foreground">Não informado</p>
                           )}
-                          {secao && <p className="text-xs text-muted-foreground break-words">{secao}</p>}
+                          {secao && <p className="text-xs text-muted-foreground break-words">{toTitleCase(secao)}</p>}
                         </div>
                       );
                     })()}
