@@ -368,6 +368,9 @@ const AgendamentosManager = () => {
   // Pasta-base: separa Inbox (sou destinatário) / Sent (sou remetente) / Archived
   const inFolder = (a: Agendamento) => {
     const isArchived = archivedIds.has(a.id);
+    const isTrashed = trashedIds.has(a.id);
+    if (folder === 'trash') return isTrashed;
+    if (isTrashed) return false;
     if (folder === 'archived') return isArchived;
     if (isArchived) return false;
     if (folder === 'inbox') return isRecipientOf(a);
@@ -378,13 +381,14 @@ const AgendamentosManager = () => {
   const folderBase = useMemo(
     () => agendamentos.filter(inFolder),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [agendamentos, archivedIds, folder, user?.id, userEmail],
+    [agendamentos, archivedIds, trashedIds, folder, user?.id, userEmail],
   );
 
   // Contagens por pasta para a UI lateral
   const folderCounts = useMemo(() => {
-    let inbox = 0, sent = 0, archived = 0, inboxUnread = 0;
+    let inbox = 0, sent = 0, archived = 0, trash = 0, inboxUnread = 0;
     for (const a of agendamentos) {
+      if (trashedIds.has(a.id)) { trash++; continue; }
       const isArchived = archivedIds.has(a.id);
       if (isArchived) { archived++; continue; }
       if (isRecipientOf(a)) {
@@ -393,8 +397,8 @@ const AgendamentosManager = () => {
       }
       if (a.user_id === user?.id) sent++;
     }
-    return { inbox, sent, archived, inboxUnread };
-  }, [agendamentos, archivedIds, readIds, user?.id, userEmail]);
+    return { inbox, sent, archived, trash, inboxUnread };
+  }, [agendamentos, archivedIds, trashedIds, readIds, user?.id, userEmail]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
