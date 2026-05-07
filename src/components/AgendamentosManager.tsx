@@ -446,11 +446,20 @@ const AgendamentosManager = () => {
 
   const archiveAgendamento = async (a: Agendamento) => {
     if (!user?.id) return;
+    const r = a.recipient_response ?? 'pendente';
+    if (r === 'pendente') {
+      toast({
+        title: 'Ainda pendente',
+        description: 'Só é possível arquivar após o destinatário confirmar ou recusar.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setArchivingId(a.id);
     try {
       const { error } = await (supabase as any)
         .from('agendamento_archives')
-        .insert({ user_id: user.id, agendamento_id: a.id });
+        .insert({ user_id: user.id, agendamento_id: a.id, kind: 'archived' });
       if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
       setArchivedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
       toast({ title: 'Arquivado', description: 'Movido para a pasta Arquivado.' });
@@ -469,10 +478,56 @@ const AgendamentosManager = () => {
         .from('agendamento_archives')
         .delete()
         .eq('user_id', user.id)
-        .eq('agendamento_id', a.id);
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'archived');
       if (error) throw error;
       setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
       toast({ title: 'Restaurado', description: 'Removido do Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const trashAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      // Remove do arquivado (se houver) e marca como trashed
+      await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'archived');
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .insert({ user_id: user.id, agendamento_id: a.id, kind: 'trashed' });
+      if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      setTrashedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
+      toast({ title: 'Movido para a Lixeira' });
+    } catch (err: any) {
+      toast({ title: 'Erro ao mover', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const untrashAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'trashed');
+      if (error) throw error;
+      setTrashedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      toast({ title: 'Restaurado', description: 'Removido da Lixeira.' });
     } catch (err: any) {
       toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
     } finally {
