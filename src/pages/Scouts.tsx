@@ -32,6 +32,8 @@ import {
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
 import ScoutGallery from '@/components/ScoutGallery';
+import ScoutFolders from '@/components/ScoutFolders';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
