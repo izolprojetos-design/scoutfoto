@@ -1,10 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Sparkles, ArrowRightLeft, Camera, UserPlus, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { parseLocalDate } from '@/lib/scoutUtils';
+import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Props {
   scoutId: string;
@@ -24,17 +26,21 @@ interface TimelineItem {
   description?: string;
 }
 
-const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: string; ring: string }> = {
-  ingresso:    { icon: UserPlus,      color: 'text-primary',      bg: 'bg-primary/10',      ring: 'border-primary' },
-  transicao:   { icon: ArrowRightLeft, color: 'text-amber-600',   bg: 'bg-amber-500/10',    ring: 'border-amber-500' },
-  secao:       { icon: Sparkles,      color: 'text-indigo-600',   bg: 'bg-indigo-500/10',   ring: 'border-indigo-500' },
-  fotos:       { icon: Camera,        color: 'text-emerald-600',  bg: 'bg-emerald-500/10',  ring: 'border-emerald-500' },
-  aniversario: { icon: Calendar,      color: 'text-rose-600',     bg: 'bg-rose-500/10',     ring: 'border-rose-500' },
+const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: string; ring: string; label: string }> = {
+  ingresso:    { icon: UserPlus,       color: 'text-primary',     bg: 'bg-primary/10',     ring: 'border-primary',     label: 'Ingresso' },
+  transicao:   { icon: ArrowRightLeft, color: 'text-amber-600',   bg: 'bg-amber-500/10',   ring: 'border-amber-500',   label: 'Transição' },
+  secao:       { icon: Sparkles,       color: 'text-indigo-600',  bg: 'bg-indigo-500/10',  ring: 'border-indigo-500',  label: 'Seção' },
+  fotos:       { icon: Camera,         color: 'text-emerald-600', bg: 'bg-emerald-500/10', ring: 'border-emerald-500', label: 'Fotos' },
+  aniversario: { icon: Calendar,       color: 'text-rose-600',    bg: 'bg-rose-500/10',    ring: 'border-rose-500',    label: 'Aniversário' },
 };
+
+const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario'];
 
 const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection }: Props) => {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTypes, setActiveTypes] = useState<Set<ItemType>>(new Set(ALL_TYPES));
+  const [yearFilter, setYearFilter] = useState<string>('all');
 
   useEffect(() => {
     let cancelled = false;
@@ -42,7 +48,6 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
       setLoading(true);
       const list: TimelineItem[] = [];
 
-      // 1. Ingresso
       list.push({
         id: 'ingresso',
         type: 'ingresso',
@@ -51,7 +56,6 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         description: currentSection ? `Seção: ${currentSection}` : undefined,
       });
 
-      // 2. Transição manual
       if (transitionDate) {
         list.push({
           id: 'transicao',
@@ -61,7 +65,6 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         });
       }
 
-      // 3. Mudanças de seção (audit)
       const { data: audits } = await supabase
         .from('audit_logs')
         .select('id, action, created_at, before_data, after_data, details')
@@ -84,7 +87,6 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         }
       });
 
-      // 4. Fotos agrupadas por mês
       const { data: photos } = await supabase
         .from('scout_photos')
         .select('id, created_at')
@@ -109,7 +111,6 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         });
       });
 
-      // 5. Aniversários (do ingresso até hoje)
       const birth = parseLocalDate(scoutBirthDate);
       const start = new Date(scoutCreatedAt);
       const today = new Date();
@@ -139,6 +140,31 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
     return () => { cancelled = true; };
   }, [scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection]);
 
+  const years = useMemo(() => {
+    const set = new Set<number>();
+    items.forEach((i) => set.add(i.date.getFullYear()));
+    return Array.from(set).sort((a, b) => b - a);
+  }, [items]);
+
+  const filtered = useMemo(() => {
+    return items.filter((i) => {
+      if (!activeTypes.has(i.type)) return false;
+      if (yearFilter !== 'all' && i.date.getFullYear() !== Number(yearFilter)) return false;
+      return true;
+    });
+  }, [items, activeTypes, yearFilter]);
+
+  const toggle = (t: ItemType) => {
+    setActiveTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(t)) next.delete(t);
+      else next.add(t);
+      // Avoid empty: if user deselected all, restore that one
+      if (next.size === 0) next.add(t);
+      return next;
+    });
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8 text-muted-foreground">
@@ -157,33 +183,77 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
   }
 
   return (
-    <div className="relative space-y-0 pl-2">
-      {items.map((item, i) => {
-        const cfg = TYPE_CONFIG[item.type];
-        const Icon = cfg.icon;
-        const isLast = i === items.length - 1;
-        return (
-          <div key={item.id} className="relative flex gap-3 pb-4">
-            {!isLast && <div className="absolute left-[15px] top-[32px] bottom-0 w-0.5 bg-border" />}
-            <div className={cn('relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2', cfg.ring, cfg.bg)}>
-              <Icon className={cn('h-4 w-4', cfg.color)} />
-            </div>
-            <div className="flex-1 min-w-0 pt-0.5">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm">{item.title}</span>
-                <span className="text-xs text-muted-foreground">
-                  {format(item.date, "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
-                </span>
-              </div>
-              {item.description && (
-                <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        {ALL_TYPES.map((t) => {
+          const cfg = TYPE_CONFIG[t];
+          const active = activeTypes.has(t);
+          const Icon = cfg.icon;
+          return (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggle(t)}
+              className={cn(
+                'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors',
+                active ? `${cfg.bg} ${cfg.ring} ${cfg.color} font-medium` : 'border-border bg-muted/40 text-muted-foreground hover:bg-muted'
               )}
-            </div>
-          </div>
-        );
-      })}
-      <p className="pt-2 text-center text-xs text-muted-foreground">
-        {items.length} {items.length === 1 ? 'marco' : 'marcos'} na trajetória
+            >
+              <Icon className="h-3 w-3" />
+              {cfg.label}
+            </button>
+          );
+        })}
+        <div className="ml-auto">
+          <Select value={yearFilter} onValueChange={setYearFilter}>
+            <SelectTrigger className="h-8 w-[110px] text-xs">
+              <SelectValue placeholder="Ano" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos anos</SelectItem>
+              {years.map((y) => (
+                <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-6 text-center text-xs text-muted-foreground">
+          Nenhum marco com os filtros atuais.
+        </div>
+      ) : (
+        <div className="relative space-y-0 pl-2">
+          {filtered.map((item, i) => {
+            const cfg = TYPE_CONFIG[item.type];
+            const Icon = cfg.icon;
+            const isLast = i === filtered.length - 1;
+            return (
+              <div key={item.id} className="relative flex gap-3 pb-4">
+                {!isLast && <div className="absolute left-[15px] top-[32px] bottom-0 w-0.5 bg-border" />}
+                <div className={cn('relative z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2', cfg.ring, cfg.bg)}>
+                  <Icon className={cn('h-4 w-4', cfg.color)} />
+                </div>
+                <div className="flex-1 min-w-0 pt-0.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm">{item.title}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {format(item.date, "dd 'de' MMM 'de' yyyy", { locale: ptBR })}
+                    </span>
+                  </div>
+                  {item.description && (
+                    <p className="text-xs text-muted-foreground mt-0.5">{item.description}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <p className="pt-1 text-center text-xs text-muted-foreground">
+        Mostrando {filtered.length} de {items.length} {items.length === 1 ? 'marco' : 'marcos'}
       </p>
     </div>
   );

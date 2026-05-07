@@ -35,6 +35,7 @@ import ScoutGallery from '@/components/ScoutGallery';
 import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
 import ScoutTimeline from '@/components/ScoutTimeline';
+import ScoutStats from '@/components/ScoutStats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
@@ -2016,6 +2017,11 @@ const Scouts = () => {
                   </TabsList>
 
                   <TabsContent value="dados" className="mt-4 space-y-4">
+                    <ScoutStats
+                      scoutId={viewingScout.id}
+                      scoutCreatedAt={viewingScout.created_at}
+                      scoutBirthDate={viewingScout.birth_date}
+                    />
                     <div className="space-y-2 text-sm">
                       {viewingScout.registration_id && (
                         <div className="flex justify-between py-2 border-b">
