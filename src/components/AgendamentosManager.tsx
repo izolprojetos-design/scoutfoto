@@ -695,25 +695,28 @@ const AgendamentosManager = () => {
       </aside>
 
       <div className="space-y-4">
-      {/* Toolbar */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:flex-1 md:min-w-[240px] md:max-w-xl">
+      {/* Toolbar — search + filter integrados */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-0 w-full sm:rounded-md sm:border sm:border-input sm:bg-background sm:shadow-sm sm:focus-within:ring-1 sm:focus-within:ring-ring sm:overflow-hidden">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, destinatário, e-mail, local, assunto..."
-            className="pl-9 h-12 text-base w-full"
+            className="pl-9 h-12 text-base w-full sm:border-0 sm:shadow-none sm:rounded-none sm:focus-visible:ring-0 sm:focus-visible:ring-offset-0"
           />
         </div>
+        <div className="hidden sm:block w-px bg-border self-stretch" aria-hidden />
         <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
-          <SelectTrigger className="h-12 w-full md:w-[200px] shrink-0">
+          <SelectTrigger
+            className="h-12 w-full sm:w-[180px] shrink-0 sm:border-0 sm:shadow-none sm:rounded-none sm:focus:ring-0 sm:focus:ring-offset-0 bg-muted/40 sm:bg-transparent"
+          >
             <span className="flex items-center gap-2 truncate">
               <Filter className="h-4 w-4 text-muted-foreground" />
               <SelectValue placeholder="Filtrar" />
             </span>
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent align="end">
             {FILTERS.map(f => (
               <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
             ))}
