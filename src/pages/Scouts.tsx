@@ -1601,9 +1601,7 @@ const Scouts = () => {
                           fallback={<BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={56} />}
                         />
                       ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                          {branch?.icon || '⚜️'}
-                        </div>
+                        <BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={56} />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col items-start gap-0.5">
