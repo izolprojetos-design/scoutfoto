@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from '@/hooks/use-toast';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { SCHEDULING_STATUS_LABELS, SCHEDULING_TYPES, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import { toTitleCase } from '@/lib/formatting';
 import SchedulingAttachments from '@/components/SchedulingAttachments';
 
 interface Attachment {
@@ -328,7 +329,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Nome</p>
                       {r.destinatario_nome ? (
-                        <p className="text-sm font-medium uppercase break-words">{r.destinatario_nome}</p>
+                        <p className="text-sm font-medium break-words">{toTitleCase(r.destinatario_nome)}</p>
                       ) : (
                         <p className="text-sm italic text-muted-foreground">Não informado</p>
                       )}
@@ -336,7 +337,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     <div>
                       <p className="text-[10px] uppercase tracking-wide text-muted-foreground/80">Seção</p>
                       <p className={`text-xs break-words ${r.destinatario_secao ? 'text-foreground/90' : 'italic text-muted-foreground'}`}>
-                        {r.destinatario_secao || 'Não informada'}
+                        {r.destinatario_secao ? toTitleCase(r.destinatario_secao) : 'Não informada'}
                       </p>
                     </div>
                     <div>
