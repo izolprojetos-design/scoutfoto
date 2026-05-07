@@ -430,6 +430,17 @@ const AgendamentosManager = () => {
     });
   }, [folderBase, search, filter]);
 
+  // Pagination derived state
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
+
+  // Reset to page 1 when filters/search/folder change
+  useEffect(() => { setPage(1); }, [folder, filter, search, pageSize]);
+
   // Marca como "lido" ao expandir um item da Caixa de Entrada
   const persistRead = (next: Set<string>) => {
     setReadIds(next);
