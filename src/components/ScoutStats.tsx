@@ -46,6 +46,7 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
     { icon: Clock, label: 'No grupo', value: yearsInGroup >= 1 ? `${yearsInGroup} ${yearsInGroup === 1 ? 'ano' : 'anos'}` : `${monthsInGroup} ${monthsInGroup === 1 ? 'mês' : 'meses'}`, color: 'text-primary bg-primary/10' },
     { icon: Camera, label: 'Fotos', value: String(stats.photos), color: 'text-emerald-600 bg-emerald-500/10' },
     { icon: Calendar, label: 'Eventos', value: String(stats.events), color: 'text-indigo-600 bg-indigo-500/10' },
+    { icon: Trophy, label: 'Conquistas', value: String(stats.achievements), color: 'text-fuchsia-600 bg-fuchsia-500/10' },
     ...(next ? [{ icon: ArrowRightLeft, label: 'Próximo ramo', value: `${next.branch.icon} ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`, color: 'text-amber-600 bg-amber-500/10' }] : []),
   ];
 
