@@ -13,8 +13,6 @@ import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightL
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
-import { getBranchImage } from '@/lib/branchImages';
-import heroInicio from '@/assets/hero-inicio.jpg';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
@@ -420,26 +418,17 @@ const Dashboard = () => {
 
   return (
     <>
-      {/* Hero */}
-      <div className="mb-6 relative overflow-hidden rounded-xl border shadow-sm">
-        <img
-          src={heroInicio}
-          alt="Grupo Escoteiro Monte Caburaí em volta da fogueira"
-          className="h-48 sm:h-56 w-full object-cover"
-          width={1920}
-          height={640}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 text-white">
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight drop-shadow">
+      {/* Welcome Section */}
+      <div className="mb-6">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-sm sm:text-base text-white/90 drop-shadow">
-              Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC
-            </p>
-          </motion.div>
-        </div>
+            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
+          </div>
+
+        </motion.div>
       </div>
 
       {/* KPI Stats Grid */}
@@ -935,14 +924,7 @@ const Dashboard = () => {
               >
                 <CardContent className="flex items-center justify-between p-6">
                   <div className="flex items-center gap-4">
-                    {(() => {
-                      const img = getBranchImage(branch.key);
-                      return img ? (
-                        <img src={img} alt={branch.display_name} loading="lazy" className="h-14 w-14 rounded-full object-cover ring-2 ring-background shadow-sm" />
-                      ) : (
-                        <span className="text-4xl">{branch.icon}</span>
-                      );
-                    })()}
+                    <span className="text-4xl">{branch.icon}</span>
                     <div>
                       <h3 className="text-lg font-semibold tracking-tight">{branch.display_name}</h3>
                       <div className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
