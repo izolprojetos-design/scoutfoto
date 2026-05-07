@@ -13,14 +13,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Badge } from '@/components/ui/badge';
 
 import { toast } from 'sonner';
-import { Plus, Calendar, MapPin, Share2, Trash2, Pencil, Upload, Camera, Shield, MoreVertical, ImageIcon, Film, Search, X } from 'lucide-react';
+import { Plus, Calendar, MapPin, Trash2, Pencil, Upload, Camera, Shield, MoreVertical, ImageIcon, Film, Search, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format, startOfDay } from 'date-fns';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { ptBR } from 'date-fns/locale';
-import ShareLinkDialog from '@/components/ShareLinkDialog';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getEventCoverImage } from '@/lib/eventImages';
@@ -65,7 +64,6 @@ const Events = () => {
   const [location, setLocation] = useState('');
   const [branchId, setBranchId] = useState('');
   const [scoutGroup, setScoutGroup] = useState('');
-  const [shareEvent, setShareEvent] = useState<{ id: string; name: string } | null>(null);
   const [permEvent, setPermEvent] = useState<{ id: string; name: string } | null>(null);
   const [deleteEvent, setDeleteEvent] = useState<{ id: string; name: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -473,17 +471,6 @@ const Events = () => {
                 {(canManageEvents || canEditEvents) && (
                   <div className="flex-shrink-0 flex items-center gap-1">
                     <div className="hidden sm:flex items-center gap-1">
-                      {canManageEvents && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          title="Compartilhar"
-                          onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}
-                        >
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      )}
                       {(canManageEvents || canEditEvents) && (
                         <Button
                           variant="ghost"
@@ -516,10 +503,6 @@ const Events = () => {
                       <DropdownMenuContent align="end">
                         {canManageEvents && (
                           <>
-                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
-                              <Share2 className="h-4 w-4 mr-2" />
-                              Compartilhar
-                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
                               <Shield className="h-4 w-4 mr-2" />
                               Permissões
@@ -568,15 +551,6 @@ const Events = () => {
           {renderForm(handleEdit, "Salvar Alterações")}
         </DialogContent>
       </Dialog>
-
-      {shareEvent && (
-        <ShareLinkDialog
-          open={!!shareEvent}
-          onOpenChange={(open) => !open && setShareEvent(null)}
-          eventId={shareEvent.id}
-          eventName={shareEvent.name}
-        />
-      )}
 
       {permEvent && (
         <EventPermissionsDialog
