@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import {
   Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
   UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
-  CheckSquare, Square,
+  CheckSquare, Square, RotateCcw, Play,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
