@@ -259,6 +259,16 @@ const AgendamentosManager = () => {
   const [rejectReason, setRejectReason] = useState('');
 
   const sendResponse = async (a: Agendamento, response: 'confirmado' | 'recusado', reason?: string) => {
+    // Guarda no cliente: bloqueia tentativa quando já houve resposta
+    const current = a.recipient_response ?? 'pendente';
+    if (current !== 'pendente') {
+      toast({
+        title: 'Agendamento já respondido',
+        description: `Este agendamento já foi ${current} e não pode ser respondido novamente.`,
+        variant: 'destructive',
+      });
+      return;
+    }
     setRespondingId(a.id);
     try {
       const { data, error } = await (supabase as any).rpc('respond_agendamento', {
@@ -266,7 +276,24 @@ const AgendamentosManager = () => {
         p_response: response,
         p_reason: reason ?? null,
       });
-      if (error) throw error;
+      if (error) {
+        // Mensagem amigável para conflito de re-resposta vindo do banco
+        const msg = (error.message || '').toLowerCase();
+        if (msg.includes('já foi') || msg.includes('conflito') || error.code === '22023' || error.code === '40001') {
+          toast({
+            title: 'Agendamento já respondido',
+            description: 'Outro acesso atualizou este agendamento. A lista será sincronizada.',
+            variant: 'destructive',
+          });
+          // Recarrega o registro para refletir o estado atual
+          const { data: fresh } = await supabase.from('agendamentos').select('*').eq('id', a.id).maybeSingle();
+          if (fresh) setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...(fresh as Agendamento) } : x));
+          setRejectTarget(null);
+          setRejectReason('');
+          return;
+        }
+        throw error;
+      }
       const updated = (Array.isArray(data) ? data[0] : data) as Agendamento;
       if (updated) {
         setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...updated } : x));
