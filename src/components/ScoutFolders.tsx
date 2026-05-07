@@ -6,8 +6,12 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload, UploadCloud } from 'lucide-react';
+import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload, UploadCloud, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
@@ -39,11 +43,17 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
   // Upload dialog state
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [pendingFiles, setPendingFiles] = useState<{ file: File; date: string; preview: string }[]>([]);
   const [photoDate, setPhotoDate] = useState<string>(() => format(new Date(), 'yyyy-MM-dd'));
+  const [applyToAll, setApplyToAll] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Delete confirmation state
+  const [deleteFolderOpen, setDeleteFolderOpen] = useState(false);
+  const [deleteSingleOpen, setDeleteSingleOpen] = useState<PhotoRec | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,33 +121,53 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     if (!files || !files.length) return;
     const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
     if (!valid.length) return toast.error('Selecione apenas imagens.');
-    setPendingFiles(valid);
-    // Pre-fill date from current view if user is inside a date folder/year
-    if (dateKey) {
-      setPhotoDate(dateKey);
-    } else if (year !== null) {
-      setPhotoDate(`${year}-${format(new Date(), 'MM-dd')}`);
-    } else {
-      setPhotoDate(format(new Date(), 'yyyy-MM-dd'));
-    }
+
+    let defaultDate: string;
+    if (dateKey) defaultDate = dateKey;
+    else if (year !== null) defaultDate = `${year}-${format(new Date(), 'MM-dd')}`;
+    else defaultDate = format(new Date(), 'yyyy-MM-dd');
+
+    setPhotoDate(defaultDate);
+    setApplyToAll(true);
+    setPendingFiles(valid.map(f => ({ file: f, date: defaultDate, preview: URL.createObjectURL(f) })));
     setUploadOpen(true);
+  };
+
+  const updateFileDate = (idx: number, newDate: string) => {
+    setPendingFiles(prev => prev.map((p, i) => i === idx ? { ...p, date: newDate } : p));
+  };
+
+  const removePendingFile = (idx: number) => {
+    setPendingFiles(prev => {
+      const removed = prev[idx];
+      if (removed) URL.revokeObjectURL(removed.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const cleanupPreviews = (items: { preview: string }[]) => {
+    items.forEach(p => { try { URL.revokeObjectURL(p.preview); } catch { /* noop */ } });
   };
 
   const handleUpload = async () => {
     if (!user || !pendingFiles.length) return;
-    if (!photoDate) return toast.error('Selecione a data da foto.');
+
+    const items = pendingFiles.map(p => ({
+      file: p.file,
+      date: applyToAll ? photoDate : p.date,
+    }));
+
+    if (items.some(it => !it.date)) return toast.error('Defina a data de todas as fotos.');
 
     setUploading(true);
-    setProgress({ current: 0, total: pendingFiles.length });
+    setProgress({ current: 0, total: items.length });
     let success = 0;
+    let lastDate = items[0].date;
 
-    // Build a timestamp that puts the photos in the chosen day's folder.
-    // Use noon UTC-safe timestamp from the YYYY-MM-DD string.
-    const baseTs = new Date(`${photoDate}T12:00:00`).toISOString();
-
-    for (let i = 0; i < pendingFiles.length; i++) {
-      const file = pendingFiles[i];
-      setProgress({ current: i + 1, total: pendingFiles.length });
+    for (let i = 0; i < items.length; i++) {
+      const { file, date } = items[i];
+      lastDate = date;
+      setProgress({ current: i + 1, total: items.length });
       try {
         if (file.size > MAX_SIZE_MB * 1024 * 1024 * 4) {
           toast.warning(`"${file.name}" muito grande, ignorado.`);
@@ -145,7 +175,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         }
         const compressed = await compressImage(file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const path = `gallery/${scoutId}/${photoDate}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
@@ -174,16 +205,61 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
     setUploading(false);
     setProgress({ current: 0, total: 0 });
+    cleanupPreviews(pendingFiles);
     setPendingFiles([]);
     setUploadOpen(false);
     if (fileInputRef.current) fileInputRef.current.value = '';
     if (success > 0) {
-      toast.success(`${success} foto(s) enviada(s) para ${format(new Date(`${photoDate}T12:00:00`), "dd/MM/yyyy")}`);
-      // Navigate user to the year/date folder of the upload
-      const newYear = new Date(`${photoDate}T12:00:00`).getFullYear();
+      toast.success(`${success} foto(s) enviada(s).`);
+      const newYear = new Date(`${lastDate}T12:00:00`).getFullYear();
       setYear(newYear);
-      setDateKey(photoDate);
+      setDateKey(lastDate);
       await load();
+    }
+  };
+
+  const handleDeleteFolder = async () => {
+    if (!dateKey) return;
+    setDeleting(true);
+    try {
+      const target = photosOfDate;
+      const paths = target.map(p => p.storage_path);
+      const ids = target.map(p => p.id);
+      if (paths.length) {
+        const { error: stErr } = await supabase.storage.from('scout-photos').remove(paths);
+        if (stErr) console.warn('storage remove', stErr);
+      }
+      if (ids.length) {
+        const { error: dbErr } = await supabase.from('scout_photos' as any).delete().in('id', ids);
+        if (dbErr) throw dbErr;
+      }
+      toast.success(`${ids.length} foto(s) excluída(s).`);
+      setDeleteFolderOpen(false);
+      setDateKey(null);
+      await load();
+    } catch (err: any) {
+      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteSingle = async () => {
+    if (!deleteSingleOpen) return;
+    setDeleting(true);
+    try {
+      const p = deleteSingleOpen;
+      await supabase.storage.from('scout-photos').remove([p.storage_path]);
+      const { error } = await supabase.from('scout_photos' as any).delete().eq('id', p.id);
+      if (error) throw error;
+      toast.success('Foto excluída.');
+      setDeleteSingleOpen(null);
+      setViewing(null);
+      await load();
+    } catch (err: any) {
+      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -293,14 +369,26 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           </div>
 
           {(year !== null || dateKey) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => { dateKey ? setDateKey(null) : setYear(null); }}
-              className="gap-1 h-8"
-            >
-              <ArrowLeft className="h-4 w-4" /> Voltar
-            </Button>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { dateKey ? setDateKey(null) : setYear(null); }}
+                className="gap-1 h-8"
+              >
+                <ArrowLeft className="h-4 w-4" /> Voltar
+              </Button>
+              {dateKey && canManage && photosOfDate.length > 0 && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => setDeleteFolderOpen(true)}
+                  className="gap-1 h-8"
+                >
+                  <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
+                </Button>
+              )}
+            </div>
           )}
 
           {/* Level 1: Years */}
@@ -406,13 +494,20 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 alt="Foto"
                 className="w-full h-auto max-h-[70vh] object-contain rounded"
               />
-              <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
                 <span className="text-xs text-muted-foreground">
                   {format(new Date(viewing.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
-                  <Download className="h-4 w-4" /> Baixar
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
+                    <Download className="h-4 w-4" /> Baixar
+                  </Button>
+                  {canManage && (
+                    <Button variant="destructive" size="sm" onClick={() => setDeleteSingleOpen(viewing)} className="gap-2">
+                      <Trash2 className="h-4 w-4" /> Excluir
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -434,8 +529,21 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               <strong>{pendingFiles.length}</strong> arquivo{pendingFiles.length !== 1 ? 's' : ''} selecionado{pendingFiles.length !== 1 ? 's' : ''}.
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="photo-date">Data da foto *</Label>
+            {/* Master date + apply-to-all toggle */}
+            <div className="space-y-2 rounded-md border p-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label htmlFor="photo-date" className="font-semibold">Data padrão *</Label>
+                <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={applyToAll}
+                    onChange={(e) => setApplyToAll(e.target.checked)}
+                    disabled={uploading}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Aplicar a todas
+                </label>
+              </div>
               <Input
                 id="photo-date"
                 type="date"
@@ -445,13 +553,59 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 className="h-12 text-base"
                 disabled={uploading}
               />
-              {photoDate && (
+              {photoDate && applyToAll && (
                 <p className="text-xs text-muted-foreground">
-                  Será salvo em: <strong>{new Date(`${photoDate}T12:00:00`).getFullYear()}</strong> ›{' '}
+                  Todas serão salvas em: <strong>{new Date(`${photoDate}T12:00:00`).getFullYear()}</strong> ›{' '}
                   <strong>{format(new Date(`${photoDate}T12:00:00`), "dd 'de' MMMM", { locale: ptBR })}</strong>
                 </p>
               )}
+              {!applyToAll && (
+                <p className="text-xs text-muted-foreground">Defina a data individualmente em cada miniatura abaixo.</p>
+              )}
             </div>
+
+            {/* Per-file review list */}
+            {pendingFiles.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Revisar fotos selecionadas</p>
+                <div className="max-h-[40vh] overflow-y-auto space-y-2 pr-1">
+                  {pendingFiles.map((p, idx) => {
+                    const effectiveDate = applyToAll ? photoDate : p.date;
+                    return (
+                      <div key={idx} className="flex items-center gap-3 rounded-md border bg-background p-2">
+                        <img
+                          src={p.preview}
+                          alt={p.file.name}
+                          className="h-14 w-14 rounded object-cover shrink-0 bg-muted"
+                        />
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
+                          <Input
+                            type="date"
+                            value={effectiveDate}
+                            max={format(new Date(), 'yyyy-MM-dd')}
+                            onChange={(e) => updateFileDate(idx, e.target.value)}
+                            disabled={uploading || applyToAll}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removePendingFile(idx)}
+                          disabled={uploading}
+                          className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {uploading && (
               <div className="space-y-1">
@@ -469,18 +623,71 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <DialogFooter>
             <Button
               variant="ghost"
-              onClick={() => { setUploadOpen(false); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+              onClick={() => {
+                setUploadOpen(false);
+                cleanupPreviews(pendingFiles);
+                setPendingFiles([]);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
               disabled={uploading}
             >
               Cancelar
             </Button>
             <Button onClick={handleUpload} disabled={uploading || !pendingFiles.length} className="gap-2">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
+              Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete folder confirmation */}
+      <AlertDialog open={deleteFolderOpen} onOpenChange={(v) => { if (!deleting) setDeleteFolderOpen(v); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir pasta inteira?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação removerá permanentemente <strong>{photosOfDate.length} foto(s)</strong> da pasta{' '}
+              {dateKey && <strong>{format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</strong>}.
+              {' '}Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteFolder}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Excluir tudo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete single photo confirmation */}
+      <AlertDialog open={!!deleteSingleOpen} onOpenChange={(v) => { if (!deleting && !v) setDeleteSingleOpen(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir esta foto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A foto será removida permanentemente. Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSingle}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
