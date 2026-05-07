@@ -1940,16 +1940,10 @@ const Scouts = () => {
                       alt={viewingScout.name}
                       className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
                       onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
-                      fallback={
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      }
+                      fallback={<BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={80} />}
                     />
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                      {branch?.icon || '⚜️'}
-                    </div>
+                    <BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={80} />
                   )}
                   <div>
                     <div className="flex items-center gap-2">
