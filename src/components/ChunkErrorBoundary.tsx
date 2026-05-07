@@ -1,6 +1,7 @@
 import { Component, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { isChunkLoadError, reportChunkError } from "@/lib/lazyWithRetry";
 
 interface Props {
   children: ReactNode;
