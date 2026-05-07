@@ -578,8 +578,60 @@ const AgendamentosManager = () => {
     );
   }
 
+  const FOLDERS: Array<{ key: typeof folder; label: string; icon: typeof Inbox; count: number; badge?: number }> = [
+    { key: 'inbox', label: 'Caixa de Entrada', icon: Inbox, count: folderCounts.inbox, badge: folderCounts.inboxUnread },
+    { key: 'sent', label: 'Caixa de Saída', icon: Send, count: folderCounts.sent },
+    { key: 'archived', label: 'Arquivado', icon: Archive, count: folderCounts.archived },
+  ];
+
+  const FILTERS: Array<{ key: typeof filter; label: string }> = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'pendentes', label: 'Pendentes' },
+    { key: 'confirmados', label: 'Confirmados' },
+    { key: 'recusados', label: 'Recusados' },
+    { key: 'futuros', label: 'Futuros' },
+    { key: 'passados', label: 'Passados' },
+  ];
+
   return (
-    <div className="space-y-5 max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-5 max-w-6xl mx-auto">
+      {/* Sidebar tipo e-mail */}
+      <aside className="md:sticky md:top-4 self-start space-y-1">
+        <div className="text-xs uppercase tracking-wide text-muted-foreground px-2 mb-1 flex items-center gap-1.5">
+          <Folder className="h-3.5 w-3.5" /> Pastas
+        </div>
+        {FOLDERS.map(f => {
+          const Icon = f.icon;
+          const active = folder === f.key;
+          return (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => { setFolder(f.key); setExpandedId(null); }}
+              data-testid={`folder-${f.key}`}
+              className={cn(
+                'w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-md text-sm transition-colors',
+                active ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground/80',
+              )}
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{f.label}</span>
+              </span>
+              <span className="flex items-center gap-1 shrink-0">
+                {f.badge ? (
+                  <span className="rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center">
+                    {f.badge}
+                  </span>
+                ) : null}
+                <span className="text-xs text-muted-foreground">{f.count}</span>
+              </span>
+            </button>
+          );
+        })}
+      </aside>
+
+      <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -587,25 +639,25 @@ const AgendamentosManager = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, destinatário, e-mail, local, seção..."
+            placeholder="Buscar por nome, destinatário, e-mail, local, assunto..."
             className="pl-9 h-11"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(['todos', 'meus', 'futuros', 'passados'] as const).map(f => (
+          {FILTERS.map(f => (
             <button
-              key={f}
+              key={f.key}
               type="button"
-              onClick={() => setFilter(f)}
+              onClick={() => setFilter(f.key)}
               className={cn(
                 'px-3 py-1.5 rounded-md text-sm font-medium border transition-colors',
-                filter === f
+                filter === f.key
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-input',
               )}
             >
               <Filter className="h-3.5 w-3.5 inline mr-1" />
-              {f === 'todos' ? 'Todos' : f === 'meus' ? 'Meus' : f === 'futuros' ? 'Futuros' : 'Passados'}
+              {f.label}
             </button>
           ))}
         </div>
