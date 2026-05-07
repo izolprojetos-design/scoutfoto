@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
-  CheckCircle2, XCircle, Clock3,
+  CheckCircle2, XCircle, Clock3, Inbox, Send, Archive, ArchiveRestore, Folder,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
