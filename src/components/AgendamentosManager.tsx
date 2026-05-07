@@ -954,6 +954,43 @@ const AgendamentosManager = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Recusa do destinatário com motivo */}
+      <Dialog open={!!rejectTarget} onOpenChange={(o) => { if (!o) { setRejectTarget(null); setRejectReason(''); } }}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-destructive" /> Recusar agendamento
+            </DialogTitle>
+            <DialogDescription>
+              Informe o motivo da recusa. O solicitante será notificado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="reject-reason">Motivo</Label>
+            <Textarea
+              id="reject-reason"
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Ex.: conflito de horário, indisponibilidade, etc."
+              rows={4}
+              className="text-base"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setRejectTarget(null); setRejectReason(''); }} disabled={!!respondingId}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!rejectReason.trim() || !!respondingId}
+              onClick={() => rejectTarget && sendResponse(rejectTarget, 'recusado', rejectReason.trim())}
+            >
+              {respondingId ? <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Enviando...</> : 'Confirmar recusa'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Teste rápido de RLS (admin) */}
       <Dialog open={!!rlsTestId} onOpenChange={(open) => { if (!open) { setRlsTestId(null); setRlsTestRecord(null); setRlsResult(null); setRlsEmail(''); } }}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
