@@ -319,6 +319,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
+    // Garante que toda subscription de Realtime atrelada à sessão atual
+    // (ex.: agendamentos, notificações) seja encerrada antes de derrubar a sessão,
+    // evitando vazamento entre usuários que façam login em sequência.
+    try { await supabase.removeAllChannels(); } catch { /* noop */ }
     await supabase.auth.signOut();
   };
 
