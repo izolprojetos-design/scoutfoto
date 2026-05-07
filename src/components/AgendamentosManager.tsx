@@ -223,6 +223,55 @@ const AgendamentosManager = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Realtime: refletir respostas do destinatário automaticamente
+  useEffect(() => {
+    const channel = supabase
+      .channel('agendamentos-responses')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agendamentos' }, (payload) => {
+        const updated = payload.new as Agendamento;
+        setAgendamentos(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, []);
+
+  // Resposta do destinatário (Confirmar/Recusar)
+  const userEmail = (user?.email || '').toLowerCase();
+  const isRecipientOf = (a: Agendamento) =>
+    !!userEmail && (a.email_para || '').toLowerCase() === userEmail;
+
+  const [respondingId, setRespondingId] = useState<string | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Agendamento | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const sendResponse = async (a: Agendamento, response: 'confirmado' | 'recusado', reason?: string) => {
+    setRespondingId(a.id);
+    try {
+      const { data, error } = await (supabase as any).rpc('respond_agendamento', {
+        p_agendamento_id: a.id,
+        p_response: response,
+        p_reason: reason ?? null,
+      });
+      if (error) throw error;
+      const updated = (Array.isArray(data) ? data[0] : data) as Agendamento;
+      if (updated) {
+        setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...updated } : x));
+      }
+      toast({
+        title: response === 'confirmado' ? 'Agendamento confirmado' : 'Agendamento recusado',
+        description: response === 'confirmado'
+          ? 'O solicitante foi notificado.'
+          : 'O solicitante foi notificado com seu motivo.',
+      });
+      setRejectTarget(null);
+      setRejectReason('');
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha ao registrar resposta', variant: 'destructive' });
+    } finally {
+      setRespondingId(null);
+    }
+  };
+
   const branchLabel = (id: string) => {
     const b = branches.find(br => br.id === id);
     return b ? `${b.icon} ${b.display_name}` : id;
