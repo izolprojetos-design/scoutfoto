@@ -67,10 +67,20 @@ const AgendamentosManager = () => {
 
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
+    try {
+      const k = `agd:read:${user?.id ?? 'anon'}`;
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(k) : null;
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
+  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived'>('inbox');
+  const [filter, setFilter] = useState<'todos' | 'pendentes' | 'confirmados' | 'recusados' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
