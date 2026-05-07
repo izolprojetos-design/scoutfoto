@@ -306,7 +306,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
               multiple
               className="hidden"
               onChange={(e) => {
-                handleFiles(e.target.files);
+                requestUpload(e.target.files);
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
             />
