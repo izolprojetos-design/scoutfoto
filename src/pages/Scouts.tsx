@@ -36,6 +36,7 @@ import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
 import ScoutTimeline from '@/components/ScoutTimeline';
 import ScoutStats from '@/components/ScoutStats';
+import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
@@ -1957,7 +1958,20 @@ const Scouts = () => {
       <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Perfil do Integrante</DialogTitle>
+            <DialogTitle className="flex items-center justify-between gap-2">
+              <span>Perfil do Integrante</span>
+              {viewingScout && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 mr-6"
+                  onClick={() => exportScoutProfilePdf(viewingScout, getGuardiansForScout(viewingScout.id))}
+                >
+                  <FileDown className="h-4 w-4" />
+                  Exportar PDF
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {viewingScout && (() => {
             const branch = getCurrentBranch(parseLocalDate(viewingScout.birth_date));
