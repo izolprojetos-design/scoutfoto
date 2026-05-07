@@ -37,9 +37,14 @@ const ScoutHistory = ({ scoutId }: ScoutHistoryProps) => {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  // Authoritative dedup set — survives across renders/StrictMode double-invokes
+  const seenIdsRef = useRef<Set<string>>(new Set());
+  // Guard to prevent overlapping fetches
+  const inFlightRef = useRef(false);
 
   const fetchPage = useCallback(
     async (cursor: string | null) => {
+      // Fetch slightly more than PAGE_SIZE to compensate for ties on created_at
       let query = supabase
         .from('audit_logs')
         .select('id, action, created_at, details, before_data, after_data')
@@ -47,9 +52,12 @@ const ScoutHistory = ({ scoutId }: ScoutHistoryProps) => {
           `details->>scout_id.eq.${scoutId},before_data->>scout_id.eq.${scoutId},after_data->>scout_id.eq.${scoutId},details->>id.eq.${scoutId}`,
         )
         .order('created_at', { ascending: false })
+        .order('id', { ascending: false }) // stable tiebreak
         .limit(PAGE_SIZE);
 
-      if (cursor) query = query.lt('created_at', cursor);
+      // lte (not lt) to include rows that share the exact same timestamp;
+      // duplicates are filtered locally by id.
+      if (cursor) query = query.lte('created_at', cursor);
 
       const { data, error } = await query;
       if (error) {
@@ -61,34 +69,65 @@ const ScoutHistory = ({ scoutId }: ScoutHistoryProps) => {
     [scoutId],
   );
 
+  // Initial load — reset state when scout changes
   useEffect(() => {
     let cancelled = false;
+    seenIdsRef.current = new Set();
+    inFlightRef.current = true;
     setLoading(true);
     setEntries([]);
     setHasMore(true);
+
     fetchPage(null).then((rows) => {
       if (cancelled) return;
-      setEntries(rows);
+      const fresh: AuditEntry[] = [];
+      for (const r of rows) {
+        if (!seenIdsRef.current.has(r.id)) {
+          seenIdsRef.current.add(r.id);
+          fresh.push(r);
+        }
+      }
+      setEntries(fresh);
       setHasMore(rows.length === PAGE_SIZE);
       setLoading(false);
+      inFlightRef.current = false;
     });
+
     return () => {
       cancelled = true;
+      inFlightRef.current = false;
     };
   }, [scoutId, fetchPage]);
 
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || entries.length === 0) return;
+    if (inFlightRef.current || !hasMore) return;
+    if (entries.length === 0) return;
+
+    inFlightRef.current = true;
     setLoadingMore(true);
+
     const last = entries[entries.length - 1];
     const rows = await fetchPage(last.created_at);
-    setEntries((prev) => {
-      const seen = new Set(prev.map((e) => e.id));
-      return [...prev, ...rows.filter((r) => !seen.has(r.id))];
-    });
+
+    const fresh: AuditEntry[] = [];
+    for (const r of rows) {
+      if (!seenIdsRef.current.has(r.id)) {
+        seenIdsRef.current.add(r.id);
+        fresh.push(r);
+      }
+    }
+
+    if (fresh.length > 0) {
+      setEntries((prev) => [...prev, ...fresh]);
+    }
+
+    // If the API returned fewer than PAGE_SIZE rows, we've reached the end.
+    // If everything came back as duplicates but we still got a full page,
+    // keep trying — there are likely more older rows behind a tie.
     setHasMore(rows.length === PAGE_SIZE);
     setLoadingMore(false);
-  }, [entries, fetchPage, hasMore, loadingMore]);
+    inFlightRef.current = false;
+  }, [entries, fetchPage, hasMore]);
 
   // Infinite scroll observer
   useEffect(() => {
