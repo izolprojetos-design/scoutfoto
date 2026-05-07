@@ -399,7 +399,7 @@ const Events = () => {
         }
 
         return (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {sortedEvents.map((event, index) => {
             const branchInfo = getBranchInfo(event.branch_id);
             const isUpcoming = event.event_date && parseLocalDate(event.event_date) > startOfDay(new Date());
@@ -410,119 +410,113 @@ const Events = () => {
             return (
               <motion.div
                 key={event.id}
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.02, 0.15), duration: 0.2 }}
+                transition={{ delay: Math.min(index * 0.015, 0.15), duration: 0.2 }}
+                className="group flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                onClick={() => navigate(`/events/${event.id}`)}
               >
-                <Card className="group border bg-card shadow-sm transition-all hover:shadow-md cursor-pointer overflow-hidden" onClick={() => navigate(`/events/${event.id}`)}>
-                  <div className="relative h-36 overflow-hidden">
-                    <img
-                      src={getEventCoverImage(event.name)}
-                      alt={event.name}
-                      loading="lazy"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <h3 className="absolute bottom-3 left-4 right-4 text-lg font-semibold tracking-tight text-white drop-shadow-md">
-                      {event.name}
-                    </h3>
-                  </div>
-                  <CardContent className="p-4">
-                    {event.description && (
-                      <p className="mb-3 text-sm text-muted-foreground line-clamp-2">{event.description}</p>
-                    )}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="outline" className="gap-1 font-normal text-muted-foreground">
-                        Cadastro: {format(new Date(event.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                <div className="relative h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+                  <img
+                    src={getEventCoverImage(event.name)}
+                    alt={event.name}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm sm:text-base font-semibold text-foreground break-words">
+                    {event.name}
+                  </h3>
+                  {event.description && (
+                    <p className="mt-0.5 text-xs sm:text-sm text-muted-foreground line-clamp-1">
+                      {event.description}
+                    </p>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {event.event_date && (
+                      <Badge
+                        variant={isUpcoming ? 'default' : 'outline'}
+                        className={`gap-1 font-normal text-xs ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : 'text-muted-foreground'}`}
+                      >
+                        <Calendar className="h-3 w-3" />
+                        {format(parseLocalDate(event.event_date), 'dd/MM/yyyy', { locale: ptBR })}
                       </Badge>
-                      {event.event_date && (
-                        <Badge 
-                          variant={isUpcoming ? "default" : "outline"} 
-                          className={`gap-1 font-normal ${isUpcoming ? 'bg-amber-500 hover:bg-amber-600 text-white border-amber-500' : 'text-muted-foreground'}`}
-                        >
-                          <Calendar className="h-3 w-3" />
-                          Evento: {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
-                        </Badge>
-                      )}
-                      {event.location && (
-                        <Badge variant="outline" className="gap-1 font-normal">
-                          <MapPin className="h-3 w-3" />
-                          Local: {event.location}
-                        </Badge>
-                      )}
-                      {branchInfo && (
-                        <Badge variant="secondary" className="font-normal">
-                          {branchInfo.icon} {branchInfo.display_name}
-                        </Badge>
-                      )}
-                      {hasPhotos && (
-                        <Badge variant="outline" className="gap-1 font-normal">
-                          <ImageIcon className="h-3 w-3" />
-                          {mediaCount.photos} foto{mediaCount.photos !== 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                      {hasVideos && (
-                        <Badge variant="outline" className="gap-1 font-normal">
-                          <Film className="h-3 w-3" />
-                          {mediaCount.videos} vídeo{mediaCount.videos !== 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                      {!hasPhotos && !hasVideos && (
-                        <Badge variant="outline" className="gap-1 font-normal">
-                          <ImageIcon className="h-3 w-3" />
-                          0 fotos
-                        </Badge>
-                      )}
-                    </div>
-                    {(canManageEvents || canEditEvents) && (
-                      <div className="flex justify-end">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {canManageEvents && (
-                              <>
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
-                                  <Share2 className="h-4 w-4 mr-2" />
-                                  Compartilhar
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  Permissões
-                                  {eventsWithPerms.has(event.id) && (
-                                    <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
-                                  )}
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                              </>
-                            )}
-                            {(canManageEvents || canEditEvents) && (
-                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
-                                <Pencil className="h-4 w-4 mr-2" />
-                                Editar
-                              </DropdownMenuItem>
-                            )}
-                            {canManageEvents && (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Excluir
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
                     )}
-                  </CardContent>
-                </Card>
+                    {event.location && (
+                      <Badge variant="outline" className="gap-1 font-normal text-xs">
+                        <MapPin className="h-3 w-3" />
+                        {event.location}
+                      </Badge>
+                    )}
+                    {branchInfo && (
+                      <Badge variant="secondary" className="font-normal text-xs">
+                        {branchInfo.icon} {branchInfo.display_name}
+                      </Badge>
+                    )}
+                    {hasPhotos && (
+                      <Badge variant="outline" className="gap-1 font-normal text-xs">
+                        <ImageIcon className="h-3 w-3" />
+                        {mediaCount.photos}
+                      </Badge>
+                    )}
+                    {hasVideos && (
+                      <Badge variant="outline" className="gap-1 font-normal text-xs">
+                        <Film className="h-3 w-3" />
+                        {mediaCount.videos}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {(canManageEvents || canEditEvents) && (
+                  <div className="flex-shrink-0">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => e.stopPropagation()}>
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        {canManageEvents && (
+                          <>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setShareEvent({ id: event.id, name: event.name }); }}>
+                              <Share2 className="h-4 w-4 mr-2" />
+                              Compartilhar
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setPermEvent({ id: event.id, name: event.name }); }}>
+                              <Shield className="h-4 w-4 mr-2" />
+                              Permissões
+                              {eventsWithPerms.has(event.id) && (
+                                <span className="ml-auto h-2 w-2 rounded-full bg-primary" />
+                              )}
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                          </>
+                        )}
+                        {(canManageEvents || canEditEvents) && (
+                          <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEditDialog(event); }}>
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar
+                          </DropdownMenuItem>
+                        )}
+                        {canManageEvents && (
+                          <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={(e) => { e.stopPropagation(); setDeleteEvent({ id: event.id, name: event.name }); }}
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Excluir
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                )}
               </motion.div>
             );
           })}
