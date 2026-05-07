@@ -581,6 +581,77 @@ const AgendamentosManager = () => {
                       </div>
                     )}
 
+                    {/* Resposta do destinatário */}
+                    {(() => {
+                      const r = a.recipient_response ?? 'pendente';
+                      const isRecipient = isRecipientOf(a);
+                      const isMine = a.user_id === user?.id;
+                      if (r === 'confirmado') {
+                        return (
+                          <div className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Destinatário confirmou{a.recipient_response_at ? ` em ${format(new Date(a.recipient_response_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : ''}.</span>
+                          </div>
+                        );
+                      }
+                      if (r === 'recusado') {
+                        return (
+                          <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm">
+                            <div className="flex items-center gap-2 text-destructive font-medium">
+                              <XCircle className="h-4 w-4" />
+                              <span>Destinatário recusou{a.recipient_response_at ? ` em ${format(new Date(a.recipient_response_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}` : ''}.</span>
+                            </div>
+                            {a.recipient_response_reason && (
+                              <p className="mt-1 text-foreground/90 whitespace-pre-wrap break-words">
+                                <span className="text-xs uppercase tracking-wide text-muted-foreground">Motivo: </span>
+                                {a.recipient_response_reason}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      }
+                      // pendente
+                      if (isRecipient) {
+                        return (
+                          <div className="rounded-md border bg-muted/30 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                            <div className="text-sm flex items-center gap-2">
+                              <Clock3 className="h-4 w-4 text-amber-600" />
+                              <span>Você é o destinatário. Deseja confirmar?</span>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                onClick={(e) => { e.stopPropagation(); sendResponse(a, 'confirmado'); }}
+                                disabled={respondingId === a.id}
+                                className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                              >
+                                {respondingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                Confirmar
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => { e.stopPropagation(); setRejectTarget(a); setRejectReason(''); }}
+                                disabled={respondingId === a.id}
+                                className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              >
+                                <XCircle className="h-3.5 w-3.5" /> Recusar
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      if (isMine) {
+                        return (
+                          <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-200 flex items-center gap-2">
+                            <Clock3 className="h-4 w-4" />
+                            <span>Aguardando resposta do destinatário.</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
                       {isAdmin && (
                         <Button
