@@ -17,8 +17,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 const ProtectedRoute = lazyWithRetry(() => import("@/components/ProtectedRoute"));
 import ForceChangePassword from "@/components/ForceChangePassword";
-import SplashScreen from "@/components/SplashScreen";
-import InstallPrompt from "@/components/InstallPrompt";
+const SplashScreen = lazyWithRetry(() => import("@/components/SplashScreen"));
+const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"));
 import ConnectivityBanner from "@/components/ConnectivityBanner";
 import { Loader2 } from "lucide-react";
 
