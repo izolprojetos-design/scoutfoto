@@ -311,6 +311,10 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, status, message } : p));
   };
 
+  const setFileProgress = (id: string, loaded: number, total: number) => {
+    setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, loaded, total } : p));
+  };
+
   // Validation summary
   const dateErrors = useMemo(() => {
     const errs: string[] = [];
@@ -323,35 +327,69 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     return errs;
   }, [applyToAll, photoDate, pendingFiles]);
 
-  const handleUpload = async () => {
-    if (!user || !pendingFiles.length) return;
+  const failedCount = useMemo(() => pendingFiles.filter(p => p.status === 'error').length, [pendingFiles]);
+  const pendingCount = useMemo(() => pendingFiles.filter(p => p.status === 'pending' || p.status === 'skipped').length, [pendingFiles]);
+
+  /**
+   * Process the queue. If `onlyIds` is provided, only those items are processed
+   * (used by Retry-failed and Resume). Otherwise, processes everything not yet 'success'.
+   */
+  const runUpload = async (onlyIds?: Set<string>) => {
+    if (!user) return;
     if (dateErrors.length) {
       toast.error(dateErrors[0]);
       return;
     }
 
+    // Snapshot of items to process (avoid stale closure on state)
+    const snapshot = pendingFiles.filter(p => {
+      if (onlyIds) return onlyIds.has(p.id);
+      return p.status !== 'success' && p.status !== 'uploading';
+    });
+    if (!snapshot.length) return;
+
+    // Reset their state to pending + zero progress
+    setPendingFiles(prev => prev.map(p =>
+      snapshot.some(s => s.id === p.id)
+        ? { ...p, status: 'pending', message: undefined, loaded: 0, total: p.file.size }
+        : p
+    ));
+
     cancelUploadRef.current = false;
     setUploading(true);
-    const total = pendingFiles.length;
+    const total = snapshot.length;
     setProgress({ current: 0, total });
     let success = 0;
-    let lastDate = applyToAll ? photoDate : pendingFiles[0].date;
+    let lastDate = applyToAll ? photoDate : snapshot[0].date;
 
-    for (let i = 0; i < pendingFiles.length; i++) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      toast.error('Sessão expirada. Faça login novamente.');
+      setUploading(false);
+      return;
+    }
+
+    for (let i = 0; i < snapshot.length; i++) {
       if (cancelUploadRef.current) {
-        // Mark remaining as skipped
-        setPendingFiles(prev => prev.map((p, idx) => idx >= i && p.status === 'pending'
-          ? { ...p, status: 'skipped', message: 'Cancelado' } : p));
-        toast('Upload cancelado.');
+        // Keep non-success items in queue so user can resume
+        setPendingFiles(prev => prev.map(p => {
+          const inBatch = snapshot.some(s => s.id === p.id);
+          if (!inBatch) return p;
+          if (p.status === 'success') return p;
+          return { ...p, status: 'pending', message: 'Pausado — pronto para retomar', loaded: 0 };
+        }));
+        toast('Upload cancelado. A fila foi mantida para você retomar.');
         break;
       }
 
-      const item = pendingFiles[i];
+      const item = snapshot[i];
       const date = applyToAll ? photoDate : item.date;
       lastDate = date;
       setProgress({ current: i + 1, total });
       setFileStatus(item.id, 'uploading');
 
+      let storedPath: string | null = null;
       try {
         if (!isValidDate(date)) {
           setFileStatus(item.id, 'error', 'Data inválida');
@@ -360,12 +398,22 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         const compressed = await compressImage(item.file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
-        const { error: upErr } = await supabase.storage
-          .from('scout-photos')
-          .upload(path, compressed, { upsert: false, contentType: compressed.type });
-        if (upErr) throw upErr;
+        // Initialize progress with compressed size
+        setFileProgress(item.id, 0, compressed.size);
+
+        await xhrUploadToStorage({
+          bucket: 'scout-photos',
+          path,
+          file: compressed,
+          contentType: compressed.type,
+          accessToken,
+          onProgress: (loaded, totalBytes) => setFileProgress(item.id, loaded, totalBytes),
+          registerXhr: (xhr) => { activeXhrRef.current = xhr; },
+        });
+        activeXhrRef.current = null;
 
         const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
           scout_id: scoutId,
@@ -380,14 +428,21 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           await supabase.storage.from('scout-photos').remove([path]);
           throw dbErr;
         }
+        setFileProgress(item.id, compressed.size, compressed.size);
         setFileStatus(item.id, 'success');
         success++;
       } catch (err: any) {
         console.error('upload err', err);
+        // If aborted by cancel, the loop will handle it on next iteration
+        if (cancelUploadRef.current) {
+          if (storedPath) { try { await supabase.storage.from('scout-photos').remove([storedPath]); } catch { /* */ } }
+          continue;
+        }
         setFileStatus(item.id, 'error', err.message || 'erro');
       }
     }
 
+    activeXhrRef.current = null;
     setUploading(false);
     setProgress({ current: 0, total: 0 });
 
@@ -401,7 +456,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
     // Auto-close if all succeeded
     setPendingFiles(prev => {
-      const allDone = prev.every(p => p.status === 'success');
+      const allDone = prev.length > 0 && prev.every(p => p.status === 'success');
       if (allDone) {
         cleanupPreviews(prev);
         setUploadOpen(false);
@@ -412,8 +467,28 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     });
   };
 
+  const handleUpload = () => runUpload();
+
+  const handleRetryFailed = () => {
+    const ids = new Set(pendingFiles.filter(p => p.status === 'error').map(p => p.id));
+    if (!ids.size) return;
+    runUpload(ids);
+  };
+
+  const handleResume = () => {
+    const ids = new Set(
+      pendingFiles.filter(p => p.status === 'pending' || p.status === 'skipped').map(p => p.id)
+    );
+    if (!ids.size) return;
+    runUpload(ids);
+  };
+
   const cancelOngoingUpload = () => {
     cancelUploadRef.current = true;
+    if (activeXhrRef.current) {
+      try { activeXhrRef.current.abort(); } catch { /* */ }
+      activeXhrRef.current = null;
+    }
   };
 
   // Direct drop on a folder card — skip dialog
