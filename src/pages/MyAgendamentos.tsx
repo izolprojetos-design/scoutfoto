@@ -13,7 +13,33 @@ const MyAgendamentos = () => {
   useEffect(() => {
     const prev = document.title;
     document.title = 'Minha Agenda | ScoutFoto';
-    return () => { document.title = prev; };
+
+    const setMeta = (key: 'name' | 'property', keyValue: string, content: string) => {
+      const selector = `meta[${key}="${keyValue}"]`;
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(key, keyValue);
+        document.head.appendChild(el);
+      }
+      const old = el.getAttribute('content');
+      el.setAttribute('content', content);
+      return () => {
+        if (old !== null) el!.setAttribute('content', old);
+        else el!.remove();
+      };
+    };
+
+    const restoreOg = setMeta('property', 'og:title', 'Minha Agenda | ScoutFoto');
+    const restoreTw = setMeta('name', 'twitter:title', 'Minha Agenda | ScoutFoto');
+    const restoreDesc = setMeta('name', 'description', 'Gerencie sua agenda de atividades escoteiras no ScoutFoto.');
+
+    return () => {
+      document.title = prev;
+      restoreOg();
+      restoreTw();
+      restoreDesc();
+    };
   }, []);
 
   return (
