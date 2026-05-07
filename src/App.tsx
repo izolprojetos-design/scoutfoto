@@ -41,6 +41,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const EventPortal = lazy(() => import("./pages/EventPortal"));
 const Scouts = lazy(() => import("./pages/Scouts"));
 const ScoutCalendar = lazy(() => import("./pages/ScoutCalendar"));
+const MyAgendamentos = lazy(() => import("./pages/MyAgendamentos"));
 
 const Profile = lazy(() => import("./pages/Profile"));
 const BranchScouts = lazy(() => import("./pages/BranchScouts"));
