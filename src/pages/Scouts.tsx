@@ -355,7 +355,7 @@ const Scouts = () => {
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
     setEditSubgroup(scout.subgroup_id || 'none');
-    setEditRegistrationId(scout.registration_id ? scout.registration_id.padStart(5, '0') : '');
+    setEditRegistrationId(scout.registration_id ? scout.registration_id.padStart(4, '0') : '');
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
     setEditTransitionDate(scout.transition_date || '');
@@ -1325,7 +1325,7 @@ const Scouts = () => {
                   .map(s => parseInt(s.registration_id, 10))
                   .filter(n => !isNaN(n));
                 const nextId = existingIds.length > 0 ? Math.max(...existingIds) + 1 : 1;
-                setScoutRegistrationId(String(nextId).padStart(5, '0'));
+                setScoutRegistrationId(String(nextId).padStart(4, '0'));
               }
             }}>
             <DialogTrigger asChild>
