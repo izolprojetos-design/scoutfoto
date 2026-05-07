@@ -34,6 +34,7 @@ import ImageCropper from '@/components/ImageCropper';
 import ScoutGallery from '@/components/ScoutGallery';
 import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
+import ScoutTimeline from '@/components/ScoutTimeline';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
@@ -2007,9 +2008,10 @@ const Scouts = () => {
                 </div>
 
                 <Tabs defaultValue="dados" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="dados">Dados</TabsTrigger>
                     <TabsTrigger value="fotos">Fotos</TabsTrigger>
+                    <TabsTrigger value="timeline">Linha do Tempo</TabsTrigger>
                     <TabsTrigger value="historico">Histórico</TabsTrigger>
                   </TabsList>
 
@@ -2098,6 +2100,16 @@ const Scouts = () => {
                         <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} />
                       </TabsContent>
                     </Tabs>
+                  </TabsContent>
+
+                  <TabsContent value="timeline" className="mt-4">
+                    <ScoutTimeline
+                      scoutId={viewingScout.id}
+                      scoutCreatedAt={viewingScout.created_at}
+                      scoutBirthDate={viewingScout.birth_date}
+                      transitionDate={viewingScout.transition_date}
+                      currentSection={viewingScout.section}
+                    />
                   </TabsContent>
 
                   <TabsContent value="historico" className="mt-4">
