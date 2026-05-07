@@ -1048,23 +1048,6 @@ const AgendamentosManager = () => {
                           </Button>
                         </>
                       )}
-                      {isAdmin && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setRlsTestId(a.id);
-                            setRlsTestRecord(a);
-                            setRlsEmail(a.email_para || '');
-                            setRlsResult(null);
-                          }}
-                          className="h-8 gap-1"
-                          title="Validar visibilidade RLS deste registro para um e-mail"
-                        >
-                          <ShieldCheck className="h-3.5 w-3.5" /> Testar RLS
-                        </Button>
-                      )}
                       {canEdit(a) && (
                         <Button
                           variant="outline"
