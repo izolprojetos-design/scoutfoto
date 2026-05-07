@@ -46,6 +46,10 @@ interface Agendamento {
   observacoes: string;
   status: string;
   created_at: string;
+  recipient_response?: 'pendente' | 'confirmado' | 'recusado' | null;
+  recipient_response_reason?: string | null;
+  recipient_response_at?: string | null;
+  recipient_response_by?: string | null;
 }
 
 interface Branch {
