@@ -118,6 +118,12 @@ function isValidDate(s: string): boolean {
   return !isNaN(d.getTime());
 }
 
+function formatBytes(n: number): string {
+  if (!n || n < 1024) return `${n || 0} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(2)} MB`;
+}
+
 export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
