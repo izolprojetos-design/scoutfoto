@@ -784,7 +784,7 @@ const AgendamentosManager = () => {
             const isOpen = expandedId === a.id;
             const isFocused = focusedIndex === index || (focusedIndex === -1 && index === 0);
             const dateLabel = format(parseLocalDate(a.data_secao), "dd/MM", { locale: ptBR });
-            const subject = a.observacoes?.trim() || `${tipoLabel(a.tipo_atividade)} — ${a.local || 'sem local'}`;
+            const subject = a.local?.trim() || a.observacoes?.trim() || tipoLabel(a.tipo_atividade);
             return (
               <div key={a.id} className={cn('transition-colors', isOpen && 'bg-muted/40')}>
                 {/* Linha colapsada (estilo e-mail) */}
