@@ -695,14 +695,14 @@ const AgendamentosManager = () => {
 
       <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative w-full lg:flex-1 lg:max-w-xl">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome, destinatário, e-mail, local, assunto..."
-            className="pl-9 h-11"
+            className="pl-9 h-12 text-base w-full"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
