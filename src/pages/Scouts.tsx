@@ -104,6 +104,14 @@ const Scouts = () => {
   const [branchAnnouncement, setBranchAnnouncement] = useState('');
   const branchPickerRef = useRef<HTMLDivElement>(null);
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
+  // Advanced filters
+  const [sectionFilter, setSectionFilter] = useState<string[]>([]);
+  const [subgroupFilter, setSubgroupFilter] = useState<string[]>([]);
+  const [ageMinFilter, setAgeMinFilter] = useState<string>('');
+  const [ageMaxFilter, setAgeMaxFilter] = useState<string>('');
+  const [tenureMinFilter, setTenureMinFilter] = useState<string>('');
+  const [photoFilter, setPhotoFilter] = useState<'all' | 'with' | 'without'>('all');
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
