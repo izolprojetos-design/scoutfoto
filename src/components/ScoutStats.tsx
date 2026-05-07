@@ -17,18 +17,19 @@ interface Stats {
 }
 
 const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
-  const [stats, setStats] = useState<Stats>({ photos: 0, events: 0 });
+  const [stats, setStats] = useState<Stats>({ photos: 0, events: 0, achievements: 0 });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [{ count: photos }, { data: eventRows }] = await Promise.all([
+      const [{ count: photos }, { data: eventRows }, { count: achievements }] = await Promise.all([
         supabase.from('scout_photos').select('id', { count: 'exact', head: true }).eq('scout_id', scoutId),
         supabase.from('scout_photos').select('caption').eq('scout_id', scoutId).limit(1000),
+        supabase.from('scout_achievements').select('id', { count: 'exact', head: true }).eq('scout_id', scoutId),
       ]);
       // event count: distinct captions (proxy when no event_id link); fallback to 0
       const events = new Set((eventRows || []).map((r: any) => r.caption).filter(Boolean)).size;
-      if (!cancelled) setStats({ photos: photos || 0, events });
+      if (!cancelled) setStats({ photos: photos || 0, events, achievements: achievements || 0 });
     })();
     return () => { cancelled = true; };
   }, [scoutId]);
