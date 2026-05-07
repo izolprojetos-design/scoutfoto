@@ -72,6 +72,10 @@ export type Database = {
           nome_evento: string
           observacoes: string
           ramo_escoteiro: string
+          recipient_response: string
+          recipient_response_at: string | null
+          recipient_response_by: string | null
+          recipient_response_reason: string | null
           secao: string
           status: string
           tipo_atividade: string
@@ -97,6 +101,10 @@ export type Database = {
           nome_evento?: string
           observacoes?: string
           ramo_escoteiro?: string
+          recipient_response?: string
+          recipient_response_at?: string | null
+          recipient_response_by?: string | null
+          recipient_response_reason?: string | null
           secao?: string
           status?: string
           tipo_atividade?: string
@@ -122,6 +130,10 @@ export type Database = {
           nome_evento?: string
           observacoes?: string
           ramo_escoteiro?: string
+          recipient_response?: string
+          recipient_response_at?: string | null
+          recipient_response_by?: string | null
+          recipient_response_reason?: string | null
           secao?: string
           status?: string
           tipo_atividade?: string
@@ -1567,6 +1579,48 @@ export type Database = {
       requeue_notification: {
         Args: { p_channel: string; p_notification_id: string }
         Returns: undefined
+      }
+      respond_agendamento: {
+        Args: {
+          p_agendamento_id: string
+          p_reason?: string
+          p_response: string
+        }
+        Returns: {
+          cargo_1: string
+          cargo_2: string
+          created_at: string
+          data_secao: string
+          destinatario_cargo_1: string
+          destinatario_cargo_2: string
+          destinatario_nome: string
+          destinatario_secao: string
+          dirigente: string
+          email_de: string
+          email_para: string
+          horario: string
+          id: string
+          local: string
+          nome_associado: string
+          nome_evento: string
+          observacoes: string
+          ramo_escoteiro: string
+          recipient_response: string
+          recipient_response_at: string | null
+          recipient_response_by: string | null
+          recipient_response_reason: string | null
+          secao: string
+          status: string
+          tipo_atividade: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "agendamentos"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       search_users_for_scheduling: {
         Args: { p_query: string }
