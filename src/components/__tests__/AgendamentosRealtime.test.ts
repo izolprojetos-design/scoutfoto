@@ -23,8 +23,7 @@ const channelMock = {
   subscribe: vi.fn(() => channelMock),
 };
 
-const channelFactory = vi.fn((name: string) => {
-  channelMock.__name = name;
+const channelFactory = vi.fn((_name: string) => {
   return channelMock;
 });
 
