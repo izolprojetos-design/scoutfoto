@@ -6,7 +6,7 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload } from 'lucide-react';
+import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload, UploadCloud } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,6 +35,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [year, setYear] = useState<number | null>(null);
   const [dateKey, setDateKey] = useState<string | null>(null);
   const [viewing, setViewing] = useState<PhotoRec | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Upload dialog state
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -186,8 +187,45 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     }
   };
 
+  // Drag & Drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (!canManage) return;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      openUploadDialog(files);
+    }
+  }, [canManage]);
+
   return (
-    <div className="space-y-3">
+    <div
+      className="space-y-3 relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {isDragging && canManage && (
+        <div className="absolute inset-0 z-50 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center gap-3 pointer-events-none">
+          <UploadCloud className="h-10 w-10 text-primary animate-bounce" />
+          <p className="text-sm font-medium text-primary">Solte as imagens aqui para enviar</p>
+        </div>
+      )}
+
       {/* Upload toolbar */}
       {canManage && (
         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -223,7 +261,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <Folder className="h-12 w-12 mb-2 opacity-40" />
           <p className="text-sm">Nenhuma foto cadastrada para gerar pastas</p>
           {canManage && (
-            <p className="text-xs mt-1">Clique em <strong>Enviar fotos</strong> acima para começar.</p>
+            <p className="text-xs mt-1">Clique em <strong>Enviar fotos</strong> ou <strong>arraste imagens</strong> aqui para começar.</p>
           )}
         </div>
       ) : (
