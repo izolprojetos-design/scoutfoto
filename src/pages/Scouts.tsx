@@ -1596,7 +1596,7 @@ const Scouts = () => {
                             {scout.name}
                           </h3>
                           {scout.registration_id && (
-                            <span className="text-xs font-mono text-muted-foreground">#{scout.registration_id}</span>
+                            <span className="text-xs font-mono text-muted-foreground">#{String(parseInt(scout.registration_id, 10) || 0).padStart(String(scouts.length).length, '0')}</span>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
@@ -1959,7 +1959,7 @@ const Scouts = () => {
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold uppercase">{viewingScout.name}</h3>
                       {viewingScout.registration_id && (
-                        <span className="text-xs text-muted-foreground font-mono">#{viewingScout.registration_id}</span>
+                        <span className="text-xs text-muted-foreground font-mono">#{String(parseInt(viewingScout.registration_id, 10) || 0).padStart(String(scouts.length).length, '0')}</span>
                       )}
                     </div>
                     <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(viewingScout.birth_date))}</p>
