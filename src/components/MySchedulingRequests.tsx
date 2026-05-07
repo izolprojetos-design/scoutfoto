@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { toast } from '@/hooks/use-toast';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { SCHEDULING_STATUS_LABELS, SCHEDULING_TYPES, getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import { toTitleCase } from '@/lib/formatting';
 import SchedulingAttachments from '@/components/SchedulingAttachments';
 
 interface Attachment {
