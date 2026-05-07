@@ -14,25 +14,25 @@ const MyAgendamentos = () => {
     const prev = document.title;
     document.title = 'Minha Agenda | ScoutFoto';
 
-    const setMeta = (selector: string, attr: string, value: string) => {
+    const setMeta = (key: 'name' | 'property', keyValue: string, content: string) => {
+      const selector = `meta[${key}="${keyValue}"]`;
       let el = document.head.querySelector<HTMLMetaElement>(selector);
       if (!el) {
         el = document.createElement('meta');
-        const [k, v] = selector.replace(/[\[\]"]/g, '').split('=');
-        el.setAttribute(k, v);
+        el.setAttribute(key, keyValue);
         document.head.appendChild(el);
       }
-      const old = el.getAttribute(attr);
-      el.setAttribute(attr, value);
+      const old = el.getAttribute('content');
+      el.setAttribute('content', content);
       return () => {
-        if (old !== null) el!.setAttribute(attr, old);
+        if (old !== null) el!.setAttribute('content', old);
         else el!.remove();
       };
     };
 
-    const restoreOg = setMeta('meta[property="og:title"]', 'content', 'Minha Agenda | ScoutFoto');
-    const restoreTw = setMeta('meta[name="twitter:title"]', 'content', 'Minha Agenda | ScoutFoto');
-    const restoreDesc = setMeta('meta[name="description"]', 'content', 'Gerencie sua agenda de atividades escoteiras no ScoutFoto.');
+    const restoreOg = setMeta('property', 'og:title', 'Minha Agenda | ScoutFoto');
+    const restoreTw = setMeta('name', 'twitter:title', 'Minha Agenda | ScoutFoto');
+    const restoreDesc = setMeta('name', 'description', 'Gerencie sua agenda de atividades escoteiras no ScoutFoto.');
 
     return () => {
       document.title = prev;
