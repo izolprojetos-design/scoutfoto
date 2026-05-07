@@ -898,6 +898,32 @@ const AgendamentosManager = () => {
                     })()}
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
+                      {archivedIds.has(a.id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                          disabled={archivingId === a.id}
+                          className="h-8 gap-1"
+                          data-testid={`unarchive-btn-${a.id}`}
+                        >
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+                          Restaurar
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
+                          disabled={archivingId === a.id}
+                          className="h-8 gap-1"
+                          data-testid={`archive-btn-${a.id}`}
+                          title="Mover para Arquivado"
+                        >
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+                          Arquivar
+                        </Button>
+                      )}
                       {isAdmin && (
                         <Button
                           variant="outline"
