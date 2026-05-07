@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -705,24 +706,19 @@ const AgendamentosManager = () => {
             className="pl-9 h-12 text-base w-full"
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {FILTERS.map(f => (
-            <button
-              key={f.key}
-              type="button"
-              onClick={() => setFilter(f.key)}
-              className={cn(
-                'px-3 py-1.5 rounded-md text-sm font-medium border transition-colors',
-                filter === f.key
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'bg-background hover:bg-muted border-input',
-              )}
-            >
-              <Filter className="h-3.5 w-3.5 inline mr-1" />
-              {f.label}
-            </button>
-          ))}
-        </div>
+        <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
+          <SelectTrigger className="h-12 w-full md:w-[200px] shrink-0">
+            <span className="flex items-center gap-2 truncate">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Filtrar" />
+            </span>
+          </SelectTrigger>
+          <SelectContent>
+            {FILTERS.map(f => (
+              <SelectItem key={f.key} value={f.key}>{f.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Counter */}
