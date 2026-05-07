@@ -242,7 +242,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     e.preventDefault();
     dragCounter.current = 0;
     setIsDragging(false);
-    if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files?.length) requestUpload(e.dataTransfer.files);
   };
 
   // Lightbox nav
