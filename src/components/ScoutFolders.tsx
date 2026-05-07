@@ -35,6 +35,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [year, setYear] = useState<number | null>(null);
   const [dateKey, setDateKey] = useState<string | null>(null);
   const [viewing, setViewing] = useState<PhotoRec | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   // Upload dialog state
   const [uploadOpen, setUploadOpen] = useState(false);
