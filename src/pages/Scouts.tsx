@@ -1955,7 +1955,7 @@ const Scouts = () => {
       <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Dados do Integrante</DialogTitle>
+            <DialogTitle>Perfil do Integrante</DialogTitle>
           </DialogHeader>
           {viewingScout && (() => {
             const branch = getCurrentBranch(parseLocalDate(viewingScout.birth_date));
@@ -1984,7 +1984,7 @@ const Scouts = () => {
                   )}
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-semibold uppercase">{viewingScout.name}</h3>
+                      <h3 className="text-lg font-semibold uppercase break-words">{viewingScout.name}</h3>
                       {viewingScout.registration_id && (
                         <span className="text-xs text-muted-foreground font-mono">#{String(parseInt(viewingScout.registration_id, 10) || 0).padStart(String(scouts.length).length, '0')}</span>
                       )}
@@ -2006,93 +2006,104 @@ const Scouts = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2 text-sm">
-                  {viewingScout.registration_id && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-muted-foreground">ID do Associado</span>
-                      <span className="font-medium font-mono">{viewingScout.registration_id}</span>
-                    </div>
-                  )}
-                  {viewingScout.phone && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-muted-foreground">Celular</span>
-                      <span className="font-medium">{viewingScout.phone}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="text-muted-foreground">Data de nascimento</span>
-                    <span className="font-medium">
-                      {parseLocalDate(viewingScout.birth_date).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                  {viewingScout.scout_group && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-muted-foreground">Grupo Escoteiro</span>
-                      <span className="font-medium">{viewingScout.scout_group}</span>
-                    </div>
-                  )}
-                  {viewingScout.section && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-muted-foreground">Seção</span>
-                      <span className="font-medium">{viewingScout.section}</span>
-                    </div>
-                  )}
-                  {nextChange && (
-                    <div className="flex justify-between py-2 border-b">
-                      <span className="text-muted-foreground">Próximo ramo</span>
-                      <span className="font-medium">
-                        {nextChange.branch.icon} {nextChange.branch.name} em {formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}
-                      </span>
-                    </div>
-                  )}
-                  {viewingScout.notes && (
-                    <div className="py-2 border-b">
-                      <span className="text-muted-foreground">Observações</span>
-                      <p className="mt-1 font-medium">{viewingScout.notes}</p>
-                    </div>
-                  )}
-                </div>
+                <Tabs defaultValue="dados" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="dados">Dados</TabsTrigger>
+                    <TabsTrigger value="fotos">Fotos</TabsTrigger>
+                    <TabsTrigger value="historico">Histórico</TabsTrigger>
+                  </TabsList>
 
-                {scoutGuardians.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Responsáveis</h4>
-                    <div className="space-y-2">
-                      {scoutGuardians.map(g => (
-                        <div key={g.id} className="rounded-lg border p-3 text-sm space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{g.name}</span>
-                          </div>
-                          {g.email && <p className="text-muted-foreground">{g.email}</p>}
-                          {g.phone && <p className="text-muted-foreground">{g.phone}</p>}
+                  <TabsContent value="dados" className="mt-4 space-y-4">
+                    <div className="space-y-2 text-sm">
+                      {viewingScout.registration_id && (
+                        <div className="flex justify-between py-2 border-b">
+                          <span className="text-muted-foreground">ID do Associado</span>
+                          <span className="font-medium font-mono">{viewingScout.registration_id}</span>
                         </div>
-                      ))}
+                      )}
+                      {viewingScout.phone && (
+                        <div className="flex justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Celular</span>
+                          <span className="font-medium">{viewingScout.phone}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between py-2 border-b">
+                        <span className="text-muted-foreground">Data de nascimento</span>
+                        <span className="font-medium">
+                          {parseLocalDate(viewingScout.birth_date).toLocaleDateString('pt-BR')}
+                        </span>
+                      </div>
+                      {viewingScout.scout_group && (
+                        <div className="flex justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Grupo Escoteiro</span>
+                          <span className="font-medium">{viewingScout.scout_group}</span>
+                        </div>
+                      )}
+                      {viewingScout.section && (
+                        <div className="flex justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Seção</span>
+                          <span className="font-medium">{viewingScout.section}</span>
+                        </div>
+                      )}
+                      {nextChange && (
+                        <div className="flex justify-between py-2 border-b">
+                          <span className="text-muted-foreground">Próximo ramo</span>
+                          <span className="font-medium">
+                            {nextChange.branch.icon} {nextChange.branch.name} em {formatTimeLeft(nextChange.monthsLeft, nextChange.daysLeft)}
+                          </span>
+                        </div>
+                      )}
+                      {viewingScout.notes && (
+                        <div className="py-2 border-b">
+                          <span className="text-muted-foreground">Observações</span>
+                          <p className="mt-1 font-medium">{viewingScout.notes}</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                {ageInYears < 18 && scoutGuardians.length === 0 && (
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                    ⚠️ Nenhum responsável cadastrado para este menor de idade.
-                  </div>
-                )}
+                    {scoutGuardians.length > 0 && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Responsáveis</h4>
+                        <div className="space-y-2">
+                          {scoutGuardians.map(g => (
+                            <div key={g.id} className="rounded-lg border p-3 text-sm space-y-1">
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">{g.name}</span>
+                              </div>
+                              {g.email && <p className="text-muted-foreground">{g.email}</p>}
+                              {g.phone && <p className="text-muted-foreground">{g.phone}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-                <div className="pt-4 border-t">
-                  <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                    <ImageIcon className="h-4 w-4" /> Fotos do Integrante
-                  </h4>
-                  <Tabs defaultValue="galeria" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="galeria">Galeria</TabsTrigger>
-                      <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="galeria" className="mt-4">
-                      <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
-                    </TabsContent>
-                    <TabsContent value="pastas" className="mt-4">
-                      <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} />
-                    </TabsContent>
-                  </Tabs>
-                </div>
+                    {ageInYears < 18 && scoutGuardians.length === 0 && (
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
+                        ⚠️ Nenhum responsável cadastrado para este menor de idade.
+                      </div>
+                    )}
+                  </TabsContent>
+
+                  <TabsContent value="fotos" className="mt-4">
+                    <Tabs defaultValue="galeria" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                        <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="galeria" className="mt-4">
+                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                      </TabsContent>
+                      <TabsContent value="pastas" className="mt-4">
+                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                      </TabsContent>
+                    </Tabs>
+                  </TabsContent>
+
+                  <TabsContent value="historico" className="mt-4">
+                    <ScoutHistory scoutId={viewingScout.id} />
+                  </TabsContent>
+                </Tabs>
               </div>
             );
           })()}
