@@ -1203,14 +1203,33 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                         <div className="flex-1 min-w-0 space-y-1">
                           <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
                           <p className="text-[10px] text-muted-foreground">
-                            {(p.file.size / 1024 / 1024).toFixed(2)} MB
-                            {p.status !== 'pending' && p.status !== 'uploading' && p.message && (
+                            {p.status === 'uploading' || (p.status === 'success' && p.total > 0) ? (
+                              <>
+                                {formatBytes(p.loaded)} / {formatBytes(p.total)}
+                                {' · '}
+                                <span className={p.status === 'success' ? 'text-green-600' : 'text-primary'}>
+                                  {Math.min(100, Math.round((p.loaded / Math.max(p.total, 1)) * 100))}%
+                                </span>
+                              </>
+                            ) : (
+                              <>{formatBytes(p.file.size)}</>
+                            )}
+                            {p.status !== 'pending' && p.status !== 'uploading' && p.status !== 'success' && p.message && (
                               <span className={p.status === 'error' ? ' text-destructive' : ''}> · {p.message}</span>
                             )}
                             {p.status === 'success' && <span className="text-green-600"> · enviada</span>}
                             {p.status === 'uploading' && <span className="text-primary"> · enviando…</span>}
                             {p.status === 'skipped' && <span> · ignorada</span>}
+                            {p.status === 'pending' && p.message && <span> · {p.message}</span>}
                           </p>
+                          {(p.status === 'uploading' || p.status === 'success') && p.total > 0 && (
+                            <div className="h-1 w-full bg-muted rounded overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${p.status === 'success' ? 'bg-green-500' : 'bg-primary'}`}
+                                style={{ width: `${Math.min(100, (p.loaded / Math.max(p.total, 1)) * 100)}%` }}
+                              />
+                            </div>
+                          )}
                           <Input
                             type="date"
                             value={effectiveDate}
