@@ -130,6 +130,23 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         year++;
       }
 
+      const { data: achievements } = await supabase
+        .from('scout_achievements')
+        .select('id, type, name, achievement_date, description')
+        .eq('scout_id', scoutId)
+        .order('achievement_date', { ascending: false })
+        .limit(500);
+
+      (achievements || []).forEach((a: any) => {
+        list.push({
+          id: `ach-${a.id}`,
+          type: 'conquista',
+          date: parseLocalDate(a.achievement_date),
+          title: a.name,
+          description: a.description || undefined,
+        });
+      });
+
       list.sort((a, b) => b.date.getTime() - a.date.getTime());
 
       if (!cancelled) {
