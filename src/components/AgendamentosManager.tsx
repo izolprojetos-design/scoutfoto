@@ -824,9 +824,11 @@ const AgendamentosManager = () => {
                         <Clock className="h-4 w-4 text-primary" />
                         <span>{a.horario.slice(0, 5)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <span>{toTitleCase(a.local)}</span>
+                      <div className="flex items-start gap-2 min-w-0">
+                        <MapPin className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <span className="break-words">
+                          {toTitleCase(a.local) || <em className="text-muted-foreground">Local não informado</em>}
+                        </span>
                       </div>
                       {a.ramo_escoteiro && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">

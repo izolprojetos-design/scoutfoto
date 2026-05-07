@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, L
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
 import { getSchedulingTypeLabel } from '@/lib/schedulingTypes';
+import { toTitleCase } from '@/lib/formatting';
 
 import {
   format,
@@ -242,7 +243,7 @@ const ScoutCalendar = () => {
                             {format(parseLocalDate(agendamento.data), "dd/MM/yyyy", { locale: ptBR })} às {agendamento.horario}
                           </div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            <span className="font-semibold text-foreground">Local:</span> {agendamento.local || "Não informado"}
+                            <span className="font-semibold text-foreground">Local:</span> {toTitleCase(agendamento.local) || "Não informado"}
                           </div>
                           
                           {branch && (
