@@ -355,7 +355,7 @@ const Scouts = () => {
     setEditNotes(scout.notes || '');
     setEditBranch(scout.manual_branch || 'auto');
     setEditSubgroup(scout.subgroup_id || 'none');
-    setEditRegistrationId(scout.registration_id ? scout.registration_id.padStart(5, '0') : '');
+    setEditRegistrationId(scout.registration_id ? scout.registration_id.padStart(4, '0') : '');
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
     setEditTransitionDate(scout.transition_date || '');
