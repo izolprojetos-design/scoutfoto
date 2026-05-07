@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
@@ -47,6 +47,10 @@ const AppSidebar = () => {
 
   const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
   const [eventsOpen, setEventsOpen] = useState(isEventRoute);
+
+  useEffect(() => {
+    setEventsOpen(isEventRoute);
+  }, [location.pathname, isEventRoute]);
 
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
