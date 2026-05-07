@@ -494,13 +494,20 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 alt="Foto"
                 className="w-full h-auto max-h-[70vh] object-contain rounded"
               />
-              <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
                 <span className="text-xs text-muted-foreground">
                   {format(new Date(viewing.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
-                  <Download className="h-4 w-4" /> Baixar
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
+                    <Download className="h-4 w-4" /> Baixar
+                  </Button>
+                  {canManage && (
+                    <Button variant="destructive" size="sm" onClick={() => setDeleteSingleOpen(viewing)} className="gap-2">
+                      <Trash2 className="h-4 w-4" /> Excluir
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           )}
