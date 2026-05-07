@@ -960,31 +960,77 @@ const AgendamentosManager = () => {
                     })()}
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
-                      {archivedIds.has(a.id) ? (
+                      {trashedIds.has(a.id) ? (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                          onClick={(e) => { e.stopPropagation(); untrashAgendamento(a); }}
                           disabled={archivingId === a.id}
                           className="h-8 gap-1"
-                          data-testid={`unarchive-btn-${a.id}`}
+                          data-testid={`untrash-btn-${a.id}`}
                         >
-                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
-                          Restaurar
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Undo2 className="h-3.5 w-3.5" />}
+                          Restaurar da Lixeira
                         </Button>
+                      ) : archivedIds.has(a.id) ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1"
+                            data-testid={`unarchive-btn-${a.id}`}
+                          >
+                            {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+                            Restaurar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); trashAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`trash-btn-${a.id}`}
+                            title="Mover para a Lixeira"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                            Lixeira
+                          </Button>
+                        </>
                       ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
-                          disabled={archivingId === a.id}
-                          className="h-8 gap-1"
-                          data-testid={`archive-btn-${a.id}`}
-                          title="Mover para Arquivado"
-                        >
-                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
-                          Arquivar
-                        </Button>
+                        <>
+                          {(() => {
+                            const r = a.recipient_response ?? 'pendente';
+                            const isPending = r === 'pendente';
+                            return (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
+                                disabled={archivingId === a.id || isPending}
+                                className="h-8 gap-1"
+                                data-testid={`archive-btn-${a.id}`}
+                                title={isPending ? 'Disponível após confirmação ou recusa' : 'Mover para Arquivado'}
+                              >
+                                {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+                                Arquivar
+                              </Button>
+                            );
+                          })()}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); trashAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`trash-btn-${a.id}`}
+                            title="Mover para a Lixeira"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                            Lixeira
+                          </Button>
+                        </>
                       )}
                       {isAdmin && (
                         <Button
