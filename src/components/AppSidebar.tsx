@@ -37,7 +37,7 @@ const AppSidebar = () => {
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
     { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
-    { to: '/agendamentos', label: 'Meus Agendamentos', icon: ListChecks, show: true },
+    { to: '/agendamentos', label: 'Minha Agenda', icon: ListChecks, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
     { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
