@@ -6,7 +6,11 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload, UploadCloud, Trash2 } from 'lucide-react';
+import {
+  Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
+  UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
+  CheckSquare, Square,
+} from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -15,6 +19,8 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
+import JSZip from 'jszip';
+import jsPDF from 'jspdf';
 
 interface PhotoRec {
   id: string;
@@ -27,7 +33,46 @@ interface Props {
   scoutName: string;
 }
 
+type FileStatus = 'pending' | 'uploading' | 'success' | 'error' | 'skipped';
+interface PendingFile {
+  id: string;
+  file: File;
+  date: string;
+  preview: string;
+  status: FileStatus;
+  message?: string;
+}
+
 const MAX_SIZE_MB = 10;
+const MAX_BYTES = MAX_SIZE_MB * 1024 * 1024;
+const ACCEPTED_MIME = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif'];
+const ACCEPTED_EXT = ['.jpg', '.jpeg', '.png', '.heic', '.heif'];
+const MIN_DATE = '1900-01-01';
+const UNDO_MS = 6000;
+
+const today = () => format(new Date(), 'yyyy-MM-dd');
+
+function validateFile(file: File): { ok: true } | { ok: false; reason: string } {
+  const lowerName = file.name.toLowerCase();
+  const validMime = ACCEPTED_MIME.includes(file.type.toLowerCase());
+  const validExt = ACCEPTED_EXT.some(e => lowerName.endsWith(e));
+  if (!validMime && !validExt) {
+    return { ok: false, reason: 'Tipo não aceito (apenas JPG, PNG ou HEIC).' };
+  }
+  if (file.size > MAX_BYTES) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    return { ok: false, reason: `Arquivo de ${mb}MB excede o limite de ${MAX_SIZE_MB}MB.` };
+  }
+  return { ok: true };
+}
+
+function isValidDate(s: string): boolean {
+  if (!s) return false;
+  if (s < MIN_DATE) return false;
+  if (s > today()) return false;
+  const d = new Date(`${s}T12:00:00`);
+  return !isNaN(d.getTime());
+}
 
 export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
@@ -40,20 +85,35 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [dateKey, setDateKey] = useState<string | null>(null);
   const [viewing, setViewing] = useState<PhotoRec | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [folderDropTarget, setFolderDropTarget] = useState<string | null>(null); // year:`y:2024` or date:`d:YYYY-MM-DD`
 
   // Upload dialog state
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<{ file: File; date: string; preview: string }[]>([]);
-  const [photoDate, setPhotoDate] = useState<string>(() => format(new Date(), 'yyyy-MM-dd'));
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [photoDate, setPhotoDate] = useState<string>(() => today());
   const [applyToAll, setApplyToAll] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cancelUploadRef = useRef(false);
+
+  // Selection (bulk) state inside a date folder
+  const [selectMode, setSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   // Delete confirmation state
   const [deleteFolderOpen, setDeleteFolderOpen] = useState(false);
   const [deleteSingleOpen, setDeleteSingleOpen] = useState<PhotoRec | null>(null);
+  const [deleteSelectionOpen, setDeleteSelectionOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteProgress, setDeleteProgress] = useState({ current: 0, total: 0 });
+
+  // Undo: hide locally + schedule real delete; allow cancel within UNDO_MS
+  const [hiddenIds, setHiddenIds] = useState<Set<string>>(new Set());
+  const undoTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  // Export progress
+  const [exporting, setExporting] = useState<null | 'zip' | 'pdf'>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -74,20 +134,30 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
 
   useEffect(() => { load(); }, [load]);
 
-  // Year aggregation
+  // Cleanup undo timers on unmount
+  useEffect(() => {
+    return () => {
+      undoTimersRef.current.forEach(t => clearTimeout(t));
+      undoTimersRef.current.clear();
+    };
+  }, []);
+
+  // Visible photos (excluding hidden / pending-undo)
+  const visiblePhotos = useMemo(() => photos.filter(p => !hiddenIds.has(p.id)), [photos, hiddenIds]);
+
   const years = useMemo(() => {
     const map = new Map<number, PhotoRec[]>();
-    for (const p of photos) {
+    for (const p of visiblePhotos) {
       const y = new Date(p.created_at).getFullYear();
       if (!map.has(y)) map.set(y, []);
       map.get(y)!.push(p);
     }
     return Array.from(map.entries()).sort((a, b) => b[0] - a[0]);
-  }, [photos]);
+  }, [visiblePhotos]);
 
   const dates = useMemo(() => {
     if (year === null) return [];
-    const items = photos.filter(p => new Date(p.created_at).getFullYear() === year);
+    const items = visiblePhotos.filter(p => new Date(p.created_at).getFullYear() === year);
     const map = new Map<string, PhotoRec[]>();
     for (const p of items) {
       const key = format(new Date(p.created_at), 'yyyy-MM-dd');
@@ -95,13 +165,15 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       map.get(key)!.push(p);
     }
     return Array.from(map.entries()).sort((a, b) => b[0].localeCompare(a[0]));
-  }, [photos, year]);
+  }, [visiblePhotos, year]);
 
   const photosOfDate = useMemo(() => {
     if (!dateKey) return [];
-    return photos.filter(p => format(new Date(p.created_at), 'yyyy-MM-dd') === dateKey);
-  }, [photos, dateKey]);
+    return visiblePhotos.filter(p => format(new Date(p.created_at), 'yyyy-MM-dd') === dateKey);
+  }, [visiblePhotos, dateKey]);
 
+  // ────────────────────────────────────────────────────────────────────────────
+  // Downloads
   const handleDownload = async (p: PhotoRec) => {
     try {
       const url = signedUrls[p.storage_path];
@@ -117,31 +189,62 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     } catch { toast.error('Falha ao baixar'); }
   };
 
-  const openUploadDialog = (files: FileList | null) => {
-    if (!files || !files.length) return;
-    const valid = Array.from(files).filter(f => f.type.startsWith('image/'));
-    if (!valid.length) return toast.error('Selecione apenas imagens.');
+  // ────────────────────────────────────────────────────────────────────────────
+  // Upload
+  const buildPendingFromFiles = (files: File[], defaultDate: string): { pending: PendingFile[]; rejected: { name: string; reason: string }[] } => {
+    const pending: PendingFile[] = [];
+    const rejected: { name: string; reason: string }[] = [];
+    for (const f of files) {
+      const v = validateFile(f);
+      if (v.ok === false) { rejected.push({ name: f.name, reason: v.reason }); continue; }
+      pending.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        file: f,
+        date: defaultDate,
+        preview: URL.createObjectURL(f),
+        status: 'pending',
+      });
+    }
+    return { pending, rejected };
+  };
+
+  const reportRejected = (rejected: { name: string; reason: string }[]) => {
+    if (!rejected.length) return;
+    const first = rejected[0];
+    if (rejected.length === 1) toast.error(`"${first.name}" recusado: ${first.reason}`);
+    else toast.error(`${rejected.length} arquivo(s) recusado(s). Ex.: "${first.name}" — ${first.reason}`);
+  };
+
+  const openUploadDialog = (files: FileList | File[] | null, presetDate?: string) => {
+    if (!files) return;
+    const arr = Array.from(files);
+    if (!arr.length) return;
 
     let defaultDate: string;
-    if (dateKey) defaultDate = dateKey;
+    if (presetDate) defaultDate = presetDate;
+    else if (dateKey) defaultDate = dateKey;
     else if (year !== null) defaultDate = `${year}-${format(new Date(), 'MM-dd')}`;
-    else defaultDate = format(new Date(), 'yyyy-MM-dd');
+    else defaultDate = today();
+
+    const { pending, rejected } = buildPendingFromFiles(arr, defaultDate);
+    reportRejected(rejected);
+    if (!pending.length) return;
 
     setPhotoDate(defaultDate);
     setApplyToAll(true);
-    setPendingFiles(valid.map(f => ({ file: f, date: defaultDate, preview: URL.createObjectURL(f) })));
+    setPendingFiles(pending);
     setUploadOpen(true);
   };
 
-  const updateFileDate = (idx: number, newDate: string) => {
-    setPendingFiles(prev => prev.map((p, i) => i === idx ? { ...p, date: newDate } : p));
+  const updateFileDate = (id: string, newDate: string) => {
+    setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, date: newDate } : p));
   };
 
-  const removePendingFile = (idx: number) => {
+  const removePendingFile = (id: string) => {
     setPendingFiles(prev => {
-      const removed = prev[idx];
+      const removed = prev.find(p => p.id === id);
       if (removed) URL.revokeObjectURL(removed.preview);
-      return prev.filter((_, i) => i !== idx);
+      return prev.filter(p => p.id !== id);
     });
   };
 
@@ -149,31 +252,65 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     items.forEach(p => { try { URL.revokeObjectURL(p.preview); } catch { /* noop */ } });
   };
 
+  const clearQueue = () => {
+    if (uploading) return;
+    cleanupPreviews(pendingFiles);
+    setPendingFiles([]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast('Fila de upload limpa.');
+  };
+
+  const setFileStatus = (id: string, status: FileStatus, message?: string) => {
+    setPendingFiles(prev => prev.map(p => p.id === id ? { ...p, status, message } : p));
+  };
+
+  // Validation summary
+  const dateErrors = useMemo(() => {
+    const errs: string[] = [];
+    if (applyToAll) {
+      if (!isValidDate(photoDate)) errs.push('A data padrão é inválida ou está fora do limite (1900 — hoje).');
+    } else {
+      const invalid = pendingFiles.filter(p => !isValidDate(p.date));
+      if (invalid.length) errs.push(`${invalid.length} foto(s) com data inválida ou fora do limite.`);
+    }
+    return errs;
+  }, [applyToAll, photoDate, pendingFiles]);
+
   const handleUpload = async () => {
     if (!user || !pendingFiles.length) return;
+    if (dateErrors.length) {
+      toast.error(dateErrors[0]);
+      return;
+    }
 
-    const items = pendingFiles.map(p => ({
-      file: p.file,
-      date: applyToAll ? photoDate : p.date,
-    }));
-
-    if (items.some(it => !it.date)) return toast.error('Defina a data de todas as fotos.');
-
+    cancelUploadRef.current = false;
     setUploading(true);
-    setProgress({ current: 0, total: items.length });
+    const total = pendingFiles.length;
+    setProgress({ current: 0, total });
     let success = 0;
-    let lastDate = items[0].date;
+    let lastDate = applyToAll ? photoDate : pendingFiles[0].date;
 
-    for (let i = 0; i < items.length; i++) {
-      const { file, date } = items[i];
+    for (let i = 0; i < pendingFiles.length; i++) {
+      if (cancelUploadRef.current) {
+        // Mark remaining as skipped
+        setPendingFiles(prev => prev.map((p, idx) => idx >= i && p.status === 'pending'
+          ? { ...p, status: 'skipped', message: 'Cancelado' } : p));
+        toast('Upload cancelado.');
+        break;
+      }
+
+      const item = pendingFiles[i];
+      const date = applyToAll ? photoDate : item.date;
       lastDate = date;
-      setProgress({ current: i + 1, total: items.length });
+      setProgress({ current: i + 1, total });
+      setFileStatus(item.id, 'uploading');
+
       try {
-        if (file.size > MAX_SIZE_MB * 1024 * 1024 * 4) {
-          toast.warning(`"${file.name}" muito grande, ignorado.`);
+        if (!isValidDate(date)) {
+          setFileStatus(item.id, 'error', 'Data inválida');
           continue;
         }
-        const compressed = await compressImage(file);
+        const compressed = await compressImage(item.file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
         const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
@@ -196,97 +333,322 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           await supabase.storage.from('scout-photos').remove([path]);
           throw dbErr;
         }
+        setFileStatus(item.id, 'success');
         success++;
       } catch (err: any) {
         console.error('upload err', err);
-        toast.error(`Falha ao enviar "${file.name}": ${err.message || 'erro'}`);
+        setFileStatus(item.id, 'error', err.message || 'erro');
       }
     }
 
     setUploading(false);
     setProgress({ current: 0, total: 0 });
-    cleanupPreviews(pendingFiles);
-    setPendingFiles([]);
-    setUploadOpen(false);
-    if (fileInputRef.current) fileInputRef.current.value = '';
+
     if (success > 0) {
-      toast.success(`${success} foto(s) enviada(s).`);
+      toast.success(`${success} foto(s) enviada(s) com sucesso.`);
       const newYear = new Date(`${lastDate}T12:00:00`).getFullYear();
       setYear(newYear);
       setDateKey(lastDate);
       await load();
     }
+
+    // Auto-close if all succeeded
+    setPendingFiles(prev => {
+      const allDone = prev.every(p => p.status === 'success');
+      if (allDone) {
+        cleanupPreviews(prev);
+        setUploadOpen(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+        return [];
+      }
+      return prev;
+    });
+  };
+
+  const cancelOngoingUpload = () => {
+    cancelUploadRef.current = true;
+  };
+
+  // Direct drop on a folder card — skip dialog
+  const dropDirectlyToDate = async (files: File[], targetDate: string) => {
+    if (!user) return;
+    const { pending, rejected } = buildPendingFromFiles(files, targetDate);
+    reportRejected(rejected);
+    if (!pending.length) return;
+
+    toast(`Enviando ${pending.length} foto(s) para ${format(new Date(`${targetDate}T12:00:00`), 'dd/MM/yyyy')}…`);
+    setUploading(true);
+    let success = 0;
+    for (let i = 0; i < pending.length; i++) {
+      const item = pending[i];
+      try {
+        const compressed = await compressImage(item.file);
+        const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        const path = `gallery/${scoutId}/${targetDate}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const baseTs = new Date(`${targetDate}T12:00:00`).toISOString();
+        const { error: upErr } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: false, contentType: compressed.type });
+        if (upErr) throw upErr;
+        const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
+          scout_id: scoutId, storage_path: path, caption: '', uploaded_by: user.id,
+          file_size: compressed.size, mime_type: compressed.type, created_at: baseTs,
+        });
+        if (dbErr) { await supabase.storage.from('scout-photos').remove([path]); throw dbErr; }
+        success++;
+      } catch (err: any) {
+        console.error(err);
+        toast.error(`Falha ao enviar "${item.file.name}": ${err.message || 'erro'}`);
+      } finally {
+        URL.revokeObjectURL(item.preview);
+      }
+    }
+    setUploading(false);
+    if (success > 0) {
+      toast.success(`${success} foto(s) enviada(s) para ${format(new Date(`${targetDate}T12:00:00`), 'dd/MM/yyyy')}`);
+      await load();
+    }
+  };
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Deletion with undo
+  const performRealDelete = async (toDelete: PhotoRec[], undoKey: string) => {
+    try {
+      const paths = toDelete.map(p => p.storage_path);
+      const ids = toDelete.map(p => p.id);
+      if (paths.length) await supabase.storage.from('scout-photos').remove(paths);
+      if (ids.length) await supabase.from('scout_photos' as any).delete().in('id', ids);
+    } catch (err: any) {
+      console.error('real delete error', err);
+      toast.error(`Falha ao remover do servidor: ${err.message || 'erro'}`);
+    } finally {
+      undoTimersRef.current.delete(undoKey);
+      // Reload to sync state and clear hiddenIds for these
+      setHiddenIds(prev => {
+        const next = new Set(prev);
+        toDelete.forEach(p => next.delete(p.id));
+        return next;
+      });
+      await load();
+    }
+  };
+
+  const undoDeletion = (undoKey: string, toRestore: PhotoRec[]) => {
+    const t = undoTimersRef.current.get(undoKey);
+    if (t) { clearTimeout(t); undoTimersRef.current.delete(undoKey); }
+    setHiddenIds(prev => {
+      const next = new Set(prev);
+      toRestore.forEach(p => next.delete(p.id));
+      return next;
+    });
+    toast.success('Exclusão desfeita.');
+  };
+
+  const scheduleDeletion = (toDelete: PhotoRec[], description: string) => {
+    if (!toDelete.length) return;
+    const undoKey = `undo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    setHiddenIds(prev => {
+      const next = new Set(prev);
+      toDelete.forEach(p => next.add(p.id));
+      return next;
+    });
+    const timer = setTimeout(() => { performRealDelete(toDelete, undoKey); }, UNDO_MS);
+    undoTimersRef.current.set(undoKey, timer);
+    toast(description, {
+      duration: UNDO_MS,
+      action: {
+        label: 'Desfazer',
+        onClick: () => undoDeletion(undoKey, toDelete),
+      },
+    });
   };
 
   const handleDeleteFolder = async () => {
     if (!dateKey) return;
+    const target = [...photosOfDate];
     setDeleting(true);
-    try {
-      const target = photosOfDate;
-      const paths = target.map(p => p.storage_path);
-      const ids = target.map(p => p.id);
-      if (paths.length) {
-        const { error: stErr } = await supabase.storage.from('scout-photos').remove(paths);
-        if (stErr) console.warn('storage remove', stErr);
-      }
-      if (ids.length) {
-        const { error: dbErr } = await supabase.from('scout_photos' as any).delete().in('id', ids);
-        if (dbErr) throw dbErr;
-      }
-      toast.success(`${ids.length} foto(s) excluída(s).`);
-      setDeleteFolderOpen(false);
-      setDateKey(null);
-      await load();
-    } catch (err: any) {
-      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
-    } finally {
-      setDeleting(false);
-    }
+    setDeleteProgress({ current: target.length, total: target.length });
+    setDeleteFolderOpen(false);
+    setDateKey(null);
+    setDeleting(false);
+    setDeleteProgress({ current: 0, total: 0 });
+    scheduleDeletion(target, `${target.length} foto(s) da pasta excluída(s).`);
   };
 
   const handleDeleteSingle = async () => {
     if (!deleteSingleOpen) return;
-    setDeleting(true);
-    try {
-      const p = deleteSingleOpen;
-      await supabase.storage.from('scout-photos').remove([p.storage_path]);
-      const { error } = await supabase.from('scout_photos' as any).delete().eq('id', p.id);
-      if (error) throw error;
-      toast.success('Foto excluída.');
-      setDeleteSingleOpen(null);
-      setViewing(null);
-      await load();
-    } catch (err: any) {
-      toast.error(`Erro ao excluir: ${err.message || 'erro'}`);
-    } finally {
-      setDeleting(false);
+    const target = deleteSingleOpen;
+    setDeleteSingleOpen(null);
+    setViewing(null);
+    scheduleDeletion([target], 'Foto excluída.');
+  };
+
+  const handleDeleteSelection = async () => {
+    const target = photosOfDate.filter(p => selectedIds.has(p.id));
+    if (!target.length) return;
+    setDeleteSelectionOpen(false);
+    setSelectedIds(new Set());
+    setSelectMode(false);
+    scheduleDeletion(target, `${target.length} foto(s) selecionada(s) excluída(s).`);
+  };
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Selection helpers
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const selectAll = () => setSelectedIds(new Set(photosOfDate.map(p => p.id)));
+  const clearSelection = () => setSelectedIds(new Set());
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Drag & drop — root and folder targets
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+  }, []);
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    if (e.currentTarget === e.target) setIsDragging(false);
+  }, []);
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); e.stopPropagation();
+    setIsDragging(false); setFolderDropTarget(null);
+    if (!canManage) return;
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) openUploadDialog(files);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canManage, dateKey, year]);
+
+  const handleFolderDrop = (e: React.DragEvent, target: { type: 'year' | 'date'; value: string }) => {
+    e.preventDefault(); e.stopPropagation();
+    setFolderDropTarget(null); setIsDragging(false);
+    if (!canManage) return;
+    const files = Array.from(e.dataTransfer.files || []);
+    if (!files.length) return;
+    if (target.type === 'date') {
+      // Direct upload — no dialog needed
+      dropDirectlyToDate(files, target.value);
+    } else {
+      // Year — open dialog with year prefilled to today's MM-DD inside the year
+      const ym = `${target.value}-${format(new Date(), 'MM-dd')}`;
+      openUploadDialog(files, ym);
     }
   };
 
-  // Drag & Drop handlers
-  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (!canManage) return;
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      openUploadDialog(files);
+  // ────────────────────────────────────────────────────────────────────────────
+  // ZIP / PDF export of current date folder
+  const exportZip = async () => {
+    if (!dateKey || !photosOfDate.length) return;
+    setExporting('zip');
+    try {
+      const zip = new JSZip();
+      const folderName = `${scoutName.replace(/\s+/g, '_')}_${dateKey}`;
+      const folder = zip.folder(folderName)!;
+      let i = 0;
+      for (const p of photosOfDate) {
+        const url = signedUrls[p.storage_path];
+        if (!url) continue;
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        folder.file(`${String(i + 1).padStart(3, '0')}-${p.id.slice(0, 8)}.${ext}`, blob);
+        i++;
+      }
+      const out = await zip.generateAsync({ type: 'blob' });
+      const objUrl = URL.createObjectURL(out);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      a.download = `${folderName}.zip`;
+      a.click();
+      URL.revokeObjectURL(objUrl);
+      toast.success(`ZIP gerado com ${i} foto(s).`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Falha ao gerar ZIP: ${err.message || 'erro'}`);
+    } finally {
+      setExporting(null);
     }
-  }, [canManage]);
+  };
 
+  const exportPdf = async () => {
+    if (!dateKey || !photosOfDate.length) return;
+    setExporting('pdf');
+    try {
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageW = pdf.internal.pageSize.getWidth();
+      const pageH = pdf.internal.pageSize.getHeight();
+      const margin = 12;
+      const titleLine1 = `${scoutName.toUpperCase()}`;
+      const titleLine2 = `Pasta: ${format(new Date(`${dateKey}T12:00:00`), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
+
+      // Cover page
+      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18);
+      pdf.text(titleLine1, pageW / 2, 30, { align: 'center' });
+      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(13);
+      pdf.text(titleLine2, pageW / 2, 40, { align: 'center' });
+      pdf.setFontSize(11);
+      pdf.text(`Total de fotos: ${photosOfDate.length}`, pageW / 2, 50, { align: 'center' });
+      pdf.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, pageW / 2, 58, { align: 'center' });
+
+      // One photo per page
+      for (let i = 0; i < photosOfDate.length; i++) {
+        const p = photosOfDate[i];
+        const url = signedUrls[p.storage_path];
+        if (!url) continue;
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const r = new FileReader();
+          r.onloadend = () => resolve(r.result as string);
+          r.onerror = reject;
+          r.readAsDataURL(blob);
+        });
+
+        // Compute size (fit within page minus margins)
+        const img = await new Promise<HTMLImageElement>((res2, rej2) => {
+          const im = new Image();
+          im.onload = () => res2(im); im.onerror = rej2; im.src = dataUrl;
+        });
+        const maxW = pageW - margin * 2;
+        const maxH = pageH - margin * 2 - 18; // leave room for caption
+        const ratio = Math.min(maxW / img.width, maxH / img.height);
+        const w = img.width * ratio;
+        const h = img.height * ratio;
+        const x = (pageW - w) / 2;
+        const y = margin;
+
+        pdf.addPage();
+        try {
+          pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST');
+        } catch {
+          pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST');
+        }
+        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10);
+        pdf.text(
+          `${i + 1} / ${photosOfDate.length} — ${format(new Date(p.created_at), "dd/MM/yyyy")}`,
+          pageW / 2, y + h + 8, { align: 'center' }
+        );
+      }
+
+      pdf.save(`${scoutName.replace(/\s+/g, '_')}_${dateKey}.pdf`);
+      toast.success('PDF gerado com sucesso.');
+    } catch (err: any) {
+      console.error(err);
+      toast.error(`Falha ao gerar PDF: ${err.message || 'erro'}`);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  // Helper: shared dropzone props for folder cards
+  const folderDropProps = (key: string, target: { type: 'year' | 'date'; value: string }) => canManage ? {
+    onDragOver: (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setFolderDropTarget(key); },
+    onDragLeave: (e: React.DragEvent) => { e.stopPropagation(); if (folderDropTarget === key) setFolderDropTarget(null); },
+    onDrop: (e: React.DragEvent) => handleFolderDrop(e, target),
+  } : {};
+
+  // ────────────────────────────────────────────────────────────────────────────
   return (
     <div
       className="space-y-3 relative"
@@ -294,11 +656,12 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Drag overlay */}
-      {isDragging && canManage && (
+      {/* Drag overlay (root) */}
+      {isDragging && canManage && !folderDropTarget && (
         <div className="absolute inset-0 z-50 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center gap-3 pointer-events-none">
           <UploadCloud className="h-10 w-10 text-primary animate-bounce" />
-          <p className="text-sm font-medium text-primary">Solte as imagens aqui para enviar</p>
+          <p className="text-sm font-medium text-primary">Solte aqui para revisar antes de enviar</p>
+          <p className="text-xs text-primary/80">Ou solte sobre uma pasta de Data para enviar direto</p>
         </div>
       )}
 
@@ -306,7 +669,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       {canManage && (
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <p className="text-xs text-muted-foreground">
-            Envie fotos selecionando a data — elas serão organizadas automaticamente em <strong>Ano › Data</strong>.
+            JPG, PNG ou HEIC — até <strong>{MAX_SIZE_MB}MB</strong> por arquivo. Arraste sobre uma pasta para enviar direto.
           </p>
           <Button
             size="sm"
@@ -320,7 +683,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept=".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif"
             multiple
             className="hidden"
             onChange={(e) => openUploadDialog(e.target.files)}
@@ -332,7 +695,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : !photos.length ? (
+      ) : !visiblePhotos.length ? (
         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
           <Folder className="h-12 w-12 mb-2 opacity-40" />
           <p className="text-sm">Nenhuma foto cadastrada para gerar pastas</p>
@@ -345,7 +708,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm flex-wrap">
             <button
-              onClick={() => { setYear(null); setDateKey(null); }}
+              onClick={() => { setYear(null); setDateKey(null); setSelectMode(false); clearSelection(); }}
               className="font-medium uppercase break-words text-left hover:underline"
             >
               {scoutName}
@@ -353,7 +716,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
             {year !== null && (
               <>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <button onClick={() => setDateKey(null)} className="font-medium hover:underline">
+                <button onClick={() => { setDateKey(null); setSelectMode(false); clearSelection(); }} className="font-medium hover:underline">
                   {year}
                 </button>
               </>
@@ -373,21 +736,87 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => { dateKey ? setDateKey(null) : setYear(null); }}
+                onClick={() => {
+                  if (dateKey) { setDateKey(null); setSelectMode(false); clearSelection(); }
+                  else setYear(null);
+                }}
                 className="gap-1 h-8"
               >
                 <ArrowLeft className="h-4 w-4" /> Voltar
               </Button>
-              {dateKey && canManage && photosOfDate.length > 0 && (
+
+              {dateKey && photosOfDate.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportZip}
+                    disabled={!!exporting}
+                    className="gap-1 h-8"
+                  >
+                    {exporting === 'zip'
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <FileArchive className="h-4 w-4" />}
+                    ZIP
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={exportPdf}
+                    disabled={!!exporting}
+                    className="gap-1 h-8"
+                  >
+                    {exporting === 'pdf'
+                      ? <Loader2 className="h-4 w-4 animate-spin" />
+                      : <FileText className="h-4 w-4" />}
+                    PDF
+                  </Button>
+
+                  {canManage && (
+                    <>
+                      <Button
+                        variant={selectMode ? 'secondary' : 'outline'}
+                        size="sm"
+                        onClick={() => { setSelectMode(s => !s); clearSelection(); }}
+                        className="gap-1 h-8"
+                      >
+                        {selectMode ? <X className="h-4 w-4" /> : <CheckSquare className="h-4 w-4" />}
+                        {selectMode ? 'Sair' : 'Selecionar'}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => setDeleteFolderOpen(true)}
+                        className="gap-1 h-8"
+                      >
+                        <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
+                      </Button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Selection toolbar */}
+          {dateKey && selectMode && (
+            <div className="flex items-center justify-between gap-2 rounded-md border bg-muted/30 px-3 py-2 flex-wrap">
+              <span className="text-sm">
+                <strong>{selectedIds.size}</strong> de {photosOfDate.length} selecionada{photosOfDate.length !== 1 ? 's' : ''}
+              </span>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={selectAll} className="h-8">Marcar todas</Button>
+                <Button variant="ghost" size="sm" onClick={clearSelection} className="h-8">Limpar</Button>
                 <Button
                   variant="destructive"
                   size="sm"
-                  onClick={() => setDeleteFolderOpen(true)}
+                  onClick={() => setDeleteSelectionOpen(true)}
+                  disabled={!selectedIds.size}
                   className="gap-1 h-8"
                 >
-                  <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
+                  <Trash2 className="h-4 w-4" /> Excluir selecionadas
                 </Button>
-              )}
+              </div>
             </div>
           )}
 
@@ -397,28 +826,40 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               {years.map(([y, items]) => {
                 const cover = items[0];
                 const url = cover ? signedUrls[cover.storage_path] : null;
+                const key = `y:${y}`;
+                const isOver = folderDropTarget === key;
                 return (
-                  <button
+                  <div
                     key={y}
-                    onClick={() => setYear(y)}
-                    className="group relative aspect-square rounded-lg overflow-hidden border bg-muted text-left"
+                    {...folderDropProps(key, { type: 'year', value: String(y) })}
+                    className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
-                    {url ? (
-                      <img src={url} alt={`Ano ${y}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
-                      <div className="flex items-center gap-2">
-                        <Folder className="h-5 w-5" />
-                        <div>
-                          <div className="font-bold text-lg leading-none">{y}</div>
-                          <div className="text-xs opacity-90">{items.length} foto{items.length > 1 ? 's' : ''}</div>
+                    <button
+                      onClick={() => setYear(y)}
+                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
+                    >
+                      {url ? (
+                        <img src={url} alt={`Ano ${y}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                        <div className="flex items-center gap-2">
+                          <Folder className="h-5 w-5" />
+                          <div>
+                            <div className="font-bold text-lg leading-none">{y}</div>
+                            <div className="text-xs opacity-90">{items.length} foto{items.length > 1 ? 's' : ''}</div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                    {isOver && (
+                      <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary rounded-lg flex items-center justify-center pointer-events-none">
+                        <UploadCloud className="h-8 w-8 text-primary" />
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -430,30 +871,43 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               {dates.map(([key, items]) => {
                 const cover = items[0];
                 const url = cover ? signedUrls[cover.storage_path] : null;
+                const dropKey = `d:${key}`;
+                const isOver = folderDropTarget === dropKey;
                 return (
-                  <button
+                  <div
                     key={key}
-                    onClick={() => setDateKey(key)}
-                    className="group relative aspect-square rounded-lg overflow-hidden border bg-muted text-left"
+                    {...folderDropProps(dropKey, { type: 'date', value: key })}
+                    className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
-                    {url ? (
-                      <img src={url} alt={key} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
-                      <div className="flex items-center gap-1.5">
-                        <Folder className="h-4 w-4 shrink-0" />
-                        <div className="min-w-0">
-                          <div className="text-sm font-semibold leading-tight">
-                            {format(new Date(key + 'T12:00:00'), "dd 'de' MMM", { locale: ptBR })}
+                    <button
+                      onClick={() => setDateKey(key)}
+                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
+                    >
+                      {url ? (
+                        <img src={url} alt={key} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
+                        <div className="flex items-center gap-1.5">
+                          <Folder className="h-4 w-4 shrink-0" />
+                          <div className="min-w-0">
+                            <div className="text-sm font-semibold leading-tight">
+                              {format(new Date(key + 'T12:00:00'), "dd 'de' MMM", { locale: ptBR })}
+                            </div>
+                            <div className="text-[10px] opacity-90">{items.length} foto{items.length > 1 ? 's' : ''}</div>
                           </div>
-                          <div className="text-[10px] opacity-90">{items.length} foto{items.length > 1 ? 's' : ''}</div>
                         </div>
                       </div>
-                    </div>
-                  </button>
+                    </button>
+                    {isOver && (
+                      <div className="absolute inset-0 bg-primary/20 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center gap-1 pointer-events-none">
+                        <UploadCloud className="h-6 w-6 text-primary" />
+                        <span className="text-[10px] text-primary font-medium px-2 text-center">Soltar aqui</span>
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -464,16 +918,24 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {photosOfDate.map(p => {
                 const url = signedUrls[p.storage_path];
+                const isSel = selectedIds.has(p.id);
                 return (
                   <button
                     key={p.id}
-                    onClick={() => setViewing(p)}
-                    className="group relative aspect-square rounded-lg overflow-hidden border bg-muted"
+                    onClick={() => selectMode ? toggleSelect(p.id) : setViewing(p)}
+                    className={`group relative aspect-square rounded-lg overflow-hidden border bg-muted ${isSel ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     {url ? (
                       <img src={url} alt="Foto" loading="lazy" className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
+                    )}
+                    {selectMode && (
+                      <div className="absolute top-1.5 left-1.5 bg-background/90 rounded p-0.5">
+                        {isSel
+                          ? <CheckSquare className="h-5 w-5 text-primary" />
+                          : <Square className="h-5 w-5 text-muted-foreground" />}
+                      </div>
                     )}
                   </button>
                 );
@@ -515,18 +977,30 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       </Dialog>
 
       {/* Upload confirmation dialog */}
-      <Dialog open={uploadOpen} onOpenChange={(v) => { if (!uploading) setUploadOpen(v); }}>
+      <Dialog
+        open={uploadOpen}
+        onOpenChange={(v) => {
+          if (uploading) return;
+          setUploadOpen(v);
+          if (!v) { cleanupPreviews(pendingFiles); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }
+        }}
+      >
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
             <DialogDescription>
-              Defina a data da foto. Ela será arquivada na pasta correspondente <strong>Ano › Data</strong>.
+              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. Arquivos serão arquivados em <strong>Ano › Data</strong>.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="rounded-md border bg-muted/30 p-3 text-sm">
-              <strong>{pendingFiles.length}</strong> arquivo{pendingFiles.length !== 1 ? 's' : ''} selecionado{pendingFiles.length !== 1 ? 's' : ''}.
+            <div className="rounded-md border bg-muted/30 p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
+              <span><strong>{pendingFiles.length}</strong> arquivo{pendingFiles.length !== 1 ? 's' : ''} na fila.</span>
+              {!uploading && pendingFiles.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={clearQueue} className="h-8 gap-1">
+                  <X className="h-4 w-4" /> Limpar fila
+                </Button>
+              )}
             </div>
 
             {/* Master date + apply-to-all toggle */}
@@ -548,12 +1022,13 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 id="photo-date"
                 type="date"
                 value={photoDate}
-                max={format(new Date(), 'yyyy-MM-dd')}
+                min={MIN_DATE}
+                max={today()}
                 onChange={(e) => setPhotoDate(e.target.value)}
                 className="h-12 text-base"
                 disabled={uploading}
               />
-              {photoDate && applyToAll && (
+              {applyToAll && isValidDate(photoDate) && (
                 <p className="text-xs text-muted-foreground">
                   Todas serão salvas em: <strong>{new Date(`${photoDate}T12:00:00`).getFullYear()}</strong> ›{' '}
                   <strong>{format(new Date(`${photoDate}T12:00:00`), "dd 'de' MMMM", { locale: ptBR })}</strong>
@@ -562,6 +1037,11 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               {!applyToAll && (
                 <p className="text-xs text-muted-foreground">Defina a data individualmente em cada miniatura abaixo.</p>
               )}
+              {dateErrors.map((e, idx) => (
+                <p key={idx} className="text-xs text-destructive flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" /> {e}
+                </p>
+              ))}
             </div>
 
             {/* Per-file review list */}
@@ -569,31 +1049,55 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               <div className="space-y-2">
                 <p className="text-xs font-medium text-muted-foreground">Revisar fotos selecionadas</p>
                 <div className="max-h-[40vh] overflow-y-auto space-y-2 pr-1">
-                  {pendingFiles.map((p, idx) => {
+                  {pendingFiles.map((p) => {
                     const effectiveDate = applyToAll ? photoDate : p.date;
+                    const dateInvalid = !isValidDate(effectiveDate);
                     return (
-                      <div key={idx} className="flex items-center gap-3 rounded-md border bg-background p-2">
-                        <img
-                          src={p.preview}
-                          alt={p.file.name}
-                          className="h-14 w-14 rounded object-cover shrink-0 bg-muted"
-                        />
+                      <div key={p.id} className="flex items-center gap-3 rounded-md border bg-background p-2">
+                        <div className="relative h-14 w-14 shrink-0">
+                          <img src={p.preview} alt={p.file.name} className="h-14 w-14 rounded object-cover bg-muted" />
+                          {p.status === 'success' && (
+                            <div className="absolute inset-0 bg-green-500/30 rounded flex items-center justify-center">
+                              <CheckCircle2 className="h-6 w-6 text-white drop-shadow" />
+                            </div>
+                          )}
+                          {p.status === 'error' && (
+                            <div className="absolute inset-0 bg-destructive/40 rounded flex items-center justify-center">
+                              <AlertCircle className="h-6 w-6 text-white drop-shadow" />
+                            </div>
+                          )}
+                          {p.status === 'uploading' && (
+                            <div className="absolute inset-0 bg-primary/40 rounded flex items-center justify-center">
+                              <Loader2 className="h-6 w-6 text-white animate-spin" />
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1 min-w-0 space-y-1">
                           <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
+                          <p className="text-[10px] text-muted-foreground">
+                            {(p.file.size / 1024 / 1024).toFixed(2)} MB
+                            {p.status !== 'pending' && p.status !== 'uploading' && p.message && (
+                              <span className={p.status === 'error' ? ' text-destructive' : ''}> · {p.message}</span>
+                            )}
+                            {p.status === 'success' && <span className="text-green-600"> · enviada</span>}
+                            {p.status === 'uploading' && <span className="text-primary"> · enviando…</span>}
+                            {p.status === 'skipped' && <span> · ignorada</span>}
+                          </p>
                           <Input
                             type="date"
                             value={effectiveDate}
-                            max={format(new Date(), 'yyyy-MM-dd')}
-                            onChange={(e) => updateFileDate(idx, e.target.value)}
+                            min={MIN_DATE}
+                            max={today()}
+                            onChange={(e) => updateFileDate(p.id, e.target.value)}
                             disabled={uploading || applyToAll}
-                            className="h-8 text-xs"
+                            className={`h-8 text-xs ${dateInvalid ? 'border-destructive' : ''}`}
                           />
                         </div>
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          onClick={() => removePendingFile(idx)}
+                          onClick={() => removePendingFile(p.id)}
                           disabled={uploading}
                           className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
                           aria-label="Remover"
@@ -621,22 +1125,33 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => {
-                setUploadOpen(false);
-                cleanupPreviews(pendingFiles);
-                setPendingFiles([]);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-              }}
-              disabled={uploading}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={handleUpload} disabled={uploading || !pendingFiles.length} className="gap-2">
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
-            </Button>
+            {uploading ? (
+              <Button variant="destructive" onClick={cancelOngoingUpload} className="gap-2">
+                <X className="h-4 w-4" /> Cancelar upload
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setUploadOpen(false);
+                    cleanupPreviews(pendingFiles);
+                    setPendingFiles([]);
+                    if (fileInputRef.current) fileInputRef.current.value = '';
+                  }}
+                >
+                  Fechar
+                </Button>
+                <Button
+                  onClick={handleUpload}
+                  disabled={!pendingFiles.length || dateErrors.length > 0}
+                  className="gap-2"
+                >
+                  <Upload className="h-4 w-4" />
+                  Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -647,11 +1162,19 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir pasta inteira?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação removerá permanentemente <strong>{photosOfDate.length} foto(s)</strong> da pasta{' '}
+              Removerá <strong>{photosOfDate.length} foto(s)</strong> da pasta{' '}
               {dateKey && <strong>{format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</strong>}.
-              {' '}Não é possível desfazer.
+              {' '}Você terá {UNDO_MS / 1000}s para desfazer.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {deleting && deleteProgress.total > 0 && (
+            <div className="space-y-1">
+              <p className="text-xs">Removendo {deleteProgress.current} de {deleteProgress.total}…</p>
+              <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                <div className="h-full bg-destructive transition-all" style={{ width: `${(deleteProgress.current / deleteProgress.total) * 100}%` }} />
+              </div>
+            </div>
+          )}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
@@ -666,13 +1189,35 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Delete selection confirmation */}
+      <AlertDialog open={deleteSelectionOpen} onOpenChange={(v) => { if (!deleting) setDeleteSelectionOpen(v); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir fotos selecionadas?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Serão removidas <strong>{selectedIds.size} foto(s)</strong>. Você terá {UNDO_MS / 1000}s para desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSelection}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="h-4 w-4 mr-2" /> Excluir selecionadas
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Delete single photo confirmation */}
       <AlertDialog open={!!deleteSingleOpen} onOpenChange={(v) => { if (!deleting && !v) setDeleteSingleOpen(null); }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Excluir esta foto?</AlertDialogTitle>
             <AlertDialogDescription>
-              A foto será removida permanentemente. Não é possível desfazer.
+              A foto será removida. Você terá {UNDO_MS / 1000}s para desfazer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -682,8 +1227,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               disabled={deleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-              Excluir
+              <Trash2 className="h-4 w-4 mr-2" /> Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
