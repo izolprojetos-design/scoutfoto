@@ -223,17 +223,31 @@ const AgendamentosManager = () => {
 
   useEffect(() => { fetchData(); }, []);
 
-  // Realtime: refletir respostas do destinatário automaticamente
+  // Realtime: refletir respostas — restrito a registros que o usuário acessa
+  // (RLS já filtra; aqui também aplicamos filtros server-side por segurança/eficiência).
   useEffect(() => {
+    if (!user?.id) return;
+    const email = (user.email || '').toLowerCase();
+    const apply = (payload: any) => {
+      const updated = payload.new as Agendamento;
+      if (!updated) return;
+      const mine = updated.user_id === user.id;
+      const toMe = !!email && (updated.email_para || '').toLowerCase() === email;
+      if (!mine && !toMe) return; // defensivo
+      setAgendamentos(prev => {
+        const exists = prev.some(a => a.id === updated.id);
+        return exists
+          ? prev.map(a => a.id === updated.id ? { ...a, ...updated } : a)
+          : prev;
+      });
+    };
     const channel = supabase
-      .channel('agendamentos-responses')
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agendamentos' }, (payload) => {
-        const updated = payload.new as Agendamento;
-        setAgendamentos(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
-      })
+      .channel(`agendamentos-rt-${user.id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agendamentos', filter: `user_id=eq.${user.id}` }, apply)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'agendamentos', filter: `email_para=eq.${email}` }, apply)
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, []);
+  }, [user?.id, user?.email]);
 
   // Resposta do destinatário (Confirmar/Recusar)
   const userEmail = (user?.email || '').toLowerCase();
