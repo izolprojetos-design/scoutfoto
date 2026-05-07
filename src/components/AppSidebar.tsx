@@ -39,12 +39,18 @@ const AppSidebar = () => {
     navigate('/login');
   };
 
-  const navItems = [
-    { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
-    { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
+  const eventSubItems = [
     { to: '/agendamentos', label: 'Minha Agenda', icon: ListChecks, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
+  ].filter(i => i.show);
+
+  const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
+  const [eventsOpen, setEventsOpen] = useState(isEventRoute);
+
+  const navItems = [
+    { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
+    { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
     { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
   ];
 
