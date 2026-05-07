@@ -1416,6 +1416,7 @@ const Scouts = () => {
           )}
           {(canManageScouts || canEditScouts) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
+              if (!v && (cropperOpen || photoPickInProgressRef.current)) return;
               setDialogOpen(v);
               if (v) {
                 setCustomSectionMode(false);
@@ -1433,7 +1434,12 @@ const Scouts = () => {
                 Novo Integrante
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto">
+            <DialogContent
+              className="max-h-[90vh] overflow-y-auto"
+              onInteractOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+              onPointerDownOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+              onEscapeKeyDown={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+            >
               <DialogHeader>
                 <DialogTitle>Cadastrar Membro</DialogTitle>
               </DialogHeader>
