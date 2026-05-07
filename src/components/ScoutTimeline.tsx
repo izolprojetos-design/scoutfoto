@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, Sparkles, ArrowRightLeft, Camera, UserPlus, Calendar } from 'lucide-react';
+import { Loader2, Sparkles, ArrowRightLeft, Camera, UserPlus, Calendar, Trophy } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -16,7 +16,7 @@ interface Props {
   currentSection?: string | null;
 }
 
-type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario';
+type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario' | 'conquista';
 
 interface TimelineItem {
   id: string;
@@ -32,9 +32,10 @@ const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: 
   secao:       { icon: Sparkles,       color: 'text-indigo-600',  bg: 'bg-indigo-500/10',  ring: 'border-indigo-500',  label: 'Seção' },
   fotos:       { icon: Camera,         color: 'text-emerald-600', bg: 'bg-emerald-500/10', ring: 'border-emerald-500', label: 'Fotos' },
   aniversario: { icon: Calendar,       color: 'text-rose-600',    bg: 'bg-rose-500/10',    ring: 'border-rose-500',    label: 'Aniversário' },
+  conquista:   { icon: Trophy,         color: 'text-fuchsia-600', bg: 'bg-fuchsia-500/10', ring: 'border-fuchsia-500', label: 'Conquista' },
 };
 
-const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario'];
+const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario', 'conquista'];
 
 const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection }: Props) => {
   const [items, setItems] = useState<TimelineItem[]>([]);
@@ -128,6 +129,23 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
         }
         year++;
       }
+
+      const { data: achievements } = await supabase
+        .from('scout_achievements')
+        .select('id, type, name, achievement_date, description')
+        .eq('scout_id', scoutId)
+        .order('achievement_date', { ascending: false })
+        .limit(500);
+
+      (achievements || []).forEach((a: any) => {
+        list.push({
+          id: `ach-${a.id}`,
+          type: 'conquista',
+          date: parseLocalDate(a.achievement_date),
+          title: a.name,
+          description: a.description || undefined,
+        });
+      });
 
       list.sort((a, b) => b.date.getTime() - a.date.getTime());
 

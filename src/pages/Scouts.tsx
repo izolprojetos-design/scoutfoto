@@ -37,6 +37,7 @@ import ScoutHistory from '@/components/ScoutHistory';
 import ScoutTimeline from '@/components/ScoutTimeline';
 import ScoutStats from '@/components/ScoutStats';
 import ScoutEvents from '@/components/ScoutEvents';
+import ScoutAchievements from '@/components/ScoutAchievements';
 import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
@@ -2024,10 +2025,11 @@ const Scouts = () => {
                 </div>
 
                 <Tabs defaultValue="dados" className="w-full">
-                  <TabsList className="grid w-full grid-cols-5">
+                  <TabsList className="grid w-full grid-cols-6">
                     <TabsTrigger value="dados">Dados</TabsTrigger>
                     <TabsTrigger value="fotos">Fotos</TabsTrigger>
                     <TabsTrigger value="eventos">Eventos</TabsTrigger>
+                    <TabsTrigger value="conquistas">Conquistas</TabsTrigger>
                     <TabsTrigger value="timeline">Linha do Tempo</TabsTrigger>
                     <TabsTrigger value="historico">Histórico</TabsTrigger>
                   </TabsList>
@@ -2126,6 +2128,10 @@ const Scouts = () => {
 
                   <TabsContent value="eventos" className="mt-4">
                     <ScoutEvents scoutId={viewingScout.id} />
+                  </TabsContent>
+
+                  <TabsContent value="conquistas" className="mt-4">
+                    <ScoutAchievements scoutId={viewingScout.id} />
                   </TabsContent>
 
                   <TabsContent value="timeline" className="mt-4">
