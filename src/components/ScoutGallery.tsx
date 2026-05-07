@@ -62,6 +62,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [isDragging, setIsDragging] = useState(false);
 
+  const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const dragCounter = useRef(0);
@@ -122,11 +124,17 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     return () => obs.disconnect();
   }, [visibleCount, filtered.length]);
 
-  const handleFiles = async (files: FileList | File[] | null) => {
+  const requestUpload = (files: FileList | File[] | null) => {
     if (!files || !user) return;
     const arr = Array.from(files);
     const valid = arr.filter(f => f.type.startsWith('image/'));
     if (!valid.length) return toast.error('Selecione apenas imagens.');
+    setPendingFiles(valid);
+  };
+
+  const handleFiles = async (files: File[]) => {
+    if (!files.length || !user) return;
+    const valid = files;
 
     setUploading(true);
     setProgress({ current: 0, total: valid.length });
@@ -234,7 +242,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     e.preventDefault();
     dragCounter.current = 0;
     setIsDragging(false);
-    if (e.dataTransfer.files?.length) handleFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files?.length) requestUpload(e.dataTransfer.files);
   };
 
   // Lightbox nav
@@ -298,7 +306,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
               multiple
               className="hidden"
               onChange={(e) => {
-                handleFiles(e.target.files);
+                requestUpload(e.target.files);
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
             />
@@ -469,6 +477,42 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Upload confirm — vincula ao integrante selecionado */}
+      <AlertDialog open={!!pendingFiles} onOpenChange={(o) => !o && setPendingFiles(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar envio</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Você está prestes a enviar <strong>{pendingFiles?.length || 0}</strong> foto(s) que serão vinculadas ao integrante:
+                </p>
+                <div className="rounded-md border bg-muted/50 p-3">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Integrante</div>
+                  <div className="font-semibold uppercase break-words">{scoutName}</div>
+                  <div className="text-xs text-muted-foreground mt-1 font-mono break-all">ID: {scoutId}</div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Confirme se este é o integrante correto antes de prosseguir.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const files = pendingFiles;
+                setPendingFiles(null);
+                if (files) handleFiles(files);
+              }}
+            >
+              Confirmar envio
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Delete confirm */}
       <AlertDialog open={!!deleting} onOpenChange={(o) => !o && setDeleting(null)}>
