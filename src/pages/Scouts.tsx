@@ -2017,6 +2017,11 @@ const Scouts = () => {
                   </TabsList>
 
                   <TabsContent value="dados" className="mt-4 space-y-4">
+                    <ScoutStats
+                      scoutId={viewingScout.id}
+                      scoutCreatedAt={viewingScout.created_at}
+                      scoutBirthDate={viewingScout.birth_date}
+                    />
                     <div className="space-y-2 text-sm">
                       {viewingScout.registration_id && (
                         <div className="flex justify-between py-2 border-b">
