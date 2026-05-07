@@ -158,7 +158,8 @@ const App = () => {
               <AuthProvider>
                 <RemoteRefreshWatcher />
                 <ForceChangePassword />
-                <Suspense fallback={<PageLoader />}>
+                <ChunkErrorBoundary>
+                  <Suspense fallback={<PageLoader />}>
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/login" element={<Login />} />
