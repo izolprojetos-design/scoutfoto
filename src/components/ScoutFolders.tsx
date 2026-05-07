@@ -218,6 +218,14 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {/* Drag overlay */}
+      {isDragging && canManage && (
+        <div className="absolute inset-0 z-50 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex flex-col items-center justify-center gap-3 pointer-events-none">
+          <UploadCloud className="h-10 w-10 text-primary animate-bounce" />
+          <p className="text-sm font-medium text-primary">Solte as imagens aqui para enviar</p>
+        </div>
+      )}
+
       {/* Upload toolbar */}
       {canManage && (
         <div className="flex items-center justify-between gap-2 flex-wrap">
