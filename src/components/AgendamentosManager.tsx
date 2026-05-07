@@ -222,12 +222,17 @@ const AgendamentosManager = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [{ data: ags }, { data: br }] = await Promise.all([
+    const [{ data: ags }, { data: br }, archives] = await Promise.all([
       supabase.from('agendamentos').select('*').order('data_secao', { ascending: false }),
       supabase.from('branches').select('id, display_name, icon').order('sort_order'),
+      user?.id
+        ? (supabase as any).from('agendamento_archives').select('agendamento_id').eq('user_id', user.id)
+        : Promise.resolve({ data: [] }),
     ]);
     setAgendamentos((ags as Agendamento[]) ?? []);
     setBranches(br ?? []);
+    const ids = ((archives as any)?.data ?? []).map((r: any) => r.agendamento_id as string);
+    setArchivedIds(new Set(ids));
     setLoading(false);
   };
 
