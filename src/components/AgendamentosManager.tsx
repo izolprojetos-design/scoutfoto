@@ -84,6 +84,8 @@ const AgendamentosManager = () => {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   // RLS quick test
@@ -428,6 +430,17 @@ const AgendamentosManager = () => {
     });
   }, [folderBase, search, filter]);
 
+  // Pagination derived state
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, currentPage, pageSize]);
+
+  // Reset to page 1 when filters/search/folder change
+  useEffect(() => { setPage(1); }, [folder, filter, search, pageSize]);
+
   // Marca como "lido" ao expandir um item da Caixa de Entrada
   const persistRead = (next: Set<string>) => {
     setReadIds(next);
@@ -739,7 +752,7 @@ const AgendamentosManager = () => {
         </Card>
       ) : (
         <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
-          {filtered.map((a, index) => {
+          {paginated.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
             const isFocused = focusedIndex === index || (focusedIndex === -1 && index === 0);
@@ -756,7 +769,7 @@ const AgendamentosManager = () => {
                   aria-selected={isOpen}
                   tabIndex={isFocused ? 0 : -1}
                   onFocus={() => setFocusedIndex(index)}
-                  onKeyDown={e => handleRowKeyDown(e, index, filtered)}
+                  onKeyDown={e => handleRowKeyDown(e, index, paginated)}
                   onClick={() => setExpandedId(isOpen ? null : a.id)}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
                 >
@@ -1089,6 +1102,54 @@ const AgendamentosManager = () => {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {filtered.length > 0 && (
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
+          <div className="text-xs text-muted-foreground">
+            Mostrando {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} de {filtered.length}
+          </div>
+          <div className="flex items-center gap-2">
+            <Select value={String(pageSize)} onValueChange={(v) => setPageSize(Number(v))}>
+              <SelectTrigger className="h-9 w-[110px] text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {[10, 25, 50, 100].map(n => (
+                  <SelectItem key={n} value={String(n)}>{n} / página</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="flex items-center gap-1">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={currentPage <= 1}
+                aria-label="Página anterior"
+              >
+                Anterior
+              </Button>
+              <span className="text-xs text-muted-foreground px-2 tabular-nums">
+                {currentPage} / {totalPages}
+              </span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-9"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage >= totalPages}
+                aria-label="Próxima página"
+              >
+                Próxima
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 
