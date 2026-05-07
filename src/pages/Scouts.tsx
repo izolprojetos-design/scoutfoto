@@ -35,6 +35,30 @@ import ScoutGallery from '@/components/ScoutGallery';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
+import { getBranchImage } from '@/lib/branchImages';
+
+const BranchAvatar = ({ branchKey, icon, size }: { branchKey?: string; icon?: string; size: number }) => {
+  const img = getBranchImage(branchKey);
+  if (img) {
+    return (
+      <img
+        src={img}
+        alt={branchKey || 'Ramo'}
+        loading="lazy"
+        className="rounded-full object-cover ring-2 ring-muted flex-shrink-0"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="flex items-center justify-center rounded-full bg-primary/10 ring-2 ring-muted flex-shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      {icon || '⚜️'}
+    </div>
+  );
+};
 
 interface Scout {
   id: string;
@@ -1574,16 +1598,10 @@ const Scouts = () => {
                             }
                           }}
                           onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
-                          fallback={
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                              {branch?.icon || '⚜️'}
-                            </div>
-                          }
+                          fallback={<BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={56} />}
                         />
                       ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                          {branch?.icon || '⚜️'}
-                        </div>
+                        <BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={56} />
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col items-start gap-0.5">
@@ -1922,16 +1940,10 @@ const Scouts = () => {
                       alt={viewingScout.name}
                       className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
                       onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
-                      fallback={
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      }
+                      fallback={<BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={80} />}
                     />
                   ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                      {branch?.icon || '⚜️'}
-                    </div>
+                    <BranchAvatar branchKey={branch?.key} icon={branch?.icon} size={80} />
                   )}
                   <div>
                     <div className="flex items-center gap-2">
