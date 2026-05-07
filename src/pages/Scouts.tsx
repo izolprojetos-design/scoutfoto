@@ -35,6 +35,30 @@ import ScoutGallery from '@/components/ScoutGallery';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
 import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection, buildVolunteerSection } from '@/lib/sectionOptions';
+import { getBranchImage } from '@/lib/branchImages';
+
+const BranchAvatar = ({ branchKey, icon, size }: { branchKey?: string; icon?: string; size: number }) => {
+  const img = getBranchImage(branchKey);
+  if (img) {
+    return (
+      <img
+        src={img}
+        alt={branchKey || 'Ramo'}
+        loading="lazy"
+        className="rounded-full object-cover ring-2 ring-muted flex-shrink-0"
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+  return (
+    <div
+      className="flex items-center justify-center rounded-full bg-primary/10 ring-2 ring-muted flex-shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.45 }}
+    >
+      {icon || '⚜️'}
+    </div>
+  );
+};
 
 interface Scout {
   id: string;
