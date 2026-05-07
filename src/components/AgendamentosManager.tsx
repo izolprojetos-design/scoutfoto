@@ -961,17 +961,32 @@ const AgendamentosManager = () => {
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
                       {trashedIds.has(a.id) ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => { e.stopPropagation(); untrashAgendamento(a); }}
-                          disabled={archivingId === a.id}
-                          className="h-8 gap-1"
-                          data-testid={`untrash-btn-${a.id}`}
-                        >
-                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Undo2 className="h-3.5 w-3.5" />}
-                          Restaurar da Lixeira
-                        </Button>
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); untrashAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1"
+                            data-testid={`untrash-btn-${a.id}`}
+                          >
+                            {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Undo2 className="h-3.5 w-3.5" />}
+                            Restaurar da Lixeira
+                          </Button>
+                          {canDelete(a) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={(e) => { e.stopPropagation(); setDeletingId(a.id); }}
+                              className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                              data-testid={`permanent-delete-btn-${a.id}`}
+                              title="Excluir definitivamente do banco"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Excluir definitivamente
+                            </Button>
+                          )}
+                        </>
                       ) : archivedIds.has(a.id) ? (
                         <>
                           <Button
