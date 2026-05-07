@@ -60,6 +60,11 @@ interface Branch {
 }
 
 const tipoLabel = (v: string) => SCHEDULING_TYPES.find(t => t.value === v)?.label ?? v;
+const toTitleCase = (s: string) =>
+  (s || '')
+    .toLowerCase()
+    .replace(/(^|[\s\-'])([\p{L}])/gu, (_, sep, ch) => sep + ch.toUpperCase())
+    .replace(/\b(de|da|do|das|dos|e)\b/gi, m => m.toLowerCase());
 
 const AgendamentosManager = () => {
   const { user, roles } = useAuth();
