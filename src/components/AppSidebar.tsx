@@ -82,7 +82,13 @@ const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.filter(i => i.show).map(item => {
-                const isActive = location.pathname === item.to;
+                const [itemPath, itemQuery] = item.to.split('?');
+                const itemTab = new URLSearchParams(itemQuery || '').get('tab');
+                const currentTab = new URLSearchParams(location.search).get('tab');
+                let isActive = location.pathname === itemPath;
+                if (isActive && itemPath === '/calendar') {
+                  isActive = (itemTab || null) === (currentTab || null);
+                }
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton
@@ -92,7 +98,6 @@ const AppSidebar = () => {
                     >
                       <NavLink
                         to={item.to}
-                        end
                         className="flex items-center gap-2"
                         onClick={() => isMobile && setOpenMobile(false)}
                       >
