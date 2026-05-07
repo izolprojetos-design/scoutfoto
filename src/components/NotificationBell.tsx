@@ -24,6 +24,7 @@ const TYPE_FILTER: Record<string, string> = {
   failed_attempts: 'Tentativas',
   account_locked: 'Bloqueios',
   login_success: 'Login',
+  agendamento_response: 'Agendamentos',
 };
 
 const NotificationItem = ({ n, onRead, onDelete }: { n: SecurityNotification; onRead: (id: string) => void; onDelete: (id: string) => void }) => {
