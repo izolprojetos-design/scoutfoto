@@ -16,7 +16,10 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered, SlidersHorizontal } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Checkbox } from '@/components/ui/checkbox';
+import { differenceInYears } from 'date-fns';
 import { logAudit } from '@/lib/auditLog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -101,6 +104,14 @@ const Scouts = () => {
   const [branchAnnouncement, setBranchAnnouncement] = useState('');
   const branchPickerRef = useRef<HTMLDivElement>(null);
   const [statusFilter, setStatusFilter] = useState<'active' | 'inactive' | 'all'>('active');
+  // Advanced filters
+  const [sectionFilter, setSectionFilter] = useState<string[]>([]);
+  const [subgroupFilter, setSubgroupFilter] = useState<string[]>([]);
+  const [ageMinFilter, setAgeMinFilter] = useState<string>('');
+  const [ageMaxFilter, setAgeMaxFilter] = useState<string>('');
+  const [tenureMinFilter, setTenureMinFilter] = useState<string>('');
+  const [photoFilter, setPhotoFilter] = useState<'all' | 'with' | 'without'>('all');
+  const [advancedOpen, setAdvancedOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
@@ -531,9 +542,27 @@ const Scouts = () => {
       (s.section || '').toLowerCase().includes(term) ||
       subgroupName.toLowerCase().includes(term);
     if (branchFilter === '') return false;
-    if (branchFilter === 'all') return matchSearch;
     const branch = getEffectiveBranch(s);
-    return matchSearch && branch?.key === branchFilter;
+    if (branchFilter !== 'all' && branch?.key !== branchFilter) return false;
+    if (!matchSearch) return false;
+
+    // Advanced filters
+    if (sectionFilter.length > 0 && !sectionFilter.includes(s.section || '')) return false;
+    if (subgroupFilter.length > 0) {
+      const sgKey = s.subgroup_id || '__none__';
+      if (!subgroupFilter.includes(sgKey)) return false;
+    }
+    const ageYears = differenceInYears(new Date(), parseLocalDate(s.birth_date));
+    if (ageMinFilter && ageYears < Number(ageMinFilter)) return false;
+    if (ageMaxFilter && ageYears > Number(ageMaxFilter)) return false;
+    if (tenureMinFilter) {
+      const tenureYears = differenceInYears(new Date(), new Date(s.created_at));
+      if (tenureYears < Number(tenureMinFilter)) return false;
+    }
+    if (photoFilter === 'with' && !s.photo_url) return false;
+    if (photoFilter === 'without' && s.photo_url) return false;
+
+    return true;
   }).sort((a, b) => {
     if (branchFilter !== 'all') return 0;
     const branchA = getEffectiveBranch(a);
@@ -542,6 +571,43 @@ const Scouts = () => {
     const idxB = branchB ? branchOrder.indexOf(branchB.key) : 999;
     return idxA - idxB;
   });
+
+  // Distinct values for advanced filter options (based on currently visible status + branch scope)
+  const scopedScouts = scouts.filter(s => {
+    if (statusFilter === 'active' && !s.is_active) return false;
+    if (statusFilter === 'inactive' && s.is_active) return false;
+    if (branchFilter && branchFilter !== 'all' && branchFilter !== '') {
+      const b = getEffectiveBranch(s);
+      if (b?.key !== branchFilter) return false;
+    }
+    return true;
+  });
+  const availableSections = Array.from(new Set(scopedScouts.map(s => s.section).filter(Boolean) as string[])).sort();
+  const availableSubgroups = Array.from(new Set(scopedScouts.map(s => s.subgroup_id || '__none__')))
+    .map(id => id === '__none__' ? { id: '__none__', name: '— Sem equipe —' } : subgroups.find(sg => sg.id === id))
+    .filter(Boolean) as { id: string; name: string }[];
+
+  const advancedActiveCount =
+    sectionFilter.length +
+    subgroupFilter.length +
+    (ageMinFilter ? 1 : 0) +
+    (ageMaxFilter ? 1 : 0) +
+    (tenureMinFilter ? 1 : 0) +
+    (photoFilter !== 'all' ? 1 : 0);
+
+  const clearAdvancedFilters = () => {
+    setSectionFilter([]);
+    setSubgroupFilter([]);
+    setAgeMinFilter('');
+    setAgeMaxFilter('');
+    setTenureMinFilter('');
+    setPhotoFilter('all');
+  };
+
+  const toggleArrayValue = (arr: string[], value: string, setter: (v: string[]) => void) => {
+    if (arr.includes(value)) setter(arr.filter(v => v !== value));
+    else setter([...arr, value]);
+  };
 
   const activeScouts = scouts.filter(s => s.is_active);
   const inactiveScouts = scouts.filter(s => !s.is_active);
@@ -1492,6 +1558,140 @@ const Scouts = () => {
           <span role="status" aria-live="polite" aria-atomic="true" className="sr-only">
             {branchAnnouncement}
           </span>
+
+          {/* Advanced filters */}
+          <Popover open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 relative">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filtros
+                {advancedActiveCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
+                    {advancedActiveCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-80 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Filtros avançados</h4>
+                  {advancedActiveCount > 0 && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearAdvancedFilters}>
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+
+                {availableSections.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Seção</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableSections.map(sec => {
+                        const active = sectionFilter.includes(sec);
+                        return (
+                          <button
+                            key={sec}
+                            type="button"
+                            onClick={() => toggleArrayValue(sectionFilter, sec, setSectionFilter)}
+                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                          >
+                            {sec}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {availableSubgroups.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Equipe</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableSubgroups.map(sg => {
+                        const active = subgroupFilter.includes(sg.id);
+                        return (
+                          <button
+                            key={sg.id}
+                            type="button"
+                            onClick={() => toggleArrayValue(subgroupFilter, sg.id, setSubgroupFilter)}
+                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                          >
+                            {sg.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Idade (anos)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Mín."
+                      value={ageMinFilter}
+                      onChange={e => setAgeMinFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs">a</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Máx."
+                      value={ageMaxFilter}
+                      onChange={e => setAgeMaxFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tempo no grupo (mín. anos)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={50}
+                    placeholder="Ex.: 2"
+                    value={tenureMinFilter}
+                    onChange={e => setTenureMinFilter(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Foto</Label>
+                  <div className="flex gap-1.5">
+                    {(['all', 'with', 'without'] as const).map(opt => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setPhotoFilter(opt)}
+                        className={`flex-1 text-xs rounded-md border px-2 py-1.5 transition ${photoFilter === opt ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                      >
+                        {opt === 'all' ? 'Todos' : opt === 'with' ? 'Com foto' : 'Sem foto'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t text-xs text-muted-foreground text-center">
+                  {filteredScouts.length} {filteredScouts.length === 1 ? 'integrante encontrado' : 'integrantes encontrados'}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {advancedActiveCount > 0 && (
+            <Button variant="ghost" size="sm" className="gap-1 text-xs h-8" onClick={clearAdvancedFilters}>
+              <X className="h-3 w-3" />
+              Limpar
+            </Button>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
