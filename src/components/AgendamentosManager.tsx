@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
-  CheckCircle2, XCircle, Clock3, Inbox, Send, Archive, ArchiveRestore, Folder,
+  CheckCircle2, XCircle, Clock3, Inbox, Send, Archive, ArchiveRestore, Folder, Trash, Undo2,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,6 +68,7 @@ const AgendamentosManager = () => {
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
+  const [trashedIds, setTrashedIds] = useState<Set<string>>(new Set());
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const k = `agd:read:${user?.id ?? 'anon'}`;
@@ -77,7 +78,7 @@ const AgendamentosManager = () => {
   });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived'>('inbox');
+  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived' | 'trash'>('inbox');
   const [filter, setFilter] = useState<'todos' | 'pendentes' | 'confirmados' | 'recusados' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [archivingId, setArchivingId] = useState<string | null>(null);
@@ -226,13 +227,14 @@ const AgendamentosManager = () => {
       supabase.from('agendamentos').select('*').order('data_secao', { ascending: false }),
       supabase.from('branches').select('id, display_name, icon').order('sort_order'),
       user?.id
-        ? (supabase as any).from('agendamento_archives').select('agendamento_id').eq('user_id', user.id)
+        ? (supabase as any).from('agendamento_archives').select('agendamento_id, kind').eq('user_id', user.id)
         : Promise.resolve({ data: [] }),
     ]);
     setAgendamentos((ags as Agendamento[]) ?? []);
     setBranches(br ?? []);
-    const ids = ((archives as any)?.data ?? []).map((r: any) => r.agendamento_id as string);
-    setArchivedIds(new Set(ids));
+    const rows = ((archives as any)?.data ?? []) as Array<{ agendamento_id: string; kind?: string }>;
+    setArchivedIds(new Set(rows.filter(r => (r.kind ?? 'archived') === 'archived').map(r => r.agendamento_id)));
+    setTrashedIds(new Set(rows.filter(r => r.kind === 'trashed').map(r => r.agendamento_id)));
     setLoading(false);
   };
 
@@ -366,6 +368,9 @@ const AgendamentosManager = () => {
   // Pasta-base: separa Inbox (sou destinatário) / Sent (sou remetente) / Archived
   const inFolder = (a: Agendamento) => {
     const isArchived = archivedIds.has(a.id);
+    const isTrashed = trashedIds.has(a.id);
+    if (folder === 'trash') return isTrashed;
+    if (isTrashed) return false;
     if (folder === 'archived') return isArchived;
     if (isArchived) return false;
     if (folder === 'inbox') return isRecipientOf(a);
@@ -376,13 +381,14 @@ const AgendamentosManager = () => {
   const folderBase = useMemo(
     () => agendamentos.filter(inFolder),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [agendamentos, archivedIds, folder, user?.id, userEmail],
+    [agendamentos, archivedIds, trashedIds, folder, user?.id, userEmail],
   );
 
   // Contagens por pasta para a UI lateral
   const folderCounts = useMemo(() => {
-    let inbox = 0, sent = 0, archived = 0, inboxUnread = 0;
+    let inbox = 0, sent = 0, archived = 0, trash = 0, inboxUnread = 0;
     for (const a of agendamentos) {
+      if (trashedIds.has(a.id)) { trash++; continue; }
       const isArchived = archivedIds.has(a.id);
       if (isArchived) { archived++; continue; }
       if (isRecipientOf(a)) {
@@ -391,8 +397,8 @@ const AgendamentosManager = () => {
       }
       if (a.user_id === user?.id) sent++;
     }
-    return { inbox, sent, archived, inboxUnread };
-  }, [agendamentos, archivedIds, readIds, user?.id, userEmail]);
+    return { inbox, sent, archived, trash, inboxUnread };
+  }, [agendamentos, archivedIds, trashedIds, readIds, user?.id, userEmail]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -440,11 +446,20 @@ const AgendamentosManager = () => {
 
   const archiveAgendamento = async (a: Agendamento) => {
     if (!user?.id) return;
+    const r = a.recipient_response ?? 'pendente';
+    if (r === 'pendente') {
+      toast({
+        title: 'Ainda pendente',
+        description: 'Só é possível arquivar após o destinatário confirmar ou recusar.',
+        variant: 'destructive',
+      });
+      return;
+    }
     setArchivingId(a.id);
     try {
       const { error } = await (supabase as any)
         .from('agendamento_archives')
-        .insert({ user_id: user.id, agendamento_id: a.id });
+        .insert({ user_id: user.id, agendamento_id: a.id, kind: 'archived' });
       if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
       setArchivedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
       toast({ title: 'Arquivado', description: 'Movido para a pasta Arquivado.' });
@@ -463,10 +478,56 @@ const AgendamentosManager = () => {
         .from('agendamento_archives')
         .delete()
         .eq('user_id', user.id)
-        .eq('agendamento_id', a.id);
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'archived');
       if (error) throw error;
       setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
       toast({ title: 'Restaurado', description: 'Removido do Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const trashAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      // Remove do arquivado (se houver) e marca como trashed
+      await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'archived');
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .insert({ user_id: user.id, agendamento_id: a.id, kind: 'trashed' });
+      if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      setTrashedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
+      toast({ title: 'Movido para a Lixeira' });
+    } catch (err: any) {
+      toast({ title: 'Erro ao mover', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const untrashAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id)
+        .eq('kind', 'trashed');
+      if (error) throw error;
+      setTrashedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      toast({ title: 'Restaurado', description: 'Removido da Lixeira.' });
     } catch (err: any) {
       toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
     } finally {
@@ -582,6 +643,7 @@ const AgendamentosManager = () => {
     { key: 'inbox', label: 'Caixa de Entrada', icon: Inbox, count: folderCounts.inbox, badge: folderCounts.inboxUnread },
     { key: 'sent', label: 'Caixa de Saída', icon: Send, count: folderCounts.sent },
     { key: 'archived', label: 'Arquivado', icon: Archive, count: folderCounts.archived },
+    { key: 'trash', label: 'Lixeira', icon: Trash, count: folderCounts.trash },
   ];
 
   const FILTERS: Array<{ key: typeof filter; label: string }> = [
@@ -898,31 +960,77 @@ const AgendamentosManager = () => {
                     })()}
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
-                      {archivedIds.has(a.id) ? (
+                      {trashedIds.has(a.id) ? (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                          onClick={(e) => { e.stopPropagation(); untrashAgendamento(a); }}
                           disabled={archivingId === a.id}
                           className="h-8 gap-1"
-                          data-testid={`unarchive-btn-${a.id}`}
+                          data-testid={`untrash-btn-${a.id}`}
                         >
-                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
-                          Restaurar
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Undo2 className="h-3.5 w-3.5" />}
+                          Restaurar da Lixeira
                         </Button>
+                      ) : archivedIds.has(a.id) ? (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1"
+                            data-testid={`unarchive-btn-${a.id}`}
+                          >
+                            {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+                            Restaurar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); trashAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`trash-btn-${a.id}`}
+                            title="Mover para a Lixeira"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                            Lixeira
+                          </Button>
+                        </>
                       ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
-                          disabled={archivingId === a.id}
-                          className="h-8 gap-1"
-                          data-testid={`archive-btn-${a.id}`}
-                          title="Mover para Arquivado"
-                        >
-                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
-                          Arquivar
-                        </Button>
+                        <>
+                          {(() => {
+                            const r = a.recipient_response ?? 'pendente';
+                            const isPending = r === 'pendente';
+                            return (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
+                                disabled={archivingId === a.id || isPending}
+                                className="h-8 gap-1"
+                                data-testid={`archive-btn-${a.id}`}
+                                title={isPending ? 'Disponível após confirmação ou recusa' : 'Mover para Arquivado'}
+                              >
+                                {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+                                Arquivar
+                              </Button>
+                            );
+                          })()}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); trashAgendamento(a); }}
+                            disabled={archivingId === a.id}
+                            className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            data-testid={`trash-btn-${a.id}`}
+                            title="Mover para a Lixeira"
+                          >
+                            <Trash className="h-3.5 w-3.5" />
+                            Lixeira
+                          </Button>
+                        </>
                       )}
                       {isAdmin && (
                         <Button

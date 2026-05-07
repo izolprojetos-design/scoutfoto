@@ -57,18 +57,21 @@ export type Database = {
           agendamento_id: string
           created_at: string
           id: string
+          kind: string
           user_id: string
         }
         Insert: {
           agendamento_id: string
           created_at?: string
           id?: string
+          kind?: string
           user_id: string
         }
         Update: {
           agendamento_id?: string
           created_at?: string
           id?: string
+          kind?: string
           user_id?: string
         }
         Relationships: []
