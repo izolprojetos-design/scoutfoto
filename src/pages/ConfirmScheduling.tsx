@@ -113,7 +113,7 @@ const ConfirmScheduling = () => {
                 <div className="flex items-start gap-2"><Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" /><span><strong>Data:</strong> {formatDate(request.data)} às {request.horario}</span></div>
                 <div className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" /><span><strong>Local:</strong> {toTitleCase(request.local) || <em className="text-muted-foreground">Não informado</em>}</span></div>
                 <div><strong>Tipo:</strong> {request.tipo}</div>
-                <div><strong>Descrição:</strong> {request.descricao}</div>
+                <div><strong>Observações:</strong> {request.descricao}</div>
               </div>
 
               <Button onClick={handleConfirm} disabled={status === 'confirming'} size="lg" className="w-full gap-2">

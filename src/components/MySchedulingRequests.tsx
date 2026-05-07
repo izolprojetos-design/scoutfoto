@@ -360,7 +360,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                   </div>
 
                   {r.descricao && (
-                    <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Assunto:</strong> {r.descricao}</p>
+                    <p className="mt-3 text-sm text-foreground/80 border-l-2 border-muted pl-3"><strong>Observações:</strong> {r.descricao}</p>
                   )}
 
                   {r.status === 'rejeitado' && (
@@ -503,7 +503,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-descricao">Assunto / Observações *</Label>
+              <Label htmlFor="edit-descricao">Observações *</Label>
               <Textarea id="edit-descricao" rows={4} value={editDescricao} onChange={e => setEditDescricao(e.target.value)} placeholder="Detalhe a atividade..." />
               {editErrors.descricao && <p className="text-sm text-destructive">{editErrors.descricao}</p>}
             </div>
