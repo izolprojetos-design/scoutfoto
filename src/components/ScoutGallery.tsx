@@ -124,11 +124,17 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     return () => obs.disconnect();
   }, [visibleCount, filtered.length]);
 
-  const handleFiles = async (files: FileList | File[] | null) => {
+  const requestUpload = (files: FileList | File[] | null) => {
     if (!files || !user) return;
     const arr = Array.from(files);
     const valid = arr.filter(f => f.type.startsWith('image/'));
     if (!valid.length) return toast.error('Selecione apenas imagens.');
+    setPendingFiles(valid);
+  };
+
+  const handleFiles = async (files: File[]) => {
+    if (!files.length || !user) return;
+    const valid = files;
 
     setUploading(true);
     setProgress({ current: 0, total: valid.length });
