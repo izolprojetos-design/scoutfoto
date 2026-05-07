@@ -1600,6 +1600,7 @@ export type Database = {
           remaining_seconds: number
         }[]
       }
+      renumber_scouts: { Args: never; Returns: undefined }
       requeue_notification: {
         Args: { p_channel: string; p_notification_id: string }
         Returns: undefined
