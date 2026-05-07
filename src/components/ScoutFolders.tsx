@@ -529,8 +529,21 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
               <strong>{pendingFiles.length}</strong> arquivo{pendingFiles.length !== 1 ? 's' : ''} selecionado{pendingFiles.length !== 1 ? 's' : ''}.
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="photo-date">Data da foto *</Label>
+            {/* Master date + apply-to-all toggle */}
+            <div className="space-y-2 rounded-md border p-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <Label htmlFor="photo-date" className="font-semibold">Data padrão *</Label>
+                <label className="flex items-center gap-2 text-xs cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={applyToAll}
+                    onChange={(e) => setApplyToAll(e.target.checked)}
+                    disabled={uploading}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Aplicar a todas
+                </label>
+              </div>
               <Input
                 id="photo-date"
                 type="date"
@@ -540,13 +553,59 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
                 className="h-12 text-base"
                 disabled={uploading}
               />
-              {photoDate && (
+              {photoDate && applyToAll && (
                 <p className="text-xs text-muted-foreground">
-                  Será salvo em: <strong>{new Date(`${photoDate}T12:00:00`).getFullYear()}</strong> ›{' '}
+                  Todas serão salvas em: <strong>{new Date(`${photoDate}T12:00:00`).getFullYear()}</strong> ›{' '}
                   <strong>{format(new Date(`${photoDate}T12:00:00`), "dd 'de' MMMM", { locale: ptBR })}</strong>
                 </p>
               )}
+              {!applyToAll && (
+                <p className="text-xs text-muted-foreground">Defina a data individualmente em cada miniatura abaixo.</p>
+              )}
             </div>
+
+            {/* Per-file review list */}
+            {pendingFiles.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground">Revisar fotos selecionadas</p>
+                <div className="max-h-[40vh] overflow-y-auto space-y-2 pr-1">
+                  {pendingFiles.map((p, idx) => {
+                    const effectiveDate = applyToAll ? photoDate : p.date;
+                    return (
+                      <div key={idx} className="flex items-center gap-3 rounded-md border bg-background p-2">
+                        <img
+                          src={p.preview}
+                          alt={p.file.name}
+                          className="h-14 w-14 rounded object-cover shrink-0 bg-muted"
+                        />
+                        <div className="flex-1 min-w-0 space-y-1">
+                          <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
+                          <Input
+                            type="date"
+                            value={effectiveDate}
+                            max={format(new Date(), 'yyyy-MM-dd')}
+                            onChange={(e) => updateFileDate(idx, e.target.value)}
+                            disabled={uploading || applyToAll}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removePendingFile(idx)}
+                          disabled={uploading}
+                          className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                          aria-label="Remover"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {uploading && (
               <div className="space-y-1">
@@ -564,18 +623,71 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <DialogFooter>
             <Button
               variant="ghost"
-              onClick={() => { setUploadOpen(false); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }}
+              onClick={() => {
+                setUploadOpen(false);
+                cleanupPreviews(pendingFiles);
+                setPendingFiles([]);
+                if (fileInputRef.current) fileInputRef.current.value = '';
+              }}
               disabled={uploading}
             >
               Cancelar
             </Button>
             <Button onClick={handleUpload} disabled={uploading || !pendingFiles.length} className="gap-2">
               {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
+              Confirmar e enviar {pendingFiles.length} foto{pendingFiles.length !== 1 ? 's' : ''}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete folder confirmation */}
+      <AlertDialog open={deleteFolderOpen} onOpenChange={(v) => { if (!deleting) setDeleteFolderOpen(v); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir pasta inteira?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação removerá permanentemente <strong>{photosOfDate.length} foto(s)</strong> da pasta{' '}
+              {dateKey && <strong>{format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</strong>}.
+              {' '}Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteFolder}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Excluir tudo
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete single photo confirmation */}
+      <AlertDialog open={!!deleteSingleOpen} onOpenChange={(v) => { if (!deleting && !v) setDeleteSingleOpen(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir esta foto?</AlertDialogTitle>
+            <AlertDialogDescription>
+              A foto será removida permanentemente. Não é possível desfazer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSingle}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
