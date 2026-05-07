@@ -131,6 +131,48 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
     cursorY = (doc as any).lastAutoTable.finalY + 8;
   }
 
+  // ===== ACHIEVEMENTS =====
+  const TYPE_LABELS: Record<string, string> = {
+    especialidade: 'Especialidade',
+    insignia: 'Insígnia',
+    distintivo: 'Distintivo',
+    conquista: 'Conquista',
+    outro: 'Outro',
+  };
+  const { data: achievements } = await supabase
+    .from('scout_achievements')
+    .select('id, type, name, achievement_date, description')
+    .eq('scout_id', scout.id)
+    .order('achievement_date', { ascending: false });
+
+  if (achievements && achievements.length > 0) {
+    if (cursorY > pageH - 60) { doc.addPage(); cursorY = margin; }
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Conquistas e Insígnias', margin, cursorY);
+    autoTable(doc, {
+      startY: cursorY + 3,
+      head: [['Data', 'Tipo', 'Nome', 'Descrição']],
+      body: achievements.map((a: any) => [
+        format(parseLocalDate(a.achievement_date), 'dd/MM/yyyy', { locale: ptBR }),
+        TYPE_LABELS[a.type] || a.type,
+        a.name,
+        a.description || '—',
+      ]),
+      headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      bodyStyles: { fontSize: 9, valign: 'top' },
+      columnStyles: {
+        0: { cellWidth: 22 },
+        1: { cellWidth: 28 },
+        2: { cellWidth: 50 },
+        3: { cellWidth: 'auto' },
+      },
+      margin: { left: margin, right: margin },
+      theme: 'striped',
+    });
+    cursorY = (doc as any).lastAutoTable.finalY + 8;
+  }
+
   // ===== TIMELINE =====
   // Build same dataset as ScoutTimeline
   type TItem = { date: Date; type: string; title: string; description?: string };
