@@ -363,11 +363,45 @@ const AgendamentosManager = () => {
   const canEdit = (a: Agendamento) => isAdmin || a.user_id === user?.id;
   const canDelete = (a: Agendamento) => isAdmin || a.user_id === user?.id;
 
+  // Pasta-base: separa Inbox (sou destinatário) / Sent (sou remetente) / Archived
+  const inFolder = (a: Agendamento) => {
+    const isArchived = archivedIds.has(a.id);
+    if (folder === 'archived') return isArchived;
+    if (isArchived) return false;
+    if (folder === 'inbox') return isRecipientOf(a);
+    if (folder === 'sent') return a.user_id === user?.id;
+    return true;
+  };
+
+  const folderBase = useMemo(
+    () => agendamentos.filter(inFolder),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [agendamentos, archivedIds, folder, user?.id, userEmail],
+  );
+
+  // Contagens por pasta para a UI lateral
+  const folderCounts = useMemo(() => {
+    let inbox = 0, sent = 0, archived = 0, inboxUnread = 0;
+    for (const a of agendamentos) {
+      const isArchived = archivedIds.has(a.id);
+      if (isArchived) { archived++; continue; }
+      if (isRecipientOf(a)) {
+        inbox++;
+        if (!readIds.has(a.id) && (a.recipient_response ?? 'pendente') === 'pendente') inboxUnread++;
+      }
+      if (a.user_id === user?.id) sent++;
+    }
+    return { inbox, sent, archived, inboxUnread };
+  }, [agendamentos, archivedIds, readIds, user?.id, userEmail]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    return agendamentos.filter(a => {
-      if (filter === 'meus' && a.user_id !== user?.id) return false;
+    return folderBase.filter(a => {
+      const r = a.recipient_response ?? 'pendente';
+      if (filter === 'pendentes' && r !== 'pendente') return false;
+      if (filter === 'confirmados' && r !== 'confirmado') return false;
+      if (filter === 'recusados' && r !== 'recusado') return false;
       if (filter === 'futuros' && parseLocalDate(a.data_secao) < today) return false;
       if (filter === 'passados' && parseLocalDate(a.data_secao) >= today) return false;
       if (!term) return true;
@@ -381,10 +415,64 @@ const AgendamentosManager = () => {
         (a.email_para ?? '').toLowerCase().includes(term) ||
         (a.destinatario_secao ?? '').toLowerCase().includes(term) ||
         (a.destinatario_cargo_1 ?? '').toLowerCase().includes(term) ||
-        (a.destinatario_cargo_2 ?? '').toLowerCase().includes(term)
+        (a.destinatario_cargo_2 ?? '').toLowerCase().includes(term) ||
+        (a.observacoes ?? '').toLowerCase().includes(term)
       );
     });
-  }, [agendamentos, search, filter, user?.id]);
+  }, [folderBase, search, filter]);
+
+  // Marca como "lido" ao expandir um item da Caixa de Entrada
+  const persistRead = (next: Set<string>) => {
+    setReadIds(next);
+    try {
+      const k = `agd:read:${user?.id ?? 'anon'}`;
+      window.localStorage.setItem(k, JSON.stringify(Array.from(next)));
+    } catch { /* noop */ }
+  };
+  useEffect(() => {
+    if (!expandedId) return;
+    if (readIds.has(expandedId)) return;
+    const a = agendamentos.find(x => x.id === expandedId);
+    if (!a || !isRecipientOf(a)) return;
+    const next = new Set(readIds); next.add(expandedId); persistRead(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedId]);
+
+  const archiveAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .insert({ user_id: user.id, agendamento_id: a.id });
+      if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
+      toast({ title: 'Arquivado', description: 'Movido para a pasta Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro ao arquivar', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const unarchiveAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id);
+      if (error) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      toast({ title: 'Restaurado', description: 'Removido do Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
 
   // Mantém foco e linha expandida consistentes ao mudar filtros/pesquisa.
   // Se o item focado/expandido continuar na lista, preserva sua posição.
