@@ -16,7 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered, SlidersHorizontal } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered, SlidersHorizontal, GitCompare } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { differenceInYears } from 'date-fns';
@@ -41,6 +41,7 @@ import ScoutTimeline from '@/components/ScoutTimeline';
 import ScoutStats from '@/components/ScoutStats';
 import ScoutEvents from '@/components/ScoutEvents';
 import ScoutAchievements from '@/components/ScoutAchievements';
+import ScoutCompare from '@/components/ScoutCompare';
 import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
@@ -119,6 +120,7 @@ const Scouts = () => {
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
   const [renumbering, setRenumbering] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -1693,6 +1695,19 @@ const Scouts = () => {
             </Button>
           )}
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5"
+            onClick={() => setCompareOpen(true)}
+            disabled={filteredScouts.length < 2}
+            title={filteredScouts.length < 2 ? 'Necessário pelo menos 2 integrantes na lista' : 'Comparar integrantes lado a lado'}
+          >
+            <GitCompare className="h-3.5 w-3.5" />
+            Comparar
+          </Button>
+
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -2405,6 +2420,13 @@ const Scouts = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <ScoutCompare
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        scouts={filteredScouts as any}
+        subgroups={subgroups}
+      />
     </>
   );
 };
