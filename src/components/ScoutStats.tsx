@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Camera, Calendar, Clock, ArrowRightLeft, Cake } from 'lucide-react';
+import { Camera, Calendar, Clock, ArrowRightLeft, Cake, Trophy } from 'lucide-react';
 import { differenceInYears, differenceInMonths } from 'date-fns';
 import { parseLocalDate, getNextBranchChange, formatTimeLeft, formatAge } from '@/lib/scoutUtils';
 
@@ -13,21 +13,23 @@ interface Props {
 interface Stats {
   photos: number;
   events: number;
+  achievements: number;
 }
 
 const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
-  const [stats, setStats] = useState<Stats>({ photos: 0, events: 0 });
+  const [stats, setStats] = useState<Stats>({ photos: 0, events: 0, achievements: 0 });
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const [{ count: photos }, { data: eventRows }] = await Promise.all([
+      const [{ count: photos }, { data: eventRows }, { count: achievements }] = await Promise.all([
         supabase.from('scout_photos').select('id', { count: 'exact', head: true }).eq('scout_id', scoutId),
         supabase.from('scout_photos').select('caption').eq('scout_id', scoutId).limit(1000),
+        supabase.from('scout_achievements').select('id', { count: 'exact', head: true }).eq('scout_id', scoutId),
       ]);
       // event count: distinct captions (proxy when no event_id link); fallback to 0
       const events = new Set((eventRows || []).map((r: any) => r.caption).filter(Boolean)).size;
-      if (!cancelled) setStats({ photos: photos || 0, events });
+      if (!cancelled) setStats({ photos: photos || 0, events, achievements: achievements || 0 });
     })();
     return () => { cancelled = true; };
   }, [scoutId]);
@@ -44,6 +46,7 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
     { icon: Clock, label: 'No grupo', value: yearsInGroup >= 1 ? `${yearsInGroup} ${yearsInGroup === 1 ? 'ano' : 'anos'}` : `${monthsInGroup} ${monthsInGroup === 1 ? 'mês' : 'meses'}`, color: 'text-primary bg-primary/10' },
     { icon: Camera, label: 'Fotos', value: String(stats.photos), color: 'text-emerald-600 bg-emerald-500/10' },
     { icon: Calendar, label: 'Eventos', value: String(stats.events), color: 'text-indigo-600 bg-indigo-500/10' },
+    { icon: Trophy, label: 'Conquistas', value: String(stats.achievements), color: 'text-fuchsia-600 bg-fuchsia-500/10' },
     ...(next ? [{ icon: ArrowRightLeft, label: 'Próximo ramo', value: `${next.branch.icon} ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`, color: 'text-amber-600 bg-amber-500/10' }] : []),
   ];
 
