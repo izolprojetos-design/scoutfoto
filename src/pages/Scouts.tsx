@@ -1388,7 +1388,8 @@ const Scouts = () => {
               )}
             </DialogContent>
           </Dialog>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Status filter */}
