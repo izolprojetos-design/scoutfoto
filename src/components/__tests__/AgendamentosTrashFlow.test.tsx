@@ -2,18 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent, within } from "@testing-library/react";
 
 /**
- * E2E (componente): valida o fluxo de Arquivar/Lixeira:
- *  - Botão "Arquivar" desabilitado enquanto o agendamento estiver pendente
- *  - Habilita após o destinatário responder (confirmado/recusado)
- *  - Mover para Lixeira atualiza contador da Lixeira em tempo real
- *  - Restaurar da Lixeira atualiza contador (Lixeira -1, Caixa de Saída +1)
+ * E2E (componente) — Arquivar/Lixeira:
+ *  1) Arquivar fica desabilitado enquanto pendente; reabilita após resposta (via realtime).
+ *  2) Arquivar atualiza contadores (Arquivado +1, Caixa de Saída -1) sem reload.
+ *  3) Excluir definitivamente (confirmar) remove do banco e da lista.
+ *  4) Excluir definitivamente (cancelar) preserva o item e os contadores.
  */
 
 const ME = { id: "user-me", email: "remetente@example.com" };
 
 const baseRow = {
   id: "agd-1",
-  user_id: ME.id, // sou o REMETENTE → aparece em "Caixa de Saída"
+  user_id: ME.id,
   nome_associado: "REMETENTE",
   secao: "Tropa",
   dirigente: "Chefe",
@@ -37,20 +37,27 @@ const baseRow = {
   recipient_response_by: null,
 };
 
-let currentRow = { ...baseRow };
+let rows: any[] = [];
 const archives: Array<{ user_id: string; agendamento_id: string; kind: string }> = [];
 
-const channelMock = { on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() };
+// Captura de handlers do realtime para disparar manualmente updates
+const rtHandlers: Array<(payload: any) => void> = [];
+const channelMock: any = {
+  on: (_event: string, _filter: any, cb: (p: any) => void) => {
+    rtHandlers.push(cb);
+    return channelMock;
+  },
+  subscribe: () => channelMock,
+};
 
 vi.mock("@/integrations/supabase/client", () => {
   const buildArchivesQuery = () => {
     const filters: Record<string, string> = {};
-    const exec = () => {
-      const rows = archives.filter(r =>
-        Object.entries(filters).every(([k, v]) => (r as any)[k] === v),
-      );
-      return Promise.resolve({ data: rows, error: null });
-    };
+    const exec = () =>
+      Promise.resolve({
+        data: archives.filter(r => Object.entries(filters).every(([k, v]) => (r as any)[k] === v)),
+        error: null,
+      });
     const chain: any = {
       eq: (k: string, v: string) => { filters[k] = v; return chain; },
       then: (resolve: any) => exec().then(resolve),
@@ -63,10 +70,25 @@ vi.mock("@/integrations/supabase/client", () => {
         if (table === "agendamentos") {
           return {
             select: () => ({
-              order: () => Promise.resolve({ data: [currentRow], error: null }),
-              eq: () => ({ maybeSingle: () => Promise.resolve({ data: currentRow, error: null }) }),
+              order: () => Promise.resolve({ data: rows, error: null }),
+              eq: (_k: string, id: string) => ({
+                maybeSingle: () => Promise.resolve({ data: rows.find(r => r.id === id) ?? null, error: null }),
+              }),
             }),
-            delete: () => ({ eq: () => Promise.resolve({ error: null }) }),
+            delete: () => {
+              const filters: Record<string, string> = {};
+              const exec = () => {
+                for (let i = rows.length - 1; i >= 0; i--) {
+                  if (Object.entries(filters).every(([k, v]) => (rows[i] as any)[k] === v)) rows.splice(i, 1);
+                }
+                return Promise.resolve({ error: null });
+              };
+              const chain: any = {
+                eq: (k: string, v: string) => { filters[k] = v; return chain; },
+                then: (resolve: any) => exec().then(resolve),
+              };
+              return chain;
+            },
           };
         }
         if (table === "branches") {
@@ -83,10 +105,7 @@ vi.mock("@/integrations/supabase/client", () => {
               const filters: Record<string, string> = {};
               const exec = () => {
                 for (let i = archives.length - 1; i >= 0; i--) {
-                  const r = archives[i] as any;
-                  if (Object.entries(filters).every(([k, v]) => r[k] === v)) {
-                    archives.splice(i, 1);
-                  }
+                  if (Object.entries(filters).every(([k, v]) => (archives[i] as any)[k] === v)) archives.splice(i, 1);
                 }
                 return Promise.resolve({ error: null });
               };
@@ -113,85 +132,104 @@ vi.mock("@/lib/scoutUtils", () => ({ parseLocalDate: (s: string) => new Date(`${
 
 import AgendamentosManager from "../AgendamentosManager";
 
-const getFolderCount = (testId: string) => {
+const folderCount = (testId: string) => {
   const btn = screen.getByTestId(testId);
-  // último <span> dentro do botão é o contador numérico
   const spans = btn.querySelectorAll("span");
   return Number(spans[spans.length - 1].textContent || "0");
 };
 
-describe("AgendamentosManager — Arquivar bloqueado quando pendente + fluxo Lixeira", () => {
-  beforeEach(() => {
-    currentRow = { ...baseRow };
-    archives.length = 0;
-    vi.clearAllMocks();
-  });
+const expandFirst = async () => {
+  const opt = await screen.findByRole("option");
+  fireEvent.click(opt);
+};
 
-  it("Arquivar desabilitado enquanto pendente, habilita após confirmação", async () => {
+beforeEach(() => {
+  rows = [{ ...baseRow }];
+  archives.length = 0;
+  rtHandlers.length = 0;
+  vi.clearAllMocks();
+});
+
+describe("AgendamentosManager — Arquivar/Lixeira E2E", () => {
+  it("1) Arquivar desabilitado enquanto pendente, reabilita após resposta", async () => {
     render(<AgendamentosManager />);
     await waitFor(() => expect(screen.queryByText(/Carregando agendamentos/i)).toBeNull());
 
-    // Vou para "Caixa de Saída" (sou remetente)
     fireEvent.click(screen.getByTestId("folder-sent"));
-    fireEvent.click(await screen.findByRole("option"));
+    await expandFirst();
 
     const archiveBtn = await screen.findByTestId("archive-btn-agd-1");
     expect(archiveBtn).toBeDisabled();
 
-    // Simula que o destinatário confirmou e re-renderiza
-    currentRow = { ...currentRow, recipient_response: "confirmado" };
-    // Força refetch ao colapsar/expandir não basta — clica no botão para ver bloqueio,
-    // mas o estado in-memory vem do fetch inicial. Em vez disso, clicamos em outra pasta
-    // e voltamos para forçar reconciliação. Como fetchData só roda no mount,
-    // re-renderizamos com unmount/remount.
+    // Simula realtime: destinatário confirmou
+    const updated = { ...rows[0], recipient_response: "confirmado" };
+    rows[0] = updated;
+    rtHandlers.forEach(cb => cb({ new: updated, eventType: "UPDATE" }));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("archive-btn-agd-1")).not.toBeDisabled()
+    );
   });
 
-  it("mover para Lixeira e restaurar atualiza contadores em tempo real", async () => {
-    // Começa já confirmado para poder arquivar/lixeira
-    currentRow = { ...baseRow, recipient_response: "confirmado" };
+  it("2) Arquivar atualiza contadores em tempo real (Saída -1, Arquivado +1)", async () => {
+    rows = [{ ...baseRow, recipient_response: "confirmado" }];
     render(<AgendamentosManager />);
     await waitFor(() => expect(screen.queryByText(/Carregando agendamentos/i)).toBeNull());
 
     fireEvent.click(screen.getByTestId("folder-sent"));
-    expect(getFolderCount("folder-sent")).toBe(1);
-    expect(getFolderCount("folder-trash")).toBe(0);
+    expect(folderCount("folder-sent")).toBe(1);
+    expect(folderCount("folder-archived")).toBe(0);
 
-    // Expande o item
-    fireEvent.click(await screen.findByRole("option"));
+    await expandFirst();
+    fireEvent.click(await screen.findByTestId("archive-btn-agd-1"));
 
-    // Move para a Lixeira
-    fireEvent.click(await screen.findByTestId("trash-btn-agd-1"));
-
-    await waitFor(() => expect(getFolderCount("folder-trash")).toBe(1));
-    expect(getFolderCount("folder-sent")).toBe(0);
-
-    // Vai para Lixeira e restaura
-    fireEvent.click(screen.getByTestId("folder-trash"));
-    fireEvent.click(await screen.findByRole("option"));
-    fireEvent.click(await screen.findByTestId("untrash-btn-agd-1"));
-
-    await waitFor(() => expect(getFolderCount("folder-trash")).toBe(0));
-    expect(getFolderCount("folder-sent")).toBe(1);
+    await waitFor(() => expect(folderCount("folder-archived")).toBe(1));
+    expect(folderCount("folder-sent")).toBe(0);
   });
 
-  it("Lixeira mostra botão Excluir definitivamente com confirmação", async () => {
-    currentRow = { ...baseRow, recipient_response: "confirmado" };
+  it("3) Excluir definitivamente (confirmar) remove do banco e da Lixeira", async () => {
+    rows = [{ ...baseRow, recipient_response: "confirmado" }];
     render(<AgendamentosManager />);
     await waitFor(() => expect(screen.queryByText(/Carregando agendamentos/i)).toBeNull());
 
     fireEvent.click(screen.getByTestId("folder-sent"));
-    fireEvent.click(await screen.findByRole("option"));
+    await expandFirst();
     fireEvent.click(await screen.findByTestId("trash-btn-agd-1"));
 
     fireEvent.click(screen.getByTestId("folder-trash"));
-    fireEvent.click(await screen.findByRole("option"));
+    await waitFor(() => expect(folderCount("folder-trash")).toBe(1));
+    await expandFirst();
 
-    const permBtn = await screen.findByTestId("permanent-delete-btn-agd-1");
-    expect(permBtn).toBeInTheDocument();
-    fireEvent.click(permBtn);
+    fireEvent.click(await screen.findByTestId("permanent-delete-btn-agd-1"));
 
-    // Confirmação aparece
     const dialog = await screen.findByRole("alertdialog");
-    expect(within(dialog).getByText(/excluir|confirma/i)).toBeInTheDocument();
+    fireEvent.click(within(dialog).getByRole("button", { name: /excluir/i }));
+
+    await waitFor(() => expect(rows.length).toBe(0));
+    await waitFor(() => expect(screen.queryByTestId("permanent-delete-btn-agd-1")).toBeNull());
+    expect(folderCount("folder-trash")).toBe(0);
+  });
+
+  it("4) Excluir definitivamente (cancelar) preserva o item e os contadores", async () => {
+    rows = [{ ...baseRow, recipient_response: "confirmado" }];
+    render(<AgendamentosManager />);
+    await waitFor(() => expect(screen.queryByText(/Carregando agendamentos/i)).toBeNull());
+
+    fireEvent.click(screen.getByTestId("folder-sent"));
+    await expandFirst();
+    fireEvent.click(await screen.findByTestId("trash-btn-agd-1"));
+
+    fireEvent.click(screen.getByTestId("folder-trash"));
+    await waitFor(() => expect(folderCount("folder-trash")).toBe(1));
+    await expandFirst();
+
+    fireEvent.click(await screen.findByTestId("permanent-delete-btn-agd-1"));
+    const dialog = await screen.findByRole("alertdialog");
+    fireEvent.click(within(dialog).getByRole("button", { name: /cancelar/i }));
+
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+    expect(rows.length).toBe(1);
+    expect(folderCount("folder-trash")).toBe(1);
+    expect(screen.getByTestId("permanent-delete-btn-agd-1")).toBeInTheDocument();
   });
 });
