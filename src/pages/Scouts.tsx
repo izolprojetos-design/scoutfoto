@@ -1559,6 +1559,140 @@ const Scouts = () => {
             {branchAnnouncement}
           </span>
 
+          {/* Advanced filters */}
+          <Popover open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-1.5 relative">
+                <SlidersHorizontal className="h-3.5 w-3.5" />
+                Filtros
+                {advancedActiveCount > 0 && (
+                  <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">
+                    {advancedActiveCount}
+                  </Badge>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-80 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-semibold text-sm">Filtros avançados</h4>
+                  {advancedActiveCount > 0 && (
+                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={clearAdvancedFilters}>
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+
+                {availableSections.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Seção</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableSections.map(sec => {
+                        const active = sectionFilter.includes(sec);
+                        return (
+                          <button
+                            key={sec}
+                            type="button"
+                            onClick={() => toggleArrayValue(sectionFilter, sec, setSectionFilter)}
+                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                          >
+                            {sec}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {availableSubgroups.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Equipe</Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {availableSubgroups.map(sg => {
+                        const active = subgroupFilter.includes(sg.id);
+                        return (
+                          <button
+                            key={sg.id}
+                            type="button"
+                            onClick={() => toggleArrayValue(subgroupFilter, sg.id, setSubgroupFilter)}
+                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                          >
+                            {sg.name}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Idade (anos)</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Mín."
+                      value={ageMinFilter}
+                      onChange={e => setAgeMinFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs">a</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Máx."
+                      value={ageMaxFilter}
+                      onChange={e => setAgeMaxFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tempo no grupo (mín. anos)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={50}
+                    placeholder="Ex.: 2"
+                    value={tenureMinFilter}
+                    onChange={e => setTenureMinFilter(e.target.value)}
+                    className="h-9 text-sm"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Foto</Label>
+                  <div className="flex gap-1.5">
+                    {(['all', 'with', 'without'] as const).map(opt => (
+                      <button
+                        key={opt}
+                        type="button"
+                        onClick={() => setPhotoFilter(opt)}
+                        className={`flex-1 text-xs rounded-md border px-2 py-1.5 transition ${photoFilter === opt ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                      >
+                        {opt === 'all' ? 'Todos' : opt === 'with' ? 'Com foto' : 'Sem foto'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t text-xs text-muted-foreground text-center">
+                  {filteredScouts.length} {filteredScouts.length === 1 ? 'integrante encontrado' : 'integrantes encontrados'}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {advancedActiveCount > 0 && (
+            <Button variant="ghost" size="sm" className="gap-1 text-xs h-8" onClick={clearAdvancedFilters}>
+              <X className="h-3 w-3" />
+              Limpar
+            </Button>
+          )}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
