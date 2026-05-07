@@ -826,7 +826,7 @@ const AgendamentosManager = () => {
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4 text-primary" />
-                        <span>{a.local}</span>
+                        <span>{toTitleCase(a.local)}</span>
                       </div>
                       {a.ramo_escoteiro && (
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
