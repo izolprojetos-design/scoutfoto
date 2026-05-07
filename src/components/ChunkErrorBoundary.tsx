@@ -1,6 +1,7 @@
 import { Component, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { isChunkLoadError, reportChunkError } from "@/lib/lazyWithRetry";
 
 interface Props {
   children: ReactNode;
@@ -21,18 +22,23 @@ export class ChunkErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, isChunkError: false, error: null };
 
   static getDerivedStateFromError(error: Error): State {
-    const msg = String(error?.message || error);
-    const isChunkError =
-      msg.includes("Failed to fetch dynamically imported module") ||
-      msg.includes("Importing a module script failed") ||
-      msg.includes("error loading dynamically imported module") ||
-      msg.includes("ChunkLoadError");
-    return { hasError: true, isChunkError, error };
+    return { hasError: true, isChunkError: isChunkLoadError(error), error };
   }
 
   componentDidCatch(error: Error) {
     // eslint-disable-next-line no-console
     console.error("[ChunkErrorBoundary]", error);
+    if (isChunkLoadError(error)) {
+      reportChunkError({
+        type: "ChunkLoadError",
+        message: String(error?.message || error),
+        route: typeof window !== "undefined" ? window.location.pathname : "",
+        retries: 0,
+        willReload: false,
+        timestamp: new Date().toISOString(),
+        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+      });
+    }
   }
 
   handleReload = () => {

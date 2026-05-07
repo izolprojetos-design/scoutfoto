@@ -2,11 +2,50 @@ import { lazy, ComponentType } from "react";
 
 const RELOAD_KEY = "__chunk_retry_reloaded__";
 
+export const CHUNK_TELEMETRY_ENDPOINT = "/api/telemetry/chunk-error";
+
+export interface ChunkErrorReport {
+  type: "ChunkLoadError";
+  message: string;
+  route: string;
+  retries: number;
+  willReload: boolean;
+  timestamp: string;
+  userAgent?: string;
+}
+
+export function isChunkLoadError(err: unknown): boolean {
+  const msg = String((err as Error)?.message || err);
+  return (
+    msg.includes("Failed to fetch dynamically imported module") ||
+    msg.includes("Importing a module script failed") ||
+    msg.includes("error loading dynamically imported module") ||
+    msg.includes("ChunkLoadError")
+  );
+}
+
+export function reportChunkError(report: ChunkErrorReport) {
+  // eslint-disable-next-line no-console
+  console.error("[ChunkLoadError]", report);
+  try {
+    if (typeof navigator !== "undefined" && "sendBeacon" in navigator) {
+      const blob = new Blob([JSON.stringify(report)], { type: "application/json" });
+      navigator.sendBeacon(CHUNK_TELEMETRY_ENDPOINT, blob);
+    } else if (typeof fetch !== "undefined") {
+      fetch(CHUNK_TELEMETRY_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(report),
+        keepalive: true,
+      }).catch(() => {});
+    }
+  } catch {
+    /* telemetry must never throw */
+  }
+}
+
 /**
  * Lazy import with retry + auto-reload fallback for stale chunks.
- * Detects "Failed to fetch dynamically imported module" errors (typical
- * after a deploy or dev-server restart) and retries with cache-busting,
- * then forces a one-time hard reload as last resort.
  */
 export function lazyWithRetry<T extends ComponentType<any>>(
   factory: () => Promise<{ default: T }>,
@@ -18,30 +57,38 @@ export function lazyWithRetry<T extends ComponentType<any>>(
     for (let i = 0; i <= retries; i++) {
       try {
         const mod = await factory();
-        // success — clear reload guard for next failure cycle
         try { sessionStorage.removeItem(RELOAD_KEY); } catch {}
         return mod;
       } catch (err) {
         lastError = err;
-        const msg = String((err as Error)?.message || err);
-        const isChunkError =
-          msg.includes("Failed to fetch dynamically imported module") ||
-          msg.includes("Importing a module script failed") ||
-          msg.includes("error loading dynamically imported module");
-        if (!isChunkError) throw err;
+        if (!isChunkLoadError(err)) throw err;
         if (i < retries) {
           await new Promise((r) => setTimeout(r, delayMs * (i + 1)));
           continue;
         }
-        // Final attempt: hard reload once to bust caches
+        const route = typeof window !== "undefined" ? window.location.pathname : "";
+        let willReload = false;
         try {
           if (typeof window !== "undefined" && !sessionStorage.getItem(RELOAD_KEY)) {
             sessionStorage.setItem(RELOAD_KEY, "1");
-            window.location.reload();
-            // Return a stub while reload happens
-            return { default: (() => null) as unknown as T };
+            willReload = true;
           }
         } catch {}
+
+        reportChunkError({
+          type: "ChunkLoadError",
+          message: String((err as Error)?.message || err),
+          route,
+          retries: i,
+          willReload,
+          timestamp: new Date().toISOString(),
+          userAgent: typeof navigator !== "undefined" ? navigator.userAgent : undefined,
+        });
+
+        if (willReload) {
+          window.location.reload();
+          return { default: (() => null) as unknown as T };
+        }
       }
     }
     throw lastError;
