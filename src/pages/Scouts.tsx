@@ -1315,7 +1315,31 @@ const Scouts = () => {
             {inactiveScouts.length > 0 && ` · ${inactiveScouts.length} inativos`}
           </p>
         </div>
-        {(canManageScouts || canEditScouts) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {isAdmin && (
+            <Button
+              variant="outline"
+              className="gap-2"
+              disabled={renumbering}
+              onClick={async () => {
+                setRenumbering(true);
+                const t = toast.loading('Renumerando integrantes...');
+                const { error } = await supabase.rpc('renumber_scouts' as any);
+                toast.dismiss(t);
+                if (error) {
+                  toast.error('Falha ao renumerar', { description: error.message });
+                } else {
+                  toast.success(`${scouts.length} integrante(s) renumerado(s) em sequência (0001…)`);
+                  await fetchData();
+                }
+                setRenumbering(false);
+              }}
+            >
+              <ListOrdered className="h-4 w-4" />
+              {renumbering ? 'Renumerando...' : 'Renumerar IDs'}
+            </Button>
+          )}
+          {(canManageScouts || canEditScouts) && (
           <Dialog open={dialogOpen} onOpenChange={v => {
               setDialogOpen(v);
               if (v) {
