@@ -6,6 +6,7 @@ import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/scoutUtils';
 import { SCHEDULING_STATUS_LABELS, getSchedulingTypeLabel, APPROVAL_LEVELS } from '@/lib/schedulingTypes';
 import { logAudit } from '@/lib/auditLog';
+import { toTitleCase } from '@/lib/formatting';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -477,7 +478,7 @@ const SchedulingApprovalPanel = () => {
                     const steps = allApprovals[req.id] ?? [];
                     return (
                       <TableRow key={req.id}>
-                        <TableCell className="font-medium">{req.nome_responsavel}</TableCell>
+                        <TableCell className="font-medium">{toTitleCase(req.nome_responsavel)}</TableCell>
                         <TableCell>{formatDate(req.data)} {req.horario}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
@@ -485,7 +486,7 @@ const SchedulingApprovalPanel = () => {
                             {getSchedulingTypeLabel(req.tipo)}
                           </div>
                         </TableCell>
-                        <TableCell>{req.local}</TableCell>
+                        <TableCell>{toTitleCase(req.local) || <span className="italic text-muted-foreground">Não informado</span>}</TableCell>
                         <TableCell>
                           {steps.length > 0 ? (
                             <ApprovalTimeline steps={steps} compact />
@@ -524,7 +525,7 @@ const SchedulingApprovalPanel = () => {
               <div className="rounded-lg border bg-muted/30 p-4 space-y-2 text-sm">
                 <div className="flex items-start gap-2">
                   <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div><strong>Responsável:</strong> {selectedRequest.nome_responsavel}</div>
+                  <div><strong>Responsável:</strong> {toTitleCase(selectedRequest.nome_responsavel)}</div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Calendar className="h-4 w-4 mt-0.5 text-muted-foreground" />
@@ -536,7 +537,7 @@ const SchedulingApprovalPanel = () => {
                 </div>
                 <div className="flex items-start gap-2">
                   <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                  <div><strong>Local:</strong> {selectedRequest.local}</div>
+                  <div><strong>Local:</strong> {toTitleCase(selectedRequest.local) || <span className="italic text-muted-foreground">Não informado</span>}</div>
                 </div>
                 <div><strong>Tipo:</strong> {getSchedulingTypeLabel(selectedRequest.tipo)}</div>
                 <div><strong>De E-mail:</strong> {selectedRequest.email}</div>

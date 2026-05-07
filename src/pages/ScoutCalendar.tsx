@@ -242,7 +242,7 @@ const ScoutCalendar = () => {
                             {format(parseLocalDate(agendamento.data), "dd/MM/yyyy", { locale: ptBR })} às {agendamento.horario}
                           </div>
                           <div className="text-sm text-muted-foreground mt-1">
-                            <span className="font-semibold text-foreground">Local:</span> {agendamento.local || "Não informado"}
+                            <span className="font-semibold text-foreground">Local:</span> {toTitleCaseSafe(agendamento.local) || "Não informado"}
                           </div>
                           
                           {branch && (

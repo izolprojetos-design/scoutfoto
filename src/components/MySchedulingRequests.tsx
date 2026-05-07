@@ -311,7 +311,7 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground sm:col-span-2">
                       <MapPin className="h-4 w-4 shrink-0" />
-                      <span>{r.local}</span>
+                      <span>{toTitleCase(r.local) || <em className="text-muted-foreground">Não informado</em>}</span>
                     </div>
                   </div>
 
