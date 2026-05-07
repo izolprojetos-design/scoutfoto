@@ -236,6 +236,15 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
     yr++;
   }
 
+  (achievements || []).forEach((a: any) => {
+    items.push({
+      date: parseLocalDate(a.achievement_date),
+      type: 'Conquista',
+      title: a.name,
+      description: a.description || undefined,
+    });
+  });
+
   items.sort((a, b) => b.date.getTime() - a.date.getTime());
 
   doc.addPage();
