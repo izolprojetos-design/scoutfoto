@@ -643,6 +643,7 @@ const AgendamentosManager = () => {
     { key: 'inbox', label: 'Caixa de Entrada', icon: Inbox, count: folderCounts.inbox, badge: folderCounts.inboxUnread },
     { key: 'sent', label: 'Caixa de Saída', icon: Send, count: folderCounts.sent },
     { key: 'archived', label: 'Arquivado', icon: Archive, count: folderCounts.archived },
+    { key: 'trash', label: 'Lixeira', icon: Trash, count: folderCounts.trash },
   ];
 
   const FILTERS: Array<{ key: typeof filter; label: string }> = [
