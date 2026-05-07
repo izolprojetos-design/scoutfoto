@@ -34,9 +34,31 @@ export const useNotifications = () => {
     if (!user) { setNotifications([]); setLoading(false); return; }
     fetchNotifications();
 
-    // Poll every 60 seconds instead of 30
+    // Realtime: reflete inserts/updates/deletes imediatamente (badge e estado do sino)
+    const channel = supabase
+      .channel(`security-notifications-${user.id}`)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'security_notifications', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const n = payload.new as SecurityNotification;
+            setNotifications(prev => prev.some(x => x.id === n.id) ? prev : [n, ...prev]);
+          } else if (payload.eventType === 'UPDATE') {
+            const n = payload.new as SecurityNotification;
+            setNotifications(prev => prev.map(x => x.id === n.id ? { ...x, ...n } : x));
+          } else if (payload.eventType === 'DELETE') {
+            const oldId = (payload.old as { id?: string })?.id;
+            if (oldId) setNotifications(prev => prev.filter(x => x.id !== oldId));
+          }
+        })
+      .subscribe();
+
+    // Poll fallback (caso realtime não esteja habilitado)
     const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
   }, [user, fetchNotifications]);
 
   const unreadCount = notifications.filter(n => !n.is_read).length;

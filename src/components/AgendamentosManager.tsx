@@ -258,19 +258,47 @@ const AgendamentosManager = () => {
   const [rejectTarget, setRejectTarget] = useState<Agendamento | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
+  const [conflictId, setConflictId] = useState<string | null>(null);
+
+  const refreshAgendamento = async (id: string): Promise<Agendamento | null> => {
+    const { data: fresh } = await supabase.from('agendamentos').select('*').eq('id', id).maybeSingle();
+    if (fresh) {
+      setAgendamentos(prev => prev.map(x => x.id === id ? { ...x, ...(fresh as Agendamento) } : x));
+      return fresh as Agendamento;
+    }
+    return null;
+  };
+
   const sendResponse = async (a: Agendamento, response: 'confirmado' | 'recusado', reason?: string) => {
     // Guarda no cliente: bloqueia tentativa quando já houve resposta
     const current = a.recipient_response ?? 'pendente';
     if (current !== 'pendente') {
+      setConflictId(a.id);
       toast({
         title: 'Agendamento já respondido',
         description: `Este agendamento já foi ${current} e não pode ser respondido novamente.`,
         variant: 'destructive',
       });
+      await refreshAgendamento(a.id);
       return;
     }
     setRespondingId(a.id);
     try {
+      // Recarrega o status atual do servidor antes de aplicar para evitar corridas.
+      const fresh = await refreshAgendamento(a.id);
+      const freshStatus = fresh?.recipient_response ?? 'pendente';
+      if (freshStatus !== 'pendente') {
+        setConflictId(a.id);
+        toast({
+          title: 'Agendamento já respondido',
+          description: `Este agendamento já foi ${freshStatus} por outro acesso. A lista foi sincronizada.`,
+          variant: 'destructive',
+        });
+        setRejectTarget(null);
+        setRejectReason('');
+        return;
+      }
+
       const { data, error } = await (supabase as any).rpc('respond_agendamento', {
         p_agendamento_id: a.id,
         p_response: response,
@@ -280,14 +308,13 @@ const AgendamentosManager = () => {
         // Mensagem amigável para conflito de re-resposta vindo do banco
         const msg = (error.message || '').toLowerCase();
         if (msg.includes('já foi') || msg.includes('conflito') || error.code === '22023' || error.code === '40001') {
+          setConflictId(a.id);
           toast({
             title: 'Agendamento já respondido',
             description: 'Outro acesso atualizou este agendamento. A lista será sincronizada.',
             variant: 'destructive',
           });
-          // Recarrega o registro para refletir o estado atual
-          const { data: fresh } = await supabase.from('agendamentos').select('*').eq('id', a.id).maybeSingle();
-          if (fresh) setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...(fresh as Agendamento) } : x));
+          await refreshAgendamento(a.id);
           setRejectTarget(null);
           setRejectReason('');
           return;
@@ -653,31 +680,53 @@ const AgendamentosManager = () => {
                       }
                       // pendente
                       if (isRecipient) {
+                        const isConflict = conflictId === a.id;
+                        const disabled = respondingId === a.id || isConflict;
                         return (
-                          <div className="rounded-md border bg-muted/30 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
-                            <div className="text-sm flex items-center gap-2">
-                              <Clock3 className="h-4 w-4 text-amber-600" />
-                              <span>Você é o destinatário. Deseja confirmar?</span>
-                            </div>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                onClick={(e) => { e.stopPropagation(); sendResponse(a, 'confirmado'); }}
-                                disabled={respondingId === a.id}
-                                className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                          <div className="space-y-2">
+                            {isConflict && (
+                              <div
+                                role="alert"
+                                aria-live="assertive"
+                                data-testid={`conflict-banner-${a.id}`}
+                                className="rounded-md border-2 border-destructive bg-destructive/10 px-3 py-2 text-sm text-destructive font-medium flex items-start gap-2"
                               >
-                                {respondingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
-                                Confirmar
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={(e) => { e.stopPropagation(); setRejectTarget(a); setRejectReason(''); }}
-                                disabled={respondingId === a.id}
-                                className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              >
-                                <XCircle className="h-3.5 w-3.5" /> Recusar
-                              </Button>
+                                <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                                <div>
+                                  <div>Não é possível responder novamente</div>
+                                  <div className="text-xs font-normal text-destructive/90 mt-0.5">
+                                    Este agendamento já foi respondido. A lista foi sincronizada — atualize a página se necessário.
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                            <div className="rounded-md border bg-muted/30 px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+                              <div className="text-sm flex items-center gap-2">
+                                <Clock3 className="h-4 w-4 text-amber-600" />
+                                <span>Você é o destinatário. Deseja confirmar?</span>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  data-testid={`confirm-btn-${a.id}`}
+                                  onClick={(e) => { e.stopPropagation(); sendResponse(a, 'confirmado'); }}
+                                  disabled={disabled}
+                                  className="h-8 gap-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                >
+                                  {respondingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
+                                  Confirmar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  data-testid={`reject-btn-${a.id}`}
+                                  onClick={(e) => { e.stopPropagation(); setRejectTarget(a); setRejectReason(''); }}
+                                  disabled={disabled}
+                                  className="h-8 gap-1 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                >
+                                  <XCircle className="h-3.5 w-3.5" /> Recusar
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );
