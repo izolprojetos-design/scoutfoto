@@ -52,6 +52,27 @@ export type Database = {
           },
         ]
       }
+      agendamento_archives: {
+        Row: {
+          agendamento_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          agendamento_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          agendamento_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agendamentos: {
         Row: {
           cargo_1: string

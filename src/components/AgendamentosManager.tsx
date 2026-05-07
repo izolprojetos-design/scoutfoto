@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   CalendarDays, MapPin, User, Clock, Pencil, Trash2, Loader2, Search, Filter, Mail, ShieldCheck,
-  CheckCircle2, XCircle, Clock3,
+  CheckCircle2, XCircle, Clock3, Inbox, Send, Archive, ArchiveRestore, Folder,
 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -67,10 +67,20 @@ const AgendamentosManager = () => {
 
   const [agendamentos, setAgendamentos] = useState<Agendamento[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set());
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
+    try {
+      const k = `agd:read:${user?.id ?? 'anon'}`;
+      const raw = typeof window !== 'undefined' ? window.localStorage.getItem(k) : null;
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'todos' | 'meus' | 'futuros' | 'passados'>('todos');
+  const [folder, setFolder] = useState<'inbox' | 'sent' | 'archived'>('inbox');
+  const [filter, setFilter] = useState<'todos' | 'pendentes' | 'confirmados' | 'recusados' | 'futuros' | 'passados'>('todos');
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [archivingId, setArchivingId] = useState<string | null>(null);
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
@@ -212,12 +222,17 @@ const AgendamentosManager = () => {
 
   const fetchData = async () => {
     setLoading(true);
-    const [{ data: ags }, { data: br }] = await Promise.all([
+    const [{ data: ags }, { data: br }, archives] = await Promise.all([
       supabase.from('agendamentos').select('*').order('data_secao', { ascending: false }),
       supabase.from('branches').select('id, display_name, icon').order('sort_order'),
+      user?.id
+        ? (supabase as any).from('agendamento_archives').select('agendamento_id').eq('user_id', user.id)
+        : Promise.resolve({ data: [] }),
     ]);
     setAgendamentos((ags as Agendamento[]) ?? []);
     setBranches(br ?? []);
+    const ids = ((archives as any)?.data ?? []).map((r: any) => r.agendamento_id as string);
+    setArchivedIds(new Set(ids));
     setLoading(false);
   };
 
@@ -348,11 +363,45 @@ const AgendamentosManager = () => {
   const canEdit = (a: Agendamento) => isAdmin || a.user_id === user?.id;
   const canDelete = (a: Agendamento) => isAdmin || a.user_id === user?.id;
 
+  // Pasta-base: separa Inbox (sou destinatário) / Sent (sou remetente) / Archived
+  const inFolder = (a: Agendamento) => {
+    const isArchived = archivedIds.has(a.id);
+    if (folder === 'archived') return isArchived;
+    if (isArchived) return false;
+    if (folder === 'inbox') return isRecipientOf(a);
+    if (folder === 'sent') return a.user_id === user?.id;
+    return true;
+  };
+
+  const folderBase = useMemo(
+    () => agendamentos.filter(inFolder),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [agendamentos, archivedIds, folder, user?.id, userEmail],
+  );
+
+  // Contagens por pasta para a UI lateral
+  const folderCounts = useMemo(() => {
+    let inbox = 0, sent = 0, archived = 0, inboxUnread = 0;
+    for (const a of agendamentos) {
+      const isArchived = archivedIds.has(a.id);
+      if (isArchived) { archived++; continue; }
+      if (isRecipientOf(a)) {
+        inbox++;
+        if (!readIds.has(a.id) && (a.recipient_response ?? 'pendente') === 'pendente') inboxUnread++;
+      }
+      if (a.user_id === user?.id) sent++;
+    }
+    return { inbox, sent, archived, inboxUnread };
+  }, [agendamentos, archivedIds, readIds, user?.id, userEmail]);
+
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     const today = new Date(); today.setHours(0, 0, 0, 0);
-    return agendamentos.filter(a => {
-      if (filter === 'meus' && a.user_id !== user?.id) return false;
+    return folderBase.filter(a => {
+      const r = a.recipient_response ?? 'pendente';
+      if (filter === 'pendentes' && r !== 'pendente') return false;
+      if (filter === 'confirmados' && r !== 'confirmado') return false;
+      if (filter === 'recusados' && r !== 'recusado') return false;
       if (filter === 'futuros' && parseLocalDate(a.data_secao) < today) return false;
       if (filter === 'passados' && parseLocalDate(a.data_secao) >= today) return false;
       if (!term) return true;
@@ -366,10 +415,64 @@ const AgendamentosManager = () => {
         (a.email_para ?? '').toLowerCase().includes(term) ||
         (a.destinatario_secao ?? '').toLowerCase().includes(term) ||
         (a.destinatario_cargo_1 ?? '').toLowerCase().includes(term) ||
-        (a.destinatario_cargo_2 ?? '').toLowerCase().includes(term)
+        (a.destinatario_cargo_2 ?? '').toLowerCase().includes(term) ||
+        (a.observacoes ?? '').toLowerCase().includes(term)
       );
     });
-  }, [agendamentos, search, filter, user?.id]);
+  }, [folderBase, search, filter]);
+
+  // Marca como "lido" ao expandir um item da Caixa de Entrada
+  const persistRead = (next: Set<string>) => {
+    setReadIds(next);
+    try {
+      const k = `agd:read:${user?.id ?? 'anon'}`;
+      window.localStorage.setItem(k, JSON.stringify(Array.from(next)));
+    } catch { /* noop */ }
+  };
+  useEffect(() => {
+    if (!expandedId) return;
+    if (readIds.has(expandedId)) return;
+    const a = agendamentos.find(x => x.id === expandedId);
+    if (!a || !isRecipientOf(a)) return;
+    const next = new Set(readIds); next.add(expandedId); persistRead(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expandedId]);
+
+  const archiveAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .insert({ user_id: user.id, agendamento_id: a.id });
+      if (error && !String(error.message || '').toLowerCase().includes('duplicate')) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.add(a.id); return n; });
+      toast({ title: 'Arquivado', description: 'Movido para a pasta Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro ao arquivar', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
+
+  const unarchiveAgendamento = async (a: Agendamento) => {
+    if (!user?.id) return;
+    setArchivingId(a.id);
+    try {
+      const { error } = await (supabase as any)
+        .from('agendamento_archives')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('agendamento_id', a.id);
+      if (error) throw error;
+      setArchivedIds(prev => { const n = new Set(prev); n.delete(a.id); return n; });
+      toast({ title: 'Restaurado', description: 'Removido do Arquivado.' });
+    } catch (err: any) {
+      toast({ title: 'Erro', description: err?.message ?? 'Falha', variant: 'destructive' });
+    } finally {
+      setArchivingId(null);
+    }
+  };
 
   // Mantém foco e linha expandida consistentes ao mudar filtros/pesquisa.
   // Se o item focado/expandido continuar na lista, preserva sua posição.
@@ -475,8 +578,60 @@ const AgendamentosManager = () => {
     );
   }
 
+  const FOLDERS: Array<{ key: typeof folder; label: string; icon: typeof Inbox; count: number; badge?: number }> = [
+    { key: 'inbox', label: 'Caixa de Entrada', icon: Inbox, count: folderCounts.inbox, badge: folderCounts.inboxUnread },
+    { key: 'sent', label: 'Caixa de Saída', icon: Send, count: folderCounts.sent },
+    { key: 'archived', label: 'Arquivado', icon: Archive, count: folderCounts.archived },
+  ];
+
+  const FILTERS: Array<{ key: typeof filter; label: string }> = [
+    { key: 'todos', label: 'Todos' },
+    { key: 'pendentes', label: 'Pendentes' },
+    { key: 'confirmados', label: 'Confirmados' },
+    { key: 'recusados', label: 'Recusados' },
+    { key: 'futuros', label: 'Futuros' },
+    { key: 'passados', label: 'Passados' },
+  ];
+
   return (
-    <div className="space-y-5 max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-5 max-w-6xl mx-auto">
+      {/* Sidebar tipo e-mail */}
+      <aside className="md:sticky md:top-4 self-start space-y-1">
+        <div className="text-xs uppercase tracking-wide text-muted-foreground px-2 mb-1 flex items-center gap-1.5">
+          <Folder className="h-3.5 w-3.5" /> Pastas
+        </div>
+        {FOLDERS.map(f => {
+          const Icon = f.icon;
+          const active = folder === f.key;
+          return (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => { setFolder(f.key); setExpandedId(null); }}
+              data-testid={`folder-${f.key}`}
+              className={cn(
+                'w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-md text-sm transition-colors',
+                active ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-muted text-foreground/80',
+              )}
+            >
+              <span className="flex items-center gap-2 min-w-0">
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="truncate">{f.label}</span>
+              </span>
+              <span className="flex items-center gap-1 shrink-0">
+                {f.badge ? (
+                  <span className="rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold px-1.5 py-0.5 min-w-[18px] text-center">
+                    {f.badge}
+                  </span>
+                ) : null}
+                <span className="text-xs text-muted-foreground">{f.count}</span>
+              </span>
+            </button>
+          );
+        })}
+      </aside>
+
+      <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-md">
@@ -484,25 +639,25 @@ const AgendamentosManager = () => {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por nome, destinatário, e-mail, local, seção..."
+            placeholder="Buscar por nome, destinatário, e-mail, local, assunto..."
             className="pl-9 h-11"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(['todos', 'meus', 'futuros', 'passados'] as const).map(f => (
+          {FILTERS.map(f => (
             <button
-              key={f}
+              key={f.key}
               type="button"
-              onClick={() => setFilter(f)}
+              onClick={() => setFilter(f.key)}
               className={cn(
                 'px-3 py-1.5 rounded-md text-sm font-medium border transition-colors',
-                filter === f
+                filter === f.key
                   ? 'bg-primary text-primary-foreground border-primary'
                   : 'bg-background hover:bg-muted border-input',
               )}
             >
               <Filter className="h-3.5 w-3.5 inline mr-1" />
-              {f === 'todos' ? 'Todos' : f === 'meus' ? 'Meus' : f === 'futuros' ? 'Futuros' : 'Passados'}
+              {f.label}
             </button>
           ))}
         </div>
@@ -743,6 +898,32 @@ const AgendamentosManager = () => {
                     })()}
 
                     <div className="flex flex-wrap justify-end gap-2 pt-1">
+                      {archivedIds.has(a.id) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); unarchiveAgendamento(a); }}
+                          disabled={archivingId === a.id}
+                          className="h-8 gap-1"
+                          data-testid={`unarchive-btn-${a.id}`}
+                        >
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ArchiveRestore className="h-3.5 w-3.5" />}
+                          Restaurar
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={(e) => { e.stopPropagation(); archiveAgendamento(a); }}
+                          disabled={archivingId === a.id}
+                          className="h-8 gap-1"
+                          data-testid={`archive-btn-${a.id}`}
+                          title="Mover para Arquivado"
+                        >
+                          {archivingId === a.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Archive className="h-3.5 w-3.5" />}
+                          Arquivar
+                        </Button>
+                      )}
                       {isAdmin && (
                         <Button
                           variant="outline"
@@ -1154,6 +1335,7 @@ const AgendamentosManager = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 };

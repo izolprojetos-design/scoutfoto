@@ -117,14 +117,32 @@ const NotificationBell = () => {
       <Button
         variant="ghost"
         size="icon"
-        className="relative h-9 w-9"
+        className={cn('relative h-9 w-9', unreadCount === 0 && 'text-muted-foreground')}
         onClick={() => setOpen(!open)}
+        aria-label={
+          unreadCount > 0
+            ? `Notificações: ${unreadCount} não lida${unreadCount > 1 ? 's' : ''}`
+            : 'Notificações: nenhuma não lida'
+        }
+        aria-live="polite"
+        title={unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Sem notificações novas'}
+        data-testid="notification-bell"
+        data-unread-count={unreadCount}
       >
-        <Bell className="h-4.5 w-4.5" />
-        {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+        <Bell className={cn('h-4.5 w-4.5', unreadCount === 0 && 'opacity-70')} />
+        {unreadCount > 0 ? (
+          <span
+            data-testid="unread-badge"
+            className="absolute -top-0.5 -right-0.5 flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
+          >
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
+        ) : (
+          <span
+            data-testid="bell-empty-dot"
+            aria-hidden="true"
+            className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-muted-foreground/30"
+          />
         )}
       </Button>
 
