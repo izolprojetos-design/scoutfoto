@@ -2420,6 +2420,13 @@ const Scouts = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <ScoutCompare
+        open={compareOpen}
+        onOpenChange={setCompareOpen}
+        scouts={filteredScouts as any}
+        subgroups={subgroups}
+      />
     </>
   );
 };
