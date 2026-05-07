@@ -999,6 +999,7 @@ export type Database = {
           created_at: string
           file_size: number
           id: string
+          is_favorite: boolean
           mime_type: string
           scout_id: string
           storage_path: string
@@ -1009,6 +1010,7 @@ export type Database = {
           created_at?: string
           file_size?: number
           id?: string
+          is_favorite?: boolean
           mime_type?: string
           scout_id: string
           storage_path: string
@@ -1019,6 +1021,7 @@ export type Database = {
           created_at?: string
           file_size?: number
           id?: string
+          is_favorite?: boolean
           mime_type?: string
           scout_id?: string
           storage_path?: string
