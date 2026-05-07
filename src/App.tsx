@@ -41,6 +41,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const EventPortal = lazy(() => import("./pages/EventPortal"));
 const Scouts = lazy(() => import("./pages/Scouts"));
 const ScoutCalendar = lazy(() => import("./pages/ScoutCalendar"));
+const MyAgendamentos = lazy(() => import("./pages/MyAgendamentos"));
 
 const Profile = lazy(() => import("./pages/Profile"));
 const BranchScouts = lazy(() => import("./pages/BranchScouts"));
@@ -178,6 +179,7 @@ const App = () => {
                       <Route path="/events/:eventId" element={<ProtectedRoute requiredPermission="view_events"><EventDetail /></ProtectedRoute>} />
                       <Route path="/scouts" element={<ProtectedRoute requiredPermission="view_scouts"><Scouts /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
+                      <Route path="/agendamentos" element={<MyAgendamentos />} />
                       
                       <Route path="/admin" element={<ProtectedRoute requiredPermission="access_admin"><Admin /></ProtectedRoute>} />
                     </Route>
