@@ -71,8 +71,8 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, pageW, 55, 'F');
 
-  // Logo do grupo
-  const logoDataUrl = await fetchImageDataUrl('/images/logo-grupo.png');
+  // Logo do grupo (uploaded via Admin > Identidade, com fallback ao bundled)
+  const logoDataUrl = await getGroupLogoDataUrl();
   const textLeft = logoDataUrl ? margin + 30 : margin;
   if (logoDataUrl) {
     try { doc.addImage(logoDataUrl, 'PNG', margin, 12, 25, 25, undefined, 'FAST'); } catch { /* ignore */ }
