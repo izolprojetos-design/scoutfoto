@@ -49,18 +49,10 @@ export default function GroupLogoSettings() {
     refresh();
   }, []);
 
-  // Cleanup preview blob URL when dialog closes
-  useEffect(() => {
-    return () => {
-      if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
-    };
-  }, [previewOpen]);
-
   const openPreview = async (kind: PreviewKind) => {
     const cfg = PREVIEWS.find(p => p.key === kind)!;
     setPreviewLoading(kind);
     try {
-      // Ensure cache reflects most recent upload
       invalidateGroupLogoCache();
       const url = await cfg.build();
       setPreviewOpen({ kind, url });
@@ -71,10 +63,30 @@ export default function GroupLogoSettings() {
     }
   };
 
-  const closePreview = () => {
-    if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
-    setPreviewOpen(null);
+  const closePreview = () => setPreviewOpen(null);
+
+  const openInNewTab = () => {
+    if (!previewOpen) return;
+    const win = window.open();
+    if (win) {
+      win.document.write(
+        `<iframe src="${previewOpen.url}" style="border:0;width:100%;height:100vh"></iframe>`,
+      );
+    } else {
+      toast.error('Bloqueado pelo navegador. Permita pop-ups.');
+    }
   };
+
+  const downloadPreview = () => {
+    if (!previewOpen) return;
+    const a = document.createElement('a');
+    a.href = previewOpen.url;
+    a.download = `previa-${previewOpen.kind}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
 
   const handleFile = async (file: File) => {
     if (!ACCEPTED.includes(file.type)) {
