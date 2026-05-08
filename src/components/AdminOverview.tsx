@@ -78,7 +78,7 @@ const AdminOverview = () => {
       const currentMonth = getMonth(today);
 
       const [scoutsRes, eventsRes, imagesRes, profilesRes, pendingRes, guardiansRes] = await Promise.all([
-        supabase.from('scouts').select('id, birth_date, section, manual_branch, is_active, transition_date, photo_url'),
+        supabase.from('scouts').select('id, name, birth_date, section, manual_branch, is_active, transition_date, photo_url'),
         supabase.from('events').select('id, event_date'),
         supabase.from('images').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('user_id, is_active'),
