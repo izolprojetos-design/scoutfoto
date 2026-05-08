@@ -53,7 +53,16 @@ export async function fetchImageDataUrl(url: string): Promise<string | null> {
   return promise;
 }
 
-export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardian[] = []) {
+export interface PdfExportOptions {
+  /** When true, the PDF is not saved; instead a data URL is returned. */
+  preview?: boolean;
+}
+
+export async function exportScoutProfilePdf(
+  scout: ScoutLike,
+  guardians: Guardian[] = [],
+  options: PdfExportOptions = {},
+): Promise<string | void> {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -308,5 +317,92 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
   }
 
   const safeName = scout.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  if (options.preview) return doc.output('datauristring');
   doc.save(`perfil-${safeName || 'integrante'}.pdf`);
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Photo folder PDF (per scout, per date) — extracted from ScoutFolders.tsx
+// so it can be reused by the live export and by the preview panel.
+// ────────────────────────────────────────────────────────────────────────────
+export interface PhotoLike {
+  id: string;
+  storage_path: string;
+  created_at: string;
+}
+
+export async function exportScoutFolderPdf(
+  scoutName: string,
+  dateKey: string,
+  photos: PhotoLike[],
+  signedUrls: Record<string, string>,
+  options: PdfExportOptions = {},
+): Promise<string | void> {
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const pageW = pdf.internal.pageSize.getWidth();
+  const pageH = pdf.internal.pageSize.getHeight();
+  const margin = 12;
+  const titleLine1 = scoutName.toUpperCase();
+  const titleLine2 = `Pasta: ${format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
+
+  const logoDataUrl = await getGroupLogoDataUrl();
+
+  // Cover
+  if (logoDataUrl) {
+    try { pdf.addImage(logoDataUrl, 'PNG', (pageW - 35) / 2, 18, 35, 35, undefined, 'FAST'); } catch { /* */ }
+  }
+  const coverTop = logoDataUrl ? 62 : 30;
+  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18);
+  pdf.text(titleLine1, pageW / 2, coverTop, { align: 'center' });
+  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(13);
+  pdf.text(titleLine2, pageW / 2, coverTop + 10, { align: 'center' });
+  pdf.setFontSize(11);
+  pdf.text('12º Grupo Escoteiro Monte Caburaí', pageW / 2, coverTop + 18, { align: 'center' });
+  pdf.text(`Total de fotos: ${photos.length}`, pageW / 2, coverTop + 26, { align: 'center' });
+  pdf.text(`Gerado em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageW / 2, coverTop + 33, { align: 'center' });
+
+  for (let i = 0; i < photos.length; i++) {
+    const p = photos[i];
+    const url = signedUrls[p.storage_path];
+    if (!url) continue;
+    let dataUrl: string;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      dataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.onerror = reject;
+        r.readAsDataURL(blob);
+      });
+    } catch { continue; }
+
+    let img: HTMLImageElement;
+    try {
+      img = await new Promise<HTMLImageElement>((res2, rej2) => {
+        const im = new Image();
+        im.onload = () => res2(im); im.onerror = rej2; im.src = dataUrl;
+      });
+    } catch { continue; }
+
+    const maxW = pageW - margin * 2;
+    const maxH = pageH - margin * 2 - 18;
+    const ratio = Math.min(maxW / img.width, maxH / img.height);
+    const w = img.width * ratio;
+    const h = img.height * ratio;
+    const x = (pageW - w) / 2;
+    const y = margin;
+
+    pdf.addPage();
+    try { pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST'); }
+    catch { pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST'); }
+    pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10);
+    pdf.text(
+      `${i + 1} / ${photos.length} — ${format(new Date(p.created_at), 'dd/MM/yyyy')}`,
+      pageW / 2, y + h + 8, { align: 'center' },
+    );
+  }
+
+  if (options.preview) return pdf.output('datauristring');
+  pdf.save(`${scoutName.replace(/\s+/g, '_')}_${dateKey}.pdf`);
 }

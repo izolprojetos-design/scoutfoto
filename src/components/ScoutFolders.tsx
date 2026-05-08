@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSignedUrlsBatch } from '@/lib/storageUtils';
 import { compressImage } from '@/lib/imageCompression';
-import { getGroupLogoDataUrl } from '@/lib/groupLogo';
+// (logo / pdf generation moved to scoutPdfExport)
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +21,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toast } from 'sonner';
 import JSZip from 'jszip';
-import jsPDF from 'jspdf';
+// jsPDF moved to scoutPdfExport
 
 interface PhotoRec {
   id: string;
@@ -704,71 +704,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
     if (!dateKey || !photosOfDate.length) return;
     setExporting('pdf');
     try {
-      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const pageW = pdf.internal.pageSize.getWidth();
-      const pageH = pdf.internal.pageSize.getHeight();
-      const margin = 12;
-      const titleLine1 = `${scoutName.toUpperCase()}`;
-      const titleLine2 = `Pasta: ${format(new Date(`${dateKey}T12:00:00`), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
-
-      // Logo do grupo (uploaded via Admin > Identidade, com fallback ao bundled)
-      const logoDataUrl = await getGroupLogoDataUrl();
-
-      // Cover page
-      if (logoDataUrl) {
-        try { pdf.addImage(logoDataUrl, 'PNG', (pageW - 35) / 2, 18, 35, 35, undefined, 'FAST'); } catch { /* ignore */ }
-      }
-      const coverTop = logoDataUrl ? 62 : 30;
-      pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18);
-      pdf.text(titleLine1, pageW / 2, coverTop, { align: 'center' });
-      pdf.setFont('helvetica', 'normal'); pdf.setFontSize(13);
-      pdf.text(titleLine2, pageW / 2, coverTop + 10, { align: 'center' });
-      pdf.setFontSize(11);
-      pdf.text('12º Grupo Escoteiro Monte Caburaí', pageW / 2, coverTop + 18, { align: 'center' });
-      pdf.text(`Total de fotos: ${photosOfDate.length}`, pageW / 2, coverTop + 26, { align: 'center' });
-      pdf.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, pageW / 2, coverTop + 33, { align: 'center' });
-
-      // One photo per page
-      for (let i = 0; i < photosOfDate.length; i++) {
-        const p = photosOfDate[i];
-        const url = signedUrls[p.storage_path];
-        if (!url) continue;
-        const res = await fetch(url);
-        const blob = await res.blob();
-        const dataUrl: string = await new Promise((resolve, reject) => {
-          const r = new FileReader();
-          r.onloadend = () => resolve(r.result as string);
-          r.onerror = reject;
-          r.readAsDataURL(blob);
-        });
-
-        // Compute size (fit within page minus margins)
-        const img = await new Promise<HTMLImageElement>((res2, rej2) => {
-          const im = new Image();
-          im.onload = () => res2(im); im.onerror = rej2; im.src = dataUrl;
-        });
-        const maxW = pageW - margin * 2;
-        const maxH = pageH - margin * 2 - 18; // leave room for caption
-        const ratio = Math.min(maxW / img.width, maxH / img.height);
-        const w = img.width * ratio;
-        const h = img.height * ratio;
-        const x = (pageW - w) / 2;
-        const y = margin;
-
-        pdf.addPage();
-        try {
-          pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST');
-        } catch {
-          pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST');
-        }
-        pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10);
-        pdf.text(
-          `${i + 1} / ${photosOfDate.length} — ${format(new Date(p.created_at), "dd/MM/yyyy")}`,
-          pageW / 2, y + h + 8, { align: 'center' }
-        );
-      }
-
-      pdf.save(`${scoutName.replace(/\s+/g, '_')}_${dateKey}.pdf`);
+      const { exportScoutFolderPdf } = await import('@/lib/scoutPdfExport');
+      await exportScoutFolderPdf(scoutName, dateKey, photosOfDate, signedUrls);
       toast.success('PDF gerado com sucesso.');
     } catch (err: any) {
       console.error(err);

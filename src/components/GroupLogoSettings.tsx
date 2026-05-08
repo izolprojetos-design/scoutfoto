@@ -1,9 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Upload, Trash2, Loader2, Image as ImageIcon, Eye, FileText, Clock, FolderOpen } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Upload, Trash2, Loader2, Image as ImageIcon, Eye, FileText, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { supabase } from '@/integrations/supabase/client';
+import { getSignedUrlsBatch } from '@/lib/storageUtils';
+import { parseLocalDate } from '@/lib/scoutUtils';
 import {
   getGroupLogoPublicUrl,
   uploadGroupLogo,
@@ -11,20 +18,28 @@ import {
   invalidateGroupLogoCache,
 } from '@/lib/groupLogo';
 import {
-  buildScoutProfilePreview,
-  buildTimelinePreview,
-  buildPhotoFolderPreview,
-} from '@/lib/pdfPreviews';
+  exportScoutProfilePdf,
+  exportScoutFolderPdf,
+} from '@/lib/scoutPdfExport';
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
-const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+const MAX_BYTES = 2 * 1024 * 1024;
 
-type PreviewKind = 'profile' | 'timeline' | 'folder';
-const PREVIEWS: { key: PreviewKind; label: string; description: string; icon: typeof FileText; build: () => Promise<string> }[] = [
-  { key: 'profile', label: 'Perfil do Integrante', description: 'Capa com logo, nome e responsáveis', icon: FileText, build: buildScoutProfilePreview },
-  { key: 'timeline', label: 'Linha do Tempo', description: 'Cabeçalho com logo e marcos', icon: Clock, build: buildTimelinePreview },
-  { key: 'folder', label: 'Pasta de Fotos por Data', description: 'Capa centralizada com logo', icon: FolderOpen, build: buildPhotoFolderPreview },
-];
+type PreviewKind = 'profile' | 'folder';
+
+interface ScoutOpt {
+  id: string;
+  name: string;
+  birth_date: string;
+  created_at: string;
+  section: string | null;
+  scout_group: string | null;
+  registration_id: string | null;
+  phone: string | null;
+  notes: string | null;
+  transition_date: string | null;
+  photo_url: string | null;
+}
 
 export default function GroupLogoSettings() {
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
@@ -32,9 +47,14 @@ export default function GroupLogoSettings() {
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Preview state
+  // Real-data preview state
+  const [scouts, setScouts] = useState<ScoutOpt[]>([]);
+  const [scoutsLoading, setScoutsLoading] = useState(true);
+  const [selectedScoutId, setSelectedScoutId] = useState<string>('');
+  const [folderDates, setFolderDates] = useState<{ key: string; count: number }[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>('');
   const [previewLoading, setPreviewLoading] = useState<PreviewKind | null>(null);
-  const [previewOpen, setPreviewOpen] = useState<{ kind: PreviewKind; url: string } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState<{ kind: PreviewKind; url: string; title: string } | null>(null);
 
   const refresh = async () => {
     setLoading(true);
@@ -45,23 +65,56 @@ export default function GroupLogoSettings() {
     }
   };
 
+  useEffect(() => { refresh(); }, []);
+
+  // Load scouts the current user can see (RLS handles section scoping)
   useEffect(() => {
-    refresh();
+    (async () => {
+      setScoutsLoading(true);
+      const { data, error } = await supabase
+        .from('scouts')
+        .select('id, name, birth_date, created_at, section, scout_group, registration_id, phone, notes, transition_date, photo_url')
+        .eq('is_active', true)
+        .order('name', { ascending: true })
+        .limit(500);
+      if (error) {
+        toast.error('Não foi possível carregar a lista de integrantes.');
+      } else {
+        setScouts((data || []) as ScoutOpt[]);
+      }
+      setScoutsLoading(false);
+    })();
   }, []);
 
-  const openPreview = async (kind: PreviewKind) => {
-    const cfg = PREVIEWS.find(p => p.key === kind)!;
-    setPreviewLoading(kind);
-    try {
-      invalidateGroupLogoCache();
-      const url = await cfg.build();
-      setPreviewOpen({ kind, url });
-    } catch (err: any) {
-      toast.error(`Falha ao gerar pré-visualização: ${err.message || 'erro'}`);
-    } finally {
-      setPreviewLoading(null);
-    }
-  };
+  // Load photo dates whenever the selected scout changes
+  useEffect(() => {
+    setSelectedDate('');
+    setFolderDates([]);
+    if (!selectedScoutId) return;
+    (async () => {
+      const { data } = await supabase
+        .from('scout_photos')
+        .select('storage_path, created_at')
+        .eq('scout_id', selectedScoutId)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      const counts = new Map<string, number>();
+      (data || []).forEach((p: any) => {
+        const k = format(new Date(p.created_at), 'yyyy-MM-dd');
+        counts.set(k, (counts.get(k) || 0) + 1);
+      });
+      const list = Array.from(counts.entries())
+        .map(([key, count]) => ({ key, count }))
+        .sort((a, b) => b.key.localeCompare(a.key));
+      setFolderDates(list);
+      if (list.length > 0) setSelectedDate(list[0].key);
+    })();
+  }, [selectedScoutId]);
+
+  const selectedScout = useMemo(
+    () => scouts.find(s => s.id === selectedScoutId) || null,
+    [scouts, selectedScoutId],
+  );
 
   const closePreview = () => setPreviewOpen(null);
 
@@ -87,6 +140,73 @@ export default function GroupLogoSettings() {
     a.remove();
   };
 
+  const previewProfile = async () => {
+    if (!selectedScout) return;
+    setPreviewLoading('profile');
+    try {
+      invalidateGroupLogoCache();
+      const { data: gData } = await supabase
+        .from('guardians')
+        .select('name, email, phone')
+        .eq('scout_id', selectedScout.id);
+      const url = await exportScoutProfilePdf(selectedScout, (gData || []) as any, { preview: true });
+      if (typeof url === 'string') {
+        setPreviewOpen({
+          kind: 'profile',
+          url,
+          title: `Perfil + Linha do Tempo — ${selectedScout.name}`,
+        });
+      }
+    } catch (err: any) {
+      toast.error(`Falha na pré-visualização: ${err.message || 'erro'}`);
+    } finally {
+      setPreviewLoading(null);
+    }
+  };
+
+  const previewFolder = async () => {
+    if (!selectedScout || !selectedDate) return;
+    setPreviewLoading('folder');
+    try {
+      invalidateGroupLogoCache();
+      const { data: photos } = await supabase
+        .from('scout_photos')
+        .select('id, storage_path, created_at')
+        .eq('scout_id', selectedScout.id)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      const filtered = (photos || []).filter(
+        (p: any) => format(new Date(p.created_at), 'yyyy-MM-dd') === selectedDate,
+      );
+      if (!filtered.length) {
+        toast.error('Sem fotos nessa data.');
+        return;
+      }
+      const signedUrls = await getSignedUrlsBatch(
+        'scout-photos',
+        filtered.map((p: any) => p.storage_path),
+        3600,
+      );
+      const url = await exportScoutFolderPdf(
+        selectedScout.name,
+        selectedDate,
+        filtered as any,
+        signedUrls,
+        { preview: true },
+      );
+      if (typeof url === 'string') {
+        setPreviewOpen({
+          kind: 'folder',
+          url,
+          title: `Pasta — ${selectedScout.name} • ${format(parseLocalDate(selectedDate), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`,
+        });
+      }
+    } catch (err: any) {
+      toast.error(`Falha na pré-visualização: ${err.message || 'erro'}`);
+    } finally {
+      setPreviewLoading(null);
+    }
+  };
 
   const handleFile = async (file: File) => {
     if (!ACCEPTED.includes(file.type)) {
@@ -189,38 +309,98 @@ export default function GroupLogoSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            Pré-visualizar PDFs
+            Pré-visualizar PDFs com dados reais
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Visualize uma amostra de cada tipo de relatório com a logomarca atual antes de gerar o PDF de fato.
-            As amostras usam dados fictícios apenas para conferir o layout.
+            Selecione um integrante para gerar uma pré-visualização real do PDF (perfil completo + linha do tempo)
+            e da pasta de fotos por data, usando os dados que estão no sistema.
           </p>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            {PREVIEWS.map(({ key, label, description, icon: Icon }) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => openPreview(key)}
-                disabled={previewLoading !== null}
-                className="group flex flex-col items-start gap-2 rounded-lg border bg-card p-4 text-left transition hover:border-primary hover:shadow-md disabled:opacity-60"
-              >
-                <div className="flex w-full items-center justify-between">
-                  <Icon className="h-5 w-5 text-primary" />
-                  {previewLoading === key ? (
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Integrante</Label>
+              <Select value={selectedScoutId} onValueChange={setSelectedScoutId} disabled={scoutsLoading}>
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={scoutsLoading ? 'Carregando…' : 'Selecione um integrante'} />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto">
+                  {scouts.map(s => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name.toUpperCase()}{s.section ? ` • ${s.section}` : ''}
+                    </SelectItem>
+                  ))}
+                  {scouts.length === 0 && !scoutsLoading && (
+                    <div className="px-2 py-3 text-sm text-muted-foreground">Nenhum integrante disponível.</div>
                   )}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">{label}</p>
-                  <p className="text-xs text-muted-foreground">{description}</p>
-                </div>
-              </button>
-            ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs">Data da pasta de fotos</Label>
+              <Select
+                value={selectedDate}
+                onValueChange={setSelectedDate}
+                disabled={!selectedScoutId || folderDates.length === 0}
+              >
+                <SelectTrigger className="h-12 text-base">
+                  <SelectValue placeholder={
+                    !selectedScoutId
+                      ? 'Selecione um integrante primeiro'
+                      : folderDates.length === 0
+                        ? 'Sem pastas de fotos'
+                        : 'Selecione uma data'
+                  } />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto">
+                  {folderDates.map(d => (
+                    <SelectItem key={d.key} value={d.key}>
+                      {format(parseLocalDate(d.key), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} — {d.count} foto{d.count === 1 ? '' : 's'}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={previewProfile}
+              disabled={!selectedScout || previewLoading !== null}
+              className="group flex flex-col items-start gap-2 rounded-lg border bg-card p-4 text-left transition hover:border-primary hover:shadow-md disabled:opacity-60"
+            >
+              <div className="flex w-full items-center justify-between">
+                <FileText className="h-5 w-5 text-primary" />
+                {previewLoading === 'profile'
+                  ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  : <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Perfil + Linha do Tempo</p>
+                <p className="text-xs text-muted-foreground">PDF completo do integrante selecionado</p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={previewFolder}
+              disabled={!selectedScout || !selectedDate || previewLoading !== null}
+              className="group flex flex-col items-start gap-2 rounded-lg border bg-card p-4 text-left transition hover:border-primary hover:shadow-md disabled:opacity-60"
+            >
+              <div className="flex w-full items-center justify-between">
+                <FolderOpen className="h-5 w-5 text-primary" />
+                {previewLoading === 'folder'
+                  ? <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  : <Eye className="h-4 w-4 text-muted-foreground group-hover:text-primary" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold">Pasta de Fotos por Data</p>
+                <p className="text-xs text-muted-foreground">Capa + uma foto por página da data escolhida</p>
+              </div>
+            </button>
           </div>
         </CardContent>
       </Card>
@@ -228,9 +408,7 @@ export default function GroupLogoSettings() {
       <Dialog open={!!previewOpen} onOpenChange={(open) => { if (!open) closePreview(); }}>
         <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>
-              Pré-visualização — {previewOpen && PREVIEWS.find(p => p.key === previewOpen.kind)?.label}
-            </DialogTitle>
+            <DialogTitle>{previewOpen?.title || 'Pré-visualização'}</DialogTitle>
           </DialogHeader>
           {previewOpen && (
             <>
