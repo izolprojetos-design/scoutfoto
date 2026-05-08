@@ -80,7 +80,7 @@ export async function buildScoutProfilePreview(): Promise<string> {
   });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }
 
 /** Sample of "Linha do Tempo" page. */
@@ -121,7 +121,7 @@ export async function buildTimelinePreview(): Promise<string> {
   });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }
 
 /** Sample of "Pasta de Fotos por Data" cover. */
@@ -144,5 +144,5 @@ export async function buildPhotoFolderPreview(): Promise<string> {
   doc.text(`Gerado em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageW / 2, coverTop + 33, { align: 'center' });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }

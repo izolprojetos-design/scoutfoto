@@ -49,18 +49,10 @@ export default function GroupLogoSettings() {
     refresh();
   }, []);
 
-  // Cleanup preview blob URL when dialog closes
-  useEffect(() => {
-    return () => {
-      if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
-    };
-  }, [previewOpen]);
-
   const openPreview = async (kind: PreviewKind) => {
     const cfg = PREVIEWS.find(p => p.key === kind)!;
     setPreviewLoading(kind);
     try {
-      // Ensure cache reflects most recent upload
       invalidateGroupLogoCache();
       const url = await cfg.build();
       setPreviewOpen({ kind, url });
@@ -71,10 +63,30 @@ export default function GroupLogoSettings() {
     }
   };
 
-  const closePreview = () => {
-    if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
-    setPreviewOpen(null);
+  const closePreview = () => setPreviewOpen(null);
+
+  const openInNewTab = () => {
+    if (!previewOpen) return;
+    const win = window.open();
+    if (win) {
+      win.document.write(
+        `<iframe src="${previewOpen.url}" style="border:0;width:100%;height:100vh"></iframe>`,
+      );
+    } else {
+      toast.error('Bloqueado pelo navegador. Permita pop-ups.');
+    }
   };
+
+  const downloadPreview = () => {
+    if (!previewOpen) return;
+    const a = document.createElement('a');
+    a.href = previewOpen.url;
+    a.download = `previa-${previewOpen.kind}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
 
   const handleFile = async (file: File) => {
     if (!ACCEPTED.includes(file.type)) {
@@ -221,13 +233,28 @@ export default function GroupLogoSettings() {
             </DialogTitle>
           </DialogHeader>
           {previewOpen && (
-            <div className="flex-1 overflow-hidden rounded-md border bg-muted/30">
-              <iframe
-                src={previewOpen.url}
-                title="Pré-visualização do PDF"
-                className="h-[70vh] w-full"
-              />
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={openInNewTab} className="gap-2">
+                  <Eye className="h-4 w-4" /> Abrir em nova aba
+                </Button>
+                <Button size="sm" variant="outline" onClick={downloadPreview} className="gap-2">
+                  <FileText className="h-4 w-4" /> Baixar PDF
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden rounded-md border bg-muted/30">
+                <object
+                  data={previewOpen.url}
+                  type="application/pdf"
+                  className="h-[70vh] w-full"
+                  aria-label="Pré-visualização do PDF"
+                >
+                  <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                    Seu navegador não conseguiu exibir o PDF aqui. Use os botões acima para abrir em nova aba ou baixar.
+                  </div>
+                </object>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
