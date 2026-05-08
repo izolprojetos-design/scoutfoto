@@ -59,16 +59,24 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
   // ===== COVER =====
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, pageW, 55, 'F');
+
+  // Logo do grupo
+  const logoDataUrl = await fetchImageDataUrl('/images/logo-grupo.png');
+  const textLeft = logoDataUrl ? margin + 30 : margin;
+  if (logoDataUrl) {
+    try { doc.addImage(logoDataUrl, 'PNG', margin, 12, 25, 25, undefined, 'FAST'); } catch { /* ignore */ }
+  }
+
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
-  doc.text('PERFIL DO INTEGRANTE', margin, 22);
-  doc.setFontSize(20);
-  doc.text(scout.name.toUpperCase(), margin, 35, { maxWidth: pageW - margin * 2 });
+  doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
+  doc.setFontSize(18);
+  doc.text(scout.name.toUpperCase(), textLeft, 34, { maxWidth: pageW - textLeft - margin });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   const subtitle = [scout.section, scout.scout_group].filter(Boolean).join(' • ');
-  if (subtitle) doc.text(subtitle, margin, 47);
+  if (subtitle) doc.text(subtitle, textLeft, 47);
 
   // Photo
   let photoY = 70;
@@ -250,9 +258,12 @@ export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardia
   doc.addPage();
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, pageW, 18, 'F');
+  if (logoDataUrl) {
+    try { doc.addImage(logoDataUrl, 'PNG', margin, 2, 14, 14, undefined, 'FAST'); } catch { /* ignore */ }
+  }
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-  doc.text('Linha do Tempo', margin, 12);
+  doc.text('Linha do Tempo', logoDataUrl ? margin + 18 : margin, 12);
 
   autoTable(doc, {
     startY: 24,

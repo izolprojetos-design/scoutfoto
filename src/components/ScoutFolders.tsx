@@ -710,14 +710,31 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       const titleLine1 = `${scoutName.toUpperCase()}`;
       const titleLine2 = `Pasta: ${format(new Date(`${dateKey}T12:00:00`), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
 
+      // Logo do grupo
+      let logoDataUrl: string | null = null;
+      try {
+        const lr = await fetch('/images/logo-grupo.png');
+        const lb = await lr.blob();
+        logoDataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(lb);
+        });
+      } catch { /* ignore */ }
+
       // Cover page
+      if (logoDataUrl) {
+        try { pdf.addImage(logoDataUrl, 'PNG', (pageW - 35) / 2, 18, 35, 35, undefined, 'FAST'); } catch { /* ignore */ }
+      }
+      const coverTop = logoDataUrl ? 62 : 30;
       pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18);
-      pdf.text(titleLine1, pageW / 2, 30, { align: 'center' });
+      pdf.text(titleLine1, pageW / 2, coverTop, { align: 'center' });
       pdf.setFont('helvetica', 'normal'); pdf.setFontSize(13);
-      pdf.text(titleLine2, pageW / 2, 40, { align: 'center' });
+      pdf.text(titleLine2, pageW / 2, coverTop + 10, { align: 'center' });
       pdf.setFontSize(11);
-      pdf.text(`Total de fotos: ${photosOfDate.length}`, pageW / 2, 50, { align: 'center' });
-      pdf.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, pageW / 2, 58, { align: 'center' });
+      pdf.text('12º Grupo Escoteiro Monte Caburaí', pageW / 2, coverTop + 18, { align: 'center' });
+      pdf.text(`Total de fotos: ${photosOfDate.length}`, pageW / 2, coverTop + 26, { align: 'center' });
+      pdf.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm")}`, pageW / 2, coverTop + 33, { align: 'center' });
 
       // One photo per page
       for (let i = 0; i < photosOfDate.length; i++) {
