@@ -80,7 +80,7 @@ export async function buildScoutProfilePreview(): Promise<string> {
   });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }
 
 /** Sample of "Linha do Tempo" page. */
