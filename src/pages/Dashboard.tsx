@@ -425,7 +425,7 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold tracking-tight">
               {greeting()}, {profile?.name?.split(' ')[0]} 👋
             </h1>
-            <p className="mt-1 text-muted-foreground">Gerencie seu Grupo Escoteiro Monte Caburaí-12GEMC</p>
+            <p className="mt-1 text-muted-foreground">Gerencie o 12º Grupo Escoteiro Monte Caburaí</p>
           </div>
 
         </motion.div>
