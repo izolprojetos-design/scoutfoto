@@ -25,6 +25,7 @@ import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
+import GroupLogoSettings from '@/components/GroupLogoSettings';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -562,10 +563,15 @@ const Admin = () => {
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Link2 className="h-3.5 w-3.5" />Convites</TabsTrigger>
           <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
+          <TabsTrigger value="branding" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><ImageOff className="h-3.5 w-3.5" />Identidade</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
           <AdminOverview />
+        </TabsContent>
+
+        <TabsContent value="branding">
+          <GroupLogoSettings />
         </TabsContent>
 
         <TabsContent value="users">

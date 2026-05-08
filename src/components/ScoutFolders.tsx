@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSignedUrlsBatch } from '@/lib/storageUtils';
 import { compressImage } from '@/lib/imageCompression';
-import { fetchImageDataUrl } from '@/lib/scoutPdfExport';
+import { getGroupLogoDataUrl } from '@/lib/groupLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -711,8 +711,8 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       const titleLine1 = `${scoutName.toUpperCase()}`;
       const titleLine2 = `Pasta: ${format(new Date(`${dateKey}T12:00:00`), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
 
-      // Logo do grupo
-      const logoDataUrl = await fetchImageDataUrl('/images/logo-grupo.png');
+      // Logo do grupo (uploaded via Admin > Identidade, com fallback ao bundled)
+      const logoDataUrl = await getGroupLogoDataUrl();
 
       // Cover page
       if (logoDataUrl) {
