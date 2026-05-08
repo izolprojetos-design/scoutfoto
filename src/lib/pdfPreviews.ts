@@ -121,7 +121,7 @@ export async function buildTimelinePreview(): Promise<string> {
   });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }
 
 /** Sample of "Pasta de Fotos por Data" cover. */
