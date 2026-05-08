@@ -29,17 +29,27 @@ interface Guardian {
 const PRIMARY: [number, number, number] = [25, 80, 140];
 const MUTED: [number, number, number] = [110, 110, 110];
 
-async function fetchImageDataUrl(url: string): Promise<string | null> {
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return await new Promise((resolve) => {
-      const r = new FileReader();
-      r.onloadend = () => resolve(r.result as string);
-      r.onerror = () => resolve(null);
-      r.readAsDataURL(blob);
-    });
-  } catch { return null; }
+const imageCache = new Map<string, Promise<string | null>>();
+
+export async function fetchImageDataUrl(url: string): Promise<string | null> {
+  const cached = imageCache.get(url);
+  if (cached) return cached;
+
+  const promise = (async () => {
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      return await new Promise<string | null>((resolve) => {
+        const r = new FileReader();
+        r.onloadend = () => resolve(r.result as string);
+        r.onerror = () => resolve(null);
+        r.readAsDataURL(blob);
+      });
+    } catch { return null; }
+  })();
+
+  imageCache.set(url, promise);
+  return promise;
 }
 
 export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardian[] = []) {
