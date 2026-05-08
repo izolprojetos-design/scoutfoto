@@ -144,5 +144,5 @@ export async function buildPhotoFolderPreview(): Promise<string> {
   doc.text(`Gerado em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageW / 2, coverTop + 33, { align: 'center' });
 
   footer(doc);
-  return URL.createObjectURL(doc.output('blob'));
+  return doc.output('datauristring');
 }
