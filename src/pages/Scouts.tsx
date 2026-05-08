@@ -261,7 +261,7 @@ const Scouts = () => {
     e.target.value = '';
   };
 
-  const handleCropComplete = (croppedFile: File) => {
+  const handleCropComplete = async (croppedFile: File) => {
     const target = cropperTarget;
     console.log('[CROP] handleCropComplete called', { target, size: croppedFile.size, type: croppedFile.type });
 
@@ -273,7 +273,6 @@ const Scouts = () => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
-      console.log('[CROP] reader.onloadend fired, applying preview', { target });
       if (target === 'new') {
         setScoutPhotoPreview(reader.result as string);
       } else {
@@ -285,6 +284,29 @@ const Scouts = () => {
 
     setCropperOpen(false);
     photoPickInProgressRef.current = false;
+
+    // Auto-save when editing an existing scout — no need to press Salvar afterwards
+    if (target === 'edit' && editingScout) {
+      const scout = editingScout;
+      const nameForFile = editName || scout.name;
+      try {
+        setEditUploading(true);
+        toast.loading('Salvando foto...', { id: 'auto-save-photo' });
+        const uploaded = await uploadPhoto(scout.id, croppedFile, nameForFile);
+        if (!uploaded) throw new Error('upload falhou');
+        const { error } = await supabase.from('scouts').update({ photo_url: uploaded }).eq('id', scout.id);
+        if (error) throw error;
+        setEditingScout({ ...scout, photo_url: uploaded });
+        setEditPhoto(null);
+        toast.success('Foto salva!', { id: 'auto-save-photo' });
+        fetchData();
+      } catch (err: any) {
+        console.error('[CROP] auto-save failed', err);
+        toast.error('Falha ao salvar foto. Tente novamente.', { id: 'auto-save-photo' });
+      } finally {
+        setEditUploading(false);
+      }
+    }
   };
 
   const uploadPhoto = async (scoutId: string, photo: File, scoutNameForFile?: string): Promise<string | null> => {
