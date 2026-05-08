@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2 } from 'lucide-react';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus } from 'lucide-react';
 import { SCOUT_BRANCHES, ALL_CATEGORIES, calculateAgeInMonths, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
