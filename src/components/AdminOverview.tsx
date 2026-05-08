@@ -216,13 +216,14 @@ const AdminOverview = () => {
 
   return (
     <div className="space-y-6">
-
-  return (
-    <div className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {kpis.map((k, i) => (
-          <Card key={i} className="border shadow-sm">
+        {kpis.map((k: any, i) => (
+          <Card
+            key={i}
+            className={`border shadow-sm ${k.clickable ? 'cursor-pointer hover:border-primary/50 hover:shadow-md transition-all' : ''}`}
+            onClick={k.onClick}
+          >
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="min-w-0">
@@ -230,7 +231,10 @@ const AdminOverview = () => {
                   <p className="mt-1 text-3xl font-bold tabular-nums">{k.value}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{k.sub}</p>
                 </div>
-                <k.icon className={`h-5 w-5 shrink-0 ${k.color}`} />
+                <div className="flex flex-col items-end gap-1">
+                  <k.icon className={`h-5 w-5 shrink-0 ${k.color}`} />
+                  {k.clickable && <ExternalLink className="h-3 w-3 text-muted-foreground/60" />}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -299,6 +303,127 @@ const AdminOverview = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialog: Agendamentos pendentes */}
+      <Dialog open={schedDialogOpen} onOpenChange={setSchedDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-yellow-600" />
+              Agendamentos pendentes
+            </DialogTitle>
+          </DialogHeader>
+          {dialogLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : schedList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum agendamento pendente.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Data / Horário</TableHead>
+                  <TableHead>Local</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.nome_responsavel}</TableCell>
+                    <TableCell>{s.tipo}</TableCell>
+                    <TableCell>{s.data} {s.horario}</TableCell>
+                    <TableCell>{s.local}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/agendamentos')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Minha Agenda
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Sem foto */}
+      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CameraOff className="h-5 w-5 text-rose-600" />
+              Integrantes sem foto de perfil
+            </DialogTitle>
+          </DialogHeader>
+          {photoList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Todos os integrantes ativos possuem foto.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Seção</TableHead>
+                  <TableHead>Data de nascimento</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {photoList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.section || '—'}</TableCell>
+                    <TableCell>{s.birth_date || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/scouts')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Integrantes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Sem responsável */}
+      <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserMinus className="h-5 w-5 text-red-600" />
+              Integrantes sem responsável cadastrado
+            </DialogTitle>
+          </DialogHeader>
+          {guardianList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Todos os integrantes ativos possuem responsável.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Seção</TableHead>
+                  <TableHead>Data de nascimento</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {guardianList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.section || '—'}</TableCell>
+                    <TableCell>{s.birth_date || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/scouts')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Integrantes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
