@@ -1,9 +1,13 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus } from 'lucide-react';
-import { SCOUT_BRANCHES, ALL_CATEGORIES, calculateAgeInMonths, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
+import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
 
@@ -25,6 +29,24 @@ interface Stats {
   scoutsWithoutGuardian: number;
 }
 
+interface SchedulingRequest {
+  id: string;
+  nome_responsavel: string;
+  email: string;
+  data: string;
+  horario: string;
+  local: string;
+  tipo: string;
+  created_at: string;
+}
+
+interface ScoutPending {
+  id: string;
+  name: string;
+  section: string;
+  birth_date: string;
+}
+
 const BRANCH_COLOR_MAP: Record<string, string> = {
   amber: 'hsl(38 92% 50%)',
   emerald: 'hsl(142 71% 45%)',
@@ -34,8 +56,18 @@ const BRANCH_COLOR_MAP: Record<string, string> = {
 };
 
 const AdminOverview = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Dialog states
+  const [schedDialogOpen, setSchedDialogOpen] = useState(false);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
+  const [schedList, setSchedList] = useState<SchedulingRequest[]>([]);
+  const [photoList, setPhotoList] = useState<ScoutPending[]>([]);
+  const [guardianList, setGuardianList] = useState<ScoutPending[]>([]);
+  const [dialogLoading, setDialogLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -46,7 +78,7 @@ const AdminOverview = () => {
       const currentMonth = getMonth(today);
 
       const [scoutsRes, eventsRes, imagesRes, profilesRes, pendingRes, guardiansRes] = await Promise.all([
-        supabase.from('scouts').select('id, birth_date, section, manual_branch, is_active, transition_date, photo_url'),
+        supabase.from('scouts').select('id, name, birth_date, section, manual_branch, is_active, transition_date, photo_url'),
         supabase.from('events').select('id, event_date'),
         supabase.from('images').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('user_id, is_active'),
@@ -109,9 +141,9 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
-      const scoutsWithoutPhoto = active.filter(s => !s.photo_url).length;
+      const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
-      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id)).length;
+      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id));
 
       setStats({
         totalScouts: scouts.length,
@@ -127,13 +159,38 @@ const AdminOverview = () => {
         totalUsers: profiles.length,
         activeUsers: profiles.filter(p => p.is_active).length,
         pendingSchedulings: pendingRes.count || 0,
-        scoutsWithoutPhoto,
-        scoutsWithoutGuardian,
+        scoutsWithoutPhoto: scoutsWithoutPhoto.length,
+        scoutsWithoutGuardian: scoutsWithoutGuardian.length,
       });
+
+      // Store lists for dialogs
+      setPhotoList(scoutsWithoutPhoto.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
+      setGuardianList(scoutsWithoutGuardian.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
+
       setLoading(false);
     };
     load();
   }, []);
+
+  const loadPendingSchedulings = async () => {
+    if (schedList.length > 0) return;
+    setDialogLoading(true);
+    const { data } = await supabase
+      .from('scheduling_requests')
+      .select('id, nome_responsavel, email, data, horario, local, tipo, created_at')
+      .eq('status', 'pendente')
+      .order('created_at', { ascending: false });
+    setSchedList((data || []) as SchedulingRequest[]);
+    setDialogLoading(false);
+  };
+
+  const handleOpenSched = () => {
+    setSchedDialogOpen(true);
+    loadPendingSchedulings();
+  };
+
+  const handleOpenPhoto = () => setPhotoDialogOpen(true);
+  const handleOpenGuardian = () => setGuardianDialogOpen(true);
 
   if (loading || !stats) {
     return (
@@ -152,17 +209,21 @@ const AdminOverview = () => {
     { icon: ImageIcon, label: 'Fotos no acervo', value: stats.totalImages, sub: 'Total no sistema', color: 'text-blue-600 dark:text-blue-400' },
     { icon: UserCheck, label: 'Usuários ativos', value: stats.activeUsers, sub: `${stats.totalUsers} no total`, color: 'text-violet-600 dark:text-violet-400' },
     { icon: Shield, label: 'Ocupação de seções', value: stats.bySection.length, sub: 'Seções com integrantes', color: 'text-orange-600 dark:text-orange-400' },
-    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400' },
-    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400' },
-    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400' },
+    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400', clickable: true, onClick: handleOpenSched },
+    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400', clickable: true, onClick: handleOpenPhoto },
+    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400', clickable: true, onClick: handleOpenGuardian },
   ];
 
   return (
     <div className="space-y-6">
       {/* KPI Grid */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {kpis.map((k, i) => (
-          <Card key={i} className="border shadow-sm">
+        {kpis.map((k: any, i) => (
+          <Card
+            key={i}
+            className={`border shadow-sm ${k.clickable ? 'cursor-pointer hover:border-primary/50 hover:shadow-md transition-all' : ''}`}
+            onClick={k.onClick}
+          >
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="min-w-0">
@@ -170,7 +231,10 @@ const AdminOverview = () => {
                   <p className="mt-1 text-3xl font-bold tabular-nums">{k.value}</p>
                   <p className="mt-1 text-xs text-muted-foreground">{k.sub}</p>
                 </div>
-                <k.icon className={`h-5 w-5 shrink-0 ${k.color}`} />
+                <div className="flex flex-col items-end gap-1">
+                  <k.icon className={`h-5 w-5 shrink-0 ${k.color}`} />
+                  {k.clickable && <ExternalLink className="h-3 w-3 text-muted-foreground/60" />}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -239,6 +303,127 @@ const AdminOverview = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Dialog: Agendamentos pendentes */}
+      <Dialog open={schedDialogOpen} onOpenChange={setSchedDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList className="h-5 w-5 text-yellow-600" />
+              Agendamentos pendentes
+            </DialogTitle>
+          </DialogHeader>
+          {dialogLoading ? (
+            <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
+          ) : schedList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Nenhum agendamento pendente.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Data / Horário</TableHead>
+                  <TableHead>Local</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.nome_responsavel}</TableCell>
+                    <TableCell>{s.tipo}</TableCell>
+                    <TableCell>{s.data} {s.horario}</TableCell>
+                    <TableCell>{s.local}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/agendamentos')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Minha Agenda
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Sem foto */}
+      <Dialog open={photoDialogOpen} onOpenChange={setPhotoDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CameraOff className="h-5 w-5 text-rose-600" />
+              Integrantes sem foto de perfil
+            </DialogTitle>
+          </DialogHeader>
+          {photoList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Todos os integrantes ativos possuem foto.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Seção</TableHead>
+                  <TableHead>Data de nascimento</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {photoList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.section || '—'}</TableCell>
+                    <TableCell>{s.birth_date || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/scouts')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Integrantes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog: Sem responsável */}
+      <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserMinus className="h-5 w-5 text-red-600" />
+              Integrantes sem responsável cadastrado
+            </DialogTitle>
+          </DialogHeader>
+          {guardianList.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-4">Todos os integrantes ativos possuem responsável.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Seção</TableHead>
+                  <TableHead>Data de nascimento</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {guardianList.map(s => (
+                  <TableRow key={s.id}>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell>{s.section || '—'}</TableCell>
+                    <TableCell>{s.birth_date || '—'}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+          <div className="flex justify-end pt-2">
+            <Button variant="outline" onClick={() => navigate('/scouts')} className="gap-2">
+              <ExternalLink className="h-4 w-4" /> Ir para Integrantes
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
