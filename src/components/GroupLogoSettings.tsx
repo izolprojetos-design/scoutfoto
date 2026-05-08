@@ -233,13 +233,28 @@ export default function GroupLogoSettings() {
             </DialogTitle>
           </DialogHeader>
           {previewOpen && (
-            <div className="flex-1 overflow-hidden rounded-md border bg-muted/30">
-              <iframe
-                src={previewOpen.url}
-                title="Pré-visualização do PDF"
-                className="h-[70vh] w-full"
-              />
-            </div>
+            <>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={openInNewTab} className="gap-2">
+                  <Eye className="h-4 w-4" /> Abrir em nova aba
+                </Button>
+                <Button size="sm" variant="outline" onClick={downloadPreview} className="gap-2">
+                  <FileText className="h-4 w-4" /> Baixar PDF
+                </Button>
+              </div>
+              <div className="flex-1 overflow-hidden rounded-md border bg-muted/30">
+                <object
+                  data={previewOpen.url}
+                  type="application/pdf"
+                  className="h-[70vh] w-full"
+                  aria-label="Pré-visualização do PDF"
+                >
+                  <div className="flex h-full items-center justify-center p-6 text-center text-sm text-muted-foreground">
+                    Seu navegador não conseguiu exibir o PDF aqui. Use os botões acima para abrir em nova aba ou baixar.
+                  </div>
+                </object>
+              </div>
+            </>
           )}
         </DialogContent>
       </Dialog>
