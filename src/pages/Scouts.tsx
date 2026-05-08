@@ -360,9 +360,22 @@ const Scouts = () => {
     }
 
     if (scoutPhoto && data) {
-      const photoUrl = await uploadPhoto(data.id, scoutPhoto, scoutName);
-      if (photoUrl) {
-        await supabase.from('scouts').update({ photo_url: photoUrl }).eq('id', data.id);
+      toast.loading('Enviando foto...', { id: 'create-photo' });
+      try {
+        const photoUrl = await uploadPhoto(data.id, scoutPhoto, scoutName);
+        if (!photoUrl) throw new Error('upload retornou nulo');
+        const { error: updErr } = await supabase
+          .from('scouts')
+          .update({ photo_url: photoUrl })
+          .eq('id', data.id);
+        if (updErr) throw updErr;
+        toast.success('Foto salva!', { id: 'create-photo' });
+      } catch (err: any) {
+        console.error('[CREATE] photo upload failed', err);
+        toast.error('Integrante criado, mas a foto falhou. Edite o integrante para reenviá-la.', {
+          id: 'create-photo',
+          duration: 6000,
+        });
       }
     }
 
