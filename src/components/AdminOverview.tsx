@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
 import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
-import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
+import { differenceInDays, differenceInYears, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
 
 interface Stats {
@@ -141,9 +141,14 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
+      // Guardian check applies only to minors (under 18) per ECA Digital (Lei nº 15.211/2025)
       const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
-      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id));
+      const isMinor = (birth: string | null | undefined) => {
+        if (!birth) return false;
+        return differenceInYears(today, parseLocalDate(birth)) < 18;
+      };
+      const scoutsWithoutGuardian = active.filter(s => isMinor(s.birth_date) && !guardianScoutIds.has(s.id));
 
       setStats({
         totalScouts: scouts.length,
@@ -211,7 +216,7 @@ const AdminOverview = () => {
     { icon: Shield, label: 'Ocupação de seções', value: stats.bySection.length, sub: 'Seções com integrantes', color: 'text-orange-600 dark:text-orange-400' },
     { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400', clickable: true, onClick: handleOpenSched },
     { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400', clickable: true, onClick: handleOpenPhoto },
-    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400', clickable: true, onClick: handleOpenGuardian },
+    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Menores de 18 (ECA)', color: 'text-red-600 dark:text-red-400', clickable: true, onClick: handleOpenGuardian },
   ];
 
   return (
