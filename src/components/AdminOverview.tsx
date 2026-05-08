@@ -152,6 +152,9 @@ const AdminOverview = () => {
     { icon: ImageIcon, label: 'Fotos no acervo', value: stats.totalImages, sub: 'Total no sistema', color: 'text-blue-600 dark:text-blue-400' },
     { icon: UserCheck, label: 'Usuários ativos', value: stats.activeUsers, sub: `${stats.totalUsers} no total`, color: 'text-violet-600 dark:text-violet-400' },
     { icon: Shield, label: 'Ocupação de seções', value: stats.bySection.length, sub: 'Seções com integrantes', color: 'text-orange-600 dark:text-orange-400' },
+    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400' },
+    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400' },
+    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400' },
   ];
 
   return (
