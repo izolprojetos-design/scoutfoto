@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSignedUrlsBatch } from '@/lib/storageUtils';
 import { compressImage } from '@/lib/imageCompression';
+import { fetchImageDataUrl } from '@/lib/scoutPdfExport';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
