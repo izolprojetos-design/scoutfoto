@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2 } from 'lucide-react';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus } from 'lucide-react';
 import { SCOUT_BRANCHES, ALL_CATEGORIES, calculateAgeInMonths, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
@@ -20,6 +20,9 @@ interface Stats {
   totalImages: number;
   totalUsers: number;
   activeUsers: number;
+  pendingSchedulings: number;
+  scoutsWithoutPhoto: number;
+  scoutsWithoutGuardian: number;
 }
 
 const BRANCH_COLOR_MAP: Record<string, string> = {
@@ -42,11 +45,13 @@ const AdminOverview = () => {
       const todayStr = today.toISOString().slice(0, 10);
       const currentMonth = getMonth(today);
 
-      const [scoutsRes, eventsRes, imagesRes, profilesRes] = await Promise.all([
-        supabase.from('scouts').select('id, birth_date, section, manual_branch, is_active, transition_date'),
+      const [scoutsRes, eventsRes, imagesRes, profilesRes, pendingRes, guardiansRes] = await Promise.all([
+        supabase.from('scouts').select('id, birth_date, section, manual_branch, is_active, transition_date, photo_url'),
         supabase.from('events').select('id, event_date'),
         supabase.from('images').select('id', { count: 'exact', head: true }),
         supabase.from('profiles').select('user_id, is_active'),
+        supabase.from('scheduling_requests').select('id', { count: 'exact', head: true }).eq('status', 'pendente'),
+        supabase.from('guardians').select('scout_id'),
       ]);
 
       const scouts = scoutsRes.data || [];
@@ -103,6 +108,11 @@ const AdminOverview = () => {
       const eventsThisYear = events.filter(e => e.event_date && e.event_date >= yearStart && e.event_date <= yearEnd).length;
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
+      // Scouts without photo / guardian (active only)
+      const scoutsWithoutPhoto = active.filter(s => !s.photo_url).length;
+      const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
+      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id)).length;
+
       setStats({
         totalScouts: scouts.length,
         activeScouts: active.length,
@@ -116,6 +126,9 @@ const AdminOverview = () => {
         totalImages: imagesRes.count || 0,
         totalUsers: profiles.length,
         activeUsers: profiles.filter(p => p.is_active).length,
+        pendingSchedulings: pendingRes.count || 0,
+        scoutsWithoutPhoto,
+        scoutsWithoutGuardian,
       });
       setLoading(false);
     };
@@ -139,6 +152,9 @@ const AdminOverview = () => {
     { icon: ImageIcon, label: 'Fotos no acervo', value: stats.totalImages, sub: 'Total no sistema', color: 'text-blue-600 dark:text-blue-400' },
     { icon: UserCheck, label: 'Usuários ativos', value: stats.activeUsers, sub: `${stats.totalUsers} no total`, color: 'text-violet-600 dark:text-violet-400' },
     { icon: Shield, label: 'Ocupação de seções', value: stats.bySection.length, sub: 'Seções com integrantes', color: 'text-orange-600 dark:text-orange-400' },
+    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400' },
+    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400' },
+    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400' },
   ];
 
   return (
