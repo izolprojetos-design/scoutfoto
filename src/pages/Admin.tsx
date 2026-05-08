@@ -25,6 +25,7 @@ import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
+import GroupLogoSettings from '@/components/GroupLogoSettings';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
