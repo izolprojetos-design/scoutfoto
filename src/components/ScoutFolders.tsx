@@ -712,16 +712,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
       const titleLine2 = `Pasta: ${format(new Date(`${dateKey}T12:00:00`), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
 
       // Logo do grupo
-      let logoDataUrl: string | null = null;
-      try {
-        const lr = await fetch('/images/logo-grupo.png');
-        const lb = await lr.blob();
-        logoDataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.readAsDataURL(lb);
-        });
-      } catch { /* ignore */ }
+      const logoDataUrl = await fetchImageDataUrl('/images/logo-grupo.png');
 
       // Cover page
       if (logoDataUrl) {
