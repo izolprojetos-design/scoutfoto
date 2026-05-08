@@ -53,7 +53,16 @@ export async function fetchImageDataUrl(url: string): Promise<string | null> {
   return promise;
 }
 
-export async function exportScoutProfilePdf(scout: ScoutLike, guardians: Guardian[] = []) {
+export interface PdfExportOptions {
+  /** When true, the PDF is not saved; instead a data URL is returned. */
+  preview?: boolean;
+}
+
+export async function exportScoutProfilePdf(
+  scout: ScoutLike,
+  guardians: Guardian[] = [],
+  options: PdfExportOptions = {},
+): Promise<string | void> {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
