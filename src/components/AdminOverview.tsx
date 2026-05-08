@@ -1,9 +1,13 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus } from 'lucide-react';
-import { SCOUT_BRANCHES, ALL_CATEGORIES, calculateAgeInMonths, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
+import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
 
@@ -25,6 +29,24 @@ interface Stats {
   scoutsWithoutGuardian: number;
 }
 
+interface SchedulingRequest {
+  id: string;
+  nome_responsavel: string;
+  email: string;
+  data: string;
+  horario: string;
+  local: string;
+  tipo: string;
+  created_at: string;
+}
+
+interface ScoutPending {
+  id: string;
+  name: string;
+  section: string;
+  birth_date: string;
+}
+
 const BRANCH_COLOR_MAP: Record<string, string> = {
   amber: 'hsl(38 92% 50%)',
   emerald: 'hsl(142 71% 45%)',
@@ -34,8 +56,18 @@ const BRANCH_COLOR_MAP: Record<string, string> = {
 };
 
 const AdminOverview = () => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Dialog states
+  const [schedDialogOpen, setSchedDialogOpen] = useState(false);
+  const [photoDialogOpen, setPhotoDialogOpen] = useState(false);
+  const [guardianDialogOpen, setGuardianDialogOpen] = useState(false);
+  const [schedList, setSchedList] = useState<SchedulingRequest[]>([]);
+  const [photoList, setPhotoList] = useState<ScoutPending[]>([]);
+  const [guardianList, setGuardianList] = useState<ScoutPending[]>([]);
+  const [dialogLoading, setDialogLoading] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -109,9 +141,9 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
-      const scoutsWithoutPhoto = active.filter(s => !s.photo_url).length;
+      const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
-      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id)).length;
+      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id));
 
       setStats({
         totalScouts: scouts.length,
@@ -127,13 +159,38 @@ const AdminOverview = () => {
         totalUsers: profiles.length,
         activeUsers: profiles.filter(p => p.is_active).length,
         pendingSchedulings: pendingRes.count || 0,
-        scoutsWithoutPhoto,
-        scoutsWithoutGuardian,
+        scoutsWithoutPhoto: scoutsWithoutPhoto.length,
+        scoutsWithoutGuardian: scoutsWithoutGuardian.length,
       });
+
+      // Store lists for dialogs
+      setPhotoList(scoutsWithoutPhoto.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
+      setGuardianList(scoutsWithoutGuardian.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
+
       setLoading(false);
     };
     load();
   }, []);
+
+  const loadPendingSchedulings = async () => {
+    if (schedList.length > 0) return;
+    setDialogLoading(true);
+    const { data } = await supabase
+      .from('scheduling_requests')
+      .select('id, nome_responsavel, email, data, horario, local, tipo, created_at')
+      .eq('status', 'pendente')
+      .order('created_at', { ascending: false });
+    setSchedList((data || []) as SchedulingRequest[]);
+    setDialogLoading(false);
+  };
+
+  const handleOpenSched = () => {
+    setSchedDialogOpen(true);
+    loadPendingSchedulings();
+  };
+
+  const handleOpenPhoto = () => setPhotoDialogOpen(true);
+  const handleOpenGuardian = () => setGuardianDialogOpen(true);
 
   if (loading || !stats) {
     return (
@@ -152,10 +209,13 @@ const AdminOverview = () => {
     { icon: ImageIcon, label: 'Fotos no acervo', value: stats.totalImages, sub: 'Total no sistema', color: 'text-blue-600 dark:text-blue-400' },
     { icon: UserCheck, label: 'Usuários ativos', value: stats.activeUsers, sub: `${stats.totalUsers} no total`, color: 'text-violet-600 dark:text-violet-400' },
     { icon: Shield, label: 'Ocupação de seções', value: stats.bySection.length, sub: 'Seções com integrantes', color: 'text-orange-600 dark:text-orange-400' },
-    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400' },
-    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400' },
-    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400' },
+    { icon: ClipboardList, label: 'Agendamentos pendentes', value: stats.pendingSchedulings, sub: 'Aguardando aprovação', color: 'text-yellow-600 dark:text-yellow-400', clickable: true, onClick: handleOpenSched },
+    { icon: CameraOff, label: 'Sem foto de perfil', value: stats.scoutsWithoutPhoto, sub: 'Integrantes ativos', color: 'text-rose-600 dark:text-rose-400', clickable: true, onClick: handleOpenPhoto },
+    { icon: UserMinus, label: 'Sem responsável', value: stats.scoutsWithoutGuardian, sub: 'Integrantes ativos', color: 'text-red-600 dark:text-red-400', clickable: true, onClick: handleOpenGuardian },
   ];
+
+  return (
+    <div className="space-y-6">
 
   return (
     <div className="space-y-6">
