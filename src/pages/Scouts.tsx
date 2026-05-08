@@ -372,9 +372,32 @@ const Scouts = () => {
         toast.success('Foto salva!', { id: 'create-photo' });
       } catch (err: any) {
         console.error('[CREATE] photo upload failed', err);
-        toast.error('Integrante criado, mas a foto falhou. Edite o integrante para reenviá-la.', {
+        const failedPhoto = scoutPhoto;
+        toast.error('Integrante criado, mas a foto falhou.', {
           id: 'create-photo',
-          duration: 6000,
+          duration: 10000,
+          action: {
+            label: 'Reenviar foto',
+            onClick: async () => {
+              const { data: fresh } = await supabase
+                .from('scouts')
+                .select('*')
+                .eq('id', data.id)
+                .single();
+              if (fresh) {
+                openEditDialog(fresh as Scout);
+                if (failedPhoto) {
+                  setEditPhoto(failedPhoto);
+                  const r = new FileReader();
+                  r.onloadend = () => setEditPhotoPreview(r.result as string);
+                  r.readAsDataURL(failedPhoto);
+                  toast.info('Clique em Salvar para reenviar a foto.');
+                }
+              } else {
+                toast.error('Não foi possível abrir o integrante.');
+              }
+            },
+          },
         });
       }
     }
