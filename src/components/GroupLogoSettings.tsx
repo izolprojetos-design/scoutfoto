@@ -32,6 +32,10 @@ export default function GroupLogoSettings() {
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Preview state
+  const [previewLoading, setPreviewLoading] = useState<PreviewKind | null>(null);
+  const [previewOpen, setPreviewOpen] = useState<{ kind: PreviewKind; url: string } | null>(null);
+
   const refresh = async () => {
     setLoading(true);
     try {
@@ -44,6 +48,33 @@ export default function GroupLogoSettings() {
   useEffect(() => {
     refresh();
   }, []);
+
+  // Cleanup preview blob URL when dialog closes
+  useEffect(() => {
+    return () => {
+      if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
+    };
+  }, [previewOpen]);
+
+  const openPreview = async (kind: PreviewKind) => {
+    const cfg = PREVIEWS.find(p => p.key === kind)!;
+    setPreviewLoading(kind);
+    try {
+      // Ensure cache reflects most recent upload
+      invalidateGroupLogoCache();
+      const url = await cfg.build();
+      setPreviewOpen({ kind, url });
+    } catch (err: any) {
+      toast.error(`Falha ao gerar pré-visualização: ${err.message || 'erro'}`);
+    } finally {
+      setPreviewLoading(null);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewOpen?.url) URL.revokeObjectURL(previewOpen.url);
+    setPreviewOpen(null);
+  };
 
   const handleFile = async (file: File) => {
     if (!ACCEPTED.includes(file.type)) {
