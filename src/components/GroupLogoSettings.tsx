@@ -1,16 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, Trash2, Loader2, Image as ImageIcon } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Upload, Trash2, Loader2, Image as ImageIcon, Eye, FileText, Clock, FolderOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getGroupLogoPublicUrl,
   uploadGroupLogo,
   removeGroupLogo,
+  invalidateGroupLogoCache,
 } from '@/lib/groupLogo';
+import {
+  buildScoutProfilePreview,
+  buildTimelinePreview,
+  buildPhotoFolderPreview,
+} from '@/lib/pdfPreviews';
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const MAX_BYTES = 2 * 1024 * 1024; // 2MB
+
+type PreviewKind = 'profile' | 'timeline' | 'folder';
+const PREVIEWS: { key: PreviewKind; label: string; description: string; icon: typeof FileText; build: () => Promise<string> }[] = [
+  { key: 'profile', label: 'Perfil do Integrante', description: 'Capa com logo, nome e responsáveis', icon: FileText, build: buildScoutProfilePreview },
+  { key: 'timeline', label: 'Linha do Tempo', description: 'Cabeçalho com logo e marcos', icon: Clock, build: buildTimelinePreview },
+  { key: 'folder', label: 'Pasta de Fotos por Data', description: 'Capa centralizada com logo', icon: FolderOpen, build: buildPhotoFolderPreview },
+];
 
 export default function GroupLogoSettings() {
   const [currentUrl, setCurrentUrl] = useState<string | null>(null);
