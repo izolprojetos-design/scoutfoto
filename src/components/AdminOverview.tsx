@@ -108,6 +108,11 @@ const AdminOverview = () => {
       const eventsThisYear = events.filter(e => e.event_date && e.event_date >= yearStart && e.event_date <= yearEnd).length;
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
+      // Scouts without photo / guardian (active only)
+      const scoutsWithoutPhoto = active.filter(s => !s.photo_url).length;
+      const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
+      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id)).length;
+
       setStats({
         totalScouts: scouts.length,
         activeScouts: active.length,
@@ -121,6 +126,9 @@ const AdminOverview = () => {
         totalImages: imagesRes.count || 0,
         totalUsers: profiles.length,
         activeUsers: profiles.filter(p => p.is_active).length,
+        pendingSchedulings: pendingRes.count || 0,
+        scoutsWithoutPhoto,
+        scoutsWithoutGuardian,
       });
       setLoading(false);
     };
