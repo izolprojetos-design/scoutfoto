@@ -20,6 +20,9 @@ interface Stats {
   totalImages: number;
   totalUsers: number;
   activeUsers: number;
+  pendingSchedulings: number;
+  scoutsWithoutPhoto: number;
+  scoutsWithoutGuardian: number;
 }
 
 const BRANCH_COLOR_MAP: Record<string, string> = {
