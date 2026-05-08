@@ -141,9 +141,14 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
+      // Guardian check applies only to minors (under 18) per ECA Digital (Lei nº 15.211/2025)
       const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
-      const scoutsWithoutGuardian = active.filter(s => !guardianScoutIds.has(s.id));
+      const isMinor = (birth: string | null | undefined) => {
+        if (!birth) return false;
+        return differenceInYears(today, parseLocalDate(birth)) < 18;
+      };
+      const scoutsWithoutGuardian = active.filter(s => isMinor(s.birth_date) && !guardianScoutIds.has(s.id));
 
       setStats({
         totalScouts: scouts.length,
