@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
 import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
-import { differenceInDays, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
+import { differenceInDays, differenceInYears, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
 
 interface Stats {
