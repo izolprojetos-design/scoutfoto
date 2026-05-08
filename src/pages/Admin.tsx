@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolesManager from '@/components/RolesManager';
@@ -24,6 +24,7 @@ import ArchivedPhotosPanel from '@/components/ArchivedPhotosPanel';
 import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
+import AdminOverview from '@/components/AdminOverview';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -549,8 +550,9 @@ const Admin = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="users">
-        <TabsList className="mb-4 bg-muted/60">
+      <Tabs defaultValue="overview">
+        <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto">
+          <TabsTrigger value="overview" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><LayoutDashboard className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
           <TabsTrigger value="roles" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Papéis</TabsTrigger>
           <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
@@ -561,6 +563,10 @@ const Admin = () => {
           <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          <AdminOverview />
+        </TabsContent>
 
         <TabsContent value="users">
           <Card className="border-0 shadow-lg">
