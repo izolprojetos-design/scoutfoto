@@ -268,6 +268,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
 
   // Lightbox nav
   const navigate = useCallback((dir: 1 | -1) => {
+    if (savingCaption) return;
     setEditingCaption(false);
     setViewingIndex(idx => {
       if (idx === null) return idx;
@@ -275,7 +276,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       if (next < 0 || next >= filtered.length) return idx;
       return next;
     });
-  }, [filtered.length]);
+  }, [filtered.length, savingCaption]);
 
   useEffect(() => {
     if (viewingIndex === null) return;
