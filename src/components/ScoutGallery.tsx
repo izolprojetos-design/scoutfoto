@@ -501,7 +501,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                                   setInlineDraft(photo.caption || '');
                                   setInlineEditId(photo.id);
                                 }}
-                                className="p-0.5 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                                className="p-0.5 text-muted-foreground hover:text-foreground shrink-0"
                                 aria-label="Editar legenda"
                               >
                                 <Pencil className="h-3 w-3" />
