@@ -471,7 +471,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                 {viewingIndex! < filtered.length - 1 && (
                   <button
                     onClick={() => navigate(1)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                    disabled={savingCaption}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Próxima"
                   >
                     <ChevronRight className="h-5 w-5" />
