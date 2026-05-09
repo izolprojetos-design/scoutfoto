@@ -859,6 +859,16 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Image cropper for in-gallery edits */}
+      {cropOpenFor && (
+        <ImageCropper
+          open={!!cropOpenFor}
+          imageSrc={signedUrls[cropOpenFor.storage_path] || ''}
+          onClose={() => setCropOpenFor(null)}
+          onCropComplete={handleCropConfirm}
+        />
+      )}
     </div>
   );
 }
