@@ -268,6 +268,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
 
   // Lightbox nav
   const navigate = useCallback((dir: 1 | -1) => {
+    if (savingCaption) return;
     setEditingCaption(false);
     setViewingIndex(idx => {
       if (idx === null) return idx;
@@ -275,22 +276,24 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       if (next < 0 || next >= filtered.length) return idx;
       return next;
     });
-  }, [filtered.length]);
+  }, [filtered.length, savingCaption]);
 
   useEffect(() => {
     if (viewingIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
+      if (savingCaption) return;
       if (e.key === 'ArrowRight') navigate(1);
       else if (e.key === 'ArrowLeft') navigate(-1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [viewingIndex, navigate]);
+  }, [viewingIndex, navigate, savingCaption]);
 
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: React.TouchEvent) => {
+    if (savingCaption) return;
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
@@ -440,7 +443,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       </div>
 
       {/* Lightbox */}
-      <Dialog open={viewingIndex !== null} onOpenChange={() => { setViewingIndex(null); setEditingCaption(false); }}>
+      <Dialog open={viewingIndex !== null} onOpenChange={(open) => { if (!open && savingCaption) return; setViewingIndex(open ? viewingIndex : null); setEditingCaption(false); }}>
         <DialogContent className="max-w-4xl p-2 max-h-[90vh]">
           <DialogHeader className="sr-only">
             <DialogTitle>Foto</DialogTitle>
@@ -457,7 +460,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                 {viewingIndex! > 0 && (
                   <button
                     onClick={() => navigate(-1)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                    disabled={savingCaption}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Anterior"
                   >
                     <ChevronLeft className="h-5 w-5" />
@@ -467,11 +471,20 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                 {viewingIndex! < filtered.length - 1 && (
                   <button
                     onClick={() => navigate(1)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                    disabled={savingCaption}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Próxima"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
+                )}
+                {savingCaption && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-[2px] rounded pointer-events-none">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-background/90 rounded-full shadow-lg">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-sm font-medium">Salvando legenda...</span>
+                    </div>
+                  </div>
                 )}
               </div>
               {/* Caption */}
