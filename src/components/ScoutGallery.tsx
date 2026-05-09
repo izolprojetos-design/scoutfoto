@@ -474,6 +474,49 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                   </button>
                 )}
               </div>
+              {/* Caption */}
+              <div className="px-1">
+                {editingCaption && canManage ? (
+                  <div className="space-y-2">
+                    <Textarea
+                      value={captionDraft}
+                      onChange={(e) => setCaptionDraft(e.target.value.slice(0, 500))}
+                      placeholder="Escreva uma legenda..."
+                      rows={2}
+                      maxLength={500}
+                      autoFocus
+                    />
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">{captionDraft.length}/500</span>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" onClick={() => setEditingCaption(false)} disabled={savingCaption} className="gap-1">
+                          <X className="h-4 w-4" /> Cancelar
+                        </Button>
+                        <Button size="sm" onClick={() => saveCaption(viewing)} disabled={savingCaption} className="gap-1">
+                          {savingCaption ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                          Salvar
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-2">
+                    <p className={`text-sm flex-1 break-words ${viewing.caption ? '' : 'text-muted-foreground italic'}`}>
+                      {viewing.caption || 'Sem legenda'}
+                    </p>
+                    {canManage && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1 shrink-0"
+                        onClick={() => { setCaptionDraft(viewing.caption || ''); setEditingCaption(true); }}
+                      >
+                        <Pencil className="h-3.5 w-3.5" /> {viewing.caption ? 'Editar' : 'Adicionar'}
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="flex items-center justify-between gap-2 pb-1 px-1">
                 <span className="text-xs text-muted-foreground">
                   {viewingIndex! + 1} / {filtered.length}
