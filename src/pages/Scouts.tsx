@@ -121,6 +121,7 @@ const Scouts = () => {
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
   const [renumbering, setRenumbering] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [pendingResend, setPendingResend] = useState<{ scoutId: string; scoutName: string; photo: File } | null>(null);
 
   // Edit state
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -373,31 +374,13 @@ const Scouts = () => {
       } catch (err: any) {
         console.error('[CREATE] photo upload failed', err);
         const failedPhoto = scoutPhoto;
-        toast.error('Integrante criado, mas a foto falhou.', {
+        const newScoutId = data.id;
+        const newScoutName = scoutName;
+        // Persistent banner fallback (toast action may disappear)
+        setPendingResend({ scoutId: newScoutId, scoutName: newScoutName, photo: failedPhoto });
+        toast.error('Integrante criado, mas a foto falhou. Use o botão "Reenviar foto" no topo da página.', {
           id: 'create-photo',
-          duration: 10000,
-          action: {
-            label: 'Reenviar foto',
-            onClick: async () => {
-              const { data: fresh } = await supabase
-                .from('scouts')
-                .select('*')
-                .eq('id', data.id)
-                .single();
-              if (fresh) {
-                openEditDialog(fresh as Scout);
-                if (failedPhoto) {
-                  setEditPhoto(failedPhoto);
-                  const r = new FileReader();
-                  r.onloadend = () => setEditPhotoPreview(r.result as string);
-                  r.readAsDataURL(failedPhoto);
-                  toast.info('Clique em Salvar para reenviar a foto.');
-                }
-              } else {
-                toast.error('Não foi possível abrir o integrante.');
-              }
-            },
-          },
+          duration: 8000,
         });
       }
     }
@@ -1440,6 +1423,50 @@ const Scouts = () => {
 
   return (
     <>
+      {pendingResend && (
+        <div className="mb-4 flex flex-col gap-3 rounded-lg border border-amber-300 bg-amber-50 p-4 sm:flex-row sm:items-center sm:justify-between dark:border-amber-700 dark:bg-amber-950/40">
+          <div className="flex items-center gap-3">
+            <ImageIcon className="h-5 w-5 text-amber-700 dark:text-amber-300" />
+            <div>
+              <p className="font-medium text-amber-900 dark:text-amber-100">
+                Foto pendente para {pendingResend.scoutName}
+              </p>
+              <p className="text-sm text-amber-800/80 dark:text-amber-200/80">
+                O integrante foi criado, mas a foto não foi enviada.
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              onClick={async () => {
+                console.log('[RESEND] clicked', pendingResend);
+                const { data: fresh, error } = await supabase
+                  .from('scouts')
+                  .select('*')
+                  .eq('id', pendingResend.scoutId)
+                  .maybeSingle();
+                console.log('[RESEND] fetch result', { fresh, error });
+                if (error || !fresh) {
+                  toast.error('Não foi possível abrir o integrante: ' + (error?.message ?? 'não encontrado'));
+                  return;
+                }
+                openEditDialog(fresh as Scout);
+                setEditPhoto(pendingResend.photo);
+                const r = new FileReader();
+                r.onloadend = () => setEditPhotoPreview(r.result as string);
+                r.readAsDataURL(pendingResend.photo);
+                toast.info('Clique em Salvar para reenviar a foto.');
+              }}
+            >
+              Reenviar foto
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setPendingResend(null)}>
+              Descartar
+            </Button>
+          </div>
+        </div>
+      )}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Integrantes</h1>
