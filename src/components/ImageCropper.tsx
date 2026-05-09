@@ -154,6 +154,7 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
                 ref={imgRef}
                 src={imageSrc}
                 alt="Editar"
+                crossOrigin="anonymous"
                 onLoad={onImageLoad}
                 style={{ maxHeight: '50vh', maxWidth: '100%' }}
               />
