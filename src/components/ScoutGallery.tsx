@@ -417,37 +417,97 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                   {items.map(photo => {
                     const url = signedUrls[photo.storage_path];
                     const idx = filtered.indexOf(photo);
+                    const isEditing = inlineEditId === photo.id;
                     return (
-                      <div
-                        key={photo.id}
-                        className="group relative aspect-square rounded-lg overflow-hidden border bg-muted cursor-pointer"
-                        onClick={() => setViewingIndex(idx)}
-                      >
-                        {url ? (
-                          <img src={url} alt={photo.caption || 'Foto'} loading="lazy" className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageIcon className="h-8 w-8 opacity-30" />
-                          </div>
-                        )}
-                        {/* Favorite badge */}
-                        <button
-                          onClick={(e) => { e.stopPropagation(); toggleFavorite(photo); }}
-                          className={`absolute top-1 left-1 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-opacity ${
-                            photo.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                          }`}
-                          aria-label={photo.is_favorite ? 'Desfavoritar' : 'Favoritar'}
+                      <div key={photo.id} className="flex flex-col gap-1.5">
+                        <div
+                          className="group relative aspect-square rounded-lg overflow-hidden border bg-muted cursor-pointer"
+                          onClick={() => setViewingIndex(idx)}
                         >
-                          <Star className={`h-3 w-3 ${photo.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} />
-                        </button>
-                        {canManage && (
+                          {url ? (
+                            <img src={url} alt={photo.caption || 'Foto'} loading="lazy" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <ImageIcon className="h-8 w-8 opacity-30" />
+                            </div>
+                          )}
+                          {/* Favorite badge */}
                           <button
-                            onClick={(e) => { e.stopPropagation(); setDeleting(photo); }}
-                            className="absolute top-1 right-1 p-1.5 bg-black/60 hover:bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                            aria-label="Excluir"
+                            onClick={(e) => { e.stopPropagation(); toggleFavorite(photo); }}
+                            className={`absolute top-1 left-1 p-1.5 bg-black/60 hover:bg-black/80 text-white rounded-full transition-opacity ${
+                              photo.is_favorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                            }`}
+                            aria-label={photo.is_favorite ? 'Desfavoritar' : 'Favoritar'}
                           >
-                            <Trash2 className="h-3 w-3" />
+                            <Star className={`h-3 w-3 ${photo.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} />
                           </button>
+                          {canManage && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setDeleting(photo); }}
+                              className="absolute top-1 right-1 p-1.5 bg-black/60 hover:bg-destructive text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label="Excluir"
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                        {/* Inline caption */}
+                        {isEditing ? (
+                          <div className="flex items-start gap-1" onClick={(e) => e.stopPropagation()}>
+                            <Textarea
+                              value={inlineDraft}
+                              onChange={(e) => setInlineDraft(e.target.value.slice(0, 500))}
+                              placeholder="Legenda..."
+                              rows={2}
+                              autoFocus
+                              disabled={inlineSaving}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveInlineCaption(photo); }
+                                else if (e.key === 'Escape') { setInlineEditId(null); }
+                              }}
+                              className="min-h-[44px] text-xs resize-none"
+                            />
+                            <div className="flex flex-col gap-1">
+                              <button
+                                type="button"
+                                onClick={() => saveInlineCaption(photo)}
+                                disabled={inlineSaving}
+                                className="p-1 rounded bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                                aria-label="Salvar legenda"
+                              >
+                                {inlineSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setInlineEditId(null)}
+                                disabled={inlineSaving}
+                                className="p-1 rounded bg-muted hover:bg-muted/80 disabled:opacity-50"
+                                aria-label="Cancelar"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-start gap-1 min-h-[20px]">
+                            <p className={`text-xs flex-1 break-words ${photo.caption ? 'text-foreground' : 'text-muted-foreground italic'}`}>
+                              {photo.caption || (canManage ? 'Sem legenda' : '')}
+                            </p>
+                            {canManage && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setInlineDraft(photo.caption || '');
+                                  setInlineEditId(photo.id);
+                                }}
+                                className="p-0.5 text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                                aria-label="Editar legenda"
+                              >
+                                <Pencil className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </div>
                     );
