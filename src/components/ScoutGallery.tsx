@@ -268,6 +268,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
 
   // Lightbox nav
   const navigate = useCallback((dir: 1 | -1) => {
+    setEditingCaption(false);
     setViewingIndex(idx => {
       if (idx === null) return idx;
       const next = idx + dir;
