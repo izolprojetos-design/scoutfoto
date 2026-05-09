@@ -211,23 +211,24 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
     }
   };
 
-  const saveCaption = async () => {
-    if (!viewing) return;
+  const saveCaption = async (photo: ScoutPhotoRecord) => {
     const newCaption = captionDraft.trim();
     setSavingCaption(true);
     const { error } = await supabase
       .from('scout_photos' as any)
       .update({ caption: newCaption })
-      .eq('id', viewing.id);
+      .eq('id', photo.id);
     setSavingCaption(false);
     if (error) {
       toast.error('Não foi possível salvar a legenda');
       return;
     }
-    setPhotos(prev => prev.map(p => p.id === viewing.id ? { ...p, caption: newCaption } : p));
+    setPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, caption: newCaption } : p));
     setEditingCaption(false);
     toast.success('Legenda salva');
   };
+
+  const handleDownload = async (photo: ScoutPhotoRecord) => {
     try {
       const url = signedUrls[photo.storage_path];
       if (!url) return;
