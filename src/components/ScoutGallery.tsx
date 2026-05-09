@@ -6,8 +6,11 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import {
   Loader2, Upload, Trash2, Download, ImageIcon, Star, ChevronLeft, ChevronRight, Pencil, Check, X,
+  RotateCw, Crop as CropIcon, UserCircle,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
+import ImageCropper from '@/components/ImageCropper';
+import { compressScoutPhoto } from '@/lib/imageCompression';
 import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
@@ -70,6 +73,125 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
   const [inlineDraft, setInlineDraft] = useState('');
   const [inlineSaving, setInlineSaving] = useState(false);
+  const [processingAction, setProcessingAction] = useState<null | 'rotate' | 'crop' | 'profile'>(null);
+  const [cropOpenFor, setCropOpenFor] = useState<ScoutPhotoRecord | null>(null);
+
+  const refreshSignedUrl = useCallback(async (path: string) => {
+    const urls = await getSignedUrlsBatch('scout-photos', [path], 3600);
+    const fresh = urls[path];
+    if (fresh) {
+      // bust cache so the <img> reloads even if signed URL is unchanged
+      const busted = fresh + (fresh.includes('?') ? '&' : '?') + 'r=' + Date.now();
+      setSignedUrls(prev => ({ ...prev, [path]: busted }));
+    }
+  }, []);
+
+  const loadImage = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+
+  const replacePhotoWithBlob = async (photo: ScoutPhotoRecord, blob: Blob) => {
+    const file = new File([blob], 'photo.jpg', { type: 'image/jpeg' });
+    const compressed = await compressImage(file);
+    const { error: upErr } = await supabase.storage
+      .from('scout-photos')
+      .upload(photo.storage_path, compressed, { upsert: true, contentType: compressed.type });
+    if (upErr) throw upErr;
+    await supabase.from('scout_photos' as any)
+      .update({ file_size: compressed.size, mime_type: compressed.type })
+      .eq('id', photo.id);
+    setPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, file_size: compressed.size, mime_type: compressed.type } : p));
+    await refreshSignedUrl(photo.storage_path);
+  };
+
+  const rotatePhoto = async (photo: ScoutPhotoRecord) => {
+    const url = signedUrls[photo.storage_path];
+    if (!url) return;
+    setProcessingAction('rotate');
+    try {
+      const img = await loadImage(url);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalHeight;
+      canvas.height = img.naturalWidth;
+      const ctx = canvas.getContext('2d')!;
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(Math.PI / 2);
+      ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
+      const blob: Blob = await new Promise((res, rej) =>
+        canvas.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/jpeg', 0.92)
+      );
+      await replacePhotoWithBlob(photo, blob);
+      toast.success('Foto rotacionada');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Falha ao rotacionar foto');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
+  const handleCropConfirm = async (file: File) => {
+    const photo = cropOpenFor;
+    setCropOpenFor(null);
+    if (!photo) return;
+    setProcessingAction('crop');
+    try {
+      await replacePhotoWithBlob(photo, file);
+      toast.success('Foto recortada');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Falha ao salvar recorte');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
+  const setAsProfile = async (photo: ScoutPhotoRecord) => {
+    const url = signedUrls[photo.storage_path];
+    if (!url || !user) return;
+    setProcessingAction('profile');
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const file = new File([blob], 'profile.jpg', { type: blob.type || 'image/jpeg' });
+      const compressed = await compressScoutPhoto(file);
+      const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+      const safeName = scoutName
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9_\-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      const idPrefix = scoutId.slice(0, 8);
+      const path = `${safeName}_${idPrefix}.${ext}`;
+
+      // Cleanup older profile files at bucket root (avoid removing gallery/* which is in subfolder)
+      const { data: existing } = await supabase.storage.from('scout-photos').list('', { search: idPrefix });
+      if (existing) {
+        for (const f of existing) {
+          if (f.name.includes(idPrefix) && f.name !== path) {
+            await supabase.storage.from('scout-photos').remove([f.name]);
+          }
+        }
+      }
+      const { error: upErr } = await supabase.storage
+        .from('scout-photos')
+        .upload(path, compressed, { upsert: true, contentType: compressed.type });
+      if (upErr) throw upErr;
+      const { error: dbErr } = await supabase.from('scouts').update({ photo_url: path }).eq('id', scoutId);
+      if (dbErr) throw dbErr;
+      toast.success('Definida como foto de perfil');
+    } catch (err: any) {
+      console.error(err);
+      toast.error('Falha ao definir como foto de perfil');
+    } finally {
+      setProcessingAction(null);
+    }
+  };
+
 
   const saveInlineCaption = async (photo: ScoutPhotoRecord) => {
     const newCaption = inlineDraft.trim();
@@ -614,23 +736,64 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 pb-1 px-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-1 px-1">
                 <span className="text-xs text-muted-foreground">
                   {viewingIndex! + 1} / {filtered.length}
                   {' · '}
                   {format(new Date(viewing.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap justify-end">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => toggleFavorite(viewing)}
                     className="gap-2"
+                    disabled={!!processingAction}
                   >
                     <Star className={`h-4 w-4 ${viewing.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} />
                     {viewing.is_favorite ? 'Favorita' : 'Favoritar'}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
+                  {canManage && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => rotatePhoto(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'rotate'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <RotateCw className="h-4 w-4" />}
+                        Girar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCropOpenFor(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'crop'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <CropIcon className="h-4 w-4" />}
+                        Recortar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAsProfile(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'profile'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <UserCircle className="h-4 w-4" />}
+                        Usar no perfil
+                      </Button>
+                    </>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2" disabled={!!processingAction}>
                     <Download className="h-4 w-4" /> Baixar
                   </Button>
                 </div>
@@ -696,6 +859,16 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Image cropper for in-gallery edits */}
+      {cropOpenFor && (
+        <ImageCropper
+          open={!!cropOpenFor}
+          imageSrc={signedUrls[cropOpenFor.storage_path] || ''}
+          onClose={() => setCropOpenFor(null)}
+          onCropComplete={handleCropConfirm}
+        />
+      )}
     </div>
   );
 }
