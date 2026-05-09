@@ -300,13 +300,24 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           toast.warning(`"${file.name}" muito grande, ignorado.`);
           continue;
         }
-        const compressed = await compressImage(file);
-        const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        let compressed: File | Blob = file;
+        try {
+          compressed = await compressImage(file);
+        } catch (cErr) {
+          console.warn('compress failed, using original', cErr);
+        }
+        // Normaliza extensão/mime — câmera iOS pode entregar HEIC que o Storage rejeita
+        let mime = (compressed as File).type || file.type || 'image/jpeg';
+        let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
+        if (ext === 'heic' || ext === 'heif' || !['jpg', 'png', 'webp'].includes(ext)) {
+          ext = 'jpg';
+          mime = 'image/jpeg';
+        }
         const path = `gallery/${scoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
-          .upload(path, compressed, { upsert: false, contentType: compressed.type });
+          .upload(path, compressed, { upsert: false, contentType: mime });
         if (upErr) throw upErr;
 
         const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
@@ -314,8 +325,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           storage_path: path,
           caption: '',
           uploaded_by: user.id,
-          file_size: compressed.size,
-          mime_type: compressed.type,
+          file_size: (compressed as File).size ?? file.size,
+          mime_type: mime,
         });
         if (dbErr) {
           await supabase.storage.from('scout-photos').remove([path]);
@@ -324,7 +335,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
         success++;
       } catch (err: any) {
         console.error('upload err', err);
-        toast.error(`Falha ao enviar "${file.name}": ${err.message || 'erro'}`);
+        toast.error(`Falha ao enviar "${file.name}": ${err?.message || 'erro desconhecido'}`);
       }
     }
 
