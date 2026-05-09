@@ -215,6 +215,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const dragCounter = useRef(0);
 
