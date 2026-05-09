@@ -439,7 +439,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       </div>
 
       {/* Lightbox */}
-      <Dialog open={viewingIndex !== null} onOpenChange={() => setViewingIndex(null)}>
+      <Dialog open={viewingIndex !== null} onOpenChange={() => { setViewingIndex(null); setEditingCaption(false); }}>
         <DialogContent className="max-w-4xl p-2 max-h-[90vh]">
           <DialogHeader className="sr-only">
             <DialogTitle>Foto</DialogTitle>
