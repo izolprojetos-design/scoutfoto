@@ -745,20 +745,41 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <p className="text-xs text-muted-foreground">
             JPG, PNG ou HEIC — até <strong>{MAX_SIZE_MB}MB</strong> por arquivo. Arraste sobre uma pasta para enviar direto.
           </p>
-          <Button
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="gap-2"
-          >
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            Enviar fotos
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+              title="Tirar foto com a câmera"
+            >
+              <Camera className="h-4 w-4" />
+              Câmera
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Enviar fotos
+            </Button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
             accept=".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif"
             multiple
+            className="hidden"
+            onChange={(e) => openUploadDialog(e.target.files)}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => openUploadDialog(e.target.files)}
           />
