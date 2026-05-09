@@ -827,7 +827,10 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       </Dialog>
 
       {/* Upload confirm — vincula ao integrante selecionado */}
-      <AlertDialog open={!!pendingFiles} onOpenChange={(o) => !o && setPendingFiles(null)}>
+      <AlertDialog
+        open={!!pendingFiles}
+        onOpenChange={(o) => { if (!o && !uploading) setPendingFiles(null); }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar envio</AlertDialogTitle>
@@ -848,15 +851,22 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={uploading}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => {
+              disabled={uploading || !pendingFiles?.length}
+              onClick={async (e) => {
+                // Evita fechamento automático do Radix antes do upload terminar
+                e.preventDefault();
                 const files = pendingFiles;
-                setPendingFiles(null);
-                if (files) handleFiles(files);
+                if (!files || !files.length) return;
+                try {
+                  await handleFiles(files);
+                } finally {
+                  setPendingFiles(null);
+                }
               }}
             >
-              Confirmar envio
+              {uploading ? 'Enviando...' : 'Confirmar envio'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
