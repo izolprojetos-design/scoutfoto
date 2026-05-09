@@ -443,7 +443,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
       </div>
 
       {/* Lightbox */}
-      <Dialog open={viewingIndex !== null} onOpenChange={() => { setViewingIndex(null); setEditingCaption(false); }}>
+      <Dialog open={viewingIndex !== null} onOpenChange={(open) => { if (!open && savingCaption) return; setViewingIndex(open ? viewingIndex : null); setEditingCaption(false); }}>
         <DialogContent className="max-w-4xl p-2 max-h-[90vh]">
           <DialogHeader className="sr-only">
             <DialogTitle>Foto</DialogTitle>
@@ -460,7 +460,8 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                 {viewingIndex! > 0 && (
                   <button
                     onClick={() => navigate(-1)}
-                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full"
+                    disabled={savingCaption}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-black/80 text-white rounded-full disabled:opacity-30 disabled:cursor-not-allowed"
                     aria-label="Anterior"
                   >
                     <ChevronLeft className="h-5 w-5" />
