@@ -470,7 +470,7 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           )}
         </div>
         {canManage && (
-          <div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <input
               ref={fileInputRef}
               type="file"
@@ -482,10 +482,32 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                 if (fileInputRef.current) fileInputRef.current.value = '';
               }}
             />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => {
+                requestUpload(e.target.files);
+                if (cameraInputRef.current) cameraInputRef.current.value = '';
+              }}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+              title="Tirar foto com a câmera"
+            >
+              <Camera className="h-4 w-4" />
+              Câmera
+            </Button>
             <Button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="gap-2 w-full sm:w-auto"
+              className="gap-2 flex-1 sm:flex-none"
             >
               {uploading ? (
                 <><Loader2 className="h-4 w-4 animate-spin" /> Enviando {progress.current}/{progress.total}</>
