@@ -64,6 +64,9 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   const [isDragging, setIsDragging] = useState(false);
 
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [editingCaption, setEditingCaption] = useState(false);
+  const [captionDraft, setCaptionDraft] = useState('');
+  const [savingCaption, setSavingCaption] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
