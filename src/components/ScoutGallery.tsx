@@ -67,6 +67,30 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   const [editingCaption, setEditingCaption] = useState(false);
   const [captionDraft, setCaptionDraft] = useState('');
   const [savingCaption, setSavingCaption] = useState(false);
+  const [inlineEditId, setInlineEditId] = useState<string | null>(null);
+  const [inlineDraft, setInlineDraft] = useState('');
+  const [inlineSaving, setInlineSaving] = useState(false);
+
+  const saveInlineCaption = async (photo: ScoutPhotoRecord) => {
+    const newCaption = inlineDraft.trim();
+    if (newCaption === (photo.caption || '')) {
+      setInlineEditId(null);
+      return;
+    }
+    setInlineSaving(true);
+    const { error } = await supabase
+      .from('scout_photos' as any)
+      .update({ caption: newCaption })
+      .eq('id', photo.id);
+    setInlineSaving(false);
+    if (error) {
+      toast.error('Não foi possível salvar a legenda');
+      return;
+    }
+    setPhotos(prev => prev.map(p => p.id === photo.id ? { ...p, caption: newCaption } : p));
+    setInlineEditId(null);
+    toast.success('Legenda salva');
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
