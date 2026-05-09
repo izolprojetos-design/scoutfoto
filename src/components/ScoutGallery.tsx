@@ -736,23 +736,64 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                   </div>
                 )}
               </div>
-              <div className="flex items-center justify-between gap-2 pb-1 px-1">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-1 px-1">
                 <span className="text-xs text-muted-foreground">
                   {viewingIndex! + 1} / {filtered.length}
                   {' · '}
                   {format(new Date(viewing.created_at), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                 </span>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap justify-end">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => toggleFavorite(viewing)}
                     className="gap-2"
+                    disabled={!!processingAction}
                   >
                     <Star className={`h-4 w-4 ${viewing.is_favorite ? 'fill-amber-400 text-amber-400' : ''}`} />
                     {viewing.is_favorite ? 'Favorita' : 'Favoritar'}
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2">
+                  {canManage && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => rotatePhoto(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'rotate'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <RotateCw className="h-4 w-4" />}
+                        Girar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCropOpenFor(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'crop'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <CropIcon className="h-4 w-4" />}
+                        Recortar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setAsProfile(viewing)}
+                        className="gap-2"
+                        disabled={!!processingAction}
+                      >
+                        {processingAction === 'profile'
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <UserCircle className="h-4 w-4" />}
+                        Usar no perfil
+                      </Button>
+                    </>
+                  )}
+                  <Button variant="outline" size="sm" onClick={() => handleDownload(viewing)} className="gap-2" disabled={!!processingAction}>
                     <Download className="h-4 w-4" /> Baixar
                   </Button>
                 </div>
