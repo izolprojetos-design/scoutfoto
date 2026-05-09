@@ -146,6 +146,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const cancelUploadRef = useRef(false);
   const activeXhrRef = useRef<XMLHttpRequest | null>(null);
 
