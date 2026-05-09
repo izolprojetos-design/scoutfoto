@@ -374,31 +374,13 @@ const Scouts = () => {
       } catch (err: any) {
         console.error('[CREATE] photo upload failed', err);
         const failedPhoto = scoutPhoto;
-        toast.error('Integrante criado, mas a foto falhou.', {
+        const newScoutId = data.id;
+        const newScoutName = scoutName;
+        // Persistent banner fallback (toast action may disappear)
+        setPendingResend({ scoutId: newScoutId, scoutName: newScoutName, photo: failedPhoto });
+        toast.error('Integrante criado, mas a foto falhou. Use o botão "Reenviar foto" no topo da página.', {
           id: 'create-photo',
-          duration: 10000,
-          action: {
-            label: 'Reenviar foto',
-            onClick: async () => {
-              const { data: fresh } = await supabase
-                .from('scouts')
-                .select('*')
-                .eq('id', data.id)
-                .single();
-              if (fresh) {
-                openEditDialog(fresh as Scout);
-                if (failedPhoto) {
-                  setEditPhoto(failedPhoto);
-                  const r = new FileReader();
-                  r.onloadend = () => setEditPhotoPreview(r.result as string);
-                  r.readAsDataURL(failedPhoto);
-                  toast.info('Clique em Salvar para reenviar a foto.');
-                }
-              } else {
-                toast.error('Não foi possível abrir o integrante.');
-              }
-            },
-          },
+          duration: 8000,
         });
       }
     }
