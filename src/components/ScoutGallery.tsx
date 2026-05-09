@@ -478,6 +478,14 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
                     <ChevronRight className="h-5 w-5" />
                   </button>
                 )}
+                {savingCaption && (
+                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/30 backdrop-blur-[2px] rounded pointer-events-none">
+                    <div className="flex items-center gap-2 px-4 py-2 bg-background/90 rounded-full shadow-lg">
+                      <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                      <span className="text-sm font-medium">Salvando legenda...</span>
+                    </div>
+                  </div>
+                )}
               </div>
               {/* Caption */}
               <div className="px-1">
