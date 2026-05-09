@@ -73,11 +73,13 @@ const Profile = () => {
 
     setUploading(true);
     const compressed = await compressAvatar(file);
-    const path = `avatars/${user.id}.webp`;
+    // Use a unique filename per upload so previous avatars are preserved in storage
+    const timestamp = Date.now();
+    const path = `avatars/${user.id}/${timestamp}.webp`;
 
     const { error: uploadError } = await supabase.storage
       .from('scout-photos')
-      .upload(path, compressed, { upsert: true, contentType: compressed.type });
+      .upload(path, compressed, { upsert: false, contentType: compressed.type });
 
     if (uploadError) {
       toast.error('Erro no upload: ' + uploadError.message);
