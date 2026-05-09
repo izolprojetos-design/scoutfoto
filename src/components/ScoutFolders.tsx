@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import {
   Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
   UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
-  CheckSquare, Square, RotateCcw, Play,
+  CheckSquare, Square, RotateCcw, Play, Camera,
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import {
@@ -146,6 +146,7 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const cancelUploadRef = useRef(false);
   const activeXhrRef = useRef<XMLHttpRequest | null>(null);
 
@@ -745,20 +746,41 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           <p className="text-xs text-muted-foreground">
             JPG, PNG ou HEIC — até <strong>{MAX_SIZE_MB}MB</strong> por arquivo. Arraste sobre uma pasta para enviar direto.
           </p>
-          <Button
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="gap-2"
-          >
-            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-            Enviar fotos
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => cameraInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+              title="Tirar foto com a câmera"
+            >
+              <Camera className="h-4 w-4" />
+              Câmera
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="gap-2"
+            >
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Enviar fotos
+            </Button>
+          </div>
           <input
             ref={fileInputRef}
             type="file"
             accept=".jpg,.jpeg,.png,.heic,.heif,image/jpeg,image/png,image/heic,image/heif"
             multiple
+            className="hidden"
+            onChange={(e) => openUploadDialog(e.target.files)}
+          />
+          <input
+            ref={cameraInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
             className="hidden"
             onChange={(e) => openUploadDialog(e.target.files)}
           />

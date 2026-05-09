@@ -1076,26 +1076,8 @@ const Scouts = () => {
           )}
         </div>
         <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
-        <input id={`${photoInputId}-camera`} type="file" accept="image/*" capture="environment" className="hidden" onChange={onPhotoSelect} />
         <span className="text-xs text-muted-foreground">Toque para adicionar foto</span>
         <div className="flex gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => {
-              photoPickInProgressRef.current = true;
-              document.getElementById(`${photoInputId}-camera`)?.click();
-              // Defensive cleanup if user cancels camera (no change event fires)
-              window.setTimeout(() => {
-                if (!cropperOpen) photoPickInProgressRef.current = false;
-              }, 60000);
-            }}
-          >
-            <Camera className="h-4 w-4" />
-            Câmera
-          </Button>
           <Button
             type="button"
             variant="outline"
