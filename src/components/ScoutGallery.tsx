@@ -281,17 +281,19 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
   useEffect(() => {
     if (viewingIndex === null) return;
     const onKey = (e: KeyboardEvent) => {
+      if (savingCaption) return;
       if (e.key === 'ArrowRight') navigate(1);
       else if (e.key === 'ArrowLeft') navigate(-1);
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [viewingIndex, navigate]);
+  }, [viewingIndex, navigate, savingCaption]);
 
   // Touch swipe
   const touchStartX = useRef<number | null>(null);
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd = (e: React.TouchEvent) => {
+    if (savingCaption) return;
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(dx) > 50) navigate(dx < 0 ? 1 : -1);
