@@ -56,15 +56,22 @@ Deno.serve(async (req) => {
 
     const link = linkRows[0];
 
-    // Verify the image belongs to the event
-    const { data: image } = await supabase
-      .from("images")
-      .select("id, event_id, minor_age, visibility, storage_path, thumbnail_path")
-      .eq("event_id", link.event_id)
-      .or(`storage_path.eq.${storagePath},thumbnail_path.eq.${storagePath}`)
-      .is("minor_age", null)
-      .in("visibility", ["public", "group"])
-      .single();
+    // Verify the image belongs to the event - use two parameterized queries
+    // instead of raw .or() string interpolation to eliminate injection risk.
+    const baseSelect = () =>
+      supabase
+        .from("images")
+        .select("id, event_id, minor_age, visibility, storage_path, thumbnail_path")
+        .eq("event_id", link.event_id)
+        .is("minor_age", null)
+        .in("visibility", ["public", "group"])
+        .limit(1);
+
+    let { data: imageRows } = await baseSelect().eq("storage_path", storagePath);
+    if (!imageRows?.length) {
+      ({ data: imageRows } = await baseSelect().eq("thumbnail_path", storagePath));
+    }
+    const image = imageRows?.[0];
 
     if (!image) {
       return new Response(JSON.stringify({ error: "Image not found or access denied" }), {
