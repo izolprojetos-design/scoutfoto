@@ -151,7 +151,7 @@ export async function exportScoutProfilePdf(
     autoTable(doc, {
       startY: cursorY + 3,
       head: [['Nome', 'E-mail', 'Telefone']],
-      body: guardians.map(g => [g.name, g.email || '—', g.phone || '—']),
+      body: guardians.map(g => [g.name, g.email || '—', formatPhoneBR(g.phone) || '—']),
       headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
       margin: { left: margin, right: margin },
