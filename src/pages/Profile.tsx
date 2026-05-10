@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { compressAvatar } from '@/lib/imageCompression';
+import { cn } from '@/lib/utils';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -28,10 +29,19 @@ const Profile = () => {
     refreshRoles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Synchronize local avatarUrl when profile loads/changes
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url);
+    }
+  }, [profile?.avatar_url]);
+
   const [name, setName] = useState(profile?.name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(profile?.avatar_url || '');
+  const [avatarLoaded, setAvatarLoaded] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
 
@@ -130,9 +140,21 @@ const Profile = () => {
             <div className="relative">
               <Avatar className="h-28 w-28 border-4 border-primary/20">
                 {displayAvatarUrl ? (
-                  <AvatarImage src={displayAvatarUrl} alt={profile?.name} />
+                  <img
+                    key={displayAvatarUrl}
+                    src={displayAvatarUrl}
+                    alt={profile?.name || ''}
+                    className="aspect-square h-full w-full rounded-full object-cover"
+                    onLoad={() => setAvatarLoaded(true)}
+                    onError={() => setAvatarLoaded(false)}
+                  />
                 ) : null}
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                <AvatarFallback
+                  className={cn(
+                    "bg-primary/10 text-primary text-2xl font-bold",
+                    displayAvatarUrl && avatarLoaded ? "hidden" : "flex"
+                  )}
+                >
                   {initials}
                 </AvatarFallback>
               </Avatar>
