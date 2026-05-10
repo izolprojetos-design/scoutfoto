@@ -984,8 +984,16 @@ const Scouts = () => {
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: '12º Grupo Escoteiro Monte Caburai-12º GEMC', size: 20, color: '444444' })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: `Exportado em: ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
             spacing: { after: 200 },
-            children: [new TextRun({ text: `Total: ${filteredScouts.length} • Gerado em ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+            children: [new TextRun({ text: `Horário: ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Total: ${filteredScouts.length}`, size: 18, color: '666666' })],
           }),
           new Table({
             width: { size: 14400, type: WidthType.DXA },
