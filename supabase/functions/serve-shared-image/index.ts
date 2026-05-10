@@ -22,6 +22,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate storagePath: only allow safe characters (alphanumeric, slash, dot, dash, underscore)
+    // Prevent PostgREST filter injection via the .or() builder.
+    if (!/^[\w\-./]+$/.test(storagePath) || storagePath.includes("..") || storagePath.length > 512) {
+      return new Response(JSON.stringify({ error: "Invalid path" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate token format too (share tokens are short alphanumeric strings)
+    if (!/^[\w-]{6,128}$/.test(token)) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
