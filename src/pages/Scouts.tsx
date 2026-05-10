@@ -740,10 +740,12 @@ const Scouts = () => {
       pageDoc.setFontSize(11);
       pageDoc.setFont('helvetica', 'normal');
       pageDoc.setTextColor(60);
-      pageDoc.text('12º Grupo Escoteiro Monte Caburaí - 12GEMC', 38, 20);
+      pageDoc.text('12º Grupo Escoteiro Monte Caburai-12º GEMC', 38, 20);
       pageDoc.setFontSize(9);
       pageDoc.setTextColor(120);
-      pageDoc.text(`Exportado em ${new Date().toLocaleDateString('pt-BR')}`, 38, 25);
+      const now = new Date();
+      pageDoc.text(`Exportado em: ${now.toLocaleDateString('pt-BR')}`, 38, 25);
+      pageDoc.text(`Horário: ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 38, 30);
       pageDoc.setTextColor(0);
     };
 
