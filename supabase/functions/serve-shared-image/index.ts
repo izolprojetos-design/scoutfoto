@@ -22,6 +22,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Validate storagePath: only allow safe characters (alphanumeric, slash, dot, dash, underscore)
+    // Prevent PostgREST filter injection via the .or() builder.
+    if (!/^[\w\-./]+$/.test(storagePath) || storagePath.includes("..") || storagePath.length > 512) {
+      return new Response(JSON.stringify({ error: "Invalid path" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Validate token format too (share tokens are short alphanumeric strings)
+    if (!/^[\w-]{6,128}$/.test(token)) {
+      return new Response(JSON.stringify({ error: "Invalid token" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, serviceKey);
@@ -39,15 +56,22 @@ Deno.serve(async (req) => {
 
     const link = linkRows[0];
 
-    // Verify the image belongs to the event
-    const { data: image } = await supabase
-      .from("images")
-      .select("id, event_id, minor_age, visibility, storage_path, thumbnail_path")
-      .eq("event_id", link.event_id)
-      .or(`storage_path.eq.${storagePath},thumbnail_path.eq.${storagePath}`)
-      .is("minor_age", null)
-      .in("visibility", ["public", "group"])
-      .single();
+    // Verify the image belongs to the event - use two parameterized queries
+    // instead of raw .or() string interpolation to eliminate injection risk.
+    const baseSelect = () =>
+      supabase
+        .from("images")
+        .select("id, event_id, minor_age, visibility, storage_path, thumbnail_path")
+        .eq("event_id", link.event_id)
+        .is("minor_age", null)
+        .in("visibility", ["public", "group"])
+        .limit(1);
+
+    let { data: imageRows } = await baseSelect().eq("storage_path", storagePath);
+    if (!imageRows?.length) {
+      ({ data: imageRows } = await baseSelect().eq("thumbnail_path", storagePath));
+    }
+    const image = imageRows?.[0];
 
     if (!image) {
       return new Response(JSON.stringify({ error: "Image not found or access denied" }), {
