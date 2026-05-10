@@ -871,7 +871,7 @@ const Scouts = () => {
         'Ramo': branch?.name || '',
         'Seção': scout.section || '',
         'Equipe': sg?.name || '',
-        'Celular': scout.phone || '',
+        'Celular': formatPhoneBR(scout.phone) || '',
         'Data de Nascimento': parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
         'Idade': formatAge(parseLocalDate(scout.birth_date)),
         'Responsável': responsavel,
