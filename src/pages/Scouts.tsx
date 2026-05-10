@@ -938,7 +938,7 @@ const Scouts = () => {
         branch?.name || '',
         scout.section || '',
         sg?.name || '',
-        scout.phone || '',
+        formatPhoneBR(scout.phone) || '',
         parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
         formatAge(parseLocalDate(scout.birth_date)),
         responsavel,
