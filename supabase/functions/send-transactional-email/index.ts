@@ -43,7 +43,10 @@ async function verifyAuth(req: Request): Promise<boolean> {
   })
 
   const { data, error } = await client.auth.getClaims(authHeader.replace('Bearer ', ''))
-  return !error && !!data?.claims
+  // Require a real user session (sub claim), not just any valid JWT (e.g. anon key).
+  // This blocks abuse where an attacker uses the publicly visible anon key to
+  // trigger emails to arbitrary recipients via the app's verified domain.
+  return !error && !!data?.claims?.sub
 }
 
 Deno.serve(async (req) => {
