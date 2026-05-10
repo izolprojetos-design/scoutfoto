@@ -89,17 +89,22 @@ const Profile = () => {
     }
 
     const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
-    const newUrl = signedData?.signedUrl || path;
+    if (!signedData?.signedUrl) {
+      toast.error('Erro ao gerar URL da imagem');
+      setUploading(false);
+      return;
+    }
 
+    // Save only the storage path so it can be re-signed on demand (signed URLs expire in 1h)
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar_url: newUrl })
+      .update({ avatar_url: path })
       .eq('user_id', user.id);
 
     if (updateError) {
       toast.error('Erro ao salvar avatar: ' + updateError.message);
     } else {
-      setAvatarUrl(newUrl);
+      setAvatarUrl(path);
       toast.success('Foto de perfil atualizada!');
     }
     setUploading(false);
