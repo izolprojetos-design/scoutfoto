@@ -112,6 +112,8 @@ const Profile = () => {
 
   const primaryRole = getPrimaryRole(roles);
 
+  const displayAvatarUrl = useSignedUrl(avatarUrl);
+
   return (
     <>
       <div className="mx-auto max-w-2xl space-y-6">
@@ -127,8 +129,8 @@ const Profile = () => {
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <div className="relative">
               <Avatar className="h-28 w-28 border-4 border-primary/20">
-                {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt={profile?.name} />
+                {displayAvatarUrl ? (
+                  <AvatarImage src={displayAvatarUrl} alt={profile?.name} />
                 ) : null}
                 <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                   {initials}
