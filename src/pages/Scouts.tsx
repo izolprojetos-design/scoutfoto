@@ -2357,7 +2357,7 @@ const Scouts = () => {
                       {viewingScout.phone && (
                         <div className="flex justify-between py-2 border-b">
                           <span className="text-muted-foreground">Celular</span>
-                          <span className="font-medium">{viewingScout.phone}</span>
+                          <span className="font-medium">{formatPhoneBR(viewingScout.phone)}</span>
                         </div>
                       )}
                       <div className="flex justify-between py-2 border-b">
