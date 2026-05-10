@@ -877,7 +877,18 @@ const Scouts = () => {
       };
     });
 
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const headerRows = [
+      [`Integrantes - ${filterLabel} (${filteredScouts.length})`],
+      ['12º Grupo Escoteiro Monte Caburai-12º GEMC'],
+      [`Exportado em: ${dateStr}`],
+      [`Horário: ${timeStr}`],
+      [],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(headerRows);
+    XLSX.utils.sheet_add_json(ws, rows, { origin: `A${headerRows.length + 1}` });
     const colWidths = isVoluntario
       ? [10, 30, 12, 14, 30, 30, 16, 16, 14]
       : [10, 30, 12, 18, 18, 16, 16, 14, 30];
