@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockoutTime } from '@/lib/loginRateLimit';
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
+import LogoCircle from '@/components/LogoCircle';
 
 const Login = () => {
   const { signIn } = useAuth();
@@ -99,9 +100,7 @@ const Login = () => {
         <div className="relative z-10 flex flex-col justify-between p-12 text-white">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white shadow-lg ring-4 ring-white/20 overflow-hidden p-2.5">
-                <img src="/icon-512.png" alt="ScoutFoto Logo" className="w-full h-full object-contain rounded-full" />
-              </div>
+              <LogoCircle size="sm" shadowClassName="shadow-lg" ringClassName="ring-white/20" />
               <span className="text-2xl font-bold tracking-tight" style={{ fontFamily: 'Montserrat, sans-serif' }}>ScoutFoto</span>
             </div>
           </div>
@@ -155,9 +154,9 @@ const Login = () => {
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-              className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-xl ring-4 ring-primary/10 overflow-hidden p-3"
+              className="mx-auto mb-4 w-fit"
             >
-              <img src="/icon-512.png" alt="ScoutFoto Logo" className="w-full h-full object-contain rounded-full" />
+              <LogoCircle size="md" shadowClassName="shadow-xl" ringClassName="ring-primary/10" />
             </motion.div>
             <h1 className="text-2xl font-bold text-foreground tracking-tight">ScoutFoto</h1>
             <p className="mt-1 text-sm text-muted-foreground">Banco de imagens escoteiro</p>
