@@ -879,8 +879,8 @@ const Scouts = () => {
     });
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString('pt-BR');
-    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = formatDatePtBR(now);
+    const timeStr = formatTimePtBR(now);
     const headerRows = [
       [`Integrantes - ${filterLabel} (${filteredScouts.length})`],
       ['12º Grupo Escoteiro Monte Caburai-12º GEMC'],
