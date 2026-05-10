@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
+import { formatDatePtBR, formatTimePtBR } from '@/lib/formatting';
 import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -744,8 +745,8 @@ const Scouts = () => {
       pageDoc.setFontSize(9);
       pageDoc.setTextColor(120);
       const now = new Date();
-      pageDoc.text(`Exportado em: ${now.toLocaleDateString('pt-BR')}`, 38, 25);
-      pageDoc.text(`Horário: ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 38, 30);
+      pageDoc.text(`Exportado em: ${formatDatePtBR(now)}`, 38, 25);
+      pageDoc.text(`Horário: ${formatTimePtBR(now)}`, 38, 30);
       pageDoc.setTextColor(0);
     };
 
@@ -878,8 +879,8 @@ const Scouts = () => {
     });
 
     const now = new Date();
-    const dateStr = now.toLocaleDateString('pt-BR');
-    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = formatDatePtBR(now);
+    const timeStr = formatTimePtBR(now);
     const headerRows = [
       [`Integrantes - ${filterLabel} (${filteredScouts.length})`],
       ['12º Grupo Escoteiro Monte Caburai-12º GEMC'],
@@ -988,12 +989,12 @@ const Scouts = () => {
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: `Exportado em: ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+            children: [new TextRun({ text: `Exportado em: ${formatDatePtBR()}`, size: 18, color: '666666' })],
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { after: 200 },
-            children: [new TextRun({ text: `Horário: ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Total: ${filteredScouts.length}`, size: 18, color: '666666' })],
+            children: [new TextRun({ text: `Horário: ${formatTimePtBR()} • Total: ${filteredScouts.length}`, size: 18, color: '666666' })],
           }),
           new Table({
             width: { size: 14400, type: WidthType.DXA },
