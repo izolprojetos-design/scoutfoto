@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import LogoCircle from "@/components/LogoCircle";
 
 const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
   const [visible, setVisible] = useState(true);
@@ -23,16 +24,11 @@ const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
           style={{ backgroundColor: "#14532d" }}
         >
           <motion.div
-            className="w-44 h-44 rounded-full bg-white p-4 shadow-2xl ring-4 ring-white/20 flex items-center justify-center"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
           >
-            <img
-              src="/icon-512.png"
-              alt="12º Grupo Escoteiro Monte Caburaí"
-              className="w-full h-full object-contain rounded-full"
-            />
+            <LogoCircle size="lg" shadowClassName="shadow-2xl" ringClassName="ring-white/20" alt="12º Grupo Escoteiro Monte Caburaí" />
           </motion.div>
           <motion.h1
             className="mt-6 text-3xl font-bold tracking-wide"
