@@ -11,6 +11,7 @@ import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockout
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
 import LogoCircle from '@/components/LogoCircle';
+import WorkspaceTransferGuide from '@/components/WorkspaceTransferGuide';
 
 const Login = () => {
   const { signIn } = useAuth();
