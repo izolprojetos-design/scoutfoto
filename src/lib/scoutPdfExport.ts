@@ -129,7 +129,7 @@ export async function exportScoutProfilePdf(
   if (branch) lines.push(`Ramo atual: ${branch.name}`);
   if (next) lines.push(`Próximo ramo: ${next.branch.name} em ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`);
   if (scout.registration_id) lines.push(`ID: ${scout.registration_id}`);
-  if (scout.phone) lines.push(`Celular: ${scout.phone}`);
+  if (scout.phone) lines.push(`Celular: ${formatPhoneBR(scout.phone)}`);
   lines.forEach((l, i) => doc.text(l, statsX, photoY + 13 + i * 5.5));
 
   let cursorY = photoY + 55;
