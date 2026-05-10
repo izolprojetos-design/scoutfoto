@@ -14,6 +14,7 @@ import { Link2, Copy, Mail, Loader2, Trash2, Clock, CheckCircle2, XCircle, Messa
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import { formatPhoneBR } from '@/lib/formatting';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
