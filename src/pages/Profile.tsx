@@ -138,7 +138,7 @@ const Profile = () => {
             <div className="relative">
               <Avatar className="h-28 w-28 border-4 border-primary/20">
                 {displayAvatarUrl ? (
-                  <AvatarImage src={displayAvatarUrl} alt={profile?.name} />
+                  <AvatarImage key={displayAvatarUrl} src={displayAvatarUrl} alt={profile?.name} />
                 ) : null}
                 <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                   {initials}
