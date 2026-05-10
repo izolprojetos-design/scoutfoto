@@ -2404,7 +2404,7 @@ const Scouts = () => {
                                 <span className="font-medium">{g.name}</span>
                               </div>
                               {g.email && <p className="text-muted-foreground">{g.email}</p>}
-                              {g.phone && <p className="text-muted-foreground">{g.phone}</p>}
+                              {g.phone && <p className="text-muted-foreground">{formatPhoneBR(g.phone)}</p>}
                             </div>
                           ))}
                         </div>
