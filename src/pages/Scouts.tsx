@@ -753,7 +753,10 @@ const Scouts = () => {
     const headers = isVoluntario
       ? ['ID', 'Nome', 'Ramo', 'Seção', '1ª Função', '2ª Função', 'Celular', 'Data Nasc.', 'Idade']
       : ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Data Nasc.', 'Idade', 'Responsável'];
-    const rows = filteredScouts.map(scout => {
+    const sortedScouts = [...filteredScouts].sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+    );
+    const rows = sortedScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
