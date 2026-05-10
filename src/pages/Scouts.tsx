@@ -840,7 +840,10 @@ const Scouts = () => {
     const filterLabel = branchFilter === 'all' ? 'Todos' : ALL_CATEGORIES.find(b => b.key === branchFilter)?.name || branchFilter;
 
     const isVoluntario = branchFilter === 'voluntario';
-    const rows = filteredScouts.map(scout => {
+    const sortedScouts = [...filteredScouts].sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+    );
+    const rows = sortedScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
