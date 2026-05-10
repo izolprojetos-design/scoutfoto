@@ -877,7 +877,18 @@ const Scouts = () => {
       };
     });
 
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('pt-BR');
+    const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const headerRows = [
+      [`Integrantes - ${filterLabel} (${filteredScouts.length})`],
+      ['12º Grupo Escoteiro Monte Caburai-12º GEMC'],
+      [`Exportado em: ${dateStr}`],
+      [`Horário: ${timeStr}`],
+      [],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(headerRows);
+    XLSX.utils.sheet_add_json(ws, rows, { origin: `A${headerRows.length + 1}` });
     const colWidths = isVoluntario
       ? [10, 30, 12, 14, 30, 30, 16, 16, 14]
       : [10, 30, 12, 18, 18, 16, 16, 14, 30];
@@ -973,8 +984,16 @@ const Scouts = () => {
           }),
           new Paragraph({
             alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: '12º Grupo Escoteiro Monte Caburai-12º GEMC', size: 20, color: '444444' })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: `Exportado em: ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+          }),
+          new Paragraph({
+            alignment: AlignmentType.CENTER,
             spacing: { after: 200 },
-            children: [new TextRun({ text: `Total: ${filteredScouts.length} • Gerado em ${new Date().toLocaleDateString('pt-BR')}`, size: 18, color: '666666' })],
+            children: [new TextRun({ text: `Horário: ${new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Total: ${filteredScouts.length}`, size: 18, color: '666666' })],
           }),
           new Table({
             width: { size: 14400, type: WidthType.DXA },
