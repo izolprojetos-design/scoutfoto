@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { logAudit } from '@/lib/auditLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucide-react';
