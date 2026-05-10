@@ -1137,13 +1137,7 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Celular</Label>
-        <Input value={phoneVal} onChange={e => {
-          const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
-          let formatted = digits;
-          if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-          if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-          setPhoneVal(formatted);
-        }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
+        <Input value={formatPhoneBR(phoneVal)} onChange={e => setPhoneVal(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
       </div>
       <div className="space-y-2">
         <Label>Data de nascimento *</Label>
