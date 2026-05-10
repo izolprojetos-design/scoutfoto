@@ -1,0 +1,1 @@
+UPDATE public.profiles SET avatar_url = 'avatars/6569967a-a226-4f52-8b00-22d1b104e257.webp' WHERE user_id = '6569967a-a226-4f52-8b00-22d1b104e257';
