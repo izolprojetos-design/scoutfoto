@@ -23,7 +23,7 @@ const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
           style={{ backgroundColor: "#14532d" }}
         >
           <motion.div
-            className="w-36 h-36 rounded-full bg-white p-3 shadow-2xl flex items-center justify-center"
+            className="w-44 h-44 rounded-full bg-white p-4 shadow-2xl ring-4 ring-white/20 flex items-center justify-center"
             initial={{ scale: 0.5, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
