@@ -28,6 +28,14 @@ const Profile = () => {
     refreshRoles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Synchronize local avatarUrl when profile loads/changes
+  useEffect(() => {
+    if (profile?.avatar_url) {
+      setAvatarUrl(profile.avatar_url);
+    }
+  }, [profile?.avatar_url]);
+
   const [name, setName] = useState(profile?.name || '');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
