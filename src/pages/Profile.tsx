@@ -144,9 +144,16 @@ const Profile = () => {
                     src={displayAvatarUrl}
                     alt={profile?.name || ''}
                     className="aspect-square h-full w-full rounded-full object-cover"
+                    onLoad={() => setAvatarLoaded(true)}
+                    onError={() => setAvatarLoaded(false)}
                   />
                 ) : null}
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                <AvatarFallback
+                  className={cn(
+                    "bg-primary/10 text-primary text-2xl font-bold",
+                    displayAvatarUrl && avatarLoaded ? "hidden" : "flex"
+                  )}
+                >
                   {initials}
                 </AvatarFallback>
               </Avatar>
