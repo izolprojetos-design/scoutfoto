@@ -745,8 +745,8 @@ const Scouts = () => {
       pageDoc.setFontSize(9);
       pageDoc.setTextColor(120);
       const now = new Date();
-      pageDoc.text(`Exportado em: ${now.toLocaleDateString('pt-BR')}`, 38, 25);
-      pageDoc.text(`Horário: ${now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`, 38, 30);
+      pageDoc.text(`Exportado em: ${formatDatePtBR(now)}`, 38, 25);
+      pageDoc.text(`Horário: ${formatTimePtBR(now)}`, 38, 30);
       pageDoc.setTextColor(0);
     };
 
