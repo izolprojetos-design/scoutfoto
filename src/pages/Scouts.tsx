@@ -793,11 +793,11 @@ const Scouts = () => {
     autoTable(doc, {
       head: [headers],
       body: rows,
-      startY: 30,
+      startY: 35,
       styles: { fontSize: 8, cellPadding: 2, textColor: [20, 20, 20] },
       headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       alternateRowStyles: { fillColor: [245, 245, 240] },
-      margin: { top: 30 },
+      margin: { top: 35 },
       didDrawPage: (data: any) => {
         // Draw header on every new page (except first, already drawn)
         if (data.pageNumber > 1) {
