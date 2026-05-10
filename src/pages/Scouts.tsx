@@ -773,7 +773,7 @@ const Scouts = () => {
           secao,
           cargo1,
           cargo2,
-          scout.phone || '',
+          formatPhoneBR(scout.phone) || '',
           parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
           formatAge(parseLocalDate(scout.birth_date)),
         ];
