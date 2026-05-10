@@ -72,3 +72,16 @@ export const formatTimePtBR = (date: Date = new Date()): string => {
   const m = String(date.getMinutes()).padStart(2, '0');
   return `${h}:${m}`;
 };
+
+/**
+ * Aplica máscara de celular brasileiro: (00) 00000-0000.
+ * Aceita qualquer entrada (inclusive já mascarada) e preserva os dígitos existentes.
+ */
+export const formatPhoneBR = (value: string | null | undefined): string => {
+  if (!value) return '';
+  const digits = String(value).replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+};

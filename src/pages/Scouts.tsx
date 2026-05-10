@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
-import { formatDatePtBR, formatTimePtBR } from '@/lib/formatting';
+import { formatDatePtBR, formatTimePtBR, formatPhoneBR } from '@/lib/formatting';
 import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
@@ -1137,13 +1137,7 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Celular</Label>
-        <Input value={phoneVal} onChange={e => {
-          const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
-          let formatted = digits;
-          if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-          if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-          setPhoneVal(formatted);
-        }} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" />
+        <Input value={formatPhoneBR(phoneVal)} onChange={e => setPhoneVal(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
       </div>
       <div className="space-y-2">
         <Label>Data de nascimento *</Label>
@@ -1412,13 +1406,7 @@ const Scouts = () => {
             </div>
             <div className="space-y-2">
               <Label className="text-xs">Telefone</Label>
-              <Input value={guardianFields.phone} onChange={e => {
-                const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
-                let formatted = digits;
-                if (digits.length > 2) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-                if (digits.length > 7) formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-                guardianFields.setPhone(formatted);
-              }} placeholder="(00) 00000-0000" className="h-10" inputMode="tel" />
+              <Input value={formatPhoneBR(guardianFields.phone)} onChange={e => guardianFields.setPhone(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-10" inputMode="tel" maxLength={15} />
             </div>
           </div>
           <div className="rounded-lg border bg-muted/50 p-2">
@@ -2241,7 +2229,7 @@ const Scouts = () => {
               </div>
               <div className="space-y-2">
                 <Label>Telefone</Label>
-                <Input value={guardianPhone} onChange={e => setGuardianPhone(e.target.value)} placeholder="(11) 99999-9999" className="h-11" />
+                <Input value={formatPhoneBR(guardianPhone)} onChange={e => setGuardianPhone(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
               </div>
             </div>
             <div className="rounded-lg border bg-muted/50 p-3">
