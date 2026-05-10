@@ -13,6 +13,7 @@ Deno.serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const vapidPublicKey = Deno.env.get("VAPID_PUBLIC_KEY");
     const vapidPrivateKey = Deno.env.get("VAPID_PRIVATE_KEY");
@@ -24,6 +25,27 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ---- Authentication: require a valid JWT ----
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: userData, error: userError } = await userClient.auth.getUser();
+    if (userError || !userData?.user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    const callerId = userData.user.id;
+
     // Parse request
     const { userId, title, body: msgBody, icon, url, data } = await req.json();
 
@@ -34,8 +56,23 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Fetch subscriptions for the user
+    // ---- Authorization: caller may only target self, unless admin ----
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+    if (userId !== callerId) {
+      const { data: isAdmin } = await supabase.rpc("has_role", {
+        _user_id: callerId,
+        _role: "admin",
+      });
+      if (!isAdmin) {
+        return new Response(
+          JSON.stringify({ error: "Forbidden: cannot send notifications to other users" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Fetch subscriptions for the user
     const { data: subscriptions, error: fetchError } = await supabase
       .from("push_subscriptions")
       .select("*")
