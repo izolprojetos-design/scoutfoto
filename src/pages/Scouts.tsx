@@ -1864,7 +1864,7 @@ const Scouts = () => {
           <p className="mt-1 text-sm">Cadastre o primeiro membro</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 min-h-[200px]">
+        <div className="flex flex-col gap-3 min-h-[200px]">
           {filteredScouts.map((scout, index) => {
             const branch = getEffectiveBranch(scout);
             const nextChange = getNextBranchChange(parseLocalDate(scout.birth_date));
