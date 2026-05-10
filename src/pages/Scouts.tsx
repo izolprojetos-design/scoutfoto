@@ -2229,7 +2229,7 @@ const Scouts = () => {
               </div>
               <div className="space-y-2">
                 <Label>Telefone</Label>
-                <Input value={guardianPhone} onChange={e => setGuardianPhone(e.target.value)} placeholder="(11) 99999-9999" className="h-11" />
+                <Input value={formatPhoneBR(guardianPhone)} onChange={e => setGuardianPhone(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
               </div>
             </div>
             <div className="rounded-lg border bg-muted/50 p-3">
