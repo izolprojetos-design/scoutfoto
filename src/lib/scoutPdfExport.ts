@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import { parseLocalDate, getCurrentBranch, getNextBranchChange, formatTimeLeft, formatAge } from '@/lib/scoutUtils';
 import { getGroupLogoDataUrl } from '@/lib/groupLogo';
+import { formatPhoneBR } from '@/lib/formatting';
 
 interface ScoutLike {
   id: string;
