@@ -896,7 +896,10 @@ const Scouts = () => {
       ? ['ID', 'Nome', 'Ramo', 'Seção', '1ª Função', '2ª Função', 'Celular', 'Nascimento', 'Idade']
       : ['ID', 'Nome', 'Ramo', 'Seção', 'Equipe', 'Celular', 'Nascimento', 'Idade', 'Responsável'];
 
-    const rowsData = filteredScouts.map(scout => {
+    const sortedScouts = [...filteredScouts].sort((a, b) =>
+      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+    );
+    const rowsData = sortedScouts.map(scout => {
       const branch = getEffectiveBranch(scout);
       const sg = subgroups.find(s => s.id === scout.subgroup_id);
       const scoutGuards = getGuardiansForScout(scout.id);
