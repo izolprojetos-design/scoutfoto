@@ -53,3 +53,22 @@ export const toTitleCase = (s: string | null | undefined): string => {
     })
     .join('');
 };
+
+/**
+ * Formata uma data no padrão pt-BR DD/MM/AAAA, independente do locale do ambiente.
+ */
+export const formatDatePtBR = (date: Date = new Date()): string => {
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+};
+
+/**
+ * Formata um horário no padrão pt-BR HH:mm (24h), independente do locale do ambiente.
+ */
+export const formatTimePtBR = (date: Date = new Date()): string => {
+  const h = String(date.getHours()).padStart(2, '0');
+  const m = String(date.getMinutes()).padStart(2, '0');
+  return `${h}:${m}`;
+};
