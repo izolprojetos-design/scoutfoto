@@ -30,17 +30,18 @@ const LogoCircle = ({
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-full bg-white overflow-hidden",
+        "flex items-center justify-center rounded-full overflow-hidden",
         SIZES[size],
         shadowClassName,
         ringClassName,
         className,
       )}
+      style={{ backgroundColor: "#0a3d2e" }}
     >
       <img
-        src="/icon-512.png"
+        src="/scoutfoto-logo.jpeg"
         alt={alt}
-        className="w-full h-full object-contain rounded-full"
+        className="w-full h-full object-cover rounded-full scale-150"
       />
     </div>
   );
