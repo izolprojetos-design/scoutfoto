@@ -14,6 +14,7 @@ import { Link2, Copy, Mail, Loader2, Trash2, Clock, CheckCircle2, XCircle, Messa
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import { formatPhoneBR } from '@/lib/formatting';
 import type { Database } from '@/integrations/supabase/types';
 
 type AppRole = Database['public']['Enums']['app_role'];
@@ -243,10 +244,10 @@ const InviteLinkPanel = () => {
                       id="wa-phone"
                       type="tel"
                       inputMode="tel"
-                      placeholder="Ex: (11) 91234-5678"
-                      value={waPhone}
-                      onChange={(e) => setWaPhone(e.target.value)}
-                      maxLength={20}
+                      placeholder="(00) 00000-0000"
+                      value={formatPhoneBR(waPhone)}
+                      onChange={(e) => setWaPhone(formatPhoneBR(e.target.value))}
+                      maxLength={15}
                     />
                     <p className="text-xs text-muted-foreground">
                       Se informado, abre a conversa direto com o contato. DDI 55 (Brasil) é assumido quando ausente.

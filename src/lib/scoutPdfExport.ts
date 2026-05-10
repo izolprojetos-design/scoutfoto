@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import { parseLocalDate, getCurrentBranch, getNextBranchChange, formatTimeLeft, formatAge } from '@/lib/scoutUtils';
 import { getGroupLogoDataUrl } from '@/lib/groupLogo';
+import { formatPhoneBR } from '@/lib/formatting';
 
 interface ScoutLike {
   id: string;
@@ -128,7 +129,7 @@ export async function exportScoutProfilePdf(
   if (branch) lines.push(`Ramo atual: ${branch.name}`);
   if (next) lines.push(`Próximo ramo: ${next.branch.name} em ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`);
   if (scout.registration_id) lines.push(`ID: ${scout.registration_id}`);
-  if (scout.phone) lines.push(`Celular: ${scout.phone}`);
+  if (scout.phone) lines.push(`Celular: ${formatPhoneBR(scout.phone)}`);
   lines.forEach((l, i) => doc.text(l, statsX, photoY + 13 + i * 5.5));
 
   let cursorY = photoY + 55;
@@ -150,7 +151,7 @@ export async function exportScoutProfilePdf(
     autoTable(doc, {
       startY: cursorY + 3,
       head: [['Nome', 'E-mail', 'Telefone']],
-      body: guardians.map(g => [g.name, g.email || '—', g.phone || '—']),
+      body: guardians.map(g => [g.name, g.email || '—', formatPhoneBR(g.phone) || '—']),
       headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
       margin: { left: margin, right: margin },
