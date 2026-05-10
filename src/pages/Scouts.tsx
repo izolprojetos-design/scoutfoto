@@ -860,7 +860,7 @@ const Scouts = () => {
           'Seção': secao,
           '1ª Função': cargo1,
           '2ª Função': cargo2,
-          'Celular': scout.phone || '',
+          'Celular': formatPhoneBR(scout.phone) || '',
           'Data de Nascimento': parseLocalDate(scout.birth_date).toLocaleDateString('pt-BR'),
           'Idade': formatAge(parseLocalDate(scout.birth_date)),
         };
