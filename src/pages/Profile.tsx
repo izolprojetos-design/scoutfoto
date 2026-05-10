@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { logAudit } from '@/lib/auditLog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSignedUrl } from '@/hooks/useSignedUrl';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Camera, Save, Loader2, User, ImagePlus, Lock, Eye, EyeOff } from 'lucide-react';
@@ -88,23 +89,30 @@ const Profile = () => {
     }
 
     const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
-    const newUrl = signedData?.signedUrl || path;
+    if (!signedData?.signedUrl) {
+      toast.error('Erro ao gerar URL da imagem');
+      setUploading(false);
+      return;
+    }
 
+    // Save only the storage path so it can be re-signed on demand (signed URLs expire in 1h)
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ avatar_url: newUrl })
+      .update({ avatar_url: path })
       .eq('user_id', user.id);
 
     if (updateError) {
       toast.error('Erro ao salvar avatar: ' + updateError.message);
     } else {
-      setAvatarUrl(newUrl);
+      setAvatarUrl(path);
       toast.success('Foto de perfil atualizada!');
     }
     setUploading(false);
   };
 
   const primaryRole = getPrimaryRole(roles);
+
+  const displayAvatarUrl = useSignedUrl(avatarUrl);
 
   return (
     <>
@@ -121,8 +129,8 @@ const Profile = () => {
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <div className="relative">
               <Avatar className="h-28 w-28 border-4 border-primary/20">
-                {avatarUrl ? (
-                  <AvatarImage src={avatarUrl} alt={profile?.name} />
+                {displayAvatarUrl ? (
+                  <AvatarImage src={displayAvatarUrl} alt={profile?.name} />
                 ) : null}
                 <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                   {initials}
