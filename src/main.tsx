@@ -79,4 +79,88 @@ if (sessionStorage.getItem(RELOAD_FLAG) === "1") {
   }, 800);
 }
 
+// ──────────────────────────────────────────────────────────────────────────────
+// Service Worker registration with always-fresh update strategy.
+// - updateViaCache: "none" → the SW script itself is never cached by the browser
+// - On `updatefound`, when the new worker reaches `installed`, we ask it to
+//   skipWaiting and dispatch `app-update-available` so the toast can prompt
+//   a reload (handled by usePeriodicUpdateCheck).
+// - When a new SW activates and takes control, we hard-reload the page so it
+//   runs against the latest assets — but only once, to avoid loops.
+// - Guards: never register inside the Lovable preview iframe; instead actively
+//   unregister any leftover SW so the editor preview is always live.
+// ──────────────────────────────────────────────────────────────────────────────
+(function registerServiceWorker() {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+
+  const inIframe = (() => {
+    try { return window.self !== window.top; } catch { return true; }
+  })();
+  const host = window.location.hostname;
+  const isPreviewHost =
+    host.includes("id-preview--") ||
+    host.includes("lovableproject.com") ||
+    host === "localhost" ||
+    host === "127.0.0.1";
+
+  if (inIframe || isPreviewHost) {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((r) => r.unregister().catch(() => {}));
+    }).catch(() => {});
+    return;
+  }
+
+  const RELOAD_AFTER_ACTIVATE = "scoutfoto_sw_reloaded_at";
+
+  const dispatchUpdateAvailable = () => {
+    try { window.dispatchEvent(new CustomEvent("app-update-available")); } catch {}
+  };
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // A new SW just took control. Reload once to ensure JS/CSS match it.
+    let last = 0;
+    try { last = Number(sessionStorage.getItem(RELOAD_AFTER_ACTIVATE) || 0); } catch {}
+    if (Date.now() - last < 30_000) return; // loop guard
+    try { sessionStorage.setItem(RELOAD_AFTER_ACTIVATE, String(Date.now())); } catch {}
+    window.location.reload();
+  });
+
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw-push.js", { scope: "/", updateViaCache: "none" })
+      .then((registration) => {
+        // If a worker is already waiting at registration time, tell it to activate.
+        if (registration.waiting) {
+          registration.waiting.postMessage({ type: "SKIP_WAITING" });
+          dispatchUpdateAvailable();
+        }
+
+        registration.addEventListener("updatefound", () => {
+          const next = registration.installing;
+          if (!next) return;
+          next.addEventListener("statechange", () => {
+            if (next.state === "installed" && navigator.serviceWorker.controller) {
+              // New version available alongside an existing controller → upgrade now.
+              next.postMessage({ type: "SKIP_WAITING" });
+              dispatchUpdateAvailable();
+            }
+          });
+        });
+
+        // Periodic update check (covers long-lived PWA sessions where `load`
+        // fires only once). Every 15 min and on visibility change.
+        const checkForUpdate = () => { registration.update().catch(() => {}); };
+        setInterval(checkForUpdate, 15 * 60 * 1000);
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") checkForUpdate();
+        });
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn("[sw] registration failed", err);
+      });
+  });
+})();
+
 createRoot(document.getElementById("root")!).render(<App />);
+
