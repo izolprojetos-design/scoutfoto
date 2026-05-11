@@ -3,6 +3,11 @@ import { toast } from "sonner";
 import App from "./App.tsx";
 import "./index.css";
 import { getReloadMessages } from "./lib/i18n/reloadMessages";
+import { installSwMonitor } from "./lib/swMonitor";
+
+// Install client-side SW monitor (logs cache cleanup + post-activate jank).
+// Safe to call once at module load — also works when there's no SW yet.
+installSwMonitor();
 
 // Auto-recover from stale dynamic-import chunks after deploys.
 // When a lazy()-loaded module fails to fetch (old hash no longer on server),
