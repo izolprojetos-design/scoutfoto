@@ -17,19 +17,42 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // Defensive: wipe any caches a previous SW version may have created.
+      // Telemetry: capture cache state before/after + timing so the page can
+      // confirm old versions were really evicted and watch for perf regressions.
+      const t0 = (self.performance && self.performance.now) ? self.performance.now() : Date.now();
+      let before = [];
+      let deleted = [];
+      let failed = [];
       try {
-        const names = await caches.keys();
-        await Promise.all(names.map((n) => caches.delete(n)));
-      } catch (_) {
-        // ignore
+        before = await caches.keys();
+        const results = await Promise.all(
+          before.map((n) => caches.delete(n).then((ok) => ({ n, ok })).catch(() => ({ n, ok: false })))
+        );
+        deleted = results.filter((r) => r.ok).map((r) => r.n);
+        failed = results.filter((r) => !r.ok).map((r) => r.n);
+      } catch (e) {
+        failed.push(String((e && e.message) || e));
       }
+      let after = [];
+      try { after = await caches.keys(); } catch (_) {}
+
       await self.clients.claim();
-      // Tell open clients a new SW is now controlling them.
-      const clients = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      clients.forEach((c) => {
-        try { c.postMessage({ type: "SW_ACTIVATED", version: SW_VERSION }); } catch (_) {}
-      });
+      const t1 = (self.performance && self.performance.now) ? self.performance.now() : Date.now();
+      const durationMs = Math.round(t1 - t0);
+
+      // Notify open clients with rich activation telemetry.
+      const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      const payload = {
+        type: "SW_ACTIVATED",
+        version: SW_VERSION,
+        timestamp: new Date().toISOString(),
+        cachesBefore: before,
+        cachesDeleted: deleted,
+        cachesFailed: failed,
+        cachesAfter: after,
+        durationMs,
+      };
+      wins.forEach((c) => { try { c.postMessage(payload); } catch (_) {} });
     })()
   );
 });
