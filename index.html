@@ -56,7 +56,81 @@
         <p style="margin:8px 0 0;font-size:clamp(12px,2.4vmin,14px);color:rgba(255,255,255,0.7)">Banco de Imagens Escoteiro</p>
       </div>
     </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}@keyframes sf-fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}</style>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Safety net: if React fails to mount within 12s (stale chunk, offline cache,
+      // failed module load on mobile/tablet PWA), surface a recovery UI instead of
+      // leaving the user stuck on the green initial-loader forever.
+      (function () {
+        var KEY = 'scoutfoto_boot_recover_at';
+        var loader = document.getElementById('initial-loader');
+        if (!loader) return;
+
+        var mounted = false;
+        // Detect mount: React's createRoot replaces the children of #root.
+        var root = document.getElementById('root');
+        var observer = new MutationObserver(function () {
+          if (!root) return;
+          // Loader removed or replaced => React mounted successfully
+          if (!document.getElementById('initial-loader')) {
+            mounted = true;
+            observer.disconnect();
+          }
+        });
+        if (root) observer.observe(root, { childList: true, subtree: false });
+
+        function showRecovery(reason) {
+          if (mounted) return;
+          observer.disconnect();
+          var existing = document.getElementById('sf-recovery');
+          if (existing) return;
+          var box = document.createElement('div');
+          box.id = 'sf-recovery';
+          box.style.cssText = 'margin-top:32px;max-width:340px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:18px 20px;color:#fff;text-align:center;animation:sf-fade .4s ease both';
+          box.innerHTML = '<p style="margin:0 0 6px;font-size:15px;font-weight:600;color:#d4a843">Carregamento demorado</p>'
+            + '<p style="margin:0 0 14px;font-size:13px;line-height:1.5;color:rgba(255,255,255,0.85)">N&atilde;o conseguimos abrir o ScoutFoto. Isso pode acontecer ap&oacute;s uma atualiza&ccedil;&atilde;o ou quando a conex&atilde;o est&aacute; inst&aacute;vel.</p>'
+            + '<button id="sf-recovery-btn" style="appearance:none;border:0;border-radius:10px;padding:11px 18px;font-size:14px;font-weight:600;background:#d4a843;color:#0a3d2e;cursor:pointer;width:100%">Recarregar agora</button>'
+            + '<p style="margin:10px 0 0;font-size:11px;color:rgba(255,255,255,0.55)" id="sf-recovery-reason"></p>';
+          loader.appendChild(box);
+          var reasonEl = document.getElementById('sf-recovery-reason');
+          if (reasonEl && reason) reasonEl.textContent = reason;
+          var btn = document.getElementById('sf-recovery-btn');
+          if (btn) btn.addEventListener('click', function () {
+            try { sessionStorage.setItem(KEY, String(Date.now())); } catch (e) {}
+            // Clear caches (PWA / service worker) then hard reload
+            var done = function () { window.location.reload(); };
+            try {
+              if ('caches' in window) {
+                caches.keys().then(function (names) {
+                  return Promise.all(names.map(function (n) { return caches.delete(n); }));
+                }).then(done, done);
+              } else { done(); }
+            } catch (e) { done(); }
+          });
+        }
+
+        // If a previous recovery reload just happened and we're still stuck, show sooner
+        var lastRecover = 0;
+        try { lastRecover = Number(sessionStorage.getItem(KEY) || 0); } catch (e) {}
+        var timeout = (Date.now() - lastRecover < 60000) ? 6000 : 12000;
+
+        setTimeout(function () { showRecovery(); }, timeout);
+
+        // Also surface fatal script errors immediately (e.g. failed module load)
+        window.addEventListener('error', function (e) {
+          var msg = (e && e.message) || '';
+          if (/Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(msg)) {
+            setTimeout(function () { showRecovery('Falha ao carregar recursos do app.'); }, 1500);
+          }
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          var msg = String((e && e.reason && e.reason.message) || (e && e.reason) || '');
+          if (/Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(msg)) {
+            setTimeout(function () { showRecovery('Falha ao carregar recursos do app.'); }, 1500);
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
