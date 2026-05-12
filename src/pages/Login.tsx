@@ -252,7 +252,6 @@ const Login = () => {
           </Card>
 
           <div className="mt-6 flex flex-col items-center gap-2">
-            <WorkspaceTransferGuide />
             <p className="text-center text-xs text-muted-foreground">
               © {new Date().getFullYear()} ScoutFoto - Todos os direitos reservados
             </p>
