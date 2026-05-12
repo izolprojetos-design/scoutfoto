@@ -11,7 +11,7 @@ import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockout
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
 import LogoCircle from '@/components/LogoCircle';
-import WorkspaceTransferGuide from '@/components/WorkspaceTransferGuide';
+
 
 const Login = () => {
   const { signIn } = useAuth();
@@ -252,7 +252,6 @@ const Login = () => {
           </Card>
 
           <div className="mt-6 flex flex-col items-center gap-2">
-            <WorkspaceTransferGuide />
             <p className="text-center text-xs text-muted-foreground">
               © {new Date().getFullYear()} ScoutFoto - Todos os direitos reservados
             </p>
