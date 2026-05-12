@@ -1679,29 +1679,9 @@ const Scouts = () => {
 
                 {availableSections.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Seção</Label>
+                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Seção</Label>
                     <div className="flex flex-wrap gap-1.5">
-                      {availableSections.map(sec => {
-                        const active = sectionFilter.includes(sec);
-                        return (
-                          <button
-                            key={sec}
-                            type="button"
-                            onClick={() => toggleArrayValue(sectionFilter, sec, setSectionFilter)}
-                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
-                          >
-                            {sec}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {availableSubgroups.length > 0 && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Equipe</Label>
-                    <div className="flex flex-wrap gap-1.5">
+...
                       {availableSubgroups.map(sg => {
                         const active = subgroupFilter.includes(sg.id);
                         return (
@@ -1720,32 +1700,10 @@ const Scouts = () => {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Idade (anos)</Label>
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Idade (anos)</Label>
                   <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={120}
-                      placeholder="Mín."
-                      value={ageMinFilter}
-                      onChange={e => setAgeMinFilter(e.target.value)}
-                      className="h-9 text-sm"
-                    />
-                    <span className="text-muted-foreground text-xs">a</span>
-                    <Input
-                      type="number"
-                      min={0}
-                      max={120}
-                      placeholder="Máx."
-                      value={ageMaxFilter}
-                      onChange={e => setAgeMaxFilter(e.target.value)}
-                      className="h-9 text-sm"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tempo no grupo (mín. anos)</Label>
+...
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Tempo no grupo (mín. anos)</Label>
                   <Input
                     type="number"
                     min={0}
@@ -1758,7 +1716,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Foto</Label>
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Foto</Label>
                   <div className="flex gap-1.5">
                     {(['all', 'with', 'without'] as const).map(opt => (
                       <button
