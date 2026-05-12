@@ -1681,7 +1681,27 @@ const Scouts = () => {
                   <div className="space-y-1.5">
                     <Label className="text-xs uppercase tracking-wide text-primary font-bold">Seção</Label>
                     <div className="flex flex-wrap gap-1.5">
-...
+                      {availableSections.map(sec => {
+                        const active = sectionFilter.includes(sec);
+                        return (
+                          <button
+                            key={sec}
+                            type="button"
+                            onClick={() => toggleArrayValue(sectionFilter, sec, setSectionFilter)}
+                            className={`text-xs rounded-full border px-2.5 py-1 transition ${active ? 'bg-primary text-primary-foreground border-primary' : 'bg-background hover:bg-muted'}`}
+                          >
+                            {sec}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {availableSubgroups.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Equipe</Label>
+                    <div className="flex flex-wrap gap-1.5">
                       {availableSubgroups.map(sg => {
                         const active = subgroupFilter.includes(sg.id);
                         return (
