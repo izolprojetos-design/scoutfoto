@@ -42,7 +42,7 @@ import ScoutTimeline from '@/components/ScoutTimeline';
 import ScoutStats from '@/components/ScoutStats';
 import ScoutEvents from '@/components/ScoutEvents';
 import ScoutAchievements from '@/components/ScoutAchievements';
-import ScoutCompare from '@/components/ScoutCompare';
+
 import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
