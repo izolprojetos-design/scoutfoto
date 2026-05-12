@@ -1722,7 +1722,29 @@ const Scouts = () => {
                 <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-wide text-primary font-bold">Idade (anos)</Label>
                   <div className="flex items-center gap-2">
-...
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Mín."
+                      value={ageMinFilter}
+                      onChange={e => setAgeMinFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <span className="text-muted-foreground text-xs">a</span>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={120}
+                      placeholder="Máx."
+                      value={ageMaxFilter}
+                      onChange={e => setAgeMaxFilter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
                   <Label className="text-xs uppercase tracking-wide text-primary font-bold">Tempo no grupo (mín. anos)</Label>
                   <Input
                     type="number"
