@@ -1679,7 +1679,7 @@ const Scouts = () => {
 
                 {availableSections.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Seção</Label>
+                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Seção</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSections.map(sec => {
                         const active = sectionFilter.includes(sec);
@@ -1700,7 +1700,7 @@ const Scouts = () => {
 
                 {availableSubgroups.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-muted-foreground">Equipe</Label>
+                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Equipe</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSubgroups.map(sg => {
                         const active = subgroupFilter.includes(sg.id);
@@ -1720,7 +1720,7 @@ const Scouts = () => {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Idade (anos)</Label>
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Idade (anos)</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -1745,7 +1745,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Tempo no grupo (mín. anos)</Label>
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Tempo no grupo (mín. anos)</Label>
                   <Input
                     type="number"
                     min={0}
@@ -1758,7 +1758,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-muted-foreground">Foto</Label>
+                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Foto</Label>
                   <div className="flex gap-1.5">
                     {(['all', 'with', 'without'] as const).map(opt => (
                       <button
