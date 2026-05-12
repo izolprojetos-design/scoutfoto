@@ -121,7 +121,7 @@ const Scouts = () => {
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
   const [renumbering, setRenumbering] = useState(false);
-  const [compareOpen, setCompareOpen] = useState(false);
+  
   const [pendingResend, setPendingResend] = useState<{ scoutId: string; scoutName: string; photo: File } | null>(null);
 
   // Edit state
