@@ -58,22 +58,5 @@
     </div>
     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Clean start: removed recovery UI per user request.
-      // The initial-loader will remain until React mounts.
-      (function () {
-        var loader = document.getElementById('initial-loader');
-        if (!loader) return;
-        var root = document.getElementById('root');
-        if (!root) return;
-
-        var observer = new MutationObserver(function () {
-          if (!document.getElementById('initial-loader')) {
-            observer.disconnect();
-          }
-        });
-        observer.observe(root, { childList: true });
-      })();
-    </script>
   </body>
 </html>
