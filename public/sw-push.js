@@ -17,42 +17,14 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
-      // Telemetry: capture cache state before/after + timing so the page can
-      // confirm old versions were really evicted and watch for perf regressions.
-      const t0 = (self.performance && self.performance.now) ? self.performance.now() : Date.now();
-      let before = [];
-      let deleted = [];
-      let failed = [];
+      // Clear all caches on activation to prevent stale assets after a deploy.
       try {
-        before = await caches.keys();
-        const results = await Promise.all(
-          before.map((n) => caches.delete(n).then((ok) => ({ n, ok })).catch(() => ({ n, ok: false })))
-        );
-        deleted = results.filter((r) => r.ok).map((r) => r.n);
-        failed = results.filter((r) => !r.ok).map((r) => r.n);
+        const names = await caches.keys();
+        await Promise.all(names.map((n) => caches.delete(n)));
       } catch (e) {
-        failed.push(String((e && e.message) || e));
+        // Safe to ignore; we'll try again next time.
       }
-      let after = [];
-      try { after = await caches.keys(); } catch (_) {}
-
       await self.clients.claim();
-      const t1 = (self.performance && self.performance.now) ? self.performance.now() : Date.now();
-      const durationMs = Math.round(t1 - t0);
-
-      // Notify open clients with rich activation telemetry.
-      const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      const payload = {
-        type: "SW_ACTIVATED",
-        version: SW_VERSION,
-        timestamp: new Date().toISOString(),
-        cachesBefore: before,
-        cachesDeleted: deleted,
-        cachesFailed: failed,
-        cachesAfter: after,
-        durationMs,
-      };
-      wins.forEach((c) => { try { c.postMessage(payload); } catch (_) {} });
     })()
   );
 });
