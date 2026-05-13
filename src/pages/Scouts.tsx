@@ -1700,7 +1700,7 @@ const Scouts = () => {
 
                 {availableSubgroups.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Equipe</Label>
+                    <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Equipe</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSubgroups.map(sg => {
                         const active = subgroupFilter.includes(sg.id);
