@@ -117,12 +117,12 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
         (blob) => {
           console.log('[CROPPER] toBlob result', { hasBlob: !!blob, size: blob?.size });
           if (blob) {
-            const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg' });
+            const file = new File([blob], 'cropped.jpg', { type: 'image/jpeg', lastModified: Date.now() });
             onCropComplete(file);
           } else {
             console.error('[CROPPER] toBlob returned null');
+            setProcessing(false);
           }
-          setProcessing(false);
         },
         'image/jpeg',
         0.92
