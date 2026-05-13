@@ -73,16 +73,24 @@ describe("Scouts Page - Filtros Avançados Responsividade", () => {
     const filterButton = screen.getByRole("button", { name: /Filtros/i });
     fireEvent.click(filterButton);
 
+    // Esperar os rótulos aparecerem (Radix Popover pode levar um tempo para animar/montar)
+    await waitFor(() => {
+      expect(screen.queryByText(/Filtros avançados/i)).not.toBeNull();
+    });
+
     // Verificar se os rótulos estão presentes e têm as classes de destaque
-    // Nota: Label do Radix UI renderiza como label HTML
-    const labels = ["SEÇÃO", "EQUIPE", "IDADE (ANOS)", "TEMPO NO GRUPO (MÍN. ANOS)", "FOTO"];
+    const labels = [
+      { text: "Seção", id: "secao" },
+      { text: "Equipe", id: "equipe" },
+      { text: "Idade (anos)", id: "idade" },
+      { text: "Tempo no grupo (mín. anos)", id: "tempo" },
+      { text: "Foto", id: "foto" }
+    ];
     
-    for (const text of labels) {
-      const label = screen.getByText(new RegExp(text, "i"));
+    for (const labelInfo of labels) {
+      const label = screen.getByText(labelInfo.text);
       expect(label).toBeDefined();
       
-      // Verificar classes de destaque (font-black, text-primary, drop-shadow-sm)
-      // Também verificamos o text-[10px] sm:text-[11px] que adicionamos para responsividade
       const className = label.className;
       expect(className).toContain("font-black");
       expect(className).toContain("text-primary");
