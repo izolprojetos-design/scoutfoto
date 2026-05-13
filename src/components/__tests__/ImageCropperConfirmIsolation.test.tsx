@@ -11,7 +11,12 @@ vi.mock('react-image-crop/dist/ReactCrop.css', () => ({}));
 
 describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
   beforeEach(() => {
-    // jsdom: stub HTMLCanvasElement.toBlob used by handleConfirm
+    (globalThis as any).ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
+    (globalThis as any).DOMRect = (globalThis as any).DOMRect || class {};
     (HTMLCanvasElement.prototype as any).getContext = vi.fn(() => ({
       drawImage: vi.fn(),
       getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
