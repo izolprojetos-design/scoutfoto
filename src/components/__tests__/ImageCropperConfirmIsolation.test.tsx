@@ -79,6 +79,10 @@ describe('ImageCropper — Interaction isolation (mobile)', () => {
     );
 
     const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    
+    // Simulate both a standard click and a touch start/end to be thorough for mobile behavior
+    fireEvent.touchStart(cancelBtn);
+    fireEvent.touchEnd(cancelBtn);
     fireEvent.click(cancelBtn);
 
     // Should trigger the cropper close logic
