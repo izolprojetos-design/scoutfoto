@@ -120,8 +120,8 @@ describe("Scouts Page - Filtros Avançados Responsividade", () => {
     });
 
     const advancedFiltersHeader = screen.getByText(/Filtros avançados/i);
-    // O container do PopoverContent deve ter as classes de largura
-    const popoverContent = advancedFiltersHeader.closest('div').parentElement;
+    // O PopoverContent é o elemento com data-side ou que contém a classe w-...
+    const popoverContent = advancedFiltersHeader.closest('[class*="w-"]');
     
     expect(popoverContent?.className).toContain("w-[calc(100vw-32px)]");
     expect(popoverContent?.className).toContain("sm:w-80");
