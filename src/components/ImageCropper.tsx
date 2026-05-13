@@ -177,7 +177,7 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
         </div>
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={(e) => { e.stopPropagation(); onClose(); }}>
             Cancelar
           </Button>
           <Button type="button" onClick={(e) => { e.stopPropagation(); handleConfirm(); }} disabled={processing || !completedCrop}>
