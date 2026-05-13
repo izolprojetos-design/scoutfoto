@@ -1613,9 +1613,21 @@ const Scouts = () => {
             </DialogTrigger>
             <DialogContent
               className="max-h-[90vh] overflow-y-auto"
-              onInteractOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
-              onPointerDownOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
-              onEscapeKeyDown={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+              onInteractOutside={(e) => { 
+                if (cropperOpen || photoPickInProgressRef.current || uploading) {
+                  e.preventDefault(); 
+                }
+              }}
+              onPointerDownOutside={(e) => { 
+                if (cropperOpen || photoPickInProgressRef.current || uploading) {
+                  e.preventDefault(); 
+                }
+              }}
+              onEscapeKeyDown={(e) => { 
+                if (cropperOpen || photoPickInProgressRef.current || uploading) {
+                  e.preventDefault(); 
+                }
+              }}
             >
               <DialogHeader>
                 <DialogTitle>Cadastrar Membro</DialogTitle>
@@ -2243,9 +2255,21 @@ const Scouts = () => {
       <Dialog open={editDialogOpen} onOpenChange={(v) => { if (!v && (cropperOpen || photoPickInProgressRef.current)) return; setEditDialogOpen(v); }}>
         <DialogContent
           className="max-h-[90vh] overflow-y-auto"
-          onInteractOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
-          onPointerDownOutside={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
-          onEscapeKeyDown={(e) => { if (cropperOpen || photoPickInProgressRef.current) e.preventDefault(); }}
+          onInteractOutside={(e) => { 
+            if (cropperOpen || photoPickInProgressRef.current || editUploading) {
+              e.preventDefault(); 
+            }
+          }}
+          onPointerDownOutside={(e) => { 
+            if (cropperOpen || photoPickInProgressRef.current || editUploading) {
+              e.preventDefault(); 
+            }
+          }}
+          onEscapeKeyDown={(e) => { 
+            if (cropperOpen || photoPickInProgressRef.current || editUploading) {
+              e.preventDefault(); 
+            }
+          }}
         >
           <DialogHeader>
             <DialogTitle>Editar Membro</DialogTitle>
