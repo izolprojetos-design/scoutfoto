@@ -1666,7 +1666,7 @@ const Scouts = () => {
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-80 max-h-[70vh] overflow-y-auto">
+            <PopoverContent align="start" className="w-[calc(100vw-32px)] sm:w-80 max-h-[80vh] overflow-y-auto">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-sm">Filtros avançados</h4>
