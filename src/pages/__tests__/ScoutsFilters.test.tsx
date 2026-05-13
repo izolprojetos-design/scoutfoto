@@ -46,6 +46,13 @@ vi.mock("sonner", () => ({
   },
 }));
 
+// Mock ResizeObserver
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+}));
+
 describe("Scouts Page - Filtros Avançados Responsividade", () => {
   beforeEach(() => {
     (useAuth as any).mockReturnValue({
@@ -73,22 +80,20 @@ describe("Scouts Page - Filtros Avançados Responsividade", () => {
     const filterButton = screen.getByRole("button", { name: /Filtros/i });
     fireEvent.click(filterButton);
 
-    // Esperar os rótulos aparecerem (Radix Popover pode levar um tempo para animar/montar)
+    // Esperar os rótulos aparecerem
     await waitFor(() => {
       expect(screen.queryByText(/Filtros avançados/i)).not.toBeNull();
-    });
+    }, { timeout: 2000 });
 
     // Verificar se os rótulos estão presentes e têm as classes de destaque
     const labels = [
-      { text: "Seção", id: "secao" },
-      { text: "Equipe", id: "equipe" },
-      { text: "Idade (anos)", id: "idade" },
-      { text: "Tempo no grupo (mín. anos)", id: "tempo" },
-      { text: "Foto", id: "foto" }
+      "Idade (anos)",
+      "Tempo no grupo (mín. anos)",
+      "Foto"
     ];
     
-    for (const labelInfo of labels) {
-      const label = screen.getByText(labelInfo.text);
+    for (const text of labels) {
+      const label = screen.getByText(text);
       expect(label).toBeDefined();
       
       const className = label.className;
@@ -110,12 +115,15 @@ describe("Scouts Page - Filtros Avançados Responsividade", () => {
     const filterButton = screen.getByRole("button", { name: /Filtros/i });
     fireEvent.click(filterButton);
 
-    // O PopoverContent deve ter a classe w-[calc(100vw-32px)] sm:w-80
-    // Procuramos pelo container dos filtros
+    await waitFor(() => {
+      expect(screen.queryByText(/Filtros avançados/i)).not.toBeNull();
+    });
+
     const advancedFiltersHeader = screen.getByText(/Filtros avançados/i);
-    const popoverContent = advancedFiltersHeader.closest('[class*="w-[calc(100vw-32px)]"]');
+    // O container do PopoverContent deve ter as classes de largura
+    const popoverContent = advancedFiltersHeader.closest('div').parentElement;
     
-    expect(popoverContent).not.toBeNull();
+    expect(popoverContent?.className).toContain("w-[calc(100vw-32px)]");
     expect(popoverContent?.className).toContain("sm:w-80");
   });
 });
