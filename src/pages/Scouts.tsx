@@ -1113,12 +1113,13 @@ const Scouts = () => {
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="flex flex-col items-center gap-3">
+      <div className="flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
         <div className="relative">
           <label
             htmlFor={photoInputId}
             className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
+              e.stopPropagation();
               photoPickInProgressRef.current = true;
               
               if (cameraStatus === 'available') {
