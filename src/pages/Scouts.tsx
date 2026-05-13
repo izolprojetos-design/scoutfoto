@@ -1758,7 +1758,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Foto</Label>
+                  <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Foto</Label>
                   <div className="flex gap-1.5">
                     {(['all', 'with', 'without'] as const).map(opt => (
                       <button
