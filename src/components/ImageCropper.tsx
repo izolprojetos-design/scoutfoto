@@ -134,7 +134,7 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
   }, [completedCrop, sharpness, onCropComplete]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()} modal={true}>
       <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
