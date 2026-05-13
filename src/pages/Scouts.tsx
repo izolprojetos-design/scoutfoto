@@ -209,6 +209,48 @@ const Scouts = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  useEffect(() => {
+    const checkCamera = async () => {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+          setCameraStatus('unavailable');
+          return;
+        }
+        
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const hasVideo = devices.some(device => device.kind === 'videoinput');
+        
+        if (!hasVideo) {
+          setCameraStatus('unavailable');
+          return;
+        }
+
+        if (navigator.permissions && (navigator.permissions as any).query) {
+          try {
+            const result = await navigator.permissions.query({ name: 'camera' as any });
+            if (result.state === 'denied') {
+              setCameraStatus('denied');
+            }
+            
+            result.onchange = () => {
+              if (result.state === 'denied') {
+                setCameraStatus('denied');
+              } else {
+                setCameraStatus('available');
+              }
+            };
+          } catch (e) {
+            // Permission query for camera might not be supported
+          }
+        }
+      } catch (err) {
+        console.error('Error checking camera:', err);
+      }
+    };
+    checkCamera();
+  }, []);
+
+
   // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
 
   // Auto-open edit dialog when navigated with ?edit=scoutId
