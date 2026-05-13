@@ -1679,7 +1679,7 @@ const Scouts = () => {
 
                 {availableSections.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Seção</Label>
+                    <Label className="text-[10px] sm:text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Seção</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSections.map(sec => {
                         const active = sectionFilter.includes(sec);
@@ -1700,7 +1700,7 @@ const Scouts = () => {
 
                 {availableSubgroups.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Equipe</Label>
+                    <Label className="text-[10px] sm:text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Equipe</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSubgroups.map(sg => {
                         const active = subgroupFilter.includes(sg.id);
@@ -1720,7 +1720,7 @@ const Scouts = () => {
                 )}
 
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Idade (anos)</Label>
+                  <Label className="text-[10px] sm:text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Idade (anos)</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
@@ -1745,7 +1745,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Tempo no grupo (mín. anos)</Label>
+                  <Label className="text-[10px] sm:text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Tempo no grupo (mín. anos)</Label>
                   <Input
                     type="number"
                     min={0}
@@ -1758,7 +1758,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Foto</Label>
+                  <Label className="text-[10px] sm:text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Foto</Label>
                   <div className="flex gap-1.5">
                     {(['all', 'with', 'without'] as const).map(opt => (
                       <button
