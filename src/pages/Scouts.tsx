@@ -309,20 +309,20 @@ const Scouts = () => {
 
   const handleCropComplete = async (croppedFile: File) => {
     const target = cropperTarget;
-    console.log('[CROP] handleCropComplete called', { target, size: croppedFile.size, type: croppedFile.type });
+    const currentEditingScout = editingScout;
+    
+    console.log('[CROP] handleCropComplete called', { target, size: croppedFile.size, type: croppedFile.type, editingScoutId: currentEditingScout?.id });
 
-    if (target === 'new') {
-      setScoutPhoto(croppedFile);
-    } else {
-      setEditPhoto(croppedFile);
-    }
-
+    // Update previews immediately
     const reader = new FileReader();
     reader.onloadend = () => {
+      const result = reader.result as string;
       if (target === 'new') {
-        setScoutPhotoPreview(reader.result as string);
+        setScoutPhoto(croppedFile);
+        setScoutPhotoPreview(result);
       } else {
-        setEditPhotoPreview(reader.result as string);
+        setEditPhoto(croppedFile);
+        setEditPhotoPreview(result);
       }
     };
     reader.onerror = () => console.error('[CROP] reader error', reader.error);
@@ -332,19 +332,28 @@ const Scouts = () => {
     photoPickInProgressRef.current = false;
 
     // Auto-save when editing an existing scout — no need to press Salvar afterwards
-    if (target === 'edit' && editingScout) {
-      const scout = editingScout;
+    if (target === 'edit' && currentEditingScout) {
+      const scout = currentEditingScout;
       const nameForFile = editName || scout.name;
       try {
         setEditUploading(true);
         toast.loading('Salvando foto...', { id: 'auto-save-photo' });
-        const uploaded = await uploadPhoto(scout.id, croppedFile, nameForFile);
-        if (!uploaded) throw new Error('upload falhou');
-        const { error } = await supabase.from('scouts').update({ photo_url: uploaded }).eq('id', scout.id);
+        
+        const uploadedPath = await uploadPhoto(scout.id, croppedFile, nameForFile);
+        if (!uploadedPath) throw new Error('upload falhou');
+        
+        console.log('[CROP] Upload success, updating database...', { uploadedPath });
+        
+        const { error } = await supabase.from('scouts').update({ photo_url: uploadedPath }).eq('id', scout.id);
         if (error) throw error;
-        setEditingScout({ ...scout, photo_url: uploaded });
+        
+        // Update local state to reflect the new photo_url
+        setEditingScout({ ...scout, photo_url: uploadedPath });
         setEditPhoto(null);
+        
         toast.success('Foto salva!', { id: 'auto-save-photo' });
+        
+        // Refresh the list to ensure all views are consistent
         fetchData();
       } catch (err: any) {
         console.error('[CROP] auto-save failed', err);
