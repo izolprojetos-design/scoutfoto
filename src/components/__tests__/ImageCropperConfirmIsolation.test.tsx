@@ -9,7 +9,7 @@ vi.mock('react-image-crop', () => ({
 }));
 vi.mock('react-image-crop/dist/ReactCrop.css', () => ({}));
 
-describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
+describe('ImageCropper — Interaction isolation (mobile)', () => {
   beforeEach(() => {
     (globalThis as any).ResizeObserver = class {
       observe() {}
@@ -17,6 +17,8 @@ describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
       disconnect() {}
     };
     (globalThis as any).DOMRect = (globalThis as any).DOMRect || class {};
+
+    // jsdom: stub HTMLCanvasElement.toBlob used by handleConfirm
     (HTMLCanvasElement.prototype as any).getContext = vi.fn(() => ({
       drawImage: vi.fn(),
       getImageData: vi.fn(() => ({ data: new Uint8ClampedArray(4) })),
@@ -32,13 +34,12 @@ describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
     });
   });
 
-  it('clicking "Confirmar Recorte" does not bubble to the parent (Editar Membro) dialog', () => {
+  it('clicking "Confirmar Recorte" does not bubble to the parent dialog', () => {
     const parentClick = vi.fn();
     const onClose = vi.fn();
     const onCropComplete = vi.fn();
 
     render(
-      // Simulates the parent "Editar Membro" Dialog content listening for clicks
       <div data-testid="edit-member-parent" onClick={parentClick}>
         <ImageCropper
           open={true}
@@ -49,9 +50,7 @@ describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
       </div>
     );
 
-    // Seed completedCrop by simulating image load
     const img = document.querySelector('img[alt="Editar"]') as HTMLImageElement;
-    expect(img).toBeTruthy();
     Object.defineProperty(img, 'width', { value: 200, configurable: true });
     Object.defineProperty(img, 'height', { value: 200, configurable: true });
     fireEvent.load(img);
@@ -59,9 +58,32 @@ describe('ImageCropper — Confirmar Recorte event isolation (mobile)', () => {
     const confirmBtn = screen.getByRole('button', { name: /confirmar recorte/i });
     fireEvent.click(confirmBtn);
 
-    // The click handler must call stopPropagation, so the parent never receives the event
     expect(parentClick).not.toHaveBeenCalled();
-    // And onClose must not be triggered by the click itself
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('clicking "Cancelar" calls onClose but does not bubble to the parent dialog', () => {
+    const parentClick = vi.fn();
+    const onClose = vi.fn();
+    const onCropComplete = vi.fn();
+
+    render(
+      <div data-testid="edit-member-parent" onClick={parentClick}>
+        <ImageCropper
+          open={true}
+          imageSrc="data:image/png;base64,AAAA"
+          onClose={onClose}
+          onCropComplete={onCropComplete}
+        />
+      </div>
+    );
+
+    const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    fireEvent.click(cancelBtn);
+
+    // Should trigger the cropper close logic
+    expect(onClose).toHaveBeenCalled();
+    // But MUST NOT trigger any logic in the parent "Editar Membro" dialog
+    expect(parentClick).not.toHaveBeenCalled();
   });
 });
