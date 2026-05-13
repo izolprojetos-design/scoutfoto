@@ -180,6 +180,8 @@ const Scouts = () => {
   const [inlineGuardianEmail, setInlineGuardianEmail] = useState('');
   const [inlineGuardianPhone, setInlineGuardianPhone] = useState('');
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(true);
+  const [cameraStatus, setCameraStatus] = useState<'available' | 'unavailable' | 'denied'>('available');
+
 
   // Auto-clear broken photo URLs from the database
   const clearedPhotoIds = useRef(new Set<string>());
