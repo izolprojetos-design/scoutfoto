@@ -1745,7 +1745,7 @@ const Scouts = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs uppercase tracking-wide text-primary font-bold">Tempo no grupo (mín. anos)</Label>
+                  <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Tempo no grupo (mín. anos)</Label>
                   <Input
                     type="number"
                     min={0}
