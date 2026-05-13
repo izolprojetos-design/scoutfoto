@@ -1122,7 +1122,7 @@ const Scouts = () => {
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="flex flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col items-center gap-3" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
         <div className="relative">
           <label
             htmlFor={photoInputId}
