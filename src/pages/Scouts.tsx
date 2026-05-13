@@ -1117,32 +1117,43 @@ const Scouts = () => {
         <div className="relative">
           <label
             htmlFor={photoInputId}
-            className="cursor-pointer"
+            className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
               photoPickInProgressRef.current = true;
               
-              // Verificação de permissões/disponibilidade da câmera
-              if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
-                try {
-                  // Apenas verifica se há permissão/disponibilidade sem capturar o stream permanentemente
-                  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                  stream.getTracks().forEach(track => track.stop());
-                } catch (err: any) {
-                  console.warn('Acesso à câmera não disponível ou negado:', err);
-                  if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-                    toast.error('Permissão da câmera negada. Você pode selecionar uma foto da sua galeria.');
-                  } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-                    toast.info('Nenhuma câmera detectada. Selecione uma foto da sua galeria.');
+              if (cameraStatus === 'available') {
+                // Verificação extra ao clicar se necessário
+                if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                  try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    stream.getTracks().forEach(track => track.stop());
+                  } catch (err: any) {
+                    console.warn('Acesso à câmera não disponível ou negado:', err);
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                      setCameraStatus('denied');
+                      toast.error('Permissão da câmera negada. Você pode selecionar uma foto da sua galeria.');
+                    } else {
+                      setCameraStatus('unavailable');
+                      toast.info('Câmera não disponível. Selecione uma foto da sua galeria.');
+                    }
                   }
                 }
               }
             }}
           >
-            <div className="relative h-24 w-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+            <div className={`relative h-24 w-24 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors ${
+              cameraStatus === 'available' 
+                ? 'border-muted-foreground/30 hover:border-primary' 
+                : 'border-amber-200 bg-amber-50/30'
+            }`}>
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
               ) : (
-                <Camera className="h-6 w-6 text-muted-foreground" />
+                cameraStatus === 'available' ? (
+                  <Camera className="h-6 w-6 text-muted-foreground" />
+                ) : (
+                  <ImageIcon className="h-6 w-6 text-amber-500" />
+                )
               )}
             </div>
           </label>
@@ -1169,7 +1180,24 @@ const Scouts = () => {
           )}
         </div>
         <input id={photoInputId} type="file" accept="image/*" className="hidden" onChange={onPhotoSelect} />
-        <span className="text-xs text-muted-foreground">Toque para tirar foto ou selecionar da galeria</span>
+        <div className="text-center space-y-1">
+          <span className="text-xs font-medium block">
+            {cameraStatus === 'available' 
+              ? 'Toque para tirar foto ou galeria' 
+              : 'Selecione uma foto da galeria'}
+          </span>
+          {cameraStatus === 'denied' && (
+            <p className="text-[10px] text-amber-600 max-w-[180px]">
+              Acesso à câmera negado. Por favor, use a galeria ou verifique as permissões do navegador.
+            </p>
+          )}
+          {cameraStatus === 'unavailable' && (
+            <p className="text-[10px] text-amber-600 max-w-[180px]">
+              Câmera não detectada neste dispositivo. Use a galeria para adicionar uma foto.
+            </p>
+          )}
+        </div>
+
         <div className="flex gap-2">
           <Button
             type="button"
