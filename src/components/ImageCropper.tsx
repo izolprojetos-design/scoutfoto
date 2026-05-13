@@ -180,7 +180,7 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
           <Button type="button" variant="outline" onClick={onClose}>
             Cancelar
           </Button>
-          <Button type="button" onClick={handleConfirm} disabled={processing || !completedCrop}>
+          <Button type="button" onClick={(e) => { e.stopPropagation(); handleConfirm(); }} disabled={processing || !completedCrop}>
             {processing ? 'Processando...' : 'Confirmar Recorte'}
           </Button>
         </DialogFooter>
