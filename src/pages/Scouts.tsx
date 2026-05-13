@@ -1679,7 +1679,7 @@ const Scouts = () => {
 
                 {availableSections.length > 0 && (
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wide text-primary font-bold">Seção</Label>
+                    <Label className="text-[11px] uppercase tracking-wider text-primary font-black drop-shadow-sm">Seção</Label>
                     <div className="flex flex-wrap gap-1.5">
                       {availableSections.map(sec => {
                         const active = sectionFilter.includes(sec);
