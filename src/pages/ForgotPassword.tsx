@@ -33,8 +33,17 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <motion.div
+    <>
+      <Helmet>
+        <title>Recuperar senha — ScoutFoto</title>
+        <meta name="description" content="Receba um e-mail para redefinir sua senha do ScoutFoto, banco de imagens do 12º GEMC." />
+        <link rel="canonical" href="https://scoutfoto.app/forgot-password" />
+        <meta property="og:title" content="Recuperar senha — ScoutFoto" />
+        <meta property="og:description" content="Redefinição de senha por e-mail no ScoutFoto." />
+        <meta property="og:url" content="https://scoutfoto.app/forgot-password" />
+      </Helmet>
+      <main className="flex min-h-screen items-center justify-center bg-background px-4">
+        <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[420px]"
