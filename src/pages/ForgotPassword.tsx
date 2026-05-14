@@ -109,7 +109,8 @@ const ForgotPassword = () => {
           </Link>
         </div>
       </motion.div>
-    </div>
+      </main>
+    </>
   );
 };
 
