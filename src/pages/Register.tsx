@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import { validatePassword } from '@/lib/passwordValidation';
+import { Helmet } from 'react-helmet-async';
 
 const Register = () => {
   const [searchParams] = useSearchParams();
