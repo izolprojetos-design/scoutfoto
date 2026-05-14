@@ -163,5 +163,9 @@ if (sessionStorage.getItem(RELOAD_FLAG) === "1") {
   });
 })();
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
 
