@@ -11,6 +11,7 @@ import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockout
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
 import LogoCircle from '@/components/LogoCircle';
+import { Helmet } from 'react-helmet-async';
 
 
 const Login = () => {
