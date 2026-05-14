@@ -329,7 +329,11 @@ const Scouts = () => {
     reader.readAsDataURL(croppedFile);
 
     setCropperOpen(false);
-    photoPickInProgressRef.current = false;
+    // Keep the guard active briefly so any synthesized pointer/click events
+    // emitted while the cropper dialog unmounts don't bubble to the parent
+    // "Editar Membro" dialog and accidentally close it on mobile.
+    photoPickInProgressRef.current = true;
+    setTimeout(() => { photoPickInProgressRef.current = false; }, 600);
 
     // Auto-save when editing an existing scout — no need to press Salvar afterwards
     if (target === 'edit' && currentEditingScout) {
