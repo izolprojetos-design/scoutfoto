@@ -283,7 +283,8 @@ const Register = () => {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+      </main>
+    </>
   );
 };
 
