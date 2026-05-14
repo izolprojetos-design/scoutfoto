@@ -134,8 +134,13 @@ const ImageCropper = ({ open, imageSrc, onClose, onCropComplete }: ImageCropperP
   }, [completedCrop, sharpness, onCropComplete]);
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()} modal={true}>
-      <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={(v) => { if (!v && !processing) onClose(); }} modal={true}>
+      <DialogContent
+        className="max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => { if (processing) e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <CropIcon className="h-5 w-5" />
