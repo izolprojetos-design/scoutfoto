@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { toast } from "sonner";
+import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 import { getReloadMessages } from "./lib/i18n/reloadMessages";
@@ -162,5 +163,9 @@ if (sessionStorage.getItem(RELOAD_FLAG) === "1") {
   });
 })();
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <HelmetProvider>
+    <App />
+  </HelmetProvider>
+);
 

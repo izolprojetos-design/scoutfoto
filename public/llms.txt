@@ -1,0 +1,17 @@
+# ScoutFoto
+
+> Sistema profissional de banco de imagens para grupos escoteiros, mantido pelo Grupo Escoteiro Monte Caburaí — 12º GEMC. Permite organizar fotos e vídeos de eventos, gerenciar integrantes (escoteiros e voluntários), agendar atividades e compartilhar galerias com responsáveis.
+
+ScoutFoto é uma aplicação privada, com acesso restrito a integrantes autenticados do grupo escoteiro. Apenas as páginas públicas (login, cadastro e recuperação de senha) são indexáveis. Galerias, eventos, integrantes e dados pessoais ficam protegidos por autenticação e RLS.
+
+## Pages
+
+- [Início](/): Página inicial — redireciona para login ou painel autenticado.
+- [Entrar](/login): Acesso de integrantes e voluntários cadastrados.
+- [Cadastro](/register): Cadastro mediante convite de administrador.
+- [Recuperar senha](/forgot-password): Envio de e-mail para redefinir a senha.
+
+## Optional
+
+- [Confirmação de agendamento](/confirmar-agendamento): Endpoint público para confirmar reuniões agendadas via e-mail.
+- [Cancelar inscrição](/unsubscribe): Endpoint público para descadastrar e-mails de notificação.

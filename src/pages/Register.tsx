@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import { validatePassword } from '@/lib/passwordValidation';
+import { Helmet } from 'react-helmet-async';
 
 const Register = () => {
   const [searchParams] = useSearchParams();
@@ -180,8 +181,17 @@ const Register = () => {
   const roleLabel = inviteRole === 'voluntario' ? 'Voluntário' : inviteRole === 'chefe' ? 'Chefe' : inviteRole === 'viewer' ? 'Visualizador' : inviteRole;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
-      <motion.div
+    <>
+      <Helmet>
+        <title>Criar conta — ScoutFoto</title>
+        <meta name="description" content="Crie sua conta no ScoutFoto a partir de um convite enviado pelo administrador do grupo escoteiro." />
+        <link rel="canonical" href="https://scoutfoto.app/register" />
+        <meta property="og:title" content="Criar conta — ScoutFoto" />
+        <meta property="og:description" content="Cadastro mediante convite no banco de imagens do 12º GEMC." />
+        <meta property="og:url" content="https://scoutfoto.app/register" />
+      </Helmet>
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted/30 p-4">
+        <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="w-full max-w-md"
@@ -273,7 +283,8 @@ const Register = () => {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+      </main>
+    </>
   );
 };
 

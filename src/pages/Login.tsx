@@ -11,6 +11,7 @@ import { checkLoginBlock, recordFailedAttempt, clearLoginAttempts, formatLockout
 import { logAudit } from '@/lib/auditLog';
 import { supabase } from '@/integrations/supabase/client';
 import LogoCircle from '@/components/LogoCircle';
+import { Helmet } from 'react-helmet-async';
 
 
 const Login = () => {
@@ -94,7 +95,16 @@ const Login = () => {
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <>
+      <Helmet>
+        <title>Entrar — ScoutFoto</title>
+        <meta name="description" content="Acesse o ScoutFoto, banco de imagens do Grupo Escoteiro Monte Caburaí (12º GEMC). Apenas integrantes e voluntários autorizados." />
+        <link rel="canonical" href="https://scoutfoto.app/login" />
+        <meta property="og:title" content="Entrar — ScoutFoto" />
+        <meta property="og:description" content="Acesso restrito a integrantes e voluntários do 12º GEMC." />
+        <meta property="og:url" content="https://scoutfoto.app/login" />
+      </Helmet>
+      <main className="flex min-h-screen">
       {/* Left Panel - Branding */}
       <div className="hidden lg:flex lg:w-1/2 scout-gradient relative overflow-hidden">
         <div className="absolute inset-0 bg-black/10" />
@@ -258,7 +268,8 @@ const Login = () => {
           </div>
         </motion.div>
       </div>
-    </div>
+      </main>
+    </>
   );
 };
 
