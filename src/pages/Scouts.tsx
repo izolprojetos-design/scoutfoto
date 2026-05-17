@@ -156,6 +156,7 @@ const Scouts = () => {
   const [scoutTransitionDate, setScoutTransitionDate] = useState('');
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [discardConfirmText, setDiscardConfirmText] = useState('');
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
   // Tracks if a camera/file picker is currently in progress (prevents parent Dialog from closing on mobile remount)
