@@ -4,6 +4,27 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      day: "monday"
       time: "09:00"
+      # Dependabot restricts to weekdays automatically if day is omitted and interval is daily? 
+      # Actually, "daily" runs every day. To restrict to weekdays, we often use specific labels or just accept daily.
+      # However, we can't explicitly say "weekdays only" in the interval field easily in YAML without custom actions,
+      # but we can set the schedule to be consistent.
     open-pull-requests-limit: 10
+    # Grouping or separate limits by severity isn't a native top-level feature of dependabot.yml (it's one limit per ecosystem).
+    # But we can use 'groups' to manage noise.
+    groups:
+      critical-updates:
+        patterns: ["*"]
+        update-types: ["security:critical"]
+      high-updates:
+        patterns: ["*"]
+        update-types: ["security:high"]
+    # Re-request reviews and auto-merge/review is usually handled via GitHub Actions or branch protection, 
+    # but we can add metadata.
+    
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+    open-pull-requests-limit: 5
