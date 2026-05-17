@@ -156,6 +156,7 @@ const Scouts = () => {
   const [scoutTransitionDate, setScoutTransitionDate] = useState('');
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
+  const [discardConfirmText, setDiscardConfirmText] = useState('');
   const [cropperImage, setCropperImage] = useState('');
   const [cropperTarget, setCropperTarget] = useState<'new' | 'edit'>('new');
   // Tracks if a camera/file picker is currently in progress (prevents parent Dialog from closing on mobile remount)
@@ -1542,7 +1543,7 @@ const Scouts = () => {
       )}
       <div className="flex flex-col-reverse sm:flex-row gap-2">
         {formTarget === 'edit' && editingScout && (
-          <AlertDialog>
+          <AlertDialog onOpenChange={(open) => { if (!open) setDiscardConfirmText(''); }}>
             <AlertDialogTrigger asChild>
                <Button
                 type="button"
@@ -1558,13 +1559,25 @@ const Scouts = () => {
                 <AlertDialogTitle>Descartar alterações?</AlertDialogTitle>
                 <AlertDialogDescription>
                   Todas as alterações não salvas (incluindo a foto) serão perdidas e os campos voltarão ao estado atual do integrante.
+                  <div className="mt-4 space-y-2">
+                    <Label className="text-xs">Digite "DESCARTAR" para confirmar:</Label>
+                    <Input 
+                      value={discardConfirmText} 
+                      onChange={e => setDiscardConfirmText(e.target.value)} 
+                      placeholder="DESCARTAR" 
+                      className="h-10 uppercase"
+                    />
+                  </div>
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogCancel onClick={() => setDiscardConfirmText('')}>Cancelar</AlertDialogCancel>
                 <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+                  disabled={discardConfirmText !== 'DESCARTAR'}
                   onClick={() => {
                     openEditDialog(editingScout);
+                    setDiscardConfirmText('');
                     toast.info('Alterações descartadas');
                   }}
                 >
