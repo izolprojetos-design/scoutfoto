@@ -1163,9 +1163,11 @@ const Scouts = () => {
                     console.warn('Acesso à câmera não disponível ou negado:', err);
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                       setCameraStatus('denied');
+                      logCameraIssue('denied', 'getUserMedia_permission_denied', { error_name: err.name, error_message: err.message });
                       toast.error('Permissão da câmera negada. Você pode selecionar uma foto da sua galeria.');
                     } else {
                       setCameraStatus('unavailable');
+                      logCameraIssue('unavailable', 'getUserMedia_error', { error_name: err?.name, error_message: err?.message });
                       toast.info('Câmera não disponível. Selecione uma foto da sua galeria.');
                     }
                   }
