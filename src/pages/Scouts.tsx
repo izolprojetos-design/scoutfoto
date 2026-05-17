@@ -335,37 +335,9 @@ const Scouts = () => {
     photoPickInProgressRef.current = true;
     setTimeout(() => { photoPickInProgressRef.current = false; }, 600);
 
-    // Auto-save when editing an existing scout — no need to press Salvar afterwards
-    if (target === 'edit' && currentEditingScout) {
-      const scout = currentEditingScout;
-      const nameForFile = editName || scout.name;
-      try {
-        setEditUploading(true);
-        toast.loading('Salvando foto...', { id: 'auto-save-photo' });
-        
-        const uploadedPath = await uploadPhoto(scout.id, croppedFile, nameForFile);
-        if (!uploadedPath) throw new Error('upload falhou');
-        
-        console.log('[CROP] Upload success, updating database...', { uploadedPath });
-        
-        const { error } = await supabase.from('scouts').update({ photo_url: uploadedPath }).eq('id', scout.id);
-        if (error) throw error;
-        
-        // Update local state to reflect the new photo_url
-        setEditingScout({ ...scout, photo_url: uploadedPath });
-        setEditPhoto(null);
-        
-        toast.success('Foto salva!', { id: 'auto-save-photo' });
-        
-        // Refresh the list to ensure all views are consistent
-        fetchData();
-      } catch (err: any) {
-        console.error('[CROP] auto-save failed', err);
-        toast.error('Falha ao salvar foto. Tente novamente.', { id: 'auto-save-photo' });
-      } finally {
-        setEditUploading(false);
-      }
-    }
+    // Removed auto-save logic to keep the photo in memory until the main "Save" button is clicked
+    // This allows the user to finish editing other fields before committing the new photo to storage.
+
   };
 
   const uploadPhoto = async (scoutId: string, photo: File, scoutNameForFile?: string): Promise<string | null> => {
