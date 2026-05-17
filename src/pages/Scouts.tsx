@@ -1492,9 +1492,25 @@ const Scouts = () => {
           </div>
         </div>
       )}
-      <Button type="submit" className="w-full h-11 font-semibold" disabled={isUploading}>
-        {isUploading ? 'Salvando...' : submitLabel}
-      </Button>
+      <div className="flex flex-col-reverse sm:flex-row gap-2">
+        {formTarget === 'edit' && editingScout && (
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto h-11"
+            disabled={isUploading}
+            onClick={() => {
+              openEditDialog(editingScout);
+              toast.info('Alterações descartadas');
+            }}
+          >
+            Descartar alterações
+          </Button>
+        )}
+        <Button type="submit" className="flex-1 h-11 font-semibold" disabled={isUploading}>
+          {isUploading ? 'Salvando...' : submitLabel}
+        </Button>
+      </div>
     </form>
   );};
 
