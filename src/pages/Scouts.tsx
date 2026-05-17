@@ -93,7 +93,7 @@ const branchColorMap: Record<string, string> = {
 
 const Scouts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, isAdmin, isVoluntario, canUpload } = useAuth();
+  const { user, profile, isAdmin, isVoluntario, canUpload } = useAuth();
   const { canManageScouts, canEditScouts, canViewGuardians } = usePermissions();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
@@ -182,6 +182,33 @@ const Scouts = () => {
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(true);
   const [cameraStatus, setCameraStatus] = useState<'available' | 'unavailable' | 'denied'>('available');
 
+  // Audit log dedup — avoid spamming the audit table with repeated camera issues per session
+  const cameraAuditLoggedRef = useRef<Set<string>>(new Set());
+  const logCameraIssue = (
+    kind: 'denied' | 'unavailable',
+    reason: string,
+    extra?: Record<string, unknown>
+  ) => {
+    const key = `${kind}:${reason}`;
+    if (cameraAuditLoggedRef.current.has(key)) return;
+    cameraAuditLoggedRef.current.add(key);
+    if (!user) return;
+    logAudit(
+      user.id,
+      kind === 'denied' ? 'camera_access_denied' : 'camera_unavailable',
+      undefined,
+      {
+        reason,
+        user_email: profile?.email,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        platform: typeof navigator !== 'undefined' ? (navigator as any).platform : null,
+        url: typeof window !== 'undefined' ? window.location.pathname : null,
+        timestamp: new Date().toISOString(),
+        ...(extra || {}),
+      }
+    ).catch(err => console.warn('[CAMERA AUDIT] failed to log', err));
+  };
+
 
   // Auto-clear broken photo URLs from the database
   const clearedPhotoIds = useRef(new Set<string>());
@@ -214,6 +241,7 @@ const Scouts = () => {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
           setCameraStatus('unavailable');
+          logCameraIssue('unavailable', 'mediaDevices_api_missing');
           return;
         }
         
@@ -222,6 +250,7 @@ const Scouts = () => {
         
         if (!hasVideo) {
           setCameraStatus('unavailable');
+          logCameraIssue('unavailable', 'no_video_input_device');
           return;
         }
 
@@ -230,11 +259,13 @@ const Scouts = () => {
             const result = await navigator.permissions.query({ name: 'camera' as any });
             if (result.state === 'denied') {
               setCameraStatus('denied');
+              logCameraIssue('denied', 'permissions_api_state_denied');
             }
             
             result.onchange = () => {
               if (result.state === 'denied') {
                 setCameraStatus('denied');
+                logCameraIssue('denied', 'permissions_api_changed_to_denied');
               } else {
                 setCameraStatus('available');
               }
@@ -248,7 +279,9 @@ const Scouts = () => {
       }
     };
     checkCamera();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
 
   // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
@@ -1130,9 +1163,11 @@ const Scouts = () => {
                     console.warn('Acesso à câmera não disponível ou negado:', err);
                     if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
                       setCameraStatus('denied');
+                      logCameraIssue('denied', 'getUserMedia_permission_denied', { error_name: err.name, error_message: err.message });
                       toast.error('Permissão da câmera negada. Você pode selecionar uma foto da sua galeria.');
                     } else {
                       setCameraStatus('unavailable');
+                      logCameraIssue('unavailable', 'getUserMedia_error', { error_name: err?.name, error_message: err?.message });
                       toast.info('Câmera não disponível. Selecione uma foto da sua galeria.');
                     }
                   }

@@ -8,7 +8,8 @@ export type AuditAction =
   | 'create_event' | 'change_permissions' | 'create_user'
   | 'data_update' | 'access_denied' | 'mfa_enabled' | 'mfa_disabled'
   | 'role_change' | 'status_change' | 'section_change' | 'force_remote_refresh'
-  | 'scheduling_approve' | 'scheduling_reject';
+  | 'scheduling_approve' | 'scheduling_reject'
+  | 'camera_access_denied' | 'camera_unavailable';
 
 export const logAudit = async (
   _userId: string,
