@@ -4,6 +4,32 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-      day: "monday"
       time: "09:00"
+      timezone: "America/Sao_Paulo"
     open-pull-requests-limit: 10
+    # Use groups to organize by severity and reduce noise
+    groups:
+      critical-security:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "security:critical"
+      high-security:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "security:high"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+
+# Re-requesting reviews is a repository-level setting in GitHub UI (Settings > Code security and analysis > Dependabot > Re-request reviews), 
+# but including it here as a comment for clarity.
+# target-branch: "main" (Dependabot creates branches automatically, it doesn't support 'pre-branch' staging natively in config)
