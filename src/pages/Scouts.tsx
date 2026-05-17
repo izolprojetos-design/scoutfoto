@@ -182,6 +182,33 @@ const Scouts = () => {
   const [inlineGuardianAuth, setInlineGuardianAuth] = useState(true);
   const [cameraStatus, setCameraStatus] = useState<'available' | 'unavailable' | 'denied'>('available');
 
+  // Audit log dedup — avoid spamming the audit table with repeated camera issues per session
+  const cameraAuditLoggedRef = useRef<Set<string>>(new Set());
+  const logCameraIssue = (
+    kind: 'denied' | 'unavailable',
+    reason: string,
+    extra?: Record<string, unknown>
+  ) => {
+    const key = `${kind}:${reason}`;
+    if (cameraAuditLoggedRef.current.has(key)) return;
+    cameraAuditLoggedRef.current.add(key);
+    if (!user) return;
+    logAudit(
+      user.id,
+      kind === 'denied' ? 'camera_access_denied' : 'camera_unavailable',
+      undefined,
+      {
+        reason,
+        user_email: profile?.email,
+        user_agent: typeof navigator !== 'undefined' ? navigator.userAgent : null,
+        platform: typeof navigator !== 'undefined' ? (navigator as any).platform : null,
+        url: typeof window !== 'undefined' ? window.location.pathname : null,
+        timestamp: new Date().toISOString(),
+        ...(extra || {}),
+      }
+    ).catch(err => console.warn('[CAMERA AUDIT] failed to log', err));
+  };
+
 
   // Auto-clear broken photo URLs from the database
   const clearedPhotoIds = useRef(new Set<string>());
