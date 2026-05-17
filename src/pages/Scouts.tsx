@@ -241,6 +241,7 @@ const Scouts = () => {
       try {
         if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
           setCameraStatus('unavailable');
+          logCameraIssue('unavailable', 'mediaDevices_api_missing');
           return;
         }
         
@@ -249,6 +250,7 @@ const Scouts = () => {
         
         if (!hasVideo) {
           setCameraStatus('unavailable');
+          logCameraIssue('unavailable', 'no_video_input_device');
           return;
         }
 
@@ -257,11 +259,13 @@ const Scouts = () => {
             const result = await navigator.permissions.query({ name: 'camera' as any });
             if (result.state === 'denied') {
               setCameraStatus('denied');
+              logCameraIssue('denied', 'permissions_api_state_denied');
             }
             
             result.onchange = () => {
               if (result.state === 'denied') {
                 setCameraStatus('denied');
+                logCameraIssue('denied', 'permissions_api_changed_to_denied');
               } else {
                 setCameraStatus('available');
               }
@@ -275,7 +279,9 @@ const Scouts = () => {
       }
     };
     checkCamera();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
 
   // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
