@@ -1509,11 +1509,11 @@ const Scouts = () => {
         {formTarget === 'edit' && editingScout && (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button
+               <Button
                 type="button"
                 variant="outline"
                 className="w-full sm:w-auto h-11"
-                disabled={isUploading}
+                disabled={isUploading || !hasChanges}
               >
                 Descartar alterações
               </Button>
