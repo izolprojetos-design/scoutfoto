@@ -1494,18 +1494,37 @@ const Scouts = () => {
       )}
       <div className="flex flex-col-reverse sm:flex-row gap-2">
         {formTarget === 'edit' && editingScout && (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full sm:w-auto h-11"
-            disabled={isUploading}
-            onClick={() => {
-              openEditDialog(editingScout);
-              toast.info('Alterações descartadas');
-            }}
-          >
-            Descartar alterações
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:w-auto h-11"
+                disabled={isUploading}
+              >
+                Descartar alterações
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Descartar alterações?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Todas as alterações não salvas (incluindo a foto) serão perdidas e os campos voltarão ao estado atual do integrante.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    openEditDialog(editingScout);
+                    toast.info('Alterações descartadas');
+                  }}
+                >
+                  Sim, descartar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <Button type="submit" className="flex-1 h-11 font-semibold" disabled={isUploading}>
           {isUploading ? 'Salvando...' : submitLabel}
