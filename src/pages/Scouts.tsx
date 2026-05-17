@@ -1096,6 +1096,19 @@ const Scouts = () => {
       ? (transitionDate && effectiveBranch ? effectiveBranch : (ageBranchIdx > currentBranchIdx ? ageBranch : (nextBranchChange ? nextBranchChange.branch : null)))
       : null;
 
+    const hasChanges = formTarget === 'edit' && editingScout ? (
+      name !== editingScout.name ||
+      birth !== editingScout.birth_date ||
+      notes !== (editingScout.notes || '') ||
+      branchOverride !== (editingScout.manual_branch || 'auto') ||
+      subgroupId !== (editingScout.subgroup_id || 'none') ||
+      registrationId !== (editingScout.registration_id ? editingScout.registration_id.padStart(4, '0') : '') ||
+      phoneVal !== (editingScout.phone || '') ||
+      sectionVal !== (editingScout.section || '') ||
+      transitionDate !== (editingScout.transition_date || '') ||
+      !!editPhoto
+    ) : false;
+
     return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="flex flex-col items-center gap-3" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
