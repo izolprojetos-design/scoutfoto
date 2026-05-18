@@ -1840,7 +1840,7 @@ const Scouts = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {(canManageScouts || canEditScouts) && (
+          {true && (
             <Button
               variant="outline"
               className="gap-2"
