@@ -339,8 +339,14 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                     loading="lazy"
                   />
                   {img.scoutName && (
-                    <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-0.5 truncate text-center">
-                      {img.scoutName}
+                    <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-1 truncate text-center leading-tight">
+                      <div className="font-bold">{img.scoutName.toUpperCase()}</div>
+                      {img.scoutId && <div className="opacity-70 text-[9px]">ID: {img.scoutId.slice(0, 8)}</div>}
+                      {img.createdAt && (
+                        <div className="opacity-70 text-[9px]">
+                          {new Date(img.createdAt).toLocaleDateString('pt-BR')}
+                        </div>
+                      )}
                     </div>
                   )}
                   {selectedUrl === img.url && (
