@@ -13,13 +13,20 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  // Verify caller is service_role
+  // Verify caller is admin
   const authHeader = req.headers.get("Authorization");
   if (!authHeader) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-  const token = authHeader.replace("Bearer ", "");
-  if (token !== Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) {
-     return new Response("Unauthorized", { status: 401, headers: corsHeaders });
-  }
+  
+  const { data: { user } } = await createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  ).auth.getUser();
+
+  if (!user) return new Response("Unauthorized", { status: 401, headers: corsHeaders });
+
+  const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+  if (!isAdmin) return new Response("Forbidden", { status: 403, headers: corsHeaders });
 
   console.log('--- Iniciando reprocessamento de fotos (via Edge Function) ---');
   
