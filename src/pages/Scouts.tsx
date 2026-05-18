@@ -249,6 +249,7 @@ const Scouts = () => {
       }
     }
     setPhotosHubUploading(false);
+    setPhotosHubSummary(prev => prev ? { ...prev, pending: 0 } : null);
     setPhotosHubProgress({ current: 0, total: 0 });
     if (success > 0) {
       toast.success(`${success} foto(s) enviada(s)`);
