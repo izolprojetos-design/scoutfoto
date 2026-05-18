@@ -37,6 +37,7 @@ interface ScoutPhotoRecord {
 interface Props {
   scoutId: string;
   scoutName: string;
+  onPickStart?: () => void;
 }
 
 const MAX_SIZE_MB = 10;
