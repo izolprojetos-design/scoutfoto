@@ -111,15 +111,8 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     // 1. Simular abertura do Fotos Hub
-    // Wait for the button to appear in the DOM
-    await waitFor(() => {
-      const btns = screen.getAllByRole('button');
-      const fotosBtn = btns.find(b => b.textContent?.includes('Fotos'));
-      if (!fotosBtn) throw new Error('Botão Fotos não encontrado');
-    }, { timeout: 3000 });
-
-    const btns = screen.getAllByRole('button');
-    const photosBtn = btns.find(b => b.textContent?.includes('Fotos'))!;
+    // Use findByRole com uma espera maior, garantindo que o componente carregou
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i }, { timeout: 4000 });
     fireEvent.click(photosBtn);
 
     // 2. Selecionar o integrante
@@ -184,8 +177,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const btns2 = screen.getAllByRole('button');
-    const photosBtn2 = btns2.find(b => b.textContent?.includes('Fotos'))!;
+    const photosBtn2 = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn2);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
@@ -216,8 +208,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const btns3 = screen.getAllByRole('button');
-    const photosBtn3 = btns3.find(b => b.textContent?.includes('Fotos'))!;
+    const photosBtn3 = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn3);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
