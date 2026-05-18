@@ -12,6 +12,7 @@ interface CloudPhotoPickerDialogProps {
   open: boolean;
   onClose: () => void;
   onSelect: (file: File) => void;
+  initialSearch?: string;
 }
 
 interface StorageImage {
