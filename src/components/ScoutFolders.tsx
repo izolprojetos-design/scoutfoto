@@ -548,7 +548,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           .replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 40);
         const safeId = (registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '');
         const yearSegment = targetDate.split('-')[0];
-        const path = `gallery/${scoutId}/${yearSegment}/${targetDate}/${safeName}_${safeId}_${targetDate}_${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const filename = `${safeName}_${safeId}_${targetDate}_${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}.${ext}`.toUpperCase();
+        const path = `gallery/${scoutId}/${yearSegment}/${targetDate}/${filename}`;
         const baseTs = new Date(`${targetDate}T12:00:00`).toISOString();
         const { error: upErr } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: false, contentType: compressed.type });
         if (upErr) throw upErr;
