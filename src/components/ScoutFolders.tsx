@@ -405,7 +405,15 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           continue;
         }
         const compressed = await compressImage(item.file);
-        const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
+        let mime = compressed.type || item.file.type || 'image/jpeg';
+        let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
+        
+        // Force JPG for HEIC/HEIF or unknown types to ensure browser compatibility
+        if (ext === 'heic' || ext === 'heif' || !['jpg', 'png', 'webp'].includes(ext)) {
+          ext = 'jpg';
+          mime = 'image/jpeg';
+        }
+        
         const yearSegment = date.split('-')[0];
         const path = `gallery/${scoutId}/${yearSegment}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         storedPath = path;
