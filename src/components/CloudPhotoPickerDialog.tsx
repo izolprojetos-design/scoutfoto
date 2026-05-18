@@ -281,9 +281,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setSectionFilter(ALL);
     setSubgroupFilter(ALL);
     setSearch('');
+    setVisibleCount(20);
     localStorage.removeItem('cloud_gallery_search');
     localStorage.removeItem('cloud_gallery_section');
     localStorage.removeItem('cloud_gallery_subgroup');
+    localStorage.removeItem('cloud_gallery_visible_count');
   };
 
   return (
