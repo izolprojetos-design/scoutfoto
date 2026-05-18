@@ -3179,7 +3179,7 @@ const Scouts = () => {
                         <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                       </TabsList>
                       <TabsContent value="galeria" className="mt-4">
-                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
                       </TabsContent>
                       <TabsContent value="pastas" className="mt-4">
                         <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
