@@ -48,7 +48,6 @@ vi.mock('../integrations/supabase/client', () => ({
     from: vi.fn((table) => ({
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockImplementation(() => {
-        // Simulate background DB change that triggers realtime
         if (realtimeCallback) setTimeout(() => realtimeCallback({}), 50);
         return Promise.resolve({ data: [mockPhoto], error: null });
       }),
@@ -56,6 +55,7 @@ vi.mock('../integrations/supabase/client', () => ({
       delete: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: mockScout, error: null }),
       then: (cb: any) => {
         if (table === 'scouts') return Promise.resolve(cb({ data: [mockScout], error: null }));
         if (table === 'scout_photos') return Promise.resolve(cb({ data: [mockPhoto], error: null }));
@@ -65,6 +65,7 @@ vi.mock('../integrations/supabase/client', () => ({
     storage: {
       from: vi.fn(() => ({
         upload: vi.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        list: vi.fn().mockResolvedValue({ data: [], error: null }),
         createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'mock-url' }, error: null }),
         createSignedUrls: vi.fn().mockResolvedValue({ data: [{ signedUrl: 'mock-url', path: mockPhoto.storage_path }], error: null }),
         remove: vi.fn().mockResolvedValue({ error: null }),
@@ -80,6 +81,7 @@ vi.mock('../integrations/supabase/client', () => ({
       }),
     })),
     removeChannel: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }));
 
