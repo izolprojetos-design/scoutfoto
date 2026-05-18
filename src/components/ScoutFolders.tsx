@@ -155,6 +155,20 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
   useEffect(() => { load(); }, [load]);
 
+  // Fetch registration_id (sequential unique ID) of the scout for filenames
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('scouts')
+        .select('registration_id')
+        .eq('id', scoutId)
+        .maybeSingle();
+      if (active && data?.registration_id) setRegistrationId(data.registration_id);
+    })();
+    return () => { active = false; };
+  }, [scoutId]);
+
   // Cleanup undo timers on unmount
   useEffect(() => {
     return () => {
