@@ -132,16 +132,6 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           createdAt: item.createdAt,
         });
       }
-      for (const item of imagePathsToSign) {
-        const url = imageUrlMap[item.path];
-        if (url) {
-          items.push({
-            name: item.name,
-            url,
-            createdAt: item.createdAt,
-          });
-        }
-      }
 
       setImages(items);
     } catch (err) {
