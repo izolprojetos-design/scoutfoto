@@ -73,7 +73,7 @@ describe('Toast Compatibility UI structure', () => {
     const oldDetails = getFileDetails(oldFile);
     const newDetails = getFileDetails(newFile);
     
-    expect(oldDetails.ext).toBe('');
+    expect(oldDetails.ext).toBe('unknown');
     expect(oldDetails.mime).toBe('MIME desconhecido');
     expect(newDetails.size).toBe('800 bytes');
   });
