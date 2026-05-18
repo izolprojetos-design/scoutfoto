@@ -195,6 +195,12 @@ const Scouts = () => {
     const allowed = files.filter(isAllowedImage);
     const oversized = allowed.filter(f => f.size > PHOTOS_HUB_MAX_SIZE);
     const valid = allowed.filter(f => f.size <= PHOTOS_HUB_MAX_SIZE);
+    
+    setPhotosHubSummary({
+      accepted: valid.length,
+      rejected: rejectedType.length + oversized.length,
+      pending: valid.length
+    });
 
     rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF).`));
     if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
