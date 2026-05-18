@@ -442,6 +442,17 @@ const Scouts = () => {
     });
   };
 
+  const handlePhotoPickStart = () => {
+    photoPickInProgressRef.current = true;
+    const timer = setTimeout(() => { photoPickInProgressRef.current = false; }, 60000);
+    const clearPicking = () => {
+      photoPickInProgressRef.current = false;
+      clearTimeout(timer);
+      window.removeEventListener('focus', clearPicking);
+    };
+    window.addEventListener('focus', clearPicking, { once: true });
+  };
+
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
