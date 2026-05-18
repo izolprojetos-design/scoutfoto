@@ -23,6 +23,7 @@ interface StorageImage {
   section?: string;
   subgroupId?: string;
   subgroupName?: string;
+  createdAt?: string;
 }
 
 const ALL = '__all__';
@@ -102,7 +103,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
       const items: StorageImage[] = [];
       const seenScouts = new Set<string>();
-      const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string }[] = [];
+      const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string; createdAt?: string }[] = [];
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
@@ -112,7 +113,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
             if (seenScouts.has(scout.id)) continue;
             seenScouts.add(scout.id);
           }
-          scoutPathsToSign.push({ path: file.name, scout, name: file.name });
+          scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
         }
       }
 
@@ -121,11 +122,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         limit: 100,
         sortBy: { column: 'created_at', order: 'desc' },
       });
-      const imagePathsToSign: { path: string; name: string }[] = [];
+      const imagePathsToSign: { path: string; name: string; createdAt?: string }[] = [];
       if (privateImages) {
         for (const file of privateImages) {
           if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
-          imagePathsToSign.push({ path: file.name, name: file.name });
+          imagePathsToSign.push({ path: file.name, name: file.name, createdAt: file.created_at });
         }
       }
 
@@ -146,11 +147,18 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           section: item.scout?.section ?? undefined,
           subgroupId: item.scout?.subgroupId ?? undefined,
           subgroupName: item.scout?.subgroupName,
+          createdAt: item.createdAt,
         });
       }
       for (const item of imagePathsToSign) {
         const url = imageUrlMap[item.path];
-        if (url) items.push({ name: item.name, url });
+        if (url) {
+          items.push({
+            name: item.name,
+            url,
+            createdAt: item.createdAt,
+          });
+        }
       }
 
       setImages(items);
@@ -204,6 +212,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       if (!q) return true;
       return (
         img.name.toLowerCase().includes(q) ||
+        (img.scoutId?.toLowerCase().includes(q) ?? false) ||
         (img.scoutName?.toLowerCase().includes(q) ?? false) ||
         (img.subgroupName?.toLowerCase().includes(q) ?? false) ||
         (img.section?.toLowerCase().includes(q) ?? false)
@@ -329,11 +338,15 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
-                  {img.scoutName && (
-                    <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-0.5 truncate text-center">
-                      {img.scoutName}
-                    </div>
-                  )}
+                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-1 truncate text-center leading-tight">
+                    {img.scoutName && <div className="font-bold">{img.scoutName.toUpperCase()}</div>}
+                    {img.scoutId && <div className="opacity-70 text-[9px]">ID: {img.scoutId.slice(0, 8)}</div>}
+                    {img.createdAt && (
+                      <div className="opacity-70 text-[9px]">
+                        {new Date(img.createdAt).toLocaleDateString('pt-BR')}
+                      </div>
+                    )}
+                  </div>
                   {selectedUrl === img.url && (
                     <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
                       <div className="bg-primary text-primary-foreground rounded-full p-1">
