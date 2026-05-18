@@ -212,6 +212,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       if (!q) return true;
       return (
         img.name.toLowerCase().includes(q) ||
+        (img.scoutId?.toLowerCase().includes(q) ?? false) ||
         (img.scoutName?.toLowerCase().includes(q) ?? false) ||
         (img.subgroupName?.toLowerCase().includes(q) ?? false) ||
         (img.section?.toLowerCase().includes(q) ?? false)
