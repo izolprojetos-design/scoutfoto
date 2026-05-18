@@ -1654,6 +1654,20 @@ const Scouts = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          {(canManageScouts || canEditScouts) && (
+            <Button
+              variant="outline"
+              className="gap-2"
+              onClick={() => {
+                setPhotosHubScoutId(null);
+                setPhotosHubSearch('');
+                setPhotosHubOpen(true);
+              }}
+            >
+              <ImageIcon className="h-4 w-4" />
+              Fotos
+            </Button>
+          )}
           {isAdmin && (
             <Button
               variant="outline"
