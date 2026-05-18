@@ -181,9 +181,7 @@ const Scouts = () => {
   const PHOTOS_HUB_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
   const PHOTOS_HUB_MAX_SIZE = 10 * 1024 * 1024; // 10MB por imagem
 
-  const uploadPhotosHubFiles = async (files: File[]) => {
-    if (!user || !photosHubScoutId || files.length === 0) return;
-
+  const processPhotosHubFiles = (files: File[]) => {
     const isAllowedImage = (f: File) => {
       const type = (f.type || '').toLowerCase();
       if (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) return true;
@@ -212,17 +210,22 @@ const Scouts = () => {
       rejected: rejectedFilesDetails.length,
       pending: valid.length,
       rejectedFiles: rejectedFilesDetails,
-      acceptedFiles: acceptedFilesDetails
+      acceptedFiles: acceptedFilesDetails,
+      rawFiles: files
     });
 
     if (rejectedFilesDetails.length > 0) {
       toast.error(`${rejectedFilesDetails.length} arquivo(s) foram ignorados.`);
     }
 
-    if (valid.length === 0) {
-      if (rejectedType.length === 0 && oversized.length === 0) toast.error('Solte apenas imagens.');
-      return;
-    }
+    return valid;
+  };
+
+  const uploadPhotosHubFiles = async (files: File[]) => {
+    if (!user || !photosHubScoutId || files.length === 0) return;
+    const valid = processPhotosHubFiles(files);
+    if (valid.length === 0) return;
+
     const { compressImage } = await import('@/lib/imageCompression');
     setPhotosHubUploading(true);
     setPhotosHubProgress({ current: 0, total: valid.length });
