@@ -30,6 +30,7 @@ interface StorageImage {
 const ALL = '__all__';
 
 const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: CloudPhotoPickerDialogProps) => {
+  const { toast } = useToast();
   const [images, setImages] = useState<StorageImage[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState(initialSearch || '');
