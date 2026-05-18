@@ -170,6 +170,66 @@ const Scouts = () => {
   const [photosHubOpen, setPhotosHubOpen] = useState(false);
   const [photosHubSearch, setPhotosHubSearch] = useState('');
   const [photosHubScoutId, setPhotosHubScoutId] = useState<string | null>(null);
+  const [photosHubReloadKey, setPhotosHubReloadKey] = useState(0);
+  const [photosHubDragging, setPhotosHubDragging] = useState(false);
+  const [photosHubUploading, setPhotosHubUploading] = useState(false);
+  const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
+  const photosHubDragCounter = useRef(0);
+
+  const uploadPhotosHubFiles = async (files: File[]) => {
+    if (!user || !photosHubScoutId || files.length === 0) return;
+    const valid = files.filter(f => f.type.startsWith('image/'));
+    if (valid.length === 0) {
+      toast.error('Solte apenas imagens.');
+      return;
+    }
+    const { compressImage } = await import('@/lib/imageCompression');
+    setPhotosHubUploading(true);
+    setPhotosHubProgress({ current: 0, total: valid.length });
+    let success = 0;
+    for (let i = 0; i < valid.length; i++) {
+      const file = valid[i];
+      setPhotosHubProgress({ current: i + 1, total: valid.length });
+      try {
+        if (file.size > 40 * 1024 * 1024) {
+          toast.warning(`"${file.name}" muito grande, ignorado.`);
+          continue;
+        }
+        let compressed: File | Blob = file;
+        try { compressed = await compressImage(file); } catch { /* keep original */ }
+        let mime = (compressed as File).type || file.type || 'image/jpeg';
+        let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
+        if (!['jpg', 'png', 'webp'].includes(ext)) { ext = 'jpg'; mime = 'image/jpeg'; }
+        const path = `gallery/${photosHubScoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('scout-photos')
+          .upload(path, compressed, { upsert: false, contentType: mime });
+        if (upErr) throw upErr;
+        const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
+          scout_id: photosHubScoutId,
+          storage_path: path,
+          caption: '',
+          uploaded_by: user.id,
+          file_size: (compressed as File).size ?? file.size,
+          mime_type: mime,
+        });
+        if (dbErr) {
+          await supabase.storage.from('scout-photos').remove([path]);
+          throw dbErr;
+        }
+        success++;
+      } catch (err: any) {
+        console.error('photos-hub upload err', err);
+        toast.error(`Falha ao enviar "${file.name}": ${err?.message || 'erro desconhecido'}`);
+      }
+    }
+    setPhotosHubUploading(false);
+    setPhotosHubProgress({ current: 0, total: 0 });
+    if (success > 0) {
+      toast.success(`${success} foto(s) enviada(s)`);
+      setPhotosHubReloadKey(k => k + 1);
+    }
+  };
 
   // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
@@ -2418,9 +2478,43 @@ const Scouts = () => {
       {/* Photos Hub Dialog — quick access to gallery/folders by member */}
       <Dialog open={photosHubOpen} onOpenChange={(v) => {
         setPhotosHubOpen(v);
-        if (!v) { setPhotosHubScoutId(null); setPhotosHubSearch(''); }
+        if (!v) {
+          setPhotosHubScoutId(null);
+          setPhotosHubSearch('');
+          photosHubDragCounter.current = 0;
+          setPhotosHubDragging(false);
+        }
       }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-3xl max-h-[90vh] overflow-y-auto"
+          onDragEnter={(e) => {
+            if (!photosHubScoutId) return;
+            if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return;
+            e.preventDefault();
+            photosHubDragCounter.current += 1;
+            setPhotosHubDragging(true);
+          }}
+          onDragOver={(e) => {
+            if (!photosHubScoutId) return;
+            if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+          }}
+          onDragLeave={(e) => {
+            if (!photosHubScoutId) return;
+            e.preventDefault();
+            photosHubDragCounter.current = Math.max(0, photosHubDragCounter.current - 1);
+            if (photosHubDragCounter.current === 0) setPhotosHubDragging(false);
+          }}
+          onDrop={(e) => {
+            if (!photosHubScoutId) return;
+            e.preventDefault();
+            photosHubDragCounter.current = 0;
+            setPhotosHubDragging(false);
+            const files = Array.from(e.dataTransfer?.files || []);
+            if (files.length > 0) uploadPhotosHubFiles(files);
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {photosHubScoutId
@@ -2480,16 +2574,28 @@ const Scouts = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="gap-2"
-                onClick={() => setPhotosHubScoutId(null)}
-              >
-                <X className="h-4 w-4" /> Trocar integrante
-              </Button>
+            <div className="relative space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setPhotosHubScoutId(null)}
+                >
+                  <X className="h-4 w-4" /> Trocar integrante
+                </Button>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  Dica: arraste imagens para esta janela para enviá-las.
+                </p>
+              </div>
+
+              {photosHubUploading && (
+                <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                  Enviando {photosHubProgress.current} de {photosHubProgress.total}...
+                </div>
+              )}
+
               <Tabs defaultValue="galeria" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="galeria">Galeria</TabsTrigger>
@@ -2497,17 +2603,30 @@ const Scouts = () => {
                 </TabsList>
                 <TabsContent value="galeria" className="mt-4">
                   <ScoutGallery
+                    key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
                   <ScoutFolders
+                    key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
                   />
                 </TabsContent>
               </Tabs>
+
+              {photosHubDragging && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm">
+                  <div className="text-center">
+                    <ImageIcon className="mx-auto h-8 w-8 text-primary" />
+                    <p className="mt-2 font-semibold text-primary">
+                      Solte para enviar para {scouts.find(s => s.id === photosHubScoutId)?.name.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
