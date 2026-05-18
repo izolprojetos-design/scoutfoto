@@ -2937,20 +2937,7 @@ const Scouts = () => {
                     key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
-                    onPickStart={() => { 
-                      photoPickInProgressRef.current = true; 
-                      // Aumentamos o timeout para garantir que em conexões lentas ou apps de câmera demorados
-                      // a tela não feche sozinha ao retornar o foco para o navegador.
-                      const timer = setTimeout(() => { photoPickInProgressRef.current = false; }, 60000);
-                      
-                      // Limpar o timeout se o componente for desmontado ou se o foco voltar
-                      const clearPicking = () => {
-                        photoPickInProgressRef.current = false;
-                        clearTimeout(timer);
-                        window.removeEventListener('focus', clearPicking);
-                      };
-                      window.addEventListener('focus', clearPicking, { once: true });
-                    }}
+                    onPickStart={handlePhotoPickStart}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
@@ -2958,7 +2945,7 @@ const Scouts = () => {
                     key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
-                    onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }}
+                    onPickStart={handlePhotoPickStart}
                   />
                 </TabsContent>
               </Tabs>
