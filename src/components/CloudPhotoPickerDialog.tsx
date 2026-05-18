@@ -37,9 +37,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    loadImages();
-  }, [open]);
+    if (open) {
+      if (initialSearch) setSearch(initialSearch);
+      loadImages();
+    }
+  }, [open, initialSearch]);
 
   // Reset subgroup filter when section changes
   useEffect(() => {
