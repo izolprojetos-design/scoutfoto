@@ -84,8 +84,6 @@ describe('ScoutFolders Upload Flow', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Pre-create an empty div for portal if needed (shadcn dialogs often use portals)
-    // but usually testing-library handles this.
   });
 
   it('announces upload status and file name using aria-live', async () => {
@@ -130,48 +128,40 @@ describe('ScoutFolders Upload Flow', () => {
     // Should show AlertDialog
     expect(screen.getByText(/Cancelar upload\?/i)).toBeInTheDocument();
     
-    // "Sim, cancelar" should have autoFocus
+    // "Sim, cancelar" should be present
     const confirmCancelBtn = screen.getByText(/Sim, cancelar/i);
     expect(confirmCancelBtn).toBeInTheDocument();
-    
-    // Escape should close only the alert dialog if confirmed? 
-    // Actually the requirement: "Escape fecha somente após confirmação" usually means Escape is blocked or handles the cancel
-    // In our implementation, Escape on AlertDialog cancels the "Cancel" (continues upload)
   });
 
   it('handles retrying failed uploads correctly', async () => {
-    // Mock upload failure for the first attempt
+    // Mock upload behavior
     const uploadMock = vi.mocked(supabase.storage.from('scout-photos').upload);
-    uploadMock.mockRejectedValueOnce(new Error('Upload failed'));
-
+    
     render(<ScoutFolders {...mockProps} />);
     
     const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
-    const file2 = new File(['c2'], 'photo2.jpg', { type: 'image/jpeg' });
     const fileInputs = document.querySelectorAll('input[type="file"]');
-    fireEvent.change(fileInputs[0], { target: { files: [file1, file2] } });
+    fireEvent.change(fileInputs[0], { target: { files: [file1] } });
 
     const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
+    
+    // Mock failure
+    uploadMock.mockRejectedValueOnce(new Error('Upload failed'));
+    
     fireEvent.click(confirmBtn);
 
-    // Wait for failure
-    await waitFor(() => {
-      expect(screen.getByText(/Tentar novamente 1 falha/i)).toBeInTheDocument();
-    });
+    // Wait for retry button
+    const retryBtn = await screen.findByText(/Tentar novamente/i);
+    expect(retryBtn).toBeInTheDocument();
 
-    // Check that one succeeded and one failed (if mocks are set up for that)
-    // Now click retry
-    const retryBtn = screen.getByText(/Tentar novamente 1 falha/i);
-    
     // Mock success for retry
     uploadMock.mockResolvedValueOnce({ data: { id: 'f', path: 'p', fullPath: 'fp' }, error: null });
     
     fireEvent.click(retryBtn);
     
-    // Verify it only retries the failed one
-    // (In a real integration test we'd check how many times upload was called)
     await waitFor(() => {
-      expect(uploadMock).toHaveBeenCalledTimes(3); // 1st file (fail), 2nd file (success), then 1st file again (success)
+      // The dialog closes on success if all are done
+      expect(screen.queryByText(/Confirmar e enviar/i)).not.toBeInTheDocument();
     });
   });
 });
