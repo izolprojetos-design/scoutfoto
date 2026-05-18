@@ -285,6 +285,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
               placeholder="Digite o nome ou ID (ex: abc12345)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-9 h-10 border-primary/20 focus-visible:ring-primary/30"
             />
           </div>
