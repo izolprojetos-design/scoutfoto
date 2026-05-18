@@ -181,6 +181,7 @@ const Scouts = () => {
   // Cloud picker state
   const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
   const [cloudPickerTarget, setCloudPickerTarget] = useState<'new' | 'edit'>('new');
+  const [cloudPickerInitialSearch, setCloudPickerInitialSearch] = useState('');
 
   // Photos hub (quick access from toolbar)
   const [photosHubOpen, setPhotosHubOpen] = useState(false);
