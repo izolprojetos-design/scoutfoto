@@ -424,11 +424,12 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           .replace(/[^a-zA-Z0-9_\-]/g, '_')
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '')
-          .substring(0, 30);
-          
+          .substring(0, 40);
+        const safeId = (registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '');
+
         const nowTs = new Date();
         const timeStr = format(nowTs, 'HHmm');
-        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
