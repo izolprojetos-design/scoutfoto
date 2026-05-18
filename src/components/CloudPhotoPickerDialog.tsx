@@ -333,14 +333,16 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-1 truncate text-center leading-tight">
-                    {img.scoutName && <div className="font-bold">{img.scoutName.toUpperCase()}</div>}
-                    {img.scoutId && <div className="opacity-70 text-[9px]">ID: {img.scoutId.slice(0, 8)}</div>}
-                    {img.createdAt && (
-                      <div className="opacity-70 text-[9px]">
-                        {new Date(img.createdAt).toLocaleDateString('pt-BR')}
-                      </div>
-                    )}
+                  <div className="absolute bottom-0 inset-x-0 bg-black/70 text-white text-[10px] px-1.5 py-1.5 flex flex-col items-center justify-center text-center leading-tight">
+                    <div className="font-bold w-full truncate">{img.scoutName ? img.scoutName.toUpperCase() : img.name.split('.')[0]}</div>
+                    <div className="flex flex-col items-center opacity-90 mt-0.5 space-y-0.5">
+                      {img.scoutId && <div className="text-[9px]">ID: {img.scoutId.slice(0, 8)}</div>}
+                      {img.createdAt && (
+                        <div className="text-[9px]">
+                          📅 {new Date(img.createdAt).toLocaleDateString('pt-BR')}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {selectedUrl === img.url && (
                     <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
