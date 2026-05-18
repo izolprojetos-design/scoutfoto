@@ -217,12 +217,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      setDebouncedSearch(search);
       // Scrolling to first result after a small delay to ensure rendering
       setTimeout(() => {
         if (firstResultRef.current) {
           firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 50);
+      }, 100);
     }
   };
 
