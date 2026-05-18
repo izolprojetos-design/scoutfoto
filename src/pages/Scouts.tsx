@@ -188,8 +188,8 @@ const Scouts = () => {
   const [photosHubReloadKey, setPhotosHubReloadKey] = useState(0);
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
-  const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
-  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
+  const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0, currentFileName: '' });
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; error?: string; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
   const [photosHubSort, setPhotosHubSort] = useState<{ field: 'name' | 'type' | 'size'; direction: 'asc' | 'desc' }>({ field: 'name', direction: 'asc' });
   const photosHubDragCounter = useRef(0);
 
@@ -256,23 +256,52 @@ const Scouts = () => {
 
     const { compressImage } = await import('@/lib/imageCompression');
     setPhotosHubUploading(true);
-    setPhotosHubProgress({ current: 0, total: valid.length });
+    setPhotosHubProgress({ current: 0, total: valid.length, currentFileName: '' });
+    setPhotosHubSummary(prev => prev ? { ...prev, error: undefined } : null);
+    
     let success = 0;
+    const abortController = new AbortController();
+    (window as any)._photosHubAbortController = abortController;
+
     for (let i = 0; i < valid.length; i++) {
+      if (abortController.signal.aborted) {
+        toast.info('Upload cancelado pelo usuário');
+        break;
+      }
+
       const file = valid[i];
-      setPhotosHubProgress({ current: i + 1, total: valid.length });
+      setPhotosHubProgress({ current: i + 1, total: valid.length, currentFileName: file.name });
       setPhotosHubSummary(prev => prev ? { ...prev, pending: valid.length - i } : null);
+      
       try {
         let compressed: File | Blob = file;
-        try { compressed = await compressImage(file); } catch { /* keep original */ }
+        try { 
+          compressed = await compressImage(file); 
+        } catch (e) { 
+          console.warn('Compression failed, using original', e);
+        }
+        
         let mime = (compressed as File).type || file.type || 'image/jpeg';
         let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
         if (!['jpg', 'png', 'webp'].includes(ext)) { ext = 'jpg'; mime = 'image/jpeg'; }
-        const path = `gallery/${photosHubScoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        
+        const currentYear = new Date().getFullYear();
+        const currentDate = format(new Date(), 'yyyy-MM-dd');
+        const timestamp = format(new Date(), 'HH-mm-ss');
+        const scout = scouts.find(s => s.id === photosHubScoutId);
+        const safeName = (scout?.name || 'membro')
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_\-]/g, '_')
+          .toUpperCase();
+          
+        const path = `gallery/${photosHubScoutId}/${currentYear}/${currentDate}/${safeName}_${currentDate}_${timestamp}_${i}.${ext}`;
+        
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
           .upload(path, compressed, { upsert: false, contentType: mime });
+          
         if (upErr) throw upErr;
+        
         const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
           scout_id: photosHubScoutId,
           storage_path: path,
@@ -281,6 +310,7 @@ const Scouts = () => {
           file_size: (compressed as File).size ?? file.size,
           mime_type: mime,
         });
+        
         if (dbErr) {
           await supabase.storage.from('scout-photos').remove([path]);
           throw dbErr;
@@ -288,14 +318,19 @@ const Scouts = () => {
         success++;
       } catch (err: any) {
         console.error('photos-hub upload err', err);
-        toast.error(`Falha ao enviar "${file.name}": ${err?.message || 'erro desconhecido'}`);
+        const errorMsg = err?.message || 'Erro de conexão ou armazenamento';
+        setPhotosHubSummary(prev => prev ? { ...prev, error: `Falha ao enviar "${file.name}": ${errorMsg}` } : null);
+        toast.error(`Falha ao enviar "${file.name}": ${errorMsg}`);
+        // Se for erro de armazenamento, pode ser interessante parar o loop ou apenas reportar
       }
     }
+    
     setPhotosHubUploading(false);
     setPhotosHubSummary(prev => prev ? { ...prev, pending: 0 } : null);
-    setPhotosHubProgress({ current: 0, total: 0 });
+    setPhotosHubProgress(prev => ({ ...prev, currentFileName: '' }));
+    
     if (success > 0) {
-      toast.success(`${success} foto(s) enviada(s)`);
+      toast.success(`${success} foto(s) enviada(s) com sucesso`);
       setPhotosHubReloadKey(k => k + 1);
     }
   };
@@ -2673,9 +2708,58 @@ const Scouts = () => {
               </div>
 
               {photosHubUploading && (
-                <div className="rounded-md border bg-muted/40 p-3 text-sm flex items-center gap-3">
-                  <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span>Enviando {photosHubProgress.current} de {photosHubProgress.total}...</span>
+                <div className="rounded-md border bg-primary/5 border-primary/20 p-4 text-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <span className="font-medium">Enviando {photosHubProgress.current} de {photosHubProgress.total}</span>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="h-7 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        if ((window as any)._photosHubAbortController) {
+                          (window as any)._photosHubAbortController.abort();
+                        }
+                      }}
+                    >
+                      Cancelar
+                    </Button>
+                  </div>
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                    <motion.div 
+                      className="bg-primary h-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${(photosHubProgress.current / photosHubProgress.total) * 100}%` }}
+                    />
+                  </div>
+                  {photosHubProgress.currentFileName && (
+                    <p className="text-[10px] text-muted-foreground truncate italic">
+                      Atual: {photosHubProgress.currentFileName}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {photosHubSummary?.error && (
+                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive flex items-start gap-2">
+                  <X className="h-4 w-4 mt-0.5 shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Erro no envio</p>
+                    <p className="text-xs opacity-90">{photosHubSummary.error}</p>
+                    <Button 
+                      variant="link" 
+                      className="h-auto p-0 text-xs font-semibold mt-1 text-destructive hover:no-underline"
+                      onClick={() => {
+                        if (photosHubSummary.rawFiles) {
+                          uploadPhotosHubFiles(photosHubSummary.rawFiles);
+                        }
+                      }}
+                    >
+                      Tentar novamente
+                    </Button>
+                  </div>
                 </div>
               )}
 
