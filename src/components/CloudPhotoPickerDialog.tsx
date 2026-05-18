@@ -40,6 +40,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     if (initialSearch) return initialSearch;
     return localStorage.getItem('cloud_gallery_search') || '';
   });
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
   const [sectionFilter, setSectionFilter] = useState<string>(() => {
     return localStorage.getItem('cloud_gallery_section') || ALL;
   });
@@ -49,10 +51,21 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [visibleCount, setVisibleCount] = useState(() => {
+    const saved = localStorage.getItem('cloud_gallery_visible_count');
+    return saved ? parseInt(saved, 10) : 20;
+  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const firstResultRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     if (open) {
@@ -69,7 +82,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     localStorage.setItem('cloud_gallery_search', search);
     localStorage.setItem('cloud_gallery_section', sectionFilter);
     localStorage.setItem('cloud_gallery_subgroup', subgroupFilter);
-  }, [search, sectionFilter, subgroupFilter]);
+    localStorage.setItem('cloud_gallery_visible_count', visibleCount.toString());
+  }, [search, sectionFilter, subgroupFilter, visibleCount]);
 
   // Reset subgroup filter when section changes
   useEffect(() => {
@@ -80,10 +94,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setSubgroupFilter(ALL);
   }, [sectionFilter]);
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change (except search, where we might want to keep the scroll position)
   useEffect(() => {
     setVisibleCount(20);
-  }, [search, sectionFilter, subgroupFilter]);
+  }, [sectionFilter, subgroupFilter]);
 
   const loadImages = async () => {
     setLoading(true);
@@ -203,12 +217,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
+      setDebouncedSearch(search);
       // Scrolling to first result after a small delay to ensure rendering
       setTimeout(() => {
         if (firstResultRef.current) {
           firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-      }, 50);
+      }, 100);
     }
   };
 
@@ -236,7 +251,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   }, [images, sectionFilter]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
+    const q = debouncedSearch.toLowerCase().trim();
     return images
       .filter(img => {
         if (sectionFilter !== ALL && img.section !== sectionFilter) return false;
@@ -255,10 +270,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
-  }, [images, search, sectionFilter, subgroupFilter]);
+  }, [images, debouncedSearch, sectionFilter, subgroupFilter]);
 
   const paginated = useMemo(() => {
-    return filtered.slice(0, visibleCount);
+    return filtered.slice(0, Math.max(visibleCount, 20));
   }, [filtered, visibleCount]);
 
   const activeFilterCount = (sectionFilter !== ALL ? 1 : 0) + (subgroupFilter !== ALL ? 1 : 0);
@@ -267,9 +282,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setSectionFilter(ALL);
     setSubgroupFilter(ALL);
     setSearch('');
+    setVisibleCount(20);
     localStorage.removeItem('cloud_gallery_search');
     localStorage.removeItem('cloud_gallery_section');
     localStorage.removeItem('cloud_gallery_subgroup');
+    localStorage.removeItem('cloud_gallery_visible_count');
   };
 
   return (
@@ -349,9 +366,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
         <ScrollArea className="flex-1 min-h-[300px] border rounded-xl bg-muted/20 p-2" style={{ maxHeight: '50vh' }}>
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              <p className="text-xs text-muted-foreground font-medium animate-pulse">Sincronizando com a nuvem...</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="aspect-square w-full rounded-lg bg-muted animate-pulse flex flex-col items-center justify-end p-2 gap-2">
+                  <div className="h-3 w-3/4 bg-muted-foreground/20 rounded-full" />
+                  <div className="h-2 w-1/2 bg-muted-foreground/10 rounded-full" />
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-in fade-in zoom-in duration-300">
@@ -379,6 +400,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {paginated.map((img, index) => {
                   const isIdMatch = search && img.scoutId && img.scoutId.toLowerCase().includes(search.toLowerCase().trim());
+                  const isCurrentlyCopied = copiedId === img.scoutId;
                   
                   return (
                     <div 
@@ -411,12 +433,14 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                           <div className="flex flex-col items-center gap-1 w-full">
                             {img.scoutId && (
                               <div className={cn(
-                                "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight transition-colors",
-                                isIdMatch 
-                                  ? "bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.5)]" 
-                                  : "bg-primary/90 text-primary-foreground"
+                                "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight transition-all duration-300",
+                                isCurrentlyCopied
+                                  ? "bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.6)] scale-105"
+                                  : isIdMatch 
+                                    ? "bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.5)]" 
+                                    : "bg-primary/90 text-primary-foreground"
                               )}>
-                                ID: {img.scoutId.slice(0, 8)}
+                                {isCurrentlyCopied ? "COPIADO!" : `ID: ${img.scoutId.slice(0, 8)}`}
                               </div>
                             )}
                             {img.createdAt && (
