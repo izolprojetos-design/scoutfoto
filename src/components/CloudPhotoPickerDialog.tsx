@@ -398,7 +398,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                 {paginated.map((img, index) => {
-                  const isIdMatch = search && img.scoutId && img.scoutId.toLowerCase().includes(search.toLowerCase().trim());
+                  const isIdMatch = debouncedSearch && img.scoutId && img.scoutId.toLowerCase().includes(debouncedSearch.toLowerCase().trim());
+                  const isCurrentlyCopied = copiedId === img.scoutId;
                   
                   return (
                     <div 
