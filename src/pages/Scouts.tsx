@@ -1843,7 +1843,7 @@ const Scouts = () => {
           {(canManageScouts || canEditScouts) && (
             <Button
               variant="outline"
-              className="gap-2 photos-hub-trigger"
+              className="gap-2"
               onClick={() => {
                 setPhotosHubScoutId(null);
                 setPhotosHubSearch('');

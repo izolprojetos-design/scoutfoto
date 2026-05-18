@@ -108,12 +108,12 @@ describe('Upload Flow Enhancements', () => {
       </BrowserRouter>
     );
 
-    // Use wait for para garantir que os dados carregaram e o botão apareceu
-    const photosBtn = await screen.findByRole('button', { name: /fotos/i });
+    // Use o texto direto como string simples para evitar problemas de partição de elementos pelo DOM
+    const photosBtn = await screen.findByText('Fotos');
     fireEvent.click(photosBtn);
     
-    // Agora tenta selecionar o integrante
-    const scoutItem = await screen.findByRole('button', { name: /MARIA SILVA/i });
+    // Agora tenta selecionar o integrante pelo nome
+    const scoutItem = await screen.findByText('MARIA SILVA');
     fireEvent.click(scoutItem);
   });
 });
