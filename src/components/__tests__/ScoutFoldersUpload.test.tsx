@@ -94,7 +94,8 @@ describe('ScoutFolders Upload Flow', () => {
   });
 
   it('announces upload status and file name using aria-live in correct order', async () => {
-    vi.mocked(xhrUploadToStorage).mockResolvedValue(undefined);
+    // Add a small delay to allow checking intermediate states
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 50)));
     render(<ScoutFolders {...mockProps} />);
     
     const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
@@ -105,16 +106,15 @@ describe('ScoutFolders Upload Flow', () => {
     fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
 
     // Verify progress bar and aria-live status update for each file
-    await waitFor(() => {
-      expect(screen.getByText(/Enviando 1 de 2/i, { selector: '[aria-live="polite"]' })).toBeInTheDocument();
-      expect(screen.getByText('photo1.jpg', { selector: '[aria-live="polite"]' })).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Enviando 1 de 2/i, { selector: '[aria-live="polite"]' })).toBeInTheDocument();
+    expect(screen.getByText('photo1.jpg', { selector: '[aria-live="polite"]' })).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText(/Enviando 2 de 2/i, { selector: '[aria-live="polite"]' })).toBeInTheDocument();
       expect(screen.getByText('photo2.jpg', { selector: '[aria-live="polite"]' })).toBeInTheDocument();
-    });
+    }, { timeout: 2000 });
   });
+
 
   it('updates progressbar attributes (valuenow/min/max) and label correctly after each photo', async () => {
     vi.mocked(xhrUploadToStorage).mockResolvedValue(undefined);
