@@ -2795,11 +2795,19 @@ const Scouts = () => {
                                   onChange={(e) => {
                                     const newFile = e.target.files?.[0];
                                     if (newFile && photosHubSummary.rawFiles) {
+                                      // Get raw file from rawFiles to compare MIME types
+                                      const oldRawFile = photosHubSummary.rawFiles.find(f => f.name === file.name);
+                                      const oldMime = oldRawFile?.type || '';
+                                      const newMime = newFile.type || '';
+                                      
                                       const oldExt = (file.name.split('.').pop() || '').toLowerCase();
                                       const newExt = (newFile.name.split('.').pop() || '').toLowerCase();
                                       
-                                      if (oldExt !== newExt) {
-                                        toast.error(`Formato incompatível: o arquivo original era .${oldExt} e o novo é .${newExt}`);
+                                      const sameMime = oldMime && newMime && oldMime === newMime;
+                                      const sameExt = oldExt && newExt && oldExt === newExt;
+
+                                      if (!sameMime && !sameExt) {
+                                        toast.error(`Arquivo incompatível: o original era ${oldMime || oldExt} e o novo é ${newMime || newExt}`);
                                         return;
                                       }
                                       
