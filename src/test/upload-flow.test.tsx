@@ -108,7 +108,8 @@ describe('Upload Flow Enhancements', () => {
       </BrowserRouter>
     );
 
-    // Esperar carregar dados básicos
-    await waitFor(() => expect(screen.getByText(/MARIA SILVA/i)).toBeInTheDocument());
+    // Esperar carregar dados básicos - a lista de integrantes
+    const scoutTitle = await screen.findByText(/MARIA SILVA/i);
+    expect(scoutTitle).toBeInTheDocument();
   });
 });
