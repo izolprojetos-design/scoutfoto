@@ -2622,6 +2622,33 @@ const Scouts = () => {
                 </div>
               )}
 
+              {photosHubSummary && (
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm animate-in fade-in slide-in-from-top-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-muted-foreground">Aceitos:</span>
+                    <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-destructive" />
+                    <span className="text-muted-foreground">Rejeitados:</span>
+                    <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
+                  </div>
+                  {photosHubSummary.pending > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-muted-foreground">Pendentes:</span>
+                      <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                    </div>
+                  )}
+                  {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
+                    <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
+                      <Check className="h-3.5 w-3.5" /> Concluído
+                    </div>
+                  )}
+                </div>
+              )}
+
               <Tabs defaultValue="galeria" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="galeria">Galeria</TabsTrigger>
