@@ -182,6 +182,12 @@ const Scouts = () => {
   const PHOTOS_HUB_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
   const PHOTOS_HUB_MAX_SIZE = 10 * 1024 * 1024; // 10MB por imagem
 
+  const removeFileFromQueue = (fileName: string) => {
+    if (!photosHubSummary?.rawFiles) return;
+    const updatedFiles = photosHubSummary.rawFiles.filter(f => f.name !== fileName);
+    processPhotosHubFiles(updatedFiles);
+  };
+
   const processPhotosHubFiles = (files: File[]) => {
     const isAllowedImage = (f: File) => {
       const type = (f.type || '').toLowerCase();
@@ -2705,14 +2711,25 @@ const Scouts = () => {
                             return 0;
                           })
                           .map((file, idx) => (
-                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-center gap-4">
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-medium truncate text-muted-foreground">{file.name}</span>
-                              <span className="text-[10px] text-muted-foreground/70 uppercase">{file.type}</span>
+                            <div key={idx} className="px-3 py-2 text-xs flex justify-between items-center gap-4 group">
+                              <div className="flex flex-col min-w-0">
+                                <span className="font-medium truncate text-muted-foreground">{file.name}</span>
+                                <span className="text-[10px] text-muted-foreground/70 uppercase">{file.type}</span>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                <span className="text-emerald-600 font-medium">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity"
+                                  onClick={() => removeFileFromQueue(file.name)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </div>
-                            <span className="text-emerald-600 font-medium shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     </div>
                   )}
@@ -2764,9 +2781,20 @@ const Scouts = () => {
                       </div>
                       <div className="max-h-32 overflow-y-auto divide-y divide-destructive/10">
                         {photosHubSummary.rejectedFiles.map((file, idx) => (
-                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4">
-                            <span className="font-medium truncate max-w-[60%] text-muted-foreground">{file.name}</span>
-                            <span className="text-destructive text-right shrink-0">{file.reason}</span>
+                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4 group">
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-medium truncate text-muted-foreground">{file.name}</span>
+                              <span className="text-destructive text-[10px] sm:text-xs">{file.reason}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity shrink-0"
+                              onClick={() => removeFileFromQueue(file.name)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         ))}
                       </div>
