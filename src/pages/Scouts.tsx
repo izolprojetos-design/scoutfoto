@@ -3005,7 +3005,7 @@ const Scouts = () => {
       />
 
       {/* Scout detail viewer dialog */}
-      <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
+      <Dialog open={!!viewingScout} onOpenChange={(v) => { if (!v && (cropperOpen || photoPickInProgressRef.current)) return; setViewingScout(null); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between gap-2">
