@@ -2814,18 +2814,31 @@ const Scouts = () => {
                                           return `${(bytes / 1024).toFixed(2)} KB`;
                                         };
 
-                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || 'MIME desconhecido'} (${formatSize(oldSize)})`;
-                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || 'MIME desconhecido'} (${formatSize(newSize)})`;
+                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || '---'} | ${formatSize(oldSize)}`;
+                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || '---'} | ${formatSize(newSize)}`;
                                         
                                         toast.error(
-                                          <div className="flex flex-col gap-1">
-                                            <p className="font-bold border-b border-destructive/20 pb-1 mb-1">Substituição Inválida</p>
-                                            <p className="text-[11px]"><span className="opacity-70">DE:</span> <span className="font-mono">{file.name}</span></p>
-                                            <p className="text-[10px] ml-4 opacity-80">{oldInfo}</p>
-                                            <p className="text-[11px] mt-1"><span className="opacity-70">PARA:</span> <span className="font-mono">{newFile.name}</span></p>
-                                            <p className="text-[10px] ml-4 opacity-80">{newInfo}</p>
+                                          <div className="flex flex-col gap-2 py-1">
+                                            <div className="flex items-center gap-2 border-b border-destructive/20 pb-2 mb-1">
+                                              <X className="h-4 w-4 text-destructive" />
+                                              <p className="font-bold text-sm">Incompatibilidade de Arquivo</p>
+                                            </div>
+                                            
+                                            <div className="space-y-1 bg-destructive/5 p-2 rounded border border-destructive/10">
+                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider">Arquivo Atual</p>
+                                              <p className="text-[11px] font-medium truncate leading-none">{file.name}</p>
+                                              <p className="text-[10px] font-mono opacity-80">{oldInfo}</p>
+                                            </div>
+
+                                            <div className="space-y-1 bg-emerald-500/5 p-2 rounded border border-emerald-500/10">
+                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider">Novo Arquivo</p>
+                                              <p className="text-[11px] font-medium truncate leading-none">{newFile.name}</p>
+                                              <p className="text-[10px] font-mono opacity-80">{newInfo}</p>
+                                            </div>
+                                            
+                                            <p className="text-[10px] italic text-center text-muted-foreground mt-1">Certifique-se de que a extensão e o tipo de arquivo sejam idênticos.</p>
                                           </div>,
-                                          { duration: 6000 }
+                                          { duration: 8000 }
                                         );
                                         return;
                                       }
