@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ImageIcon, Cloud, Check, Filter, X } from 'lucide-react';
+import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface CloudPhotoPickerDialogProps {
   open: boolean;
