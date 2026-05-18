@@ -2462,7 +2462,12 @@ const Scouts = () => {
                       onClick={() => setPhotosHubScoutId(s.id)}
                       className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors"
                     >
-                      <ScoutPhoto scoutId={s.id} scoutName={s.name} photoUrl={s.photo_url} size="sm" />
+                      <ScoutPhoto
+                        photoUrl={s.photo_url}
+                        alt={s.name}
+                        className="h-10 w-10 rounded-full object-cover bg-muted shrink-0"
+                        fallback={<div className="h-10 w-10 rounded-full bg-muted shrink-0" />}
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold uppercase break-words">{s.name}</p>
                         {s.section && (
