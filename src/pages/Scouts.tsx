@@ -175,6 +175,7 @@ const Scouts = () => {
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
   const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
+  const [photosHubSort, setPhotosHubSort] = useState<{ field: 'name' | 'type' | 'size'; direction: 'asc' | 'desc' }>({ field: 'name', direction: 'asc' });
   const photosHubDragCounter = useRef(0);
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -2668,11 +2669,42 @@ const Scouts = () => {
 
                   {photosHubSummary.acceptedFiles && photosHubSummary.acceptedFiles.length > 0 && (
                     <div className="rounded-md border border-emerald-200 bg-emerald-50/30 overflow-hidden">
-                      <div className="bg-emerald-100/50 px-3 py-1.5 text-xs font-semibold text-emerald-700 flex items-center gap-2">
-                        <ImageIcon className="h-3 w-3" /> Arquivos Aceitos
+                      <div className="bg-emerald-100/50 px-3 py-1.5 text-xs font-semibold text-emerald-700 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <ImageIcon className="h-3 w-3" /> Arquivos Aceitos
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 hover:bg-emerald-200/50 text-emerald-700"
+                            onClick={() => setPhotosHubSort(prev => ({ field: 'name', direction: prev.field === 'name' && prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                            title="Ordenar por Nome"
+                          >
+                            <span className="text-[10px]">A-Z</span>
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 hover:bg-emerald-200/50 text-emerald-700"
+                            onClick={() => setPhotosHubSort(prev => ({ field: 'size', direction: prev.field === 'size' && prev.direction === 'asc' ? 'desc' : 'asc' }))}
+                            title="Ordenar por Tamanho"
+                          >
+                            <SlidersHorizontal className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                       <div className="max-h-32 overflow-y-auto divide-y divide-emerald-100">
-                        {photosHubSummary.acceptedFiles.map((file, idx) => (
+                        {(photosHubSummary.acceptedFiles || [])
+                          .slice()
+                          .sort((a, b) => {
+                            const dir = photosHubSort.direction === 'asc' ? 1 : -1;
+                            if (photosHubSort.field === 'name') return a.name.localeCompare(b.name) * dir;
+                            if (photosHubSort.field === 'size') return (a.size - b.size) * dir;
+                            if (photosHubSort.field === 'type') return a.type.localeCompare(b.type) * dir;
+                            return 0;
+                          })
+                          .map((file, idx) => (
                           <div key={idx} className="px-3 py-2 text-xs flex justify-between items-center gap-4">
                             <div className="flex flex-col min-w-0">
                               <span className="font-medium truncate text-muted-foreground">{file.name}</span>
