@@ -2786,15 +2786,35 @@ const Scouts = () => {
                               <span className="font-medium truncate text-muted-foreground">{file.name}</span>
                               <span className="text-destructive text-[10px] sm:text-xs">{file.reason}</span>
                             </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity shrink-0"
-                              onClick={() => removeFileFromQueue(file.name)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                              <label className="cursor-pointer">
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const newFile = e.target.files?.[0];
+                                    if (newFile && photosHubSummary.rawFiles) {
+                                      const updatedFiles = photosHubSummary.rawFiles.filter(f => f.name !== file.name);
+                                      processPhotosHubFiles([...updatedFiles, newFile]);
+                                    }
+                                  }}
+                                />
+                                <div className="h-6 w-6 flex items-center justify-center rounded-md hover:bg-destructive/10 text-destructive" title="Substituir arquivo">
+                                  <ArrowRightLeft className="h-3 w-3" />
+                                </div>
+                              </label>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 hover:text-destructive"
+                                onClick={() => removeFileFromQueue(file.name)}
+                                title="Remover da fila"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           </div>
                         ))}
                       </div>
