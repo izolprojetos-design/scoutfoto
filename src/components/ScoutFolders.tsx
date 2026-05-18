@@ -429,7 +429,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
         const nowTs = new Date();
         const timeStr = format(nowTs, 'HHmm');
-        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const filename = `${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`.toUpperCase();
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${filename}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
