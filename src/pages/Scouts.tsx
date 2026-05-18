@@ -3182,7 +3182,7 @@ const Scouts = () => {
                         <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
                       </TabsContent>
                       <TabsContent value="pastas" className="mt-4">
-                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
                       </TabsContent>
                     </Tabs>
                   </TabsContent>
