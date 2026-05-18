@@ -2795,6 +2795,14 @@ const Scouts = () => {
                                   onChange={(e) => {
                                     const newFile = e.target.files?.[0];
                                     if (newFile && photosHubSummary.rawFiles) {
+                                      const oldExt = (file.name.split('.').pop() || '').toLowerCase();
+                                      const newExt = (newFile.name.split('.').pop() || '').toLowerCase();
+                                      
+                                      if (oldExt !== newExt) {
+                                        toast.error(`Formato incompatível: o arquivo original era .${oldExt} e o novo é .${newExt}`);
+                                        return;
+                                      }
+                                      
                                       const updatedFiles = photosHubSummary.rawFiles.filter(f => f.name !== file.name);
                                       processPhotosHubFiles([...updatedFiles, newFile]);
                                     }
