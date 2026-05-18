@@ -115,24 +115,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         }
       }
 
-      // Also list from images bucket
-      const { data: privateImages } = await supabase.storage.from('images').list('', {
-        limit: 100,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
-      const imagePathsToSign: { path: string; name: string; createdAt?: string }[] = [];
-      if (privateImages) {
-        for (const file of privateImages) {
-          if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
-          imagePathsToSign.push({ path: file.name, name: file.name, createdAt: file.created_at });
-        }
-      }
-
-      // Sign all URLs in parallel (batched, single round-trip per bucket)
-      const [scoutUrlMap, imageUrlMap] = await Promise.all([
-        getSignedUrlsBatch('scout-photos', scoutPathsToSign.map(p => p.path), 3600),
-        getSignedUrlsBatch('images', imagePathsToSign.map(p => p.path), 3600),
-      ]);
+      // Sign all URLs in parallel (batched, single round-trip)
+      const scoutUrlMap = await getSignedUrlsBatch('scout-photos', scoutPathsToSign.map(p => p.path), 3600);
 
       for (const item of scoutPathsToSign) {
         const url = scoutUrlMap[item.path];
