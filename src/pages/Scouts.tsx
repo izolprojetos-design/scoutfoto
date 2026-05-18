@@ -1297,7 +1297,7 @@ const Scouts = () => {
             className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
               e.stopPropagation();
-              photoPickInProgressRef.current = true;
+              handlePhotoPickStart();
               
               if (cameraStatus === 'available') {
                 // Verificação extra ao clicar se necessário
