@@ -108,8 +108,12 @@ describe('Upload Flow Enhancements', () => {
       </BrowserRouter>
     );
 
-    // Esperar carregar dados básicos - a lista de integrantes
-    const scoutTitle = await screen.findByText(/MARIA SILVA/i);
-    expect(scoutTitle).toBeInTheDocument();
+    // Use wait for para garantir que os dados carregaram e o botão apareceu
+    const photosBtn = await screen.findByRole('button', { name: /fotos/i });
+    fireEvent.click(photosBtn);
+    
+    // Agora tenta selecionar o integrante
+    const scoutItem = await screen.findByRole('button', { name: /MARIA SILVA/i });
+    fireEvent.click(scoutItem);
   });
 });

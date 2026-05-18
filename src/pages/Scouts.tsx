@@ -2682,7 +2682,7 @@ const Scouts = () => {
                       key={s.id}
                       type="button"
                       onClick={() => setPhotosHubScoutId(s.id)}
-                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors"
+                      aria-label={s.name}
                     >
                       <ScoutPhoto
                         photoUrl={s.photo_url}
