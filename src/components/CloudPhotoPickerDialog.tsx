@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info, CheckCircle2, ChevronDown, ClipboardCheck } from 'lucide-react';
+import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info, CheckCircle2, ChevronDown, ClipboardCheck, ArrowUp, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -59,12 +59,19 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const firstResultRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef<number>(0);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Debounce search effect
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 300);
+      // Reset visibleCount and scroll when search changes to ensure we start from the top of the new results
+      if (!isFirstRender.current) {
+        setVisibleCount(20);
+        const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+        if (viewport) viewport.scrollTo({ top: 0 });
+      }
+    }, 400);
     return () => clearTimeout(timer);
   }, [search]);
 
@@ -106,9 +113,16 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setSubgroupFilter(ALL);
   }, [sectionFilter]);
 
-  // Reset pagination when filters change (except search, where we might want to keep the scroll position)
+  // Reset pagination and scroll when filters change
   useEffect(() => {
+    if (isFirstRender.current) return;
     setVisibleCount(20);
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({ top: 0 });
+      scrollPositionRef.current = 0;
+      localStorage.setItem('cloud_gallery_scroll_pos', '0');
+    }
   }, [sectionFilter, subgroupFilter]);
 
   const loadImages = async () => {
@@ -258,6 +272,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     const scrollPos = target.scrollTop;
     scrollPositionRef.current = scrollPos;
     localStorage.setItem('cloud_gallery_scroll_pos', scrollPos.toString());
+    setShowScrollTop(scrollPos > 400);
     
     // Auto load more when reaching the bottom (incremental loading)
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
@@ -265,6 +280,28 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         loadMore();
       }
     }
+  };
+
+  const scrollToTop = () => {
+    const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+    if (viewport) {
+      viewport.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const resetAllGalleryData = () => {
+    clearFilters();
+    localStorage.removeItem('cloud_gallery_scroll_pos');
+    localStorage.removeItem('cloud_gallery_visible_count');
+    localStorage.removeItem('cloud_gallery_search');
+    localStorage.removeItem('cloud_gallery_section');
+    localStorage.removeItem('cloud_gallery_subgroup');
+    setVisibleCount(20);
+    scrollToTop();
+    toast({
+      description: "Dados da galeria resetados com sucesso.",
+      duration: 2000,
+    });
   };
 
   const availableSections = useMemo(() => {
@@ -347,7 +384,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 relative">
             <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
               <Filter className="h-3.5 w-3.5" />
               <span>Filtros Rápidos:</span>
@@ -393,6 +430,18 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                 Limpar Busca
               </Button>
             )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-9 px-3 text-xs text-muted-foreground hover:text-foreground"
+              onClick={resetAllGalleryData}
+              title="Resetar tudo"
+            >
+              <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+              Resetar
+            </Button>
 
             <span className="ml-auto text-[11px] font-medium text-muted-foreground bg-muted px-2 py-1 rounded-full">
               {filtered.length} {filtered.length === 1 ? 'foto' : 'fotos'}
@@ -542,6 +591,15 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                 </div>
               )}
             </div>
+          )}
+          {showScrollTop && (
+            <Button
+              size="icon"
+              className="absolute bottom-6 right-6 rounded-full shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 z-50 bg-primary/90 hover:bg-primary"
+              onClick={scrollToTop}
+            >
+              <ArrowUp className="h-4 w-4" />
+            </Button>
           )}
         </ScrollArea>
 
