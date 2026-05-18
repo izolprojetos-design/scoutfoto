@@ -2546,6 +2546,7 @@ const Scouts = () => {
 
       {/* Photos Hub Dialog — quick access to gallery/folders by member */}
       <Dialog open={photosHubOpen} onOpenChange={(v) => {
+        if (!v && (cropperOpen || photoPickInProgressRef.current)) return;
         setPhotosHubOpen(v);
         if (!v) {
           setPhotosHubScoutId(null);
