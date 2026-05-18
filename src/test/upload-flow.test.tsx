@@ -108,11 +108,11 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    // Find button by test id
+    // Wait for data to load and button to be enabled/clickable
     const photosBtn = await screen.findByTestId('photos-hub-trigger');
     fireEvent.click(photosBtn);
     
-    // Find scout item by test id
+    // Wait for the modal/overlay to process and show the scout item
     const scoutItem = await screen.findByTestId('scout-item-name');
     fireEvent.click(scoutItem);
 
@@ -129,7 +129,7 @@ describe('Upload Flow E2E Simulation', () => {
     await setupUpload();
 
     // Diálogo de progresso deve estar visível
-    const cancelBtn = await screen.findByRole('button', { name: /cancelar/i });
+    const cancelBtn = await screen.findByRole('button', { name: /cancelar/i }, { timeout: 5000 });
     fireEvent.click(cancelBtn);
 
     // Diálogo de confirmação de cancelamento deve aparecer
