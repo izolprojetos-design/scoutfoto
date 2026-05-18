@@ -181,6 +181,7 @@ const Scouts = () => {
   // Cloud picker state
   const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
   const [cloudPickerTarget, setCloudPickerTarget] = useState<'new' | 'edit'>('new');
+  const [cloudPickerInitialSearch, setCloudPickerInitialSearch] = useState('');
 
   // Photos hub (quick access from toolbar)
   const [photosHubOpen, setPhotosHubOpen] = useState(false);
@@ -1432,6 +1433,7 @@ const Scouts = () => {
             className="gap-2"
             onClick={() => {
               setCloudPickerTarget(formTarget);
+              setCloudPickerInitialSearch(name);
               setCloudPickerOpen(true);
             }}
           >
@@ -3164,6 +3166,7 @@ const Scouts = () => {
 
       <CloudPhotoPickerDialog
         open={cloudPickerOpen}
+        initialSearch={cloudPickerInitialSearch}
         onClose={() => setCloudPickerOpen(false)}
         onSelect={(file) => {
           setCropperImage(URL.createObjectURL(file));

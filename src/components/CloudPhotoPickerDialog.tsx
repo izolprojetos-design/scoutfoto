@@ -12,6 +12,7 @@ interface CloudPhotoPickerDialogProps {
   open: boolean;
   onClose: () => void;
   onSelect: (file: File) => void;
+  initialSearch?: string;
 }
 
 interface StorageImage {
@@ -26,19 +27,21 @@ interface StorageImage {
 
 const ALL = '__all__';
 
-const CloudPhotoPickerDialog = ({ open, onClose, onSelect }: CloudPhotoPickerDialogProps) => {
+const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: CloudPhotoPickerDialogProps) => {
   const [images, setImages] = useState<StorageImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(initialSearch || '');
   const [sectionFilter, setSectionFilter] = useState<string>(ALL);
   const [subgroupFilter, setSubgroupFilter] = useState<string>(ALL);
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    loadImages();
-  }, [open]);
+    if (open) {
+      if (initialSearch) setSearch(initialSearch);
+      loadImages();
+    }
+  }, [open, initialSearch]);
 
   // Reset subgroup filter when section changes
   useEffect(() => {
