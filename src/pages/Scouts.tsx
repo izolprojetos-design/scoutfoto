@@ -2508,6 +2508,7 @@ const Scouts = () => {
           setPhotosHubSearch('');
           photosHubDragCounter.current = 0;
           setPhotosHubDragging(false);
+          setPhotosHubSummary(null);
         }
       }}>
         <DialogContent
