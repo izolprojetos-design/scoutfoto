@@ -253,12 +253,19 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       });
   }, [images, search, sectionFilter, subgroupFilter]);
 
+  const paginated = useMemo(() => {
+    return filtered.slice(0, visibleCount);
+  }, [filtered, visibleCount]);
+
   const activeFilterCount = (sectionFilter !== ALL ? 1 : 0) + (subgroupFilter !== ALL ? 1 : 0);
 
   const clearFilters = () => {
     setSectionFilter(ALL);
     setSubgroupFilter(ALL);
     setSearch('');
+    localStorage.removeItem('cloud_gallery_search');
+    localStorage.removeItem('cloud_gallery_section');
+    localStorage.removeItem('cloud_gallery_subgroup');
   };
 
   return (
