@@ -429,7 +429,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
         const nowTs = new Date();
         const timeStr = format(nowTs, 'HHmm');
-        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const filename = `${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`.toUpperCase();
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${filename}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
@@ -547,7 +548,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           .replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 40);
         const safeId = (registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '');
         const yearSegment = targetDate.split('-')[0];
-        const path = `gallery/${scoutId}/${yearSegment}/${targetDate}/${safeName}_${safeId}_${targetDate}_${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const filename = `${safeName}_${safeId}_${targetDate}_${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}.${ext}`.toUpperCase();
+        const path = `gallery/${scoutId}/${yearSegment}/${targetDate}/${filename}`;
         const baseTs = new Date(`${targetDate}T12:00:00`).toISOString();
         const { error: upErr } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: false, contentType: compressed.type });
         if (upErr) throw upErr;
@@ -841,28 +843,54 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       ) : (
         <>
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm flex-wrap">
-            <button
-              onClick={() => { setYear(null); setDateKey(null); setSelectMode(false); clearSelection(); }}
-              className="font-medium uppercase break-words text-left hover:underline"
-            >
-              {scoutName}
-            </button>
-            {year !== null && (
-              <>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <button onClick={() => { setDateKey(null); setSelectMode(false); clearSelection(); }} className="font-medium hover:underline">
-                  {year}
-                </button>
-              </>
-            )}
-            {dateKey && (
-              <>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">
-                  {format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
-                </span>
-              </>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <button
+                onClick={() => { setYear(null); setDateKey(null); setSelectMode(false); clearSelection(); }}
+                className="font-medium uppercase break-words text-left hover:underline"
+              >
+                {scoutName}
+              </button>
+              {year !== null && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <button onClick={() => { setDateKey(null); setSelectMode(false); clearSelection(); }} className="font-medium hover:underline">
+                    {year}
+                  </button>
+                </>
+              )}
+              {dateKey && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">
+                    {format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {canManage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const confirmed = window.confirm("Isso renomeará todas as fotos existentes deste integrante para o novo padrão NOME_IDUNICO_DATA. Continuar?");
+                  if (!confirmed) return;
+                  
+                  const toastId = toast.loading("Reprocessando nomes das fotos...");
+                  try {
+                    const { data, error } = await supabase.functions.invoke('rename-scout-photos');
+                    if (error) throw error;
+                    toast.success("Reprocessamento concluído com sucesso!", { id: toastId });
+                    await load();
+                  } catch (err: any) {
+                    toast.error("Falha ao reprocessar: " + (err.message || "Erro desconhecido"), { id: toastId });
+                  }
+                }}
+                className="gap-2 text-[10px] h-7 px-2"
+              >
+                <RotateCcw className="h-3 w-3" /> Reprocessar Nomes
+              </Button>
             )}
           </div>
 
@@ -1124,7 +1152,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           <DialogHeader>
             <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
             <DialogDescription>
-              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. Arquivos serão arquivados em <strong>Ano › Data</strong>.
+              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. 
+              Todo upload gravará obrigatoriamente um nome no padrão <strong>NOME_IDUNICO_DATA</strong>.
             </DialogDescription>
           </DialogHeader>
 
@@ -1188,76 +1217,91 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                     const effectiveDate = applyToAll ? photoDate : p.date;
                     const dateInvalid = !isValidDate(effectiveDate);
                     return (
-                      <div key={p.id} className="flex items-center gap-3 rounded-md border bg-background p-2">
-                        <div className="relative h-14 w-14 shrink-0">
-                          <img src={p.preview} alt={p.file.name} className="h-14 w-14 rounded object-cover bg-muted" />
-                          {p.status === 'success' && (
-                            <div className="absolute inset-0 bg-green-500/30 rounded flex items-center justify-center">
-                              <CheckCircle2 className="h-6 w-6 text-white drop-shadow" />
-                            </div>
-                          )}
-                          {p.status === 'error' && (
-                            <div className="absolute inset-0 bg-destructive/40 rounded flex items-center justify-center">
-                              <AlertCircle className="h-6 w-6 text-white drop-shadow" />
-                            </div>
-                          )}
-                          {p.status === 'uploading' && (
-                            <div className="absolute inset-0 bg-primary/40 rounded flex items-center justify-center">
-                              <Loader2 className="h-6 w-6 text-white animate-spin" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0 space-y-1">
-                          <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {p.status === 'uploading' || (p.status === 'success' && p.total > 0) ? (
-                              <>
-                                {formatBytes(p.loaded)} / {formatBytes(p.total)}
-                                {' · '}
-                                <span className={p.status === 'success' ? 'text-green-600' : 'text-primary'}>
-                                  {Math.min(100, Math.round((p.loaded / Math.max(p.total, 1)) * 100))}%
-                                </span>
-                              </>
-                            ) : (
-                              <>{formatBytes(p.file.size)}</>
+                      <div key={p.id} className="rounded-md border bg-background overflow-hidden">
+                        <div className="flex items-center gap-3 p-2">
+                          <div className="relative h-14 w-14 shrink-0">
+                            <img src={p.preview} alt={p.file.name} className="h-14 w-14 rounded object-cover bg-muted" />
+                            {p.status === 'success' && (
+                              <div className="absolute inset-0 bg-green-500/30 rounded flex items-center justify-center">
+                                <CheckCircle2 className="h-6 w-6 text-white drop-shadow" />
+                              </div>
                             )}
-                            {p.status !== 'pending' && p.status !== 'uploading' && p.status !== 'success' && p.message && (
-                              <span className={p.status === 'error' ? ' text-destructive' : ''}> · {p.message}</span>
+                            {p.status === 'error' && (
+                              <div className="absolute inset-0 bg-destructive/40 rounded flex items-center justify-center">
+                                <AlertCircle className="h-6 w-6 text-white drop-shadow" />
+                              </div>
                             )}
-                            {p.status === 'success' && <span className="text-green-600"> · enviada</span>}
-                            {p.status === 'uploading' && <span className="text-primary"> · enviando…</span>}
-                            {p.status === 'skipped' && <span> · ignorada</span>}
-                            {p.status === 'pending' && p.message && <span> · {p.message}</span>}
-                          </p>
-                          {(p.status === 'uploading' || p.status === 'success') && p.total > 0 && (
-                            <div className="h-1 w-full bg-muted rounded overflow-hidden">
-                              <div
-                                className={`h-full transition-all ${p.status === 'success' ? 'bg-green-500' : 'bg-primary'}`}
-                                style={{ width: `${Math.min(100, (p.loaded / Math.max(p.total, 1)) * 100)}%` }}
-                              />
-                            </div>
-                          )}
-                          <Input
-                            type="date"
-                            value={effectiveDate}
-                            min={MIN_DATE}
-                            max={today()}
-                            onChange={(e) => updateFileDate(p.id, e.target.value)}
-                            disabled={uploading || applyToAll}
-                            className={`h-8 text-xs ${dateInvalid ? 'border-destructive' : ''}`}
-                          />
+                            {p.status === 'uploading' && (
+                              <div className="absolute inset-0 bg-primary/40 rounded flex items-center justify-center">
+                                <Loader2 className="h-6 w-6 text-white animate-spin" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 space-y-1">
+                            <p className="text-xs truncate" title={p.file.name}>{p.file.name}</p>
+                            <p className="text-[10px] text-muted-foreground">
+                              {p.status === 'uploading' || (p.status === 'success' && p.total > 0) ? (
+                                <>
+                                  {formatBytes(p.loaded)} / {formatBytes(p.total)}
+                                  {' · '}
+                                  <span className={p.status === 'success' ? 'text-green-600' : 'text-primary'}>
+                                    {Math.min(100, Math.round((p.loaded / Math.max(p.total, 1)) * 100))}%
+                                  </span>
+                                </>
+                              ) : (
+                                <>{formatBytes(p.file.size)}</>
+                              )}
+                              {p.status !== 'pending' && p.status !== 'uploading' && p.status !== 'success' && p.message && (
+                                <span className={p.status === 'error' ? ' text-destructive' : ''}> · {p.message}</span>
+                              )}
+                              {p.status === 'success' && <span className="text-green-600"> · enviada</span>}
+                              {p.status === 'uploading' && <span className="text-primary"> · enviando…</span>}
+                              {p.status === 'skipped' && <span> · ignorada</span>}
+                              {p.status === 'pending' && p.message && <span> · {p.message}</span>}
+                            </p>
+                            {(p.status === 'uploading' || p.status === 'success') && p.total > 0 && (
+                              <div className="h-1 w-full bg-muted rounded overflow-hidden">
+                                <div
+                                  className={`h-full transition-all ${p.status === 'success' ? 'bg-green-500' : 'bg-primary'}`}
+                                  style={{ width: `${Math.min(100, (p.loaded / Math.max(p.total, 1)) * 100)}%` }}
+                                />
+                              </div>
+                            )}
+                            <Input
+                              type="date"
+                              value={effectiveDate}
+                              min={MIN_DATE}
+                              max={today()}
+                              onChange={(e) => updateFileDate(p.id, e.target.value)}
+                              disabled={uploading || applyToAll}
+                              className={`h-8 text-xs ${dateInvalid ? 'border-destructive' : ''}`}
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removePendingFile(p.id)}
+                            disabled={uploading}
+                            className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                            aria-label="Remover"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removePendingFile(p.id)}
-                          disabled={uploading}
-                          className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-                          aria-label="Remover"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="px-2 pb-2">
+                          <div className="rounded bg-muted/50 p-1.5 border border-dashed">
+                            <p className="text-[10px] text-muted-foreground uppercase font-mono leading-tight">
+                              Filename final:
+                            </p>
+                            <p className="text-[10px] font-mono break-all font-bold text-primary">
+                              {scoutName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 40).toUpperCase()}_
+                              {(registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '')}_
+                              {effectiveDate}_
+                              ... .{(p.file.name.split('.').pop() || 'jpg').toLowerCase()}
+                            </p>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
