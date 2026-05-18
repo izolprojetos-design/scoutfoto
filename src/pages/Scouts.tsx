@@ -170,6 +170,66 @@ const Scouts = () => {
   const [photosHubOpen, setPhotosHubOpen] = useState(false);
   const [photosHubSearch, setPhotosHubSearch] = useState('');
   const [photosHubScoutId, setPhotosHubScoutId] = useState<string | null>(null);
+  const [photosHubReloadKey, setPhotosHubReloadKey] = useState(0);
+  const [photosHubDragging, setPhotosHubDragging] = useState(false);
+  const [photosHubUploading, setPhotosHubUploading] = useState(false);
+  const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
+  const photosHubDragCounter = useRef(0);
+
+  const uploadPhotosHubFiles = async (files: File[]) => {
+    if (!user || !photosHubScoutId || files.length === 0) return;
+    const valid = files.filter(f => f.type.startsWith('image/'));
+    if (valid.length === 0) {
+      toast.error('Solte apenas imagens.');
+      return;
+    }
+    const { compressImage } = await import('@/lib/imageCompression');
+    setPhotosHubUploading(true);
+    setPhotosHubProgress({ current: 0, total: valid.length });
+    let success = 0;
+    for (let i = 0; i < valid.length; i++) {
+      const file = valid[i];
+      setPhotosHubProgress({ current: i + 1, total: valid.length });
+      try {
+        if (file.size > 40 * 1024 * 1024) {
+          toast.warning(`"${file.name}" muito grande, ignorado.`);
+          continue;
+        }
+        let compressed: File | Blob = file;
+        try { compressed = await compressImage(file); } catch { /* keep original */ }
+        let mime = (compressed as File).type || file.type || 'image/jpeg';
+        let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
+        if (!['jpg', 'png', 'webp'].includes(ext)) { ext = 'jpg'; mime = 'image/jpeg'; }
+        const path = `gallery/${photosHubScoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from('scout-photos')
+          .upload(path, compressed, { upsert: false, contentType: mime });
+        if (upErr) throw upErr;
+        const { error: dbErr } = await supabase.from('scout_photos' as any).insert({
+          scout_id: photosHubScoutId,
+          storage_path: path,
+          caption: '',
+          uploaded_by: user.id,
+          file_size: (compressed as File).size ?? file.size,
+          mime_type: mime,
+        });
+        if (dbErr) {
+          await supabase.storage.from('scout-photos').remove([path]);
+          throw dbErr;
+        }
+        success++;
+      } catch (err: any) {
+        console.error('photos-hub upload err', err);
+        toast.error(`Falha ao enviar "${file.name}": ${err?.message || 'erro desconhecido'}`);
+      }
+    }
+    setPhotosHubUploading(false);
+    setPhotosHubProgress({ current: 0, total: 0 });
+    if (success > 0) {
+      toast.success(`${success} foto(s) enviada(s)`);
+      setPhotosHubReloadKey(k => k + 1);
+    }
+  };
 
   // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
