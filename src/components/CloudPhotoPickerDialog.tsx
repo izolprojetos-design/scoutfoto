@@ -180,18 +180,24 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    return images.filter(img => {
-      if (sectionFilter !== ALL && img.section !== sectionFilter) return false;
-      if (subgroupFilter !== ALL && img.subgroupId !== subgroupFilter) return false;
-      if (!q) return true;
-      return (
-        img.name.toLowerCase().includes(q) ||
-        (img.scoutId?.toLowerCase().includes(q) ?? false) ||
-        (img.scoutName?.toLowerCase().includes(q) ?? false) ||
-        (img.subgroupName?.toLowerCase().includes(q) ?? false) ||
-        (img.section?.toLowerCase().includes(q) ?? false)
-      );
-    });
+    return images
+      .filter(img => {
+        if (sectionFilter !== ALL && img.section !== sectionFilter) return false;
+        if (subgroupFilter !== ALL && img.subgroupId !== subgroupFilter) return false;
+        if (!q) return true;
+        return (
+          img.name.toLowerCase().includes(q) ||
+          (img.scoutId?.toLowerCase().includes(q) ?? false) ||
+          (img.scoutName?.toLowerCase().includes(q) ?? false) ||
+          (img.subgroupName?.toLowerCase().includes(q) ?? false) ||
+          (img.section?.toLowerCase().includes(q) ?? false)
+        );
+      })
+      .sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA; // Newest first
+      });
   }, [images, search, sectionFilter, subgroupFilter]);
 
   const activeFilterCount =
