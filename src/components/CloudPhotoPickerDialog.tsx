@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info } from 'lucide-react';
+import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,23 +33,57 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const { toast } = useToast();
   const [images, setImages] = useState<StorageImage[]>([]);
   const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState(initialSearch || '');
-  const [sectionFilter, setSectionFilter] = useState<string>(ALL);
-  const [subgroupFilter, setSubgroupFilter] = useState<string>(ALL);
+  const isFirstRender = useRef(true);
+  
+  // Load initial filters from localStorage or props
+  const [search, setSearch] = useState(() => {
+    if (initialSearch) return initialSearch;
+    return localStorage.getItem('cloud_gallery_search') || '';
+  });
+  const [sectionFilter, setSectionFilter] = useState<string>(() => {
+    return localStorage.getItem('cloud_gallery_section') || ALL;
+  });
+  const [subgroupFilter, setSubgroupFilter] = useState<string>(() => {
+    return localStorage.getItem('cloud_gallery_subgroup') || ALL;
+  });
+  
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const firstResultRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (open) {
-      if (initialSearch) setSearch(initialSearch);
+      if (initialSearch) {
+        setSearch(initialSearch);
+      }
       loadImages();
     }
   }, [open, initialSearch]);
 
+  // Save filters to localStorage
+  useEffect(() => {
+    if (isFirstRender.current) return;
+    localStorage.setItem('cloud_gallery_search', search);
+    localStorage.setItem('cloud_gallery_section', sectionFilter);
+    localStorage.setItem('cloud_gallery_subgroup', subgroupFilter);
+  }, [search, sectionFilter, subgroupFilter]);
+
   // Reset subgroup filter when section changes
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     setSubgroupFilter(ALL);
   }, [sectionFilter]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [search, sectionFilter, subgroupFilter]);
 
   const loadImages = async () => {
     setLoading(true);
@@ -158,10 +192,28 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     e.stopPropagation();
     const shortId = id.slice(0, 8);
     navigator.clipboard.writeText(shortId);
+    setCopiedId(id);
     toast({
-      description: `ID ${shortId} copiado!`,
+      description: `ID ${shortId} copiado para a área de transferência!`,
       duration: 2000,
     });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Scrolling to first result after a small delay to ensure rendering
+      setTimeout(() => {
+        if (firstResultRef.current) {
+          firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+  };
+
+  const loadMore = () => {
+    setVisibleCount(prev => prev + 20);
   };
 
   const availableSections = useMemo(() => {
@@ -205,12 +257,19 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       });
   }, [images, search, sectionFilter, subgroupFilter]);
 
+  const paginated = useMemo(() => {
+    return filtered.slice(0, visibleCount);
+  }, [filtered, visibleCount]);
+
   const activeFilterCount = (sectionFilter !== ALL ? 1 : 0) + (subgroupFilter !== ALL ? 1 : 0);
 
   const clearFilters = () => {
     setSectionFilter(ALL);
     setSubgroupFilter(ALL);
     setSearch('');
+    localStorage.removeItem('cloud_gallery_search');
+    localStorage.removeItem('cloud_gallery_section');
+    localStorage.removeItem('cloud_gallery_subgroup');
   };
 
   return (
@@ -230,6 +289,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
               placeholder="Digite o nome ou ID (ex: abc12345)..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-9 h-10 border-primary/20 focus-visible:ring-primary/30"
             />
           </div>
@@ -315,63 +375,102 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
               )}
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {filtered.map((img) => (
-                <div key={img.url} className="relative group">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedUrl(selectedUrl === img.url ? null : img.url)}
-                    className={cn(
-                      "relative aspect-square w-full rounded-lg overflow-hidden border-2 transition-all hover:opacity-95",
-                      selectedUrl === img.url
-                        ? "border-primary shadow-lg ring-2 ring-primary/20 scale-[0.98]"
-                        : "border-transparent bg-muted/50 hover:bg-muted"
-                    )}
-                  >
-                    <img
-                      src={img.url}
-                      alt={img.scoutName || img.name}
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                    />
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent text-white p-2.5 flex flex-col items-center justify-end text-center h-2/3">
-                      <div className="font-bold w-full truncate text-[10px] sm:text-[11px] mb-1.5 leading-tight">
-                        {img.scoutName ? img.scoutName.toUpperCase() : img.name.split('.')[0]}
-                      </div>
-                      <div className="flex flex-col items-center gap-1 w-full">
-                        {img.scoutId && (
-                          <div className="bg-primary/90 text-primary-foreground px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight">
-                            ID: {img.scoutId.slice(0, 8)}
-                          </div>
-                        )}
-                        {img.createdAt && (
-                          <div className="opacity-80 text-[8px] sm:text-[9px] font-medium flex items-center gap-1">
-                            📅 {new Date(img.createdAt).toLocaleDateString('pt-BR')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {selectedUrl === img.url && (
-                      <div className="absolute inset-0 bg-primary/10 flex items-center justify-center animate-in fade-in duration-200">
-                        <div className="bg-primary text-primary-foreground rounded-full p-2 shadow-xl scale-110">
-                          <Check className="h-4 w-4 stroke-[3px]" />
-                        </div>
-                      </div>
-                    )}
-                  </button>
-                  {img.scoutId && (
-                    <Button
-                      size="icon"
-                      variant="secondary"
-                      className="absolute top-1.5 right-1.5 h-7 w-7 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-lg hover:scale-110 active:scale-95 bg-white/90 hover:bg-white text-black border-none"
-                      onClick={(e) => handleCopyId(e, img.scoutId!)}
-                      title="Copiar ID"
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {paginated.map((img, index) => {
+                  const isIdMatch = search && img.scoutId && img.scoutId.toLowerCase().includes(search.toLowerCase().trim());
+                  
+                  return (
+                    <div 
+                      key={img.url} 
+                      className="relative group"
+                      ref={index === 0 ? firstResultRef : null}
                     >
-                      <Copy className="h-3.5 w-3.5" />
-                    </Button>
-                  )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedUrl(selectedUrl === img.url ? null : img.url)}
+                        className={cn(
+                          "relative aspect-square w-full rounded-lg overflow-hidden border-2 transition-all hover:opacity-95",
+                          selectedUrl === img.url
+                            ? "border-primary shadow-lg ring-2 ring-primary/20 scale-[0.98]"
+                            : isIdMatch 
+                              ? "border-primary/40 bg-primary/5 shadow-md"
+                              : "border-transparent bg-muted/50 hover:bg-muted"
+                        )}
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.scoutName || img.name}
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent text-white p-2.5 flex flex-col items-center justify-end text-center h-2/3">
+                          <div className="font-bold w-full truncate text-[10px] sm:text-[11px] mb-1.5 leading-tight">
+                            {img.scoutName ? img.scoutName.toUpperCase() : img.name.split('.')[0]}
+                          </div>
+                          <div className="flex flex-col items-center gap-1 w-full">
+                            {img.scoutId && (
+                              <div className={cn(
+                                "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight transition-colors",
+                                isIdMatch 
+                                  ? "bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.5)]" 
+                                  : "bg-primary/90 text-primary-foreground"
+                              )}>
+                                ID: {img.scoutId.slice(0, 8)}
+                              </div>
+                            )}
+                            {img.createdAt && (
+                              <div className="opacity-80 text-[8px] sm:text-[9px] font-medium flex items-center gap-1">
+                                📅 {new Date(img.createdAt).toLocaleDateString('pt-BR')}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        {selectedUrl === img.url && (
+                          <div className="absolute inset-0 bg-primary/10 flex items-center justify-center animate-in fade-in duration-200">
+                            <div className="bg-primary text-primary-foreground rounded-full p-2 shadow-xl scale-110">
+                              <Check className="h-4 w-4 stroke-[3px]" />
+                            </div>
+                          </div>
+                        )}
+                      </button>
+                      {img.scoutId && (
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className={cn(
+                            "absolute top-1.5 right-1.5 h-7 w-7 rounded-full transition-all duration-200 shadow-lg hover:scale-110 active:scale-95 border-none",
+                            copiedId === img.scoutId 
+                              ? "opacity-100 bg-green-500 text-white" 
+                              : "opacity-0 group-hover:opacity-100 bg-white/90 hover:bg-white text-black"
+                          )}
+                          onClick={(e) => handleCopyId(e, img.scoutId!)}
+                          title="Copiar ID"
+                        >
+                          {copiedId === img.scoutId ? (
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                          ) : (
+                            <Copy className="h-3.5 w-3.5" />
+                          )}
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {visibleCount < filtered.length && (
+                <div className="flex justify-center pb-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={loadMore}
+                    className="text-xs font-semibold hover:bg-primary hover:text-primary-foreground transition-all px-8 rounded-full shadow-sm"
+                  >
+                    Carregar mais fotos ({filtered.length - visibleCount} restantes)
+                  </Button>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </ScrollArea>
