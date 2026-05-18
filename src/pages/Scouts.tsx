@@ -1851,7 +1851,7 @@ const Scouts = () => {
               }}
             >
               <ImageIcon className="h-4 w-4" />
-              Fotos
+              <span data-testid="fotos-button-text">Fotos</span>
             </Button>
           )}
           {isAdmin && (
@@ -2691,7 +2691,7 @@ const Scouts = () => {
                         fallback={<div className="h-10 w-10 rounded-full bg-muted shrink-0" />}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold uppercase break-words">{s.name}</p>
+                        <p className="font-semibold uppercase break-words" data-testid="scout-name-item">{s.name}</p>
                         {s.section && (
                           <p className="text-xs text-muted-foreground">{s.section}</p>
                         )}

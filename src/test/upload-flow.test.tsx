@@ -172,9 +172,9 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByText('Fotos');
+    const photosBtn = await screen.findByText(/fotos/i);
     fireEvent.click(photosBtn);
-    const scoutItem = await screen.findByText('MARIA SILVA');
+    const scoutItem = await screen.findByText(/maria silva/i);
     fireEvent.click(scoutItem);
 
     const f1 = new File(['1'], 'f1.jpg', { type: 'image/jpeg' });
