@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ScoutFolders from '../ScoutFolders';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import '@testing-library/jest-dom';
 
@@ -21,7 +20,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       from: vi.fn(() => ({
         list: vi.fn().mockResolvedValue({ data: [], error: null }),
         remove: vi.fn().mockResolvedValue({ data: [], error: null }),
-        upload: vi.fn().mockResolvedValue({ data: {}, error: null }),
+        upload: vi.fn().mockResolvedValue({ data: { id: 'f', path: 'p', fullPath: 'fp' }, error: null }),
       })),
     },
     channel: vi.fn(() => ({
@@ -162,7 +161,7 @@ describe('ScoutFolders Upload Flow', () => {
     const retryBtn = screen.getByText(/Tentar novamente 1 falha/i);
     
     // Mock success for retry
-    uploadMock.mockResolvedValueOnce({ data: {}, error: null });
+    uploadMock.mockResolvedValueOnce({ data: { id: 'f', path: 'p', fullPath: 'fp' }, error: null });
     
     fireEvent.click(retryBtn);
     
