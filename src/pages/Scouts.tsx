@@ -2415,6 +2415,99 @@ const Scouts = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Photos Hub Dialog — quick access to gallery/folders by member */}
+      <Dialog open={photosHubOpen} onOpenChange={(v) => {
+        setPhotosHubOpen(v);
+        if (!v) { setPhotosHubScoutId(null); setPhotosHubSearch(''); }
+      }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {photosHubScoutId
+                ? (scouts.find(s => s.id === photosHubScoutId)?.name.toUpperCase() ?? 'Fotos')
+                : 'Fotos por Integrante'}
+            </DialogTitle>
+          </DialogHeader>
+
+          {!photosHubScoutId ? (
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  autoFocus
+                  placeholder="Pesquisar pelo nome do integrante..."
+                  value={photosHubSearch}
+                  onChange={(e) => setPhotosHubSearch(e.target.value)}
+                  className="pl-9 h-12 text-base"
+                />
+              </div>
+              <div className="max-h-[60vh] overflow-y-auto rounded-md border divide-y">
+                {(() => {
+                  const q = photosHubSearch.trim().toLowerCase();
+                  const list = scouts
+                    .filter(s => s.is_active)
+                    .filter(s => !q || s.name.toLowerCase().includes(q))
+                    .sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+                  if (list.length === 0) {
+                    return (
+                      <div className="p-6 text-center text-sm text-muted-foreground">
+                        Nenhum integrante encontrado.
+                      </div>
+                    );
+                  }
+                  return list.map(s => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setPhotosHubScoutId(s.id)}
+                      className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors"
+                    >
+                      <ScoutPhoto scoutId={s.id} scoutName={s.name} photoUrl={s.photo_url} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold uppercase break-words">{s.name}</p>
+                        {s.section && (
+                          <p className="text-xs text-muted-foreground">{s.section}</p>
+                        )}
+                      </div>
+                    </button>
+                  ));
+                })()}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={() => setPhotosHubScoutId(null)}
+              >
+                <X className="h-4 w-4" /> Trocar integrante
+              </Button>
+              <Tabs defaultValue="galeria" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                  <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                </TabsList>
+                <TabsContent value="galeria" className="mt-4">
+                  <ScoutGallery
+                    scoutId={photosHubScoutId}
+                    scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                  />
+                </TabsContent>
+                <TabsContent value="pastas" className="mt-4">
+                  <ScoutFolders
+                    scoutId={photosHubScoutId}
+                    scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Guardian Dialog */}
       <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
         <DialogContent>
