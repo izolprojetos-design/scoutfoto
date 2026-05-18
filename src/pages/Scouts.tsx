@@ -166,6 +166,11 @@ const Scouts = () => {
   const [cloudPickerOpen, setCloudPickerOpen] = useState(false);
   const [cloudPickerTarget, setCloudPickerTarget] = useState<'new' | 'edit'>('new');
 
+  // Photos hub (quick access from toolbar)
+  const [photosHubOpen, setPhotosHubOpen] = useState(false);
+  const [photosHubSearch, setPhotosHubSearch] = useState('');
+  const [photosHubScoutId, setPhotosHubScoutId] = useState<string | null>(null);
+
   // Guardian form (separate dialog)
   const [guardianName, setGuardianName] = useState('');
   const [guardianEmail, setGuardianEmail] = useState('');
