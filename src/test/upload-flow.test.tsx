@@ -48,7 +48,6 @@ vi.mock('../integrations/supabase/client', () => ({
     from: vi.fn((table) => ({
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockImplementation(() => {
-        // Simulate background DB change that triggers realtime
         if (realtimeCallback) setTimeout(() => realtimeCallback({}), 50);
         return Promise.resolve({ data: [mockPhoto], error: null });
       }),
@@ -56,6 +55,7 @@ vi.mock('../integrations/supabase/client', () => ({
       delete: vi.fn().mockReturnThis(),
       order: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: mockScout, error: null }),
       then: (cb: any) => {
         if (table === 'scouts') return Promise.resolve(cb({ data: [mockScout], error: null }));
         if (table === 'scout_photos') return Promise.resolve(cb({ data: [mockPhoto], error: null }));
@@ -65,6 +65,7 @@ vi.mock('../integrations/supabase/client', () => ({
     storage: {
       from: vi.fn(() => ({
         upload: vi.fn().mockResolvedValue({ data: { path: 'test.jpg' }, error: null }),
+        list: vi.fn().mockResolvedValue({ data: [], error: null }),
         createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'mock-url' }, error: null }),
         createSignedUrls: vi.fn().mockResolvedValue({ data: [{ signedUrl: 'mock-url', path: mockPhoto.storage_path }], error: null }),
         remove: vi.fn().mockResolvedValue({ error: null }),
@@ -80,6 +81,7 @@ vi.mock('../integrations/supabase/client', () => ({
       }),
     })),
     removeChannel: vi.fn(),
+    rpc: vi.fn().mockResolvedValue({ data: null, error: null }),
   },
 }));
 
@@ -88,6 +90,7 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     user: { id: 'test-user' },
     profile: { name: 'Admin' },
+    roles: ['admin'],
     isAdmin: true,
     isVoluntario: false,
     canUpload: true,
@@ -108,7 +111,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     // 1. Simular abertura do Fotos Hub
-    const photosBtn = await screen.findByRole('button', { name: /fotos/i });
+    const photosBtn = await screen.findByLabelText('Fotos');
     fireEvent.click(photosBtn);
 
     // 2. Selecionar o integrante
@@ -154,10 +157,78 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     expect(uploadedPath).toContain('MARIA_SILVA_');
     expect(uploadedPath).toContain(format(new Date(), 'yyyy-MM-dd'));
     
+    // 7. Teste de Cancelamento
+    const cancelBtn = await screen.findByRole('button', { name: /cancelar/i });
+    fireEvent.click(cancelBtn);
+    
     // A tela de diálogo deve fechar somente após a conclusão do processo pelo usuário ou remoção do estado pendente
-    // No código, setPendingFiles(null) é chamado no finally do upload
     await waitFor(() => {
       expect(screen.queryByText(/enviando foto/i)).not.toBeInTheDocument();
     });
+  });
+
+  it('handles upload errors and allows retry without closing the dialog', async () => {
+    vi.mocked(supabase.storage.from('scout-photos').upload).mockRejectedValueOnce(new Error('Falha de conexão'));
+
+    render(
+      <BrowserRouter>
+        <Scouts />
+      </BrowserRouter>
+    );
+
+    const photosBtn2 = await screen.findByLabelText('Fotos');
+    fireEvent.click(photosBtn2);
+    const scoutItem = await screen.findByText(/MARIA SILVA/i);
+    fireEvent.click(scoutItem);
+
+    const file = new File(['image'], 'error-test.jpg', { type: 'image/jpeg' });
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file], configurable: true });
+    fireEvent.change(input);
+
+    const confirmBtn = await screen.findByRole('button', { name: /confirmar e salvar/i });
+    fireEvent.click(confirmBtn);
+
+    // Deve mostrar mensagem de erro
+    expect(await screen.findByText(/erro no envio/i)).toBeInTheDocument();
+    expect(screen.getByText(/falha de conexão/i)).toBeInTheDocument();
+    
+    // Diálogo ainda deve estar aberto para tentar novamente
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    
+    const retryBtn = screen.getByRole('button', { name: /tentar novamente/i });
+    expect(retryBtn).toBeInTheDocument();
+  });
+
+  it('validates naming collision and sequential pattern', async () => {
+    render(
+      <BrowserRouter>
+        <Scouts />
+      </BrowserRouter>
+    );
+
+    const photosBtn3 = await screen.findByLabelText('Fotos');
+    fireEvent.click(photosBtn3);
+    const scoutItem = await screen.findByText(/MARIA SILVA/i);
+    fireEvent.click(scoutItem);
+
+    const file1 = new File(['1'], 'f1.jpg', { type: 'image/jpeg' });
+    const file2 = new File(['2'], 'f2.jpg', { type: 'image/jpeg' });
+    
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { value: [file1, file2], configurable: true });
+    fireEvent.change(input);
+
+    const confirmBtn = await screen.findByRole('button', { name: /confirmar e salvar/i });
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(supabase.storage.from('scout-photos').upload).toHaveBeenCalledTimes(2);
+    });
+
+    const calls = vi.mocked(supabase.storage.from('scout-photos').upload).mock.calls;
+    // O sufixo de índice (0 e 1) deve evitar colisões
+    expect(calls[0][0]).toMatch(/_0\.jpg$/);
+    expect(calls[1][0]).toMatch(/_1\.jpg$/);
   });
 });
