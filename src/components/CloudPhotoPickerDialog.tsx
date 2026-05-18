@@ -126,7 +126,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       if (privateImages) {
         for (const file of privateImages) {
           if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
-          imagePathsToSign.push({ path: file.name, name: file.name });
+          imagePathsToSign.push({ path: file.name, name: file.name, createdAt: file.created_at });
         }
       }
 
