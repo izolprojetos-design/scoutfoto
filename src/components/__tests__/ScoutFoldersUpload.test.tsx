@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ScoutFolders from '../ScoutFolders';
 import { supabase } from '@/integrations/supabase/client';
 import '@testing-library/jest-dom';
+import { format } from 'date-fns';
 
 // Global mocks for JSDOM
 if (typeof window !== 'undefined') {
@@ -84,6 +85,9 @@ describe('ScoutFolders Upload Flow', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Simulate mobile viewport for tests that care
+    vi.stubGlobal('innerWidth', 375);
+    vi.stubGlobal('innerHeight', 667);
   });
 
   it('announces upload status and file name using aria-live', async () => {
@@ -101,17 +105,21 @@ describe('ScoutFolders Upload Flow', () => {
 
     // Check for aria-live elements during upload
     await waitFor(() => {
-      const liveRegions = document.querySelectorAll('[aria-live="polite"]');
+      const liveRegions = screen.getAllByText(/Enviando/i, { selector: '[aria-live="polite"]' });
       expect(liveRegions.length).toBeGreaterThan(0);
       
+      const fileNameAnnounced = screen.getByText('test-photo.jpg', { selector: '[aria-live="polite"]' });
+      expect(fileNameAnnounced).toBeInTheDocument();
+
       // Verify progress bar attributes
       const progressBar = screen.getByRole('progressbar');
       expect(progressBar).toBeInTheDocument();
       expect(progressBar).toHaveAttribute('aria-valuenow');
+      expect(progressBar).toHaveAttribute('aria-label');
     });
   });
 
-  it('shows confirmation dialog when canceling upload and traps focus', async () => {
+  it('shows confirmation dialog when canceling upload and handles focus/keyboard', async () => {
     render(<ScoutFolders {...mockProps} />);
     
     const file = new File(['content'], 'test-photo.jpg', { type: 'image/jpeg' });
@@ -128,15 +136,27 @@ describe('ScoutFolders Upload Flow', () => {
     // Should show AlertDialog
     expect(screen.getByText(/Cancelar upload\?/i)).toBeInTheDocument();
     
-    // "Sim, cancelar" should be present
+    // Focus should be on "Não, continuar"
+    const stayBtn = screen.getByText(/Não, continuar/i);
+    expect(stayBtn).toHaveFocus();
+
+    // Verify Tab stays inside dialog (logic handled by Radix UI, we check presence)
     const confirmCancelBtn = screen.getByText(/Sim, cancelar/i);
     expect(confirmCancelBtn).toBeInTheDocument();
   });
 
-  it('handles retrying failed uploads correctly', async () => {
-    // Mock upload behavior
-    const uploadMock = vi.mocked(supabase.storage.from('scout-photos').upload);
+  it('handles retrying failed uploads correctly for specific photos', async () => {
+    // Mock upload behavior to fail
+    const uploadMock = vi.fn()
+      .mockRejectedValueOnce(new Error('Upload failed'))
+      .mockResolvedValueOnce({ data: { id: 'f', path: 'p', fullPath: 'fp' }, error: null });
     
+    vi.mocked(supabase.storage.from).mockReturnValue({
+      upload: uploadMock,
+      list: vi.fn().mockResolvedValue({ data: [], error: null }),
+      remove: vi.fn().mockResolvedValue({ data: [], error: null }),
+    } as any);
+
     render(<ScoutFolders {...mockProps} />);
     
     const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
@@ -144,24 +164,41 @@ describe('ScoutFolders Upload Flow', () => {
     fireEvent.change(fileInputs[0], { target: { files: [file1] } });
 
     const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
-    
-    // Mock failure
-    uploadMock.mockRejectedValueOnce(new Error('Upload failed'));
-    
     fireEvent.click(confirmBtn);
 
-    // Wait for retry button
+    // Wait for failure
     const retryBtn = await screen.findByText(/Tentar novamente/i);
     expect(retryBtn).toBeInTheDocument();
 
-    // Mock success for retry
-    uploadMock.mockResolvedValueOnce({ data: { id: 'f', path: 'p', fullPath: 'fp' }, error: null });
-    
+    // Click retry
     fireEvent.click(retryBtn);
     
     await waitFor(() => {
-      // The dialog closes on success if all are done
+      // Success call happened
+      expect(uploadMock).toHaveBeenCalledTimes(2);
       expect(screen.queryByText(/Confirmar e enviar/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('updates progressbar attributes and aria-live during sequence', async () => {
+    render(<ScoutFolders {...mockProps} />);
+    
+    const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
+    const file2 = new File(['c2'], 'photo2.jpg', { type: 'image/jpeg' });
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fireEvent.change(fileInputs[0], { target: { files: [file1, file2] } });
+
+    const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
+    fireEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      const progressBar = screen.getByRole('progressbar');
+      expect(progressBar).toHaveAttribute('aria-valuenow');
+      expect(progressBar).toHaveAttribute('aria-valuemin', '0');
+      expect(progressBar).toHaveAttribute('aria-valuemax', '100');
+      
+      const liveStatus = screen.getByText(/Enviando 1 de 2/i);
+      expect(liveStatus).toBeInTheDocument();
     });
   });
 });

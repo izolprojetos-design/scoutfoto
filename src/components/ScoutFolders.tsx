@@ -1376,14 +1376,13 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Não, continuar</AlertDialogCancel>
+            <AlertDialogCancel autoFocus>Não, continuar</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
                 cancelOngoingUpload();
                 setConfirmCancelOpen(false);
               }}
-              autoFocus
             >
               Sim, cancelar
             </AlertDialogAction>
