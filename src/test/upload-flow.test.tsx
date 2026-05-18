@@ -109,7 +109,7 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByRole('button', { name: /fotos/i });
+    const photosBtn = await screen.findByText('Fotos');
     fireEvent.click(photosBtn);
     
     const scoutItem = await screen.findByText('MARIA SILVA');
@@ -172,7 +172,7 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByRole('button', { name: /fotos/i });
+    const photosBtn = await screen.findByText('Fotos');
     fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText('MARIA SILVA');
     fireEvent.click(scoutItem);
