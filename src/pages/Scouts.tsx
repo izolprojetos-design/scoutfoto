@@ -442,6 +442,17 @@ const Scouts = () => {
     });
   };
 
+  const handlePhotoPickStart = () => {
+    photoPickInProgressRef.current = true;
+    const timer = setTimeout(() => { photoPickInProgressRef.current = false; }, 60000);
+    const clearPicking = () => {
+      photoPickInProgressRef.current = false;
+      clearTimeout(timer);
+      window.removeEventListener('focus', clearPicking);
+    };
+    window.addEventListener('focus', clearPicking, { once: true });
+  };
+
   const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) {
@@ -1286,7 +1297,7 @@ const Scouts = () => {
             className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
               e.stopPropagation();
-              photoPickInProgressRef.current = true;
+              handlePhotoPickStart();
               
               if (cameraStatus === 'available') {
                 // Verificação extra ao clicar se necessário
@@ -2533,10 +2544,10 @@ const Scouts = () => {
                   <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                 </TabsList>
                 <TabsContent value="galeria" className="mt-4">
-                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
-                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -2926,7 +2937,7 @@ const Scouts = () => {
                     key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
-                    onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }}
+                    onPickStart={handlePhotoPickStart}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
@@ -2934,7 +2945,7 @@ const Scouts = () => {
                     key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
-                    onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }}
+                    onPickStart={handlePhotoPickStart}
                   />
                 </TabsContent>
               </Tabs>
@@ -3168,10 +3179,10 @@ const Scouts = () => {
                         <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                       </TabsList>
                       <TabsContent value="galeria" className="mt-4">
-                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
                       </TabsContent>
                       <TabsContent value="pastas" className="mt-4">
-                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
                       </TabsContent>
                     </Tabs>
                   </TabsContent>

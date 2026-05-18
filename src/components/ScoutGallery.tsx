@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { getSignedUrlsBatch } from '@/lib/storageUtils';
@@ -853,31 +854,64 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
         open={!!pendingFiles}
         onOpenChange={(o) => { if (!o && !uploading) setPendingFiles(null); }}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="sm:max-w-[425px]">
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar envio</AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-2">
-                <p>
-                  Você está prestes a enviar <strong>{pendingFiles?.length || 0}</strong> foto(s) que serão vinculadas ao integrante:
-                </p>
+              <div className="space-y-4 pt-2">
                 <div className="rounded-md border bg-muted/50 p-3">
-                  <div className="text-xs uppercase tracking-wider text-muted-foreground">Integrante</div>
-                  <div className="font-semibold uppercase break-words">{scoutName}</div>
-                  <div className="text-xs text-muted-foreground mt-1 font-mono break-all">ID: {scoutId}</div>
+                  <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Integrante</div>
+                  <div className="font-semibold uppercase break-words text-sm">{scoutName}</div>
+                  <div className="text-[10px] text-muted-foreground font-mono break-all opacity-70">ID: {scoutId}</div>
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Confirme se este é o integrante correto antes de prosseguir.
-                </p>
+
+                <div className="space-y-2">
+                  <p className="text-sm">
+                    Você está enviando <strong>{pendingFiles?.length || 0}</strong> foto(s).
+                  </p>
+                  
+                  {uploading && (
+                    <div className="space-y-2 animate-in fade-in zoom-in-95 duration-200">
+                      <div className="flex justify-between items-end text-xs mb-1">
+                        <span className="font-medium text-primary flex items-center gap-1.5">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Enviando foto {progress.current} de {progress.total}
+                        </span>
+                        <span className="font-mono text-muted-foreground">
+                          {Math.round((progress.current / progress.total) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-muted rounded-full overflow-hidden border">
+                        <motion.div 
+                          className="h-full bg-primary"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${(progress.current / progress.total) * 100}%` }}
+                          transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                        />
+                      </div>
+                      <p className="text-[10px] text-center text-muted-foreground animate-pulse">
+                        Salvando em Galeria › {new Date().getFullYear()} › {format(new Date(), 'dd/MM/yyyy')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {!uploading && (
+                  <p className="text-xs text-muted-foreground bg-amber-50 border border-amber-100 p-2 rounded">
+                    As imagens serão salvas automaticamente na pasta do ano e data atual.
+                  </p>
+                )}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={uploading}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="mt-2">
+            {!uploading && (
+              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            )}
             <AlertDialogAction
+              className={uploading ? "bg-primary/80 pointer-events-none" : ""}
               disabled={uploading || !pendingFiles?.length}
               onClick={async (e) => {
-                // Evita fechamento automático do Radix antes do upload terminar
                 e.preventDefault();
                 const files = pendingFiles;
                 if (!files || !files.length) return;
@@ -888,7 +922,12 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
                 }
               }}
             >
-              {uploading ? 'Enviando...' : 'Confirmar envio'}
+              {uploading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processando...
+                </span>
+              ) : 'Confirmar e Salvar'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
