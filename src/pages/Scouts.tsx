@@ -2926,6 +2926,7 @@ const Scouts = () => {
                     key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                    onPickStart={() => { photoPickInProgressRef.current = true; }}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
@@ -2933,6 +2934,7 @@ const Scouts = () => {
                     key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                    onPickStart={() => { photoPickInProgressRef.current = true; }}
                   />
                 </TabsContent>
               </Tabs>
