@@ -111,11 +111,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     // 1. Simular abertura do Fotos Hub
-    const photosBtn = await screen.findByText((content, element) => {
-      const hasText = content.includes('Fotos');
-      const isButton = element?.tagName.toLowerCase() === 'button';
-      return isButton && hasText;
-    });
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn);
 
     // 2. Selecionar o integrante
@@ -180,11 +176,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByText((content, element) => {
-      const hasText = content.includes('Fotos');
-      const isButton = element?.tagName.toLowerCase() === 'button';
-      return isButton && hasText;
-    });
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
@@ -215,11 +207,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByText((content, element) => {
-      const hasText = content.includes('Fotos');
-      const isButton = element?.tagName.toLowerCase() === 'button';
-      return isButton && hasText;
-    });
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
