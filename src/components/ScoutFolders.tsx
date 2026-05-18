@@ -1259,7 +1259,21 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
-                    );
+                      <div className="px-2 pb-2">
+                        <div className="rounded bg-muted/50 p-1.5 border border-dashed">
+                          <p className="text-[10px] text-muted-foreground uppercase font-mono leading-tight">
+                            Filename final:
+                          </p>
+                          <p className="text-[10px] font-mono break-all font-bold text-primary">
+                            {scoutName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9_\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 40).toUpperCase()}_
+                            {(registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '')}_
+                            {effectiveDate}_
+                            ... .{(p.file.name.split('.').pop() || 'jpg').toLowerCase()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
                   })}
                 </div>
               </div>
