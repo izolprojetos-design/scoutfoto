@@ -1249,17 +1249,18 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
               const pct = totalBytes ? Math.min(100, (loadedBytes / totalBytes) * 100) : 0;
               const currentFile = pendingFiles.find(p => p.status === 'uploading');
               return (
-                <div className="space-y-1">
+                <div className="space-y-1" aria-live="polite">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <p className="text-sm" aria-live="polite">
+                    <p className="text-sm">
                       Enviando {progress.current} de {progress.total} · {formatBytes(loadedBytes)} / {formatBytes(totalBytes)} ({pct.toFixed(1)}%)
                     </p>
                     {currentFile && (
-                      <p className="text-[10px] text-muted-foreground italic truncate max-w-[200px]" aria-live="polite">
+                      <p className="text-[10px] text-muted-foreground italic truncate max-w-[200px]">
                         {currentFile.file.name}
                       </p>
                     )}
                   </div>
+
                   <div 
                     className="h-2 w-full bg-muted rounded overflow-hidden"
                     role="progressbar"
