@@ -6,6 +6,7 @@ import { formatDatePtBR, formatTimePtBR, formatPhoneBR } from '@/lib/formatting'
 import ScoutPhoto from '@/components/ScoutPhoto';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
+import { format } from 'date-fns';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
