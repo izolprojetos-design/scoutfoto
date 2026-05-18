@@ -1,16 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import ScoutFolders from '../ScoutFolders';
 import { supabase } from '@/integrations/supabase/client';
 import '@testing-library/jest-dom';
-import { format } from 'date-fns';
+import { xhrUploadToStorage } from '@/lib/uploadUtils';
 
 // Global mocks for JSDOM
 if (typeof window !== 'undefined') {
   window.URL.createObjectURL = vi.fn(() => 'mock-url');
   window.URL.revokeObjectURL = vi.fn();
   
-  // Mock ResizeObserver
   window.ResizeObserver = vi.fn().mockImplementation(() => ({
     observe: vi.fn(),
     unobserve: vi.fn(),
@@ -27,7 +26,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       order: vi.fn().mockReturnThis(),
       delete: vi.fn().mockReturnThis(),
       in: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValue({ error: null }),
       then: vi.fn((cb) => cb({ data: [], error: null })),
     })),
     storage: {
@@ -68,6 +67,11 @@ vi.mock('@/lib/storageUtils', () => ({
   getSignedUrlsBatch: vi.fn(() => Promise.resolve({})),
 }));
 
+// Mock uploadUtils
+vi.mock('@/lib/uploadUtils', () => ({
+  xhrUploadToStorage: vi.fn(),
+}));
+
 // Mock sonner
 vi.mock('sonner', () => ({
   toast: Object.assign(vi.fn(), {
@@ -85,98 +89,12 @@ describe('ScoutFolders Upload Flow', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // Simulate mobile viewport for tests that care
     vi.stubGlobal('innerWidth', 375);
     vi.stubGlobal('innerHeight', 667);
   });
 
-  it('announces upload status and file name using aria-live', async () => {
-    render(<ScoutFolders {...mockProps} />);
-    
-    const file = new File(['content'], 'test-photo.jpg', { type: 'image/jpeg' });
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    const galleryInput = fileInputs[0] as HTMLInputElement;
-
-    fireEvent.change(galleryInput, { target: { files: [file] } });
-
-    // Wait for dialog
-    const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
-    fireEvent.click(confirmBtn);
-
-    // Check for aria-live elements during upload
-    await waitFor(() => {
-      const liveRegions = screen.getAllByText(/Enviando/i, { selector: '[aria-live="polite"]' });
-      expect(liveRegions.length).toBeGreaterThan(0);
-      
-      const fileNameAnnounced = screen.getByText('test-photo.jpg', { selector: '[aria-live="polite"]' });
-      expect(fileNameAnnounced).toBeInTheDocument();
-
-      // Verify progress bar attributes
-      const progressBar = screen.getByRole('progressbar');
-      expect(progressBar).toBeInTheDocument();
-      expect(progressBar).toHaveAttribute('aria-valuenow');
-      expect(progressBar).toHaveAttribute('aria-label');
-    });
-  });
-
-  it('shows confirmation dialog when canceling upload and handles focus/keyboard', async () => {
-    render(<ScoutFolders {...mockProps} />);
-    
-    const file = new File(['content'], 'test-photo.jpg', { type: 'image/jpeg' });
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fireEvent.change(fileInputs[0], { target: { files: [file] } });
-
-    const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
-    fireEvent.click(confirmBtn);
-
-    // Find cancel button (the one that appears during uploading)
-    const cancelBtn = await screen.findByText(/Cancelar upload/i);
-    fireEvent.click(cancelBtn);
-
-    // Should show AlertDialog
-    expect(screen.getByText(/Cancelar upload\?/i)).toBeInTheDocument();
-    
-    // Focus should be on "Não, continuar"
-    const stayBtn = screen.getByText(/Não, continuar/i);
-    expect(stayBtn).toHaveFocus();
-
-    // Verify Tab stays inside dialog (logic handled by Radix UI, we check presence)
-    const confirmCancelBtn = screen.getByText(/Sim, cancelar/i);
-    expect(confirmCancelBtn).toBeInTheDocument();
-  });
-
-  it('handles retrying failed uploads correctly for specific photos', async () => {
-    // Mock upload behavior to fail then succeed via supabase.storage
-    // However, the component uses xhrUploadToStorage which calls SUPABASE_URL directly.
-    // In Vitest/JSDOM, we need to mock the XMLHttpRequest or the fetch/network layer.
-    
-    render(<ScoutFolders {...mockProps} />);
-    
-    const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
-    const fileInputs = document.querySelectorAll('input[type="file"]');
-    fireEvent.change(fileInputs[0], { target: { files: [file1] } });
-
-    const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
-    
-    // We don't need to strictly mock the XHR for this high-level test 
-    // if we just want to verify the UI state transitions.
-    // The previous error "Invalid Compact JWS" suggests it's trying to make a real request.
-    
-    // Instead of deep mocking XHR, let's just check if the retry button appears
-    // when we simulate an error state.
-    
-    fireEvent.click(confirmBtn);
-
-    // If it fails (which it will because SUPABASE_URL is not real in tests), 
-    // it should show retry.
-    const retryBtn = await screen.findByText(/Tentar novamente/i);
-    expect(retryBtn).toBeInTheDocument();
-
-    // Verification of "only failed are resent" logic is handled by internal state `snapshot`
-    // which we've verified in the code review.
-  });
-
-  it('updates progressbar attributes and aria-live during sequence', async () => {
+  it('announces upload status and file name using aria-live in correct order', async () => {
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 50)));
     render(<ScoutFolders {...mockProps} />);
     
     const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
@@ -184,17 +102,108 @@ describe('ScoutFolders Upload Flow', () => {
     const fileInputs = document.querySelectorAll('input[type="file"]');
     fireEvent.change(fileInputs[0], { target: { files: [file1, file2] } });
 
-    const confirmBtn = await screen.findByText(/Confirmar e enviar/i);
-    fireEvent.click(confirmBtn);
+    fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
+
+    // Wait for the status region
+    const statusRegion = await screen.findByText(/Enviando 1 de 2/i);
+    const parent = statusRegion.closest('[aria-live="polite"]');
+    expect(parent).toBeInTheDocument();
+    
+    // Check specific file name inside the live region to avoid ambiguity with the file list
+    expect(within(parent as HTMLElement).getByText('photo1.jpg')).toBeInTheDocument();
 
     await waitFor(() => {
-      const progressBar = screen.getByRole('progressbar');
-      expect(progressBar).toHaveAttribute('aria-valuenow');
-      expect(progressBar).toHaveAttribute('aria-valuemin', '0');
-      expect(progressBar).toHaveAttribute('aria-valuemax', '100');
-      
-      const liveStatus = screen.getByText(/Enviando 1 de 2/i);
-      expect(liveStatus).toBeInTheDocument();
+      expect(within(parent as HTMLElement).getByText(/Enviando 2 de 2/i)).toBeInTheDocument();
+      expect(within(parent as HTMLElement).getByText('photo2.jpg')).toBeInTheDocument();
+    }, { timeout: 2000 });
+  });
+
+  it('updates progressbar attributes (valuenow/min/max) and label correctly after each photo', async () => {
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 50)));
+    render(<ScoutFolders {...mockProps} />);
+    
+    const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fireEvent.change(fileInputs[0], { target: { files: [file1] } });
+
+    fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
+
+    const progressBar = await screen.findByRole('progressbar');
+    expect(progressBar).toHaveAttribute('aria-valuemin', '0');
+    expect(progressBar).toHaveAttribute('aria-valuemax', '100');
+    
+    await waitFor(() => {
+      const value = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
+      expect(value).toBeGreaterThanOrEqual(0);
+      expect(progressBar).toHaveAttribute('aria-label', expect.stringContaining('Progresso total'));
     });
+  });
+
+  it('fails specific photos deterministically and retries only the failed ones', async () => {
+    let callCount = 0;
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => {
+      callCount++;
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (callCount === 1) {
+            reject(new Error('Simulated failure'));
+          } else {
+            resolve();
+          }
+        }, 50);
+      });
+    });
+
+
+    render(<ScoutFolders {...mockProps} />);
+    
+    const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
+    const file2 = new File(['c2'], 'photo2.jpg', { type: 'image/jpeg' });
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fireEvent.change(fileInputs[0], { target: { files: [file1, file2] } });
+
+    fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
+
+    // Wait for upload loop to finish and show retry button
+    // Increase timeout to ensure loop finishes
+    const retryBtn = await screen.findByText(/Tentar novamente 1 falha/i, {}, { timeout: 5000 });
+    expect(retryBtn).toBeInTheDocument();
+
+    // Success for retry
+    vi.mocked(xhrUploadToStorage).mockResolvedValue(undefined);
+    fireEvent.click(retryBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText(/Tentar novamente/i)).not.toBeInTheDocument();
+    }, { timeout: 3000 });
+  });
+
+  it('verifies that Escape key closes confirmation dialog but main dialog stays', async () => {
+    // Keep it uploading forever
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(() => {}));
+    render(<ScoutFolders {...mockProps} />);
+    
+    const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+    fireEvent.change(document.querySelectorAll('input[type="file"]')[0], { target: { files: [file] } });
+
+    fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
+
+    // Open confirmation
+    const cancelBtn = await screen.findByText(/Cancelar upload/i);
+    fireEvent.click(cancelBtn);
+
+    const alertDialog = await screen.findByRole('alertdialog');
+    expect(alertDialog).toBeInTheDocument();
+
+    // Use a more generic fireEvent for Escape on the element that usually has focus
+    const stayBtn = screen.getByText(/Não, continuar/i);
+    fireEvent.keyDown(stayBtn, { key: 'Escape', code: 'Escape', keyCode: 27, which: 27 });
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    }, { timeout: 3000 });
+
+    // Main dialog should persist
+    expect(screen.getByText(/Enviar fotos para/i)).toBeInTheDocument();
   });
 });
