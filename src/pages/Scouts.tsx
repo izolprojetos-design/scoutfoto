@@ -174,7 +174,7 @@ const Scouts = () => {
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
-  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[] } | null>(null);
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
   const photosHubDragCounter = useRef(0);
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
