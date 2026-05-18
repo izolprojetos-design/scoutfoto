@@ -178,7 +178,7 @@ const Scouts = () => {
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
   const PHOTOS_HUB_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
-  const PHOTOS_HUB_MAX_SIZE = 25 * 1024 * 1024; // 25MB por imagem
+  const PHOTOS_HUB_MAX_SIZE = 10 * 1024 * 1024; // 10MB por imagem
 
   const uploadPhotosHubFiles = async (files: File[]) => {
     if (!user || !photosHubScoutId || files.length === 0) return;
@@ -197,8 +197,8 @@ const Scouts = () => {
 
     rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP ou HEIC).`));
     if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
-    oversized.slice(0, 3).forEach(f => toast.warning(`"${f.name}" ignorado: excede 25MB.`));
-    if (oversized.length > 3) toast.warning(`+${oversized.length - 3} arquivo(s) acima de 25MB.`);
+    oversized.slice(0, 3).forEach(f => toast.warning(`"${f.name}" ignorado: excede 10MB.`));
+    if (oversized.length > 3) toast.warning(`+${oversized.length - 3} arquivo(s) acima de 10MB.`);
 
     if (valid.length === 0) {
       if (rejectedType.length === 0 && oversized.length === 0) toast.error('Solte apenas imagens.');
