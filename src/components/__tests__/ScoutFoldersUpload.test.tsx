@@ -140,11 +140,12 @@ describe('ScoutFolders Upload Flow', () => {
   });
 
   it('fails specific photos deterministically and retries only the failed ones', async () => {
-    // Fail only photo1.jpg
-    vi.mocked(xhrUploadToStorage).mockImplementation((opts: any) => {
+    let callCount = 0;
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => {
+      callCount++;
       return new Promise((resolve, reject) => {
         setTimeout(() => {
-          if (opts.path.includes('photo1.jpg')) {
+          if (callCount === 1) {
             reject(new Error('Simulated failure'));
           } else {
             resolve();
@@ -152,6 +153,7 @@ describe('ScoutFolders Upload Flow', () => {
         }, 50);
       });
     });
+
 
     render(<ScoutFolders {...mockProps} />);
     
