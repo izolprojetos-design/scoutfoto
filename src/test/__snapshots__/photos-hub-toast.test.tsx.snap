@@ -1,0 +1,72 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Photos Hub Validation & UI > Toast UI Structure & Accessibility > should match the expected visual snapshot structure 1`] = `
+<DocumentFragment>
+  <div
+    aria-live="assertive"
+    class="flex flex-col gap-2 py-1"
+    role="alert"
+  >
+    <div
+      class="flex items-center gap-2 border-b border-destructive/20 pb-2 mb-1"
+    >
+      <p
+        class="font-bold text-sm"
+      >
+        Incompatibilidade de Arquivo
+      </p>
+    </div>
+    <div
+      aria-label="Informações do arquivo atual"
+      class="space-y-1 bg-destructive/5 p-2 rounded border border-destructive/10"
+    >
+      <p
+        class="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider text-destructive"
+      >
+        Arquivo Atual
+      </p>
+      <p
+        class="text-[11px] font-medium truncate leading-none"
+      >
+        old.png
+      </p>
+      <p
+        aria-label="Extensão png e tipo image/png"
+        class="text-[10px] font-mono opacity-80"
+      >
+        [.PNG] image/png
+      </p>
+      <p
+        class="text-[10px] font-mono opacity-60"
+      >
+        488.28 KB (500,000 bytes)
+      </p>
+    </div>
+    <div
+      aria-label="Informações do novo arquivo"
+      class="space-y-1 p-2 rounded border bg-amber-500/5 border-amber-500/10"
+    >
+      <p
+        class="text-[10px] uppercase font-bold tracking-wider text-amber-600"
+      >
+        Novo Arquivo
+      </p>
+      <p
+        class="text-[11px] font-medium truncate leading-none"
+      >
+        new.jpg
+      </p>
+      <p
+        class="text-[10px] font-mono text-amber-600 font-bold"
+      >
+        [.JPG] image/jpeg
+      </p>
+      <p
+        class="text-[10px] font-mono opacity-60"
+      >
+        585.94 KB (600,000 bytes)
+      </p>
+    </div>
+  </div>
+</DocumentFragment>
+`;
