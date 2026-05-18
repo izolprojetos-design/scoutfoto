@@ -3166,6 +3166,7 @@ const Scouts = () => {
 
       <CloudPhotoPickerDialog
         open={cloudPickerOpen}
+        initialSearch={cloudPickerInitialSearch}
         onClose={() => setCloudPickerOpen(false)}
         onSelect={(file) => {
           setCropperImage(URL.createObjectURL(file));
