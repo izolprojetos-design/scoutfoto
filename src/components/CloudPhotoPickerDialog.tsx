@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info, CheckCircle2 } from 'lucide-react';
+import { Search, ImageIcon, Cloud, Check, Filter, X, Copy, Info, CheckCircle2, ChevronDown, ClipboardCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -58,6 +58,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const firstResultRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0);
 
   // Debounce search effect
   useEffect(() => {
@@ -73,6 +74,17 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         setSearch(initialSearch);
       }
       loadImages();
+      
+      // Restore scroll position after a short delay to allow images to render
+      const savedScroll = localStorage.getItem('cloud_gallery_scroll_pos');
+      if (savedScroll) {
+        setTimeout(() => {
+          const viewport = scrollAreaRef.current?.querySelector('[data-radix-scroll-area-viewport]');
+          if (viewport) {
+            viewport.scrollTo({ top: parseInt(savedScroll, 10), behavior: 'smooth' });
+          }
+        }, 300);
+      }
     }
   }, [open, initialSearch]);
 
@@ -208,10 +220,16 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     navigator.clipboard.writeText(shortId);
     setCopiedId(id);
     toast({
-      description: `ID ${shortId} copiado para a área de transferência!`,
-      duration: 2000,
+      title: "ID Copiado!",
+      description: (
+        <div className="flex items-center gap-2">
+          <ClipboardCheck className="h-4 w-4 text-green-500" />
+          <span>O ID <strong>{shortId}</strong> foi copiado para a área de transferência.</span>
+        </div>
+      ),
+      duration: 3000,
     });
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 3000);
   };
 
   const handleSearchKeyDown = (e: React.KeyboardEvent) => {
@@ -228,7 +246,25 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   };
 
   const loadMore = () => {
-    setVisibleCount(prev => prev + 20);
+    setVisibleCount(prev => {
+      const newCount = prev + 20;
+      localStorage.setItem('cloud_gallery_visible_count', newCount.toString());
+      return newCount;
+    });
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const scrollPos = target.scrollTop;
+    scrollPositionRef.current = scrollPos;
+    localStorage.setItem('cloud_gallery_scroll_pos', scrollPos.toString());
+    
+    // Auto load more when reaching the bottom (incremental loading)
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
+      if (visibleCount < filtered.length) {
+        loadMore();
+      }
+    }
   };
 
   const availableSections = useMemo(() => {
@@ -286,7 +322,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     localStorage.removeItem('cloud_gallery_search');
     localStorage.removeItem('cloud_gallery_section');
     localStorage.removeItem('cloud_gallery_subgroup');
-    localStorage.removeItem('cloud_gallery_visible_count');
+    localStorage.removeItem('cloud_gallery_scroll_pos');
   };
 
   return (
@@ -364,7 +400,12 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           </div>
         </div>
 
-        <ScrollArea className="flex-1 min-h-[300px] border rounded-xl bg-muted/20 p-2" style={{ maxHeight: '50vh' }}>
+        <ScrollArea 
+          className="flex-1 min-h-[300px] border rounded-xl bg-muted/20 p-2" 
+          style={{ maxHeight: '50vh' }}
+          ref={scrollAreaRef}
+          onScrollCapture={handleScroll}
+        >
           {loading ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {[...Array(8)].map((_, i) => (
@@ -484,15 +525,20 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
               </div>
               
               {visibleCount < filtered.length && (
-                <div className="flex justify-center pb-4">
+                <div className="flex flex-col items-center gap-3 pb-6 pt-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={loadMore}
-                    className="text-xs font-semibold hover:bg-primary hover:text-primary-foreground transition-all px-8 rounded-full shadow-sm"
+                    className="text-xs font-bold hover:bg-primary hover:text-primary-foreground transition-all px-10 rounded-full shadow-md border-primary/20 bg-background/50 backdrop-blur-sm group"
                   >
-                    Carregar mais fotos ({filtered.length - visibleCount} restantes)
+                    <ChevronDown className="h-3.5 w-3.5 mr-2 group-hover:animate-bounce" />
+                    Carregar mais fotos
+                    <span className="ml-2 opacity-60 font-normal">({filtered.length - visibleCount} restantes)</span>
                   </Button>
+                  <p className="text-[10px] text-muted-foreground animate-pulse">
+                    Role para baixo para carregar automaticamente
+                  </p>
                 </div>
               )}
             </div>
