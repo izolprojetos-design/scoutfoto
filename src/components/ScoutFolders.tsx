@@ -32,6 +32,7 @@ interface PhotoRec {
 interface Props {
   scoutId: string;
   scoutName: string;
+  onPickStart?: () => void;
 }
 
 type FileStatus = 'pending' | 'uploading' | 'success' | 'error' | 'skipped';
