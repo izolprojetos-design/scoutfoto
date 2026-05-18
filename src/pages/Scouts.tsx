@@ -2608,6 +2608,11 @@ const Scouts = () => {
 
       {/* Photos Hub Dialog — quick access to gallery/folders by member */}
       <Dialog open={photosHubOpen} onOpenChange={(v) => {
+        if (!v && uploading) {
+          // If in ScoutFolders and uploading, this will be handled by the inner dialog confirmation
+          // but we block closing the outer one to avoid accidental data loss
+          return;
+        }
         if (!v && (cropperOpen || photoPickInProgressRef.current)) return;
         setPhotosHubOpen(v);
         if (!v) {
@@ -2619,7 +2624,7 @@ const Scouts = () => {
         }
       }}>
         <DialogContent
-          className="max-w-3xl max-h-[90vh] overflow-y-auto"
+          className="max-w-3xl max-h-[95vh] p-0 flex flex-col"
           onDragEnter={(e) => {
             if (!photosHubScoutId) return;
             if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return;
@@ -2648,7 +2653,8 @@ const Scouts = () => {
             if (files.length > 0) processPhotosHubFiles(files);
           }}
         >
-          <DialogHeader>
+          <div className="p-6 overflow-y-auto flex-1">
+            <DialogHeader className="mb-4">
             <DialogTitle>
               {photosHubScoutId
                 ? (scouts.find(s => s.id === photosHubScoutId)?.name.toUpperCase() ?? 'Fotos')
@@ -3123,7 +3129,8 @@ const Scouts = () => {
               )}
             </div>
           )}
-        </DialogContent>
+        </div>
+      </DialogContent>
       </Dialog>
 
       {/* Guardian Dialog */}

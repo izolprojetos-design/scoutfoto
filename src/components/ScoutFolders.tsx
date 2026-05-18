@@ -490,18 +490,21 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       await load();
     }
 
-    // Auto-close if all succeeded
-    setPendingFiles(prev => {
-      const allDone = prev.length > 0 && prev.every(p => p.status === 'success');
-      if (allDone) {
-        cleanupPreviews(prev);
-        setUploadOpen(false);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-        return [];
-      }
-      return prev;
-    });
+    // The logic to close when all are success is now in a separate useEffect
   };
+
+  // Auto-close if all finished successfully
+  useEffect(() => {
+    if (uploadOpen && !uploading && pendingFiles.length > 0 && pendingFiles.every(p => p.status === 'success')) {
+      const timer = setTimeout(() => {
+        setUploadOpen(false);
+        cleanupPreviews(pendingFiles);
+        setPendingFiles([]);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [uploadOpen, uploading, pendingFiles]);
 
   const handleUpload = () => runUpload();
 
@@ -1143,21 +1146,26 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       <Dialog
         open={uploadOpen}
         onOpenChange={(v) => {
-          if (uploading) return;
+          // Allow closing if not uploading, or if forced via the cancel confirm
+          if (!v && uploading) {
+            setConfirmCancelOpen(true);
+            return;
+          }
           setUploadOpen(v);
           if (!v) { cleanupPreviews(pendingFiles); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
-            <DialogDescription>
-              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. 
-              Todo upload gravará obrigatoriamente um nome no padrão <strong>NOME_IDUNICO_DATA</strong>.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0">
+          <div className="p-6 overflow-y-auto flex-1">
+            <DialogHeader className="mb-4">
+              <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
+              <DialogDescription>
+                Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. 
+                Todo upload gravará obrigatoriamente um nome no padrão <strong>NOME_IDUNICO_DATA</strong>.
+              </DialogDescription>
+            </DialogHeader>
 
-          <div className="space-y-4">
+            <div className="space-y-4">
             <div className="rounded-md border bg-muted/30 p-3 text-sm flex items-center justify-between gap-2 flex-wrap">
               <span><strong>{pendingFiles.length}</strong> arquivo{pendingFiles.length !== 1 ? 's' : ''} na fila.</span>
               {!uploading && pendingFiles.length > 0 && (
@@ -1340,9 +1348,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                 </div>
               );
             })()}
+            </div>
           </div>
-
-          <DialogFooter className="flex-wrap gap-2">
+          <DialogFooter className="p-6 bg-muted/20 border-t flex-wrap gap-2">
             {uploading ? (
               <Button variant="destructive" onClick={() => setConfirmCancelOpen(true)} className="gap-2">
                 <X className="h-4 w-4" /> Cancelar upload
@@ -1396,7 +1404,6 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
               </>
             )}
           </DialogFooter>
-
         </DialogContent>
       </Dialog>
 
