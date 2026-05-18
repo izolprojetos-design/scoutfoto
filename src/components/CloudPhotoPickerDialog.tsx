@@ -23,6 +23,7 @@ interface StorageImage {
   section?: string;
   subgroupId?: string;
   subgroupName?: string;
+  createdAt?: string;
 }
 
 const ALL = '__all__';
