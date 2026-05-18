@@ -2554,7 +2554,7 @@ const Scouts = () => {
             photosHubDragCounter.current = 0;
             setPhotosHubDragging(false);
             const files = Array.from(e.dataTransfer?.files || []);
-            if (files.length > 0) uploadPhotosHubFiles(files);
+            if (files.length > 0) processPhotosHubFiles(files);
           }}
         >
           <DialogHeader>
