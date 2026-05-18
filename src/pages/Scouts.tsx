@@ -174,7 +174,7 @@ const Scouts = () => {
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
-  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number } | null>(null);
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[] } | null>(null);
   const photosHubDragCounter = useRef(0);
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -195,17 +195,22 @@ const Scouts = () => {
     const allowed = files.filter(isAllowedImage);
     const oversized = allowed.filter(f => f.size > PHOTOS_HUB_MAX_SIZE);
     const valid = allowed.filter(f => f.size <= PHOTOS_HUB_MAX_SIZE);
+
+    const rejectedFilesDetails = [
+      ...rejectedType.map(f => ({ name: f.name, reason: 'Tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF)' })),
+      ...oversized.map(f => ({ name: f.name, reason: 'Arquivo muito grande (máximo 10MB)' }))
+    ];
     
     setPhotosHubSummary({
       accepted: valid.length,
-      rejected: rejectedType.length + oversized.length,
-      pending: valid.length
+      rejected: rejectedFilesDetails.length,
+      pending: valid.length,
+      rejectedFiles: rejectedFilesDetails
     });
 
-    rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF).`));
-    if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
-    oversized.slice(0, 3).forEach(f => toast.warning(`"${f.name}" ignorado: excede 10MB.`));
-    if (oversized.length > 3) toast.warning(`+${oversized.length - 3} arquivo(s) acima de 10MB.`);
+    if (rejectedFilesDetails.length > 0) {
+      toast.error(`${rejectedFilesDetails.length} arquivo(s) foram ignorados.`);
+    }
 
     if (valid.length === 0) {
       if (rejectedType.length === 0 && oversized.length === 0) toast.error('Solte apenas imagens.');
@@ -2624,27 +2629,45 @@ const Scouts = () => {
               )}
 
               {photosHubSummary && (
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm animate-in fade-in slide-in-from-top-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-muted-foreground">Aceitos:</span>
-                    <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-destructive" />
-                    <span className="text-muted-foreground">Rejeitados:</span>
-                    <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
-                  </div>
-                  {photosHubSummary.pending > 0 && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                      <span className="text-muted-foreground">Pendentes:</span>
-                      <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                      <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="text-muted-foreground">Aceitos:</span>
+                      <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
                     </div>
-                  )}
-                  {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
-                    <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
-                      <Check className="h-3.5 w-3.5" /> Concluído
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2 w-2 rounded-full bg-destructive" />
+                      <span className="text-muted-foreground">Rejeitados:</span>
+                      <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
+                    </div>
+                    {photosHubSummary.pending > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-muted-foreground">Pendentes:</span>
+                        <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                      </div>
+                    )}
+                    {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
+                      <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
+                        <Check className="h-3.5 w-3.5" /> Concluído
+                      </div>
+                    )}
+                  </div>
+
+                  {photosHubSummary.rejectedFiles && photosHubSummary.rejectedFiles.length > 0 && (
+                    <div className="rounded-md border border-destructive/20 bg-destructive/5 overflow-hidden">
+                      <div className="bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive flex items-center gap-2">
+                        <X className="h-3 w-3" /> Arquivos Rejeitados
+                      </div>
+                      <div className="max-h-32 overflow-y-auto divide-y divide-destructive/10">
+                        {photosHubSummary.rejectedFiles.map((file, idx) => (
+                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4">
+                            <span className="font-medium truncate max-w-[60%] text-muted-foreground">{file.name}</span>
+                            <span className="text-destructive text-right shrink-0">{file.reason}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
