@@ -1288,6 +1288,7 @@ const Scouts = () => {
     phoneVal: string, setPhoneVal: (v: string) => void,
     sectionVal: string, setSectionVal: (v: string) => void,
     transitionDate: string, setTransitionDate: (v: string) => void,
+    scoutId?: string,
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
