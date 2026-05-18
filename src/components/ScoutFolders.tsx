@@ -1126,7 +1126,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           <DialogHeader>
             <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
             <DialogDescription>
-              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. Arquivos serão arquivados em <strong>Ano › Data</strong>.
+              Apenas <strong>JPG, PNG ou HEIC</strong> até <strong>{MAX_SIZE_MB}MB</strong>. 
+              Todo upload gravará obrigatoriamente um nome no padrão <strong>NOME_IDUNICO_DATA</strong>.
             </DialogDescription>
           </DialogHeader>
 
