@@ -512,7 +512,10 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                cameraInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
               title="Tirar foto com a câmera"
@@ -521,7 +524,10 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
               Câmera
             </Button>
             <Button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                fileInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2 flex-1 sm:flex-none"
             >
