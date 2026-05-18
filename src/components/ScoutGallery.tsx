@@ -319,7 +319,15 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
         const now = new Date();
         const year = now.getFullYear();
         const dateStr = now.toISOString().split('T')[0];
-        const path = `gallery/${scoutId}/${year}/${dateStr}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const timeStr = format(now, 'HHmm');
+        const safeName = scoutName
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_\-]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '')
+          .substring(0, 30);
+
+        const path = `gallery/${scoutId}/${year}/${dateStr}/${safeName}_${dateStr}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
