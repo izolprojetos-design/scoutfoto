@@ -109,10 +109,10 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByTestId('fotos-button-text');
-    fireEvent.click(photosBtn);
+    const fotosBtn = await screen.findByText((content) => content.includes('Fotos'));
+    fireEvent.click(fotosBtn);
     
-    const scoutItem = await screen.findByTestId('scout-name-item');
+    const scoutItem = await screen.findByText((content) => content.includes('MARIA SILVA'));
     fireEvent.click(scoutItem);
 
     const file = new File(['test'], 'photo.jpg', { type: 'image/jpeg' });
@@ -172,9 +172,9 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    const photosBtn = await screen.findByTestId('fotos-button-text');
+    const photosBtn = await screen.findByText((content) => content.includes('Fotos'));
     fireEvent.click(photosBtn);
-    const scoutItem = await screen.findByTestId('scout-name-item');
+    const scoutItem = await screen.findByText((content) => content.includes('MARIA SILVA'));
     fireEvent.click(scoutItem);
 
     const f1 = new File(['1'], 'f1.jpg', { type: 'image/jpeg' });
