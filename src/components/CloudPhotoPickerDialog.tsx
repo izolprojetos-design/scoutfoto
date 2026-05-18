@@ -250,7 +250,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   }, [images, sectionFilter]);
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim();
+    const q = debouncedSearch.toLowerCase().trim();
     return images
       .filter(img => {
         if (sectionFilter !== ALL && img.section !== sectionFilter) return false;
@@ -269,10 +269,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
         return dateB - dateA;
       });
-  }, [images, search, sectionFilter, subgroupFilter]);
+  }, [images, debouncedSearch, sectionFilter, subgroupFilter]);
 
   const paginated = useMemo(() => {
-    return filtered.slice(0, visibleCount);
+    return filtered.slice(0, Math.max(visibleCount, 20));
   }, [filtered, visibleCount]);
 
   const activeFilterCount = (sectionFilter !== ALL ? 1 : 0) + (subgroupFilter !== ALL ? 1 : 0);
