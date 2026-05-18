@@ -2807,7 +2807,9 @@ const Scouts = () => {
                                       const sameExt = oldExt && newExt && oldExt === newExt;
 
                                       if (!sameMime && !sameExt) {
-                                        toast.error(`Arquivo incompatível: o original era ${oldMime || oldExt} e o novo é ${newMime || newExt}`);
+                                        const oldDisplay = oldMime ? `${oldMime} (.${oldExt})` : `.${oldExt}`;
+                                        const newDisplay = newMime ? `${newMime} (.${newExt})` : `.${newExt}`;
+                                        toast.error(`Arquivo incompatível! Original: ${oldDisplay} | Novo: ${newDisplay}`);
                                         return;
                                       }
                                       
