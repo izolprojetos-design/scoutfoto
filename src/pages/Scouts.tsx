@@ -2807,11 +2807,19 @@ const Scouts = () => {
                                       const sameExt = oldExt && newExt && oldExt === newExt;
 
                                       if (!sameMime && !sameExt) {
-                                        const oldDisplay = `${file.name} (${oldMime || `.${oldExt}`})`;
-                                        const newDisplay = `${newFile.name} (${newMime || `.${newExt}`})`;
-                                        toast.error(`Incompatível! Original: ${oldDisplay} | Novo: ${newDisplay}`, {
-                                          duration: 5000
-                                        });
+                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || 'MIME desconhecido'}`;
+                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || 'MIME desconhecido'}`;
+                                        
+                                        toast.error(
+                                          <div className="flex flex-col gap-1">
+                                            <p className="font-bold border-b border-destructive/20 pb-1 mb-1">Substituição Inválida</p>
+                                            <p className="text-[11px]"><span className="opacity-70">DE:</span> <span className="font-mono">{file.name}</span></p>
+                                            <p className="text-[10px] ml-4 opacity-80">{oldInfo}</p>
+                                            <p className="text-[11px] mt-1"><span className="opacity-70">PARA:</span> <span className="font-mono">{newFile.name}</span></p>
+                                            <p className="text-[10px] ml-4 opacity-80">{newInfo}</p>
+                                          </div>,
+                                          { duration: 6000 }
+                                        );
                                         return;
                                       }
                                       
