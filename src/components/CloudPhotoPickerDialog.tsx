@@ -103,7 +103,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
       const items: StorageImage[] = [];
       const seenScouts = new Set<string>();
-      const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string }[] = [];
+      const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string; createdAt?: string }[] = [];
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
