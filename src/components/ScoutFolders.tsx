@@ -1348,6 +1348,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                 </div>
               );
             })()}
+            </div>
           </div>
           <DialogFooter className="p-6 bg-muted/20 border-t flex-wrap gap-2">
             {uploading ? (
