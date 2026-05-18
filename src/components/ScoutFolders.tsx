@@ -32,6 +32,7 @@ interface PhotoRec {
 interface Props {
   scoutId: string;
   scoutName: string;
+  onPickStart?: () => void;
 }
 
 type FileStatus = 'pending' | 'uploading' | 'success' | 'error' | 'skipped';
@@ -125,7 +126,7 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export default function ScoutFolders({ scoutId, scoutName }: Props) {
+export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
 
@@ -404,8 +405,17 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
           continue;
         }
         const compressed = await compressImage(item.file);
-        const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        let mime = compressed.type || item.file.type || 'image/jpeg';
+        let ext = (mime.split('/')[1] || 'jpg').toLowerCase().replace('jpeg', 'jpg');
+        
+        // Force JPG for HEIC/HEIF or unknown types to ensure browser compatibility
+        if (ext === 'heic' || ext === 'heif' || !['jpg', 'png', 'webp'].includes(ext)) {
+          ext = 'jpg';
+          mime = 'image/jpeg';
+        }
+        
+        const yearSegment = date.split('-')[0];
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
@@ -750,7 +760,10 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                cameraInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
               title="Tirar foto com a câmera"
@@ -760,7 +773,10 @@ export default function ScoutFolders({ scoutId, scoutName }: Props) {
             </Button>
             <Button
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                fileInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
             >

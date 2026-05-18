@@ -2533,10 +2533,10 @@ const Scouts = () => {
                   <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                 </TabsList>
                 <TabsContent value="galeria" className="mt-4">
-                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} />
+                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
-                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} />
+                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
                 </TabsContent>
               </Tabs>
             </div>
@@ -2546,6 +2546,7 @@ const Scouts = () => {
 
       {/* Photos Hub Dialog — quick access to gallery/folders by member */}
       <Dialog open={photosHubOpen} onOpenChange={(v) => {
+        if (!v && (cropperOpen || photoPickInProgressRef.current)) return;
         setPhotosHubOpen(v);
         if (!v) {
           setPhotosHubScoutId(null);
@@ -2925,6 +2926,7 @@ const Scouts = () => {
                     key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                    onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
@@ -2932,6 +2934,7 @@ const Scouts = () => {
                     key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
+                    onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }}
                   />
                 </TabsContent>
               </Tabs>
@@ -3004,7 +3007,7 @@ const Scouts = () => {
       />
 
       {/* Scout detail viewer dialog */}
-      <Dialog open={!!viewingScout} onOpenChange={() => setViewingScout(null)}>
+      <Dialog open={!!viewingScout} onOpenChange={(v) => { if (!v && (cropperOpen || photoPickInProgressRef.current)) return; setViewingScout(null); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center justify-between gap-2">
@@ -3165,10 +3168,10 @@ const Scouts = () => {
                         <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                       </TabsList>
                       <TabsContent value="galeria" className="mt-4">
-                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
                       </TabsContent>
                       <TabsContent value="pastas" className="mt-4">
-                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} />
+                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
                       </TabsContent>
                     </Tabs>
                   </TabsContent>

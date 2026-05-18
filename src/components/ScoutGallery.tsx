@@ -37,6 +37,7 @@ interface ScoutPhotoRecord {
 interface Props {
   scoutId: string;
   scoutName: string;
+  onPickStart?: () => void;
 }
 
 const MAX_SIZE_MB = 10;
@@ -51,7 +52,7 @@ function groupLabel(d: Date) {
   return format(d, 'MMMM yyyy', { locale: ptBR });
 }
 
-export default function ScoutGallery({ scoutId, scoutName }: Props) {
+export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
 
@@ -313,7 +314,11 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           ext = 'jpg';
           mime = 'image/jpeg';
         }
-        const path = `gallery/${scoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        
+        const now = new Date();
+        const year = now.getFullYear();
+        const dateStr = now.toISOString().split('T')[0];
+        const path = `gallery/${scoutId}/${year}/${dateStr}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
@@ -507,7 +512,10 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                cameraInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
               title="Tirar foto com a câmera"
@@ -516,7 +524,10 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
               Câmera
             </Button>
             <Button
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                fileInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2 flex-1 sm:flex-none"
             >
