@@ -2581,6 +2581,7 @@ const Scouts = () => {
             editPhone, setEditPhone,
             editSection, setEditSection,
             editTransitionDate, setEditTransitionDate,
+            editingScout?.id,
           )}
 
           {editingScout && (
