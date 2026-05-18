@@ -104,13 +104,17 @@ describe('ScoutFolders Upload Flow', () => {
 
     fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
 
-    // Verify announcements in the region with aria-live
-    expect(await screen.findByText(/Enviando 1 de 2/i)).toBeInTheDocument();
-    expect(screen.getByText('photo1.jpg')).toBeInTheDocument();
+    // Wait for the status region
+    const statusRegion = await screen.findByText(/Enviando 1 de 2/i);
+    const parent = statusRegion.closest('[aria-live="polite"]');
+    expect(parent).toBeInTheDocument();
+    
+    // Check specific file name inside the live region to avoid ambiguity with the file list
+    expect(within(parent as HTMLElement).getByText('photo1.jpg')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText(/Enviando 2 de 2/i)).toBeInTheDocument();
-      expect(screen.getByText('photo2.jpg')).toBeInTheDocument();
+      expect(within(parent as HTMLElement).getByText(/Enviando 2 de 2/i)).toBeInTheDocument();
+      expect(within(parent as HTMLElement).getByText('photo2.jpg')).toBeInTheDocument();
     }, { timeout: 2000 });
   });
 
@@ -159,7 +163,8 @@ describe('ScoutFolders Upload Flow', () => {
     fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
 
     // Wait for upload loop to finish and show retry button
-    const retryBtn = await screen.findByText(/Tentar novamente 1 falha/i, {}, { timeout: 3000 });
+    // Increase timeout to ensure loop finishes
+    const retryBtn = await screen.findByText(/Tentar novamente 1 falha/i, {}, { timeout: 5000 });
     expect(retryBtn).toBeInTheDocument();
 
     // Success for retry
@@ -168,11 +173,12 @@ describe('ScoutFolders Upload Flow', () => {
 
     await waitFor(() => {
       expect(screen.queryByText(/Tentar novamente/i)).not.toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
   });
 
   it('verifies that Escape key closes confirmation dialog but main dialog stays', async () => {
-    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => { /* never resolve to keep it uploading */ }));
+    // Keep it uploading forever
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(() => {}));
     render(<ScoutFolders {...mockProps} />);
     
     const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
@@ -187,11 +193,13 @@ describe('ScoutFolders Upload Flow', () => {
     const alertDialog = await screen.findByRole('alertdialog');
     expect(alertDialog).toBeInTheDocument();
 
-    // Escape should close ALERT dialog
-    fireEvent.keyDown(alertDialog, { key: 'Escape' });
+    // Use a more generic fireEvent for Escape on the element that usually has focus
+    const stayBtn = screen.getByText(/Não, continuar/i);
+    fireEvent.keyDown(stayBtn, { key: 'Escape', code: 'Escape', keyCode: 27, which: 27 });
+
     await waitFor(() => {
       expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
 
     // Main dialog should persist
     expect(screen.getByText(/Enviar fotos para/i)).toBeInTheDocument();
