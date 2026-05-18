@@ -1834,6 +1834,7 @@ const Scouts = () => {
             <Button
               variant="outline"
               className="gap-2"
+              aria-label="Fotos"
               onClick={() => {
                 setPhotosHubScoutId(null);
                 setPhotosHubSearch('');
