@@ -188,10 +188,28 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     e.stopPropagation();
     const shortId = id.slice(0, 8);
     navigator.clipboard.writeText(shortId);
+    setCopiedId(id);
     toast({
-      description: `ID ${shortId} copiado!`,
+      description: `ID ${shortId} copiado para a área de transferência!`,
       duration: 2000,
     });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Scrolling to first result after a small delay to ensure rendering
+      setTimeout(() => {
+        if (firstResultRef.current) {
+          firstResultRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+  };
+
+  const loadMore = () => {
+    setVisibleCount(prev => prev + 20);
   };
 
   const availableSections = useMemo(() => {
