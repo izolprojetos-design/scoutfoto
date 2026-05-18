@@ -2478,9 +2478,43 @@ const Scouts = () => {
       {/* Photos Hub Dialog — quick access to gallery/folders by member */}
       <Dialog open={photosHubOpen} onOpenChange={(v) => {
         setPhotosHubOpen(v);
-        if (!v) { setPhotosHubScoutId(null); setPhotosHubSearch(''); }
+        if (!v) {
+          setPhotosHubScoutId(null);
+          setPhotosHubSearch('');
+          photosHubDragCounter.current = 0;
+          setPhotosHubDragging(false);
+        }
       }}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent
+          className="max-w-3xl max-h-[90vh] overflow-y-auto"
+          onDragEnter={(e) => {
+            if (!photosHubScoutId) return;
+            if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return;
+            e.preventDefault();
+            photosHubDragCounter.current += 1;
+            setPhotosHubDragging(true);
+          }}
+          onDragOver={(e) => {
+            if (!photosHubScoutId) return;
+            if (!Array.from(e.dataTransfer?.types || []).includes('Files')) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+          }}
+          onDragLeave={(e) => {
+            if (!photosHubScoutId) return;
+            e.preventDefault();
+            photosHubDragCounter.current = Math.max(0, photosHubDragCounter.current - 1);
+            if (photosHubDragCounter.current === 0) setPhotosHubDragging(false);
+          }}
+          onDrop={(e) => {
+            if (!photosHubScoutId) return;
+            e.preventDefault();
+            photosHubDragCounter.current = 0;
+            setPhotosHubDragging(false);
+            const files = Array.from(e.dataTransfer?.files || []);
+            if (files.length > 0) uploadPhotosHubFiles(files);
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {photosHubScoutId
@@ -2540,16 +2574,28 @@ const Scouts = () => {
               </div>
             </div>
           ) : (
-            <div className="space-y-3">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="gap-2"
-                onClick={() => setPhotosHubScoutId(null)}
-              >
-                <X className="h-4 w-4" /> Trocar integrante
-              </Button>
+            <div className="relative space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => setPhotosHubScoutId(null)}
+                >
+                  <X className="h-4 w-4" /> Trocar integrante
+                </Button>
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  Dica: arraste imagens para esta janela para enviá-las.
+                </p>
+              </div>
+
+              {photosHubUploading && (
+                <div className="rounded-md border bg-muted/40 p-3 text-sm">
+                  Enviando {photosHubProgress.current} de {photosHubProgress.total}...
+                </div>
+              )}
+
               <Tabs defaultValue="galeria" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="galeria">Galeria</TabsTrigger>
@@ -2557,17 +2603,30 @@ const Scouts = () => {
                 </TabsList>
                 <TabsContent value="galeria" className="mt-4">
                   <ScoutGallery
+                    key={`gal-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
                   />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
                   <ScoutFolders
+                    key={`fld-${photosHubScoutId}-${photosHubReloadKey}`}
                     scoutId={photosHubScoutId}
                     scoutName={scouts.find(s => s.id === photosHubScoutId)?.name ?? ''}
                   />
                 </TabsContent>
               </Tabs>
+
+              {photosHubDragging && (
+                <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-primary bg-primary/10 backdrop-blur-sm">
+                  <div className="text-center">
+                    <ImageIcon className="mx-auto h-8 w-8 text-primary" />
+                    <p className="mt-2 font-semibold text-primary">
+                      Solte para enviar para {scouts.find(s => s.id === photosHubScoutId)?.name.toUpperCase()}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
