@@ -190,7 +190,7 @@ const Scouts = () => {
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0, currentFileName: '' });
-  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; error?: string; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; error?: string; failedFiles?: { name: string; file: File; error: string }[]; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[]; rawFiles?: File[] } | null>(null);
   const [photosHubSort, setPhotosHubSort] = useState<{ field: 'name' | 'type' | 'size'; direction: 'asc' | 'desc' }>({ field: 'name', direction: 'asc' });
   const photosHubDragCounter = useRef(0);
 
@@ -252,27 +252,31 @@ const Scouts = () => {
 
   const uploadPhotosHubFiles = async (files: File[]) => {
     if (!user || !photosHubScoutId || files.length === 0) return;
-    const valid = processPhotosHubFiles(files);
-    if (valid.length === 0) return;
+    
+    // Se não houver resumo ou for uma tentativa nova, inicializa
+    if (!photosHubSummary || !photosHubSummary.rawFiles) {
+      const valid = processPhotosHubFiles(files);
+      if (valid.length === 0) return;
+    }
 
     const { compressImage } = await import('@/lib/imageCompression');
     setPhotosHubUploading(true);
-    setPhotosHubProgress({ current: 0, total: valid.length, currentFileName: '' });
-    setPhotosHubSummary(prev => prev ? { ...prev, error: undefined } : null);
+    setPhotosHubProgress({ current: 0, total: files.length, currentFileName: '' });
+    setPhotosHubSummary(prev => prev ? { ...prev, error: undefined, failedFiles: prev.failedFiles?.filter(f => !files.includes(f.file)) } : null);
     
     let success = 0;
     const abortController = new AbortController();
     (window as any)._photosHubAbortController = abortController;
 
-    for (let i = 0; i < valid.length; i++) {
+    for (let i = 0; i < files.length; i++) {
       if (abortController.signal.aborted) {
         toast.info('Upload cancelado pelo usuário');
         break;
       }
 
-      const file = valid[i];
-      setPhotosHubProgress({ current: i + 1, total: valid.length, currentFileName: file.name });
-      setPhotosHubSummary(prev => prev ? { ...prev, pending: valid.length - i } : null);
+      const file = files[i];
+      setPhotosHubProgress({ current: i + 1, total: files.length, currentFileName: file.name });
+      setPhotosHubSummary(prev => prev ? { ...prev, pending: files.length - i } : null);
       
       try {
         let compressed: File | Blob = file;
@@ -320,9 +324,15 @@ const Scouts = () => {
       } catch (err: any) {
         console.error('photos-hub upload err', err);
         const errorMsg = err?.message || 'Erro de conexão ou armazenamento';
-        setPhotosHubSummary(prev => prev ? { ...prev, error: `Falha ao enviar "${file.name}": ${errorMsg}` } : null);
+        setPhotosHubSummary(prev => {
+          if (!prev) return null;
+          const failedFiles = prev.failedFiles || [];
+          if (!failedFiles.find(f => f.file === file)) {
+            failedFiles.push({ name: file.name, file, error: errorMsg });
+          }
+          return { ...prev, error: `Falha ao enviar "${file.name}": ${errorMsg}`, failedFiles };
+        });
         toast.error(`Falha ao enviar "${file.name}": ${errorMsg}`);
-        // Se for erro de armazenamento, pode ser interessante parar o loop ou apenas reportar
       }
     }
     
@@ -2710,26 +2720,58 @@ const Scouts = () => {
               </div>
 
               {photosHubUploading && (
-                <div className="rounded-md border bg-primary/5 border-primary/20 p-4 text-sm space-y-3">
+                <div 
+                  className="rounded-md border bg-primary/5 border-primary/20 p-4 text-sm space-y-3"
+                  role="status"
+                  aria-live="polite"
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                      <span className="font-medium">Enviando {photosHubProgress.current} de {photosHubProgress.total}</span>
+                      <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" aria-hidden="true" />
+                      <span className="font-medium">
+                        Enviando foto <span aria-live="assertive">{photosHubProgress.current}</span> de {photosHubProgress.total}
+                      </span>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="h-7 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        if ((window as any)._photosHubAbortController) {
-                          (window as any)._photosHubAbortController.abort();
-                        }
-                      }}
-                    >
-                      Cancelar
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 text-xs border-destructive/30 text-destructive hover:bg-destructive/10"
+                        >
+                          Cancelar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Cancelar upload?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Isso irá parar o envio das fotos restantes. Fotos já enviadas não serão removidas.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Continuar enviando</AlertDialogCancel>
+                          <AlertDialogAction 
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => {
+                              if ((window as any)._photosHubAbortController) {
+                                (window as any)._photosHubAbortController.abort();
+                              }
+                            }}
+                          >
+                            Sim, cancelar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
-                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                  <div 
+                    className="w-full bg-muted rounded-full h-2 overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round((photosHubProgress.current / photosHubProgress.total) * 100)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                  >
                     <motion.div 
                       className="bg-primary h-full"
                       initial={{ width: 0 }}
@@ -2745,21 +2787,49 @@ const Scouts = () => {
               )}
 
               {photosHubSummary?.error && (
-                <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive flex items-start gap-2">
-                  <X className="h-4 w-4 mt-0.5 shrink-0" />
-                  <div className="flex-1">
-                    <p className="font-semibold">Erro no envio</p>
-                    <p className="text-xs opacity-90">{photosHubSummary.error}</p>
+                <div 
+                  className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive space-y-2"
+                  role="alert"
+                >
+                  <div className="flex items-start gap-2">
+                    <X className="h-4 w-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    <div className="flex-1">
+                      <p className="font-semibold">Erro no envio</p>
+                      <p className="text-xs opacity-90">{photosHubSummary.error}</p>
+                    </div>
+                  </div>
+                  
+                  {photosHubSummary.failedFiles && photosHubSummary.failedFiles.length > 0 && (
+                    <div className="mt-2 space-y-1 max-h-24 overflow-y-auto pr-1">
+                      {photosHubSummary.failedFiles.map((f, idx) => (
+                        <div key={idx} className="flex items-center justify-between gap-2 text-[10px] bg-destructive/10 p-1.5 rounded">
+                          <span className="truncate flex-1" title={f.name}>{f.name}</span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-5 px-2 text-[9px] hover:bg-destructive/20 text-destructive"
+                            onClick={() => uploadPhotosHubFiles([f.file])}
+                          >
+                            Tentar foto
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-1">
                     <Button 
                       variant="link" 
-                      className="h-auto p-0 text-xs font-semibold mt-1 text-destructive hover:no-underline"
+                      className="h-auto p-0 text-xs font-semibold text-destructive hover:no-underline"
                       onClick={() => {
-                        if (photosHubSummary.rawFiles) {
+                        if (photosHubSummary.failedFiles) {
+                          uploadPhotosHubFiles(photosHubSummary.failedFiles.map(f => f.file));
+                        } else if (photosHubSummary.rawFiles) {
                           uploadPhotosHubFiles(photosHubSummary.rawFiles);
                         }
                       }}
                     >
-                      Tentar novamente
+                      Tentar todas as falhas
                     </Button>
                   </div>
                 </div>
