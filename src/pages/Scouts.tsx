@@ -2544,10 +2544,10 @@ const Scouts = () => {
                   <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
                 </TabsList>
                 <TabsContent value="galeria" className="mt-4">
-                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
                 </TabsContent>
                 <TabsContent value="pastas" className="mt-4">
-                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={() => { photoPickInProgressRef.current = true; setTimeout(() => { photoPickInProgressRef.current = false; }, 3000); }} />
+                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
                 </TabsContent>
               </Tabs>
             </div>
