@@ -253,6 +253,29 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
     [photos, showFavoritesOnly]
   );
 
+  // Realtime subscription for gallery
+  useEffect(() => {
+    const channel = supabase
+      .channel(`scout-gallery-${scoutId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scout_photos',
+          filter: `scout_id=eq.${scoutId}`,
+        },
+        () => {
+          load();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [scoutId, load]);
+
   const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
   const grouped = useMemo(() => {
