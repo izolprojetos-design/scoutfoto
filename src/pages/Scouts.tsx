@@ -2781,9 +2781,20 @@ const Scouts = () => {
                       </div>
                       <div className="max-h-32 overflow-y-auto divide-y divide-destructive/10">
                         {photosHubSummary.rejectedFiles.map((file, idx) => (
-                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4">
-                            <span className="font-medium truncate max-w-[60%] text-muted-foreground">{file.name}</span>
-                            <span className="text-destructive text-right shrink-0">{file.reason}</span>
+                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4 group">
+                            <div className="flex flex-col min-w-0 flex-1">
+                              <span className="font-medium truncate text-muted-foreground">{file.name}</span>
+                              <span className="text-destructive text-[10px] sm:text-xs">{file.reason}</span>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-0 group-hover:opacity-100 hover:text-destructive transition-opacity shrink-0"
+                              onClick={() => removeFileFromQueue(file.name)}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
                           </div>
                         ))}
                       </div>
