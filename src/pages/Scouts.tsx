@@ -91,6 +91,21 @@ const branchColorMap: Record<string, string> = {
   blue: 'bg-blue-100 text-blue-800 border-blue-200',
 };
 
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 Bytes';
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB (${bytes.toLocaleString()} bytes)`;
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(2)} KB (${bytes.toLocaleString()} bytes)`;
+  return `${bytes.toLocaleString()} bytes`;
+};
+
+const getFileDetails = (file: File | { name: string; type?: string; size?: number }) => {
+  const name = file.name;
+  const ext = (name.split('.').pop() || '').toLowerCase();
+  const mime = file.type || 'MIME desconhecido';
+  const size = 'size' in file ? formatFileSize(file.size || 0) : 'Tamanho desconhecido';
+  return { name, ext, mime, size };
+};
+
 const Scouts = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { user, profile, isAdmin, isVoluntario, canUpload } = useAuth();
