@@ -176,11 +176,32 @@ const Scouts = () => {
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
   const photosHubDragCounter = useRef(0);
 
+  const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+  const PHOTOS_HUB_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
+  const PHOTOS_HUB_MAX_SIZE = 25 * 1024 * 1024; // 25MB por imagem
+
   const uploadPhotosHubFiles = async (files: File[]) => {
     if (!user || !photosHubScoutId || files.length === 0) return;
-    const valid = files.filter(f => f.type.startsWith('image/'));
+
+    const isAllowedImage = (f: File) => {
+      const type = (f.type || '').toLowerCase();
+      if (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) return true;
+      const ext = (f.name.split('.').pop() || '').toLowerCase();
+      return !type.startsWith('video/') && PHOTOS_HUB_ALLOWED_EXT.includes(ext);
+    };
+
+    const rejectedType = files.filter(f => !isAllowedImage(f));
+    const allowed = files.filter(isAllowedImage);
+    const oversized = allowed.filter(f => f.size > PHOTOS_HUB_MAX_SIZE);
+    const valid = allowed.filter(f => f.size <= PHOTOS_HUB_MAX_SIZE);
+
+    rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP ou HEIC).`));
+    if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
+    oversized.slice(0, 3).forEach(f => toast.warning(`"${f.name}" ignorado: excede 25MB.`));
+    if (oversized.length > 3) toast.warning(`+${oversized.length - 3} arquivo(s) acima de 25MB.`);
+
     if (valid.length === 0) {
-      toast.error('Solte apenas imagens.');
+      if (rejectedType.length === 0 && oversized.length === 0) toast.error('Solte apenas imagens.');
       return;
     }
     const { compressImage } = await import('@/lib/imageCompression');
@@ -191,10 +212,6 @@ const Scouts = () => {
       const file = valid[i];
       setPhotosHubProgress({ current: i + 1, total: valid.length });
       try {
-        if (file.size > 40 * 1024 * 1024) {
-          toast.warning(`"${file.name}" muito grande, ignorado.`);
-          continue;
-        }
         let compressed: File | Blob = file;
         try { compressed = await compressImage(file); } catch { /* keep original */ }
         let mime = (compressed as File).type || file.type || 'image/jpeg';
