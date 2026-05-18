@@ -2629,27 +2629,45 @@ const Scouts = () => {
               )}
 
               {photosHubSummary && (
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm animate-in fade-in slide-in-from-top-1">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                    <span className="text-muted-foreground">Aceitos:</span>
-                    <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-destructive" />
-                    <span className="text-muted-foreground">Rejeitados:</span>
-                    <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
-                  </div>
-                  {photosHubSummary.pending > 0 && (
+                <div className="space-y-2 animate-in fade-in slide-in-from-top-1">
+                  <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm">
                     <div className="flex items-center gap-1.5">
-                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
-                      <span className="text-muted-foreground">Pendentes:</span>
-                      <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                      <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                      <span className="text-muted-foreground">Aceitos:</span>
+                      <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
                     </div>
-                  )}
-                  {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
-                    <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
-                      <Check className="h-3.5 w-3.5" /> Concluído
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2 w-2 rounded-full bg-destructive" />
+                      <span className="text-muted-foreground">Rejeitados:</span>
+                      <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
+                    </div>
+                    {photosHubSummary.pending > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                        <span className="text-muted-foreground">Pendentes:</span>
+                        <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                      </div>
+                    )}
+                    {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
+                      <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
+                        <Check className="h-3.5 w-3.5" /> Concluído
+                      </div>
+                    )}
+                  </div>
+
+                  {photosHubSummary.rejectedFiles && photosHubSummary.rejectedFiles.length > 0 && (
+                    <div className="rounded-md border border-destructive/20 bg-destructive/5 overflow-hidden">
+                      <div className="bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive flex items-center gap-2">
+                        <X className="h-3 w-3" /> Arquivos Rejeitados
+                      </div>
+                      <div className="max-h-32 overflow-y-auto divide-y divide-destructive/10">
+                        {photosHubSummary.rejectedFiles.map((file, idx) => (
+                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-start gap-4">
+                            <span className="font-medium truncate max-w-[60%] text-muted-foreground">{file.name}</span>
+                            <span className="text-destructive text-right shrink-0">{file.reason}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
