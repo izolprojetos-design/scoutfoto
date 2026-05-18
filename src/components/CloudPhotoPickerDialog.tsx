@@ -147,11 +147,18 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           section: item.scout?.section ?? undefined,
           subgroupId: item.scout?.subgroupId ?? undefined,
           subgroupName: item.scout?.subgroupName,
+          createdAt: item.createdAt,
         });
       }
       for (const item of imagePathsToSign) {
         const url = imageUrlMap[item.path];
-        if (url) items.push({ name: item.name, url });
+        if (url) {
+          items.push({
+            name: item.name,
+            url,
+            createdAt: item.createdAt,
+          });
+        }
       }
 
       setImages(items);
