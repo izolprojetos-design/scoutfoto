@@ -122,7 +122,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         limit: 100,
         sortBy: { column: 'created_at', order: 'desc' },
       });
-      const imagePathsToSign: { path: string; name: string }[] = [];
+      const imagePathsToSign: { path: string; name: string; createdAt?: string }[] = [];
       if (privateImages) {
         for (const file of privateImages) {
           if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
