@@ -112,7 +112,9 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
 
     // 1. Simular abertura do Fotos Hub
     const photosBtn = await screen.findByText((content, element) => {
-      return element?.tagName.toLowerCase() === 'button' && content.includes('Fotos');
+      const hasText = content.includes('Fotos');
+      const isButton = element?.tagName.toLowerCase() === 'button';
+      return isButton && hasText;
     });
     fireEvent.click(photosBtn);
 
@@ -179,7 +181,9 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     const photosBtn = await screen.findByText((content, element) => {
-      return element?.tagName.toLowerCase() === 'button' && content.includes('Fotos');
+      const hasText = content.includes('Fotos');
+      const isButton = element?.tagName.toLowerCase() === 'button';
+      return isButton && hasText;
     });
     fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
@@ -212,7 +216,9 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     const photosBtn = await screen.findByText((content, element) => {
-      return element?.tagName.toLowerCase() === 'button' && content.includes('Fotos');
+      const hasText = content.includes('Fotos');
+      const isButton = element?.tagName.toLowerCase() === 'button';
+      return isButton && hasText;
     });
     fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
