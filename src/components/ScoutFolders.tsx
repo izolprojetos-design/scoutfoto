@@ -168,6 +168,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
   // Export progress
   const [exporting, setExporting] = useState<null | 'zip' | 'pdf'>(null);
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -1278,12 +1280,27 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
               const totalBytes = pendingFiles.reduce((s, p) => s + (p.total || p.file.size), 0);
               const loadedBytes = pendingFiles.reduce((s, p) => s + (p.status === 'success' ? (p.total || p.file.size) : p.loaded), 0);
               const pct = totalBytes ? Math.min(100, (loadedBytes / totalBytes) * 100) : 0;
+              const currentFile = pendingFiles.find(p => p.status === 'uploading');
               return (
                 <div className="space-y-1">
-                  <p className="text-sm">
-                    Enviando {progress.current} de {progress.total} · {formatBytes(loadedBytes)} / {formatBytes(totalBytes)} ({pct.toFixed(1)}%)
-                  </p>
-                  <div className="h-2 w-full bg-muted rounded overflow-hidden">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <p className="text-sm" aria-live="polite">
+                      Enviando {progress.current} de {progress.total} · {formatBytes(loadedBytes)} / {formatBytes(totalBytes)} ({pct.toFixed(1)}%)
+                    </p>
+                    {currentFile && (
+                      <p className="text-[10px] text-muted-foreground italic truncate max-w-[200px]" aria-live="polite">
+                        {currentFile.file.name}
+                      </p>
+                    )}
+                  </div>
+                  <div 
+                    className="h-2 w-full bg-muted rounded overflow-hidden"
+                    role="progressbar"
+                    aria-valuenow={Math.round(pct)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label={`Progresso total do upload: ${Math.round(pct)}%`}
+                  >
                     <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
                   </div>
                 </div>
@@ -1293,7 +1310,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
           <DialogFooter className="flex-wrap gap-2">
             {uploading ? (
-              <Button variant="destructive" onClick={cancelOngoingUpload} className="gap-2">
+              <Button variant="destructive" onClick={() => setConfirmCancelOpen(true)} className="gap-2">
                 <X className="h-4 w-4" /> Cancelar upload
               </Button>
             ) : (
@@ -1345,8 +1362,35 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
               </>
             )}
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
+
+      {/* Confirm Cancel Upload Dialog */}
+      <AlertDialog open={confirmCancelOpen} onOpenChange={setConfirmCancelOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar upload?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O progresso atual será interrompido. Você poderá retomar os arquivos restantes mais tarde se mantiver o diálogo de upload aberto.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Não, continuar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                cancelOngoingUpload();
+                setConfirmCancelOpen(false);
+              }}
+              autoFocus
+            >
+              Sim, cancelar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       {/* Delete folder confirmation */}
       <AlertDialog open={deleteFolderOpen} onOpenChange={(v) => { if (!deleting) setDeleteFolderOpen(v); }}>
