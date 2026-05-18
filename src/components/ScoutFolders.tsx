@@ -751,7 +751,10 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             <Button
               size="sm"
               variant="outline"
-              onClick={() => cameraInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                cameraInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
               title="Tirar foto com a câmera"
@@ -761,7 +764,10 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             </Button>
             <Button
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => {
+                onPickStart?.();
+                fileInputRef.current?.click();
+              }}
               disabled={uploading}
               className="gap-2"
             >
