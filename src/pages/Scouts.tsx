@@ -2633,8 +2633,9 @@ const Scouts = () => {
               </div>
 
               {photosHubUploading && (
-                <div className="rounded-md border bg-muted/40 p-3 text-sm">
-                  Enviando {photosHubProgress.current} de {photosHubProgress.total}...
+                <div className="rounded-md border bg-muted/40 p-3 text-sm flex items-center gap-3">
+                  <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span>Enviando {photosHubProgress.current} de {photosHubProgress.total}...</span>
                 </div>
               )}
 
