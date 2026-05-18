@@ -843,28 +843,54 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       ) : (
         <>
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 text-sm flex-wrap">
-            <button
-              onClick={() => { setYear(null); setDateKey(null); setSelectMode(false); clearSelection(); }}
-              className="font-medium uppercase break-words text-left hover:underline"
-            >
-              {scoutName}
-            </button>
-            {year !== null && (
-              <>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <button onClick={() => { setDateKey(null); setSelectMode(false); clearSelection(); }} className="font-medium hover:underline">
-                  {year}
-                </button>
-              </>
-            )}
-            {dateKey && (
-              <>
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">
-                  {format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
-                </span>
-              </>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-2 text-sm flex-wrap">
+              <button
+                onClick={() => { setYear(null); setDateKey(null); setSelectMode(false); clearSelection(); }}
+                className="font-medium uppercase break-words text-left hover:underline"
+              >
+                {scoutName}
+              </button>
+              {year !== null && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <button onClick={() => { setDateKey(null); setSelectMode(false); clearSelection(); }} className="font-medium hover:underline">
+                    {year}
+                  </button>
+                </>
+              )}
+              {dateKey && (
+                <>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-medium">
+                    {format(new Date(dateKey + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR })}
+                  </span>
+                </>
+              )}
+            </div>
+
+            {canManage && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  const confirmed = window.confirm("Isso renomeará todas as fotos existentes deste integrante para o novo padrão NOME_IDUNICO_DATA. Continuar?");
+                  if (!confirmed) return;
+                  
+                  const toastId = toast.loading("Reprocessando nomes das fotos...");
+                  try {
+                    const { data, error } = await supabase.functions.invoke('rename-scout-photos');
+                    if (error) throw error;
+                    toast.success("Reprocessamento concluído com sucesso!", { id: toastId });
+                    await load();
+                  } catch (err: any) {
+                    toast.error("Falha ao reprocessar: " + (err.message || "Erro desconhecido"), { id: toastId });
+                  }
+                }}
+                className="gap-2 text-[10px] h-7 px-2"
+              >
+                <RotateCcw className="h-3 w-3" /> Reprocessar Nomes
+              </Button>
             )}
           </div>
 
