@@ -95,6 +95,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
   const canManage = isAdmin || isVoluntario;
 
   const [photos, setPhotos] = useState<PhotoRec[]>([]);
+  const [registrationId, setRegistrationId] = useState<string>('');
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState<number | null>(null);
@@ -153,6 +154,20 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
   }, [scoutId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Fetch registration_id (sequential unique ID) of the scout for filenames
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from('scouts')
+        .select('registration_id')
+        .eq('id', scoutId)
+        .maybeSingle();
+      if (active && data?.registration_id) setRegistrationId(data.registration_id);
+    })();
+    return () => { active = false; };
+  }, [scoutId]);
 
   // Cleanup undo timers on unmount
   useEffect(() => {
@@ -409,11 +424,12 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           .replace(/[^a-zA-Z0-9_\-]/g, '_')
           .replace(/_+/g, '_')
           .replace(/^_|_$/g, '')
-          .substring(0, 30);
-          
+          .substring(0, 40);
+        const safeId = (registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '');
+
         const nowTs = new Date();
         const timeStr = format(nowTs, 'HHmm');
-        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${safeId}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
@@ -525,7 +541,13 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       try {
         const compressed = await compressImage(item.file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const path = `gallery/${scoutId}/${targetDate}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const safeName = scoutName
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_\-]/g, '_')
+          .replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 40);
+        const safeId = (registrationId || scoutId.slice(0, 8)).replace(/[^a-zA-Z0-9]/g, '');
+        const yearSegment = targetDate.split('-')[0];
+        const path = `gallery/${scoutId}/${yearSegment}/${targetDate}/${safeName}_${safeId}_${targetDate}_${Date.now()}-${i}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
         const baseTs = new Date(`${targetDate}T12:00:00`).toISOString();
         const { error: upErr } = await supabase.storage.from('scout-photos').upload(path, compressed, { upsert: false, contentType: compressed.type });
         if (upErr) throw upErr;
