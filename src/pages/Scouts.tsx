@@ -218,6 +218,7 @@ const Scouts = () => {
     for (let i = 0; i < valid.length; i++) {
       const file = valid[i];
       setPhotosHubProgress({ current: i + 1, total: valid.length });
+      setPhotosHubSummary(prev => prev ? { ...prev, pending: valid.length - i } : null);
       try {
         let compressed: File | Blob = file;
         try { compressed = await compressImage(file); } catch { /* keep original */ }
