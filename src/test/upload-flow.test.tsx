@@ -111,7 +111,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     // 1. Simular abertura do Fotos Hub
-    const photosBtn = await screen.findByLabelText('Fotos');
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn);
 
     // 2. Selecionar o integrante
@@ -167,7 +167,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     });
   });
 
-  it('handles upload errors and allows retry without closing the dialog', async () => {
+  it('handles upload errors and allows retry of individual failed files', async () => {
     vi.mocked(supabase.storage.from('scout-photos').upload).mockRejectedValueOnce(new Error('Falha de conexão'));
 
     render(
@@ -176,7 +176,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const photosBtn2 = await screen.findByLabelText('Fotos');
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn2);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
@@ -189,15 +189,16 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     const confirmBtn = await screen.findByRole('button', { name: /confirmar e salvar/i });
     fireEvent.click(confirmBtn);
 
-    // Deve mostrar mensagem de erro
-    expect(await screen.findByText(/erro no envio/i)).toBeInTheDocument();
+    // Deve mostrar mensagem de erro com acessibilidade
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
     expect(screen.getByText(/falha de conexão/i)).toBeInTheDocument();
     
-    // Diálogo ainda deve estar aberto para tentar novamente
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    
-    const retryBtn = screen.getByRole('button', { name: /tentar novamente/i });
+    // Deve permitir tentar novamente apenas a foto que falhou
+    const retryBtn = screen.getByRole('button', { name: /tentar foto/i });
     expect(retryBtn).toBeInTheDocument();
+    
+    // Diálogo ainda deve estar aberto
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('validates naming collision and sequential pattern', async () => {
@@ -207,7 +208,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
       </BrowserRouter>
     );
 
-    const photosBtn3 = await screen.findByLabelText('Fotos');
+    const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
     fireEvent.click(photosBtn3);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
