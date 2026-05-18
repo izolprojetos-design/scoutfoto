@@ -1433,6 +1433,7 @@ const Scouts = () => {
             className="gap-2"
             onClick={() => {
               setCloudPickerTarget(formTarget);
+              setCloudPickerInitialSearch(name);
               setCloudPickerOpen(true);
             }}
           >
