@@ -126,7 +126,7 @@ function formatBytes(n: number): string {
   return `${(n / 1024 / 1024).toFixed(2)} MB`;
 }
 
-export default function ScoutFolders({ scoutId, scoutName }: Props) {
+export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
 
