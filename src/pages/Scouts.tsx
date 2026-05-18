@@ -174,7 +174,7 @@ const Scouts = () => {
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
-  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[] } | null>(null);
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number; rejectedFiles?: { name: string; reason: string }[]; acceptedFiles?: { name: string; type: string; size: number }[] } | null>(null);
   const photosHubDragCounter = useRef(0);
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -201,11 +201,18 @@ const Scouts = () => {
       ...oversized.map(f => ({ name: f.name, reason: 'Arquivo muito grande (máximo 10MB)' }))
     ];
     
+    const acceptedFilesDetails = valid.map(f => ({
+      name: f.name,
+      type: (f.type || f.name.split('.').pop() || '').toUpperCase(),
+      size: f.size
+    }));
+
     setPhotosHubSummary({
       accepted: valid.length,
       rejected: rejectedFilesDetails.length,
       pending: valid.length,
-      rejectedFiles: rejectedFilesDetails
+      rejectedFiles: rejectedFilesDetails,
+      acceptedFiles: acceptedFilesDetails
     });
 
     if (rejectedFilesDetails.length > 0) {
@@ -2654,6 +2661,25 @@ const Scouts = () => {
                       </div>
                     )}
                   </div>
+
+                  {photosHubSummary.acceptedFiles && photosHubSummary.acceptedFiles.length > 0 && (
+                    <div className="rounded-md border border-emerald-200 bg-emerald-50/30 overflow-hidden">
+                      <div className="bg-emerald-100/50 px-3 py-1.5 text-xs font-semibold text-emerald-700 flex items-center gap-2">
+                        <ImageIcon className="h-3 w-3" /> Arquivos Aceitos
+                      </div>
+                      <div className="max-h-32 overflow-y-auto divide-y divide-emerald-100">
+                        {photosHubSummary.acceptedFiles.map((file, idx) => (
+                          <div key={idx} className="px-3 py-2 text-xs flex justify-between items-center gap-4">
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-medium truncate text-muted-foreground">{file.name}</span>
+                              <span className="text-[10px] text-muted-foreground/70 uppercase">{file.type}</span>
+                            </div>
+                            <span className="text-emerald-600 font-medium shrink-0">{(file.size / (1024 * 1024)).toFixed(2)} MB</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {photosHubSummary.rejectedFiles && photosHubSummary.rejectedFiles.length > 0 && (
                     <div className="rounded-md border border-destructive/20 bg-destructive/5 overflow-hidden">
