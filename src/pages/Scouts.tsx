@@ -3128,8 +3128,9 @@ const Scouts = () => {
                 </div>
               )}
             </div>
-          </div>
-        </DialogContent>
+          )}
+        </div>
+      </DialogContent>
       </Dialog>
 
       {/* Guardian Dialog */}
