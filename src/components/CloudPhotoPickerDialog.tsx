@@ -102,17 +102,12 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
 
       const items: StorageImage[] = [];
-      const seenScouts = new Set<string>();
       const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string; createdAt?: string }[] = [];
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
           const scout = findScoutByFilename(file.name);
-          if (scout) {
-            if (seenScouts.has(scout.id)) continue;
-            seenScouts.add(scout.id);
-          }
           scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
         }
       }
