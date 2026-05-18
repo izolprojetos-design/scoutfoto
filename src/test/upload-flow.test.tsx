@@ -108,16 +108,12 @@ describe('Upload Flow E2E Simulation', () => {
       </BrowserRouter>
     );
 
-    // Baseline: find button by class
-    const photosBtn = document.querySelector('.photos-hub-trigger') as HTMLButtonElement;
+    // Find button by test id
+    const photosBtn = await screen.findByTestId('photos-hub-trigger');
     fireEvent.click(photosBtn);
     
-    // Find scout item by class
-    const scoutItem = await waitFor(() => {
-      const el = document.querySelector('.scout-item-name');
-      if (!el) throw new Error('Scout item not found');
-      return el;
-    });
+    // Find scout item by test id
+    const scoutItem = await screen.findByTestId('scout-item-name');
     fireEvent.click(scoutItem);
 
     const file = new File(['test'], 'photo.jpg', { type: 'image/jpeg' });

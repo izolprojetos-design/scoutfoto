@@ -1843,7 +1843,8 @@ const Scouts = () => {
           {(canManageScouts || canEditScouts) && (
             <Button
               variant="outline"
-              className="gap-2 photos-hub-trigger"
+              className="gap-2"
+              data-testid="photos-hub-trigger"
               onClick={() => {
                 setPhotosHubScoutId(null);
                 setPhotosHubSearch('');
@@ -2691,7 +2692,7 @@ const Scouts = () => {
                         fallback={<div className="h-10 w-10 rounded-full bg-muted shrink-0" />}
                       />
                       <div className="flex-1 min-w-0" aria-hidden="true">
-                        <p className="font-semibold uppercase break-words scout-item-name">{s.name}</p>
+                        <p className="font-semibold uppercase break-words" data-testid="scout-item-name">{s.name}</p>
                         {s.section && (
                           <p className="text-xs text-muted-foreground">{s.section}</p>
                         )}
