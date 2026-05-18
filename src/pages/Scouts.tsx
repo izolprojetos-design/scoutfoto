@@ -2822,16 +2822,9 @@ const Scouts = () => {
                                       const sameExt = oldExt && newExt && oldExt === newExt;
 
                                       if (!sameMime && !sameExt) {
-                                        const oldSize = oldRawFile?.size || 0;
-                                        const newSize = newFile.size;
-                                        const formatSize = (bytes: number) => {
-                                          if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-                                          return `${(bytes / 1024).toFixed(2)} KB`;
-                                        };
+                                        const oldDetails = getFileDetails(oldRawFile || { name: file.name });
+                                        const newDetails = getFileDetails(newFile);
 
-                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || '---'} | ${formatSize(oldSize)}`;
-                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || '---'} | ${formatSize(newSize)}`;
-                                        
                                         toast.error(
                                           <div className="flex flex-col gap-2 py-1">
                                             <div className="flex items-center gap-2 border-b border-destructive/20 pb-2 mb-1">
@@ -2840,15 +2833,17 @@ const Scouts = () => {
                                             </div>
                                             
                                             <div className="space-y-1 bg-destructive/5 p-2 rounded border border-destructive/10">
-                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider">Arquivo Atual</p>
-                                              <p className="text-[11px] font-medium truncate leading-none">{file.name}</p>
-                                              <p className="text-[10px] font-mono opacity-80">{oldInfo}</p>
+                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider text-destructive">Arquivo Atual</p>
+                                              <p className="text-[11px] font-medium truncate leading-none">{oldDetails.name}</p>
+                                              <p className="text-[10px] font-mono opacity-80">[.{oldDetails.ext.toUpperCase()}] {oldDetails.mime}</p>
+                                              <p className="text-[10px] font-mono opacity-60">{oldDetails.size}</p>
                                             </div>
 
                                             <div className="space-y-1 bg-emerald-500/5 p-2 rounded border border-emerald-500/10">
-                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider">Novo Arquivo</p>
-                                              <p className="text-[11px] font-medium truncate leading-none">{newFile.name}</p>
-                                              <p className="text-[10px] font-mono opacity-80">{newInfo}</p>
+                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider text-emerald-600">Novo Arquivo</p>
+                                              <p className="text-[11px] font-medium truncate leading-none">{newDetails.name}</p>
+                                              <p className="text-[10px] font-mono opacity-80">[.{newDetails.ext.toUpperCase()}] {newDetails.mime}</p>
+                                              <p className="text-[10px] font-mono opacity-60">{newDetails.size}</p>
                                             </div>
                                             
                                             <p className="text-[10px] italic text-center text-muted-foreground mt-1">Certifique-se de que a extensão e o tipo de arquivo sejam idênticos.</p>
