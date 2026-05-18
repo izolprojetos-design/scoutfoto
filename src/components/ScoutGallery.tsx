@@ -52,7 +52,7 @@ function groupLabel(d: Date) {
   return format(d, 'MMMM yyyy', { locale: ptBR });
 }
 
-export default function ScoutGallery({ scoutId, scoutName }: Props) {
+export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props) {
   const { user, isAdmin, isVoluntario } = useAuth();
   const canManage = isAdmin || isVoluntario;
 
