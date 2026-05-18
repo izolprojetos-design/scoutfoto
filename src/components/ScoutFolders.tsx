@@ -95,6 +95,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
   const canManage = isAdmin || isVoluntario;
 
   const [photos, setPhotos] = useState<PhotoRec[]>([]);
+  const [registrationId, setRegistrationId] = useState<string>('');
   const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [year, setYear] = useState<number | null>(null);
