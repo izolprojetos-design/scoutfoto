@@ -88,6 +88,7 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     user: { id: 'test-user' },
     profile: { name: 'Admin' },
+    roles: ['admin'],
     isAdmin: true,
     isVoluntario: false,
     canUpload: true,
