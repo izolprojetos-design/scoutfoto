@@ -406,7 +406,8 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
         }
         const compressed = await compressImage(item.file);
         const ext = (compressed.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
-        const path = `gallery/${scoutId}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const yearSegment = date.split('-')[0];
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
