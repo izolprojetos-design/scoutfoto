@@ -40,6 +40,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     if (initialSearch) return initialSearch;
     return localStorage.getItem('cloud_gallery_search') || '';
   });
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
   const [sectionFilter, setSectionFilter] = useState<string>(() => {
     return localStorage.getItem('cloud_gallery_section') || ALL;
   });
@@ -49,10 +51,21 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   
   const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [visibleCount, setVisibleCount] = useState(() => {
+    const saved = localStorage.getItem('cloud_gallery_visible_count');
+    return saved ? parseInt(saved, 10) : 20;
+  });
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const firstResultRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Debounce search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     if (open) {
@@ -69,7 +82,8 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     localStorage.setItem('cloud_gallery_search', search);
     localStorage.setItem('cloud_gallery_section', sectionFilter);
     localStorage.setItem('cloud_gallery_subgroup', subgroupFilter);
-  }, [search, sectionFilter, subgroupFilter]);
+    localStorage.setItem('cloud_gallery_visible_count', visibleCount.toString());
+  }, [search, sectionFilter, subgroupFilter, visibleCount]);
 
   // Reset subgroup filter when section changes
   useEffect(() => {
@@ -80,10 +94,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setSubgroupFilter(ALL);
   }, [sectionFilter]);
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change (except search, where we might want to keep the scroll position)
   useEffect(() => {
     setVisibleCount(20);
-  }, [search, sectionFilter, subgroupFilter]);
+  }, [sectionFilter, subgroupFilter]);
 
   const loadImages = async () => {
     setLoading(true);
