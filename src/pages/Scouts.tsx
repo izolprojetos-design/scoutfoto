@@ -2686,8 +2686,48 @@ const Scouts = () => {
 
                   {photosHubSummary.rejectedFiles && photosHubSummary.rejectedFiles.length > 0 && (
                     <div className="rounded-md border border-destructive/20 bg-destructive/5 overflow-hidden">
-                      <div className="bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive flex items-center gap-2">
-                        <X className="h-3 w-3" /> Arquivos Rejeitados
+                      <div className="bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <X className="h-3 w-3" /> Arquivos Rejeitados
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="h-5 w-5 text-destructive hover:bg-destructive/10"
+                            onClick={() => {
+                              const validOnly = photosHubSummary.rawFiles?.filter(f => {
+                                const type = (f.type || '').toLowerCase();
+                                const ext = (f.name.split('.').pop() || '').toLowerCase();
+                                const isAllowed = (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) || (!type.startsWith('video/') && PHOTOS_HUB_ALLOWED_EXT.includes(ext));
+                                return isAllowed && f.size <= PHOTOS_HUB_MAX_SIZE;
+                              }) || [];
+                              processPhotosHubFiles(validOnly);
+                            }}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              className="hidden"
+                              multiple
+                              accept="image/*"
+                              onChange={(e) => {
+                                const newFiles = Array.from(e.target.files || []);
+                                if (newFiles.length > 0) {
+                                  // Add new files to the current list
+                                  const updatedFiles = [...(photosHubSummary.rawFiles || []), ...newFiles];
+                                  processPhotosHubFiles(updatedFiles);
+                                }
+                              }}
+                            />
+                            <div className="p-1 rounded-sm hover:bg-destructive/10 text-destructive">
+                              <ArrowRightLeft className="h-3 w-3" />
+                            </div>
+                          </label>
+                        </div>
                       </div>
                       <div className="max-h-32 overflow-y-auto divide-y divide-destructive/10">
                         {photosHubSummary.rejectedFiles.map((file, idx) => (
@@ -2698,6 +2738,21 @@ const Scouts = () => {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {!photosHubUploading && photosHubSummary.accepted > 0 && (
+                    <Button
+                      type="button"
+                      className="w-full h-10 font-bold bg-emerald-600 hover:bg-emerald-700 shadow-sm"
+                      onClick={() => uploadPhotosHubFiles(photosHubSummary.rawFiles?.filter(f => {
+                        const type = (f.type || '').toLowerCase();
+                        const ext = (f.name.split('.').pop() || '').toLowerCase();
+                        const isAllowed = (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) || (!type.startsWith('video/') && PHOTOS_HUB_ALLOWED_EXT.includes(ext));
+                        return isAllowed && f.size <= PHOTOS_HUB_MAX_SIZE;
+                      }) || [])}
+                    >
+                      <Cloud className="mr-2 h-4 w-4" /> INICIAR ENVIO DE {photosHubSummary.accepted} FOTOS
+                    </Button>
                   )}
                 </div>
               )}
