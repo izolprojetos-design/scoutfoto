@@ -2653,7 +2653,8 @@ const Scouts = () => {
             if (files.length > 0) processPhotosHubFiles(files);
           }}
         >
-          <DialogHeader>
+          <div className="p-6 overflow-y-auto flex-1">
+            <DialogHeader className="mb-4">
             <DialogTitle>
               {photosHubScoutId
                 ? (scouts.find(s => s.id === photosHubScoutId)?.name.toUpperCase() ?? 'Fotos')
