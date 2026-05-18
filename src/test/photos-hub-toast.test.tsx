@@ -121,5 +121,14 @@ describe('Photos Hub Validation & UI', () => {
       expect(screen.getByLabelText('Informações do arquivo atual')).toBeInTheDocument();
       expect(screen.getByLabelText('Informações do novo arquivo')).toBeInTheDocument();
     });
+
+    it('should pass automated accessibility audits', async () => {
+      const oldFile = { name: 'old.png', type: 'image/png', size: 500000 };
+      const newFile = { name: 'new.jpg', type: 'image/jpeg', size: 600000 };
+      
+      const { container } = render(<ToastContent oldFile={oldFile} newFile={newFile} />);
+      const results = await axe(container);
+      expect(results).toHaveNoViolations();
+    });
   });
 });
