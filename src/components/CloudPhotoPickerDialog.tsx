@@ -158,6 +158,16 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
     setConfirming(false);
   };
 
+  const handleCopyId = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    const shortId = id.slice(0, 8);
+    navigator.clipboard.writeText(shortId);
+    toast({
+      description: `ID ${shortId} copiado!`,
+      duration: 2000,
+    });
+  };
+
   // Distinct section/subgroup options derived from loaded images
   const availableSections = useMemo(() => {
     const set = new Set<string>();
