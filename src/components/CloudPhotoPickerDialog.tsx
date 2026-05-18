@@ -310,23 +310,19 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute bottom-0 inset-x-0 bg-black/80 text-white text-[10px] px-1.5 py-2 flex flex-col items-center justify-center text-center leading-tight">
-                    <div className="font-bold w-full truncate text-[11px] mb-0.5">
+                  <div className="absolute bottom-0 inset-x-0 bg-black/80 text-white p-2 flex flex-col items-center justify-center text-center leading-tight">
+                    <div className="font-bold w-full truncate text-[11px] mb-1">
                       {img.scoutName ? img.scoutName.toUpperCase() : img.name.split('.')[0]}
                     </div>
-                    <div className="flex flex-col items-center gap-0.5 w-full">
+                    <div className="flex flex-col items-center gap-1 w-full">
                       {img.scoutId && (
-                        <div className="bg-white/20 px-1 rounded text-[9px] w-fit">
+                        <div className="bg-primary/90 text-primary-foreground px-1.5 py-0.5 rounded text-[9px] font-mono font-medium">
                           ID: {img.scoutId.slice(0, 8)}
                         </div>
                       )}
                       {img.createdAt && (
-                        <div className="opacity-90 text-[9px] mt-0.5">
-                          {new Date(img.createdAt).toLocaleDateString('pt-BR', {
-                            day: '2-digit',
-                            month: '2-digit',
-                            year: 'numeric'
-                          })}
+                        <div className="opacity-90 text-[9px] font-medium">
+                          📅 {new Date(img.createdAt).toLocaleDateString('pt-BR')}
                         </div>
                       )}
                     </div>
