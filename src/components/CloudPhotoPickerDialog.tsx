@@ -365,9 +365,13 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
         <ScrollArea className="flex-1 min-h-[300px] border rounded-xl bg-muted/20 p-2" style={{ maxHeight: '50vh' }}>
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-              <p className="text-xs text-muted-foreground font-medium animate-pulse">Sincronizando com a nuvem...</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="aspect-square w-full rounded-lg bg-muted animate-pulse flex flex-col items-center justify-end p-2 gap-2">
+                  <div className="h-3 w-3/4 bg-muted-foreground/20 rounded-full" />
+                  <div className="h-2 w-1/2 bg-muted-foreground/10 rounded-full" />
+                </div>
+              ))}
             </div>
           ) : filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-in fade-in zoom-in duration-300">
