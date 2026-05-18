@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered, SlidersHorizontal, GitCompare } from 'lucide-react';
+import { Plus, Search, Users, ArrowRightLeft, UserPlus, Trash2, Camera, ChevronDown, ChevronUp, Pencil, Download, Cloud, X, ImageIcon, FileDown, FileSpreadsheet, UserCheck, UserX, Power, ListOrdered, SlidersHorizontal, GitCompare, Check } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { differenceInYears } from 'date-fns';
@@ -174,6 +174,7 @@ const Scouts = () => {
   const [photosHubDragging, setPhotosHubDragging] = useState(false);
   const [photosHubUploading, setPhotosHubUploading] = useState(false);
   const [photosHubProgress, setPhotosHubProgress] = useState({ current: 0, total: 0 });
+  const [photosHubSummary, setPhotosHubSummary] = useState<{ accepted: number; rejected: number; pending: number } | null>(null);
   const photosHubDragCounter = useRef(0);
 
   const PHOTOS_HUB_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
@@ -194,6 +195,12 @@ const Scouts = () => {
     const allowed = files.filter(isAllowedImage);
     const oversized = allowed.filter(f => f.size > PHOTOS_HUB_MAX_SIZE);
     const valid = allowed.filter(f => f.size <= PHOTOS_HUB_MAX_SIZE);
+    
+    setPhotosHubSummary({
+      accepted: valid.length,
+      rejected: rejectedType.length + oversized.length,
+      pending: valid.length
+    });
 
     rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF).`));
     if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
@@ -211,6 +218,7 @@ const Scouts = () => {
     for (let i = 0; i < valid.length; i++) {
       const file = valid[i];
       setPhotosHubProgress({ current: i + 1, total: valid.length });
+      setPhotosHubSummary(prev => prev ? { ...prev, pending: valid.length - i } : null);
       try {
         let compressed: File | Blob = file;
         try { compressed = await compressImage(file); } catch { /* keep original */ }
@@ -241,6 +249,7 @@ const Scouts = () => {
       }
     }
     setPhotosHubUploading(false);
+    setPhotosHubSummary(prev => prev ? { ...prev, pending: 0 } : null);
     setPhotosHubProgress({ current: 0, total: 0 });
     if (success > 0) {
       toast.success(`${success} foto(s) enviada(s)`);
@@ -2500,6 +2509,7 @@ const Scouts = () => {
           setPhotosHubSearch('');
           photosHubDragCounter.current = 0;
           setPhotosHubDragging(false);
+          setPhotosHubSummary(null);
         }
       }}>
         <DialogContent
@@ -2610,6 +2620,33 @@ const Scouts = () => {
               {photosHubUploading && (
                 <div className="rounded-md border bg-muted/40 p-3 text-sm">
                   Enviando {photosHubProgress.current} de {photosHubProgress.total}...
+                </div>
+              )}
+
+              {photosHubSummary && (
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 p-3 rounded-md border bg-muted/30 text-xs sm:text-sm animate-in fade-in slide-in-from-top-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                    <span className="text-muted-foreground">Aceitos:</span>
+                    <span className="font-bold text-emerald-600">{photosHubSummary.accepted}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-destructive" />
+                    <span className="text-muted-foreground">Rejeitados:</span>
+                    <span className="font-bold text-destructive">{photosHubSummary.rejected}</span>
+                  </div>
+                  {photosHubSummary.pending > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-muted-foreground">Pendentes:</span>
+                      <span className="font-bold text-amber-600">{photosHubSummary.pending}</span>
+                    </div>
+                  )}
+                  {photosHubSummary.pending === 0 && photosHubSummary.accepted > 0 && (
+                    <div className="flex items-center gap-1.5 ml-auto text-emerald-600 font-medium">
+                      <Check className="h-3.5 w-3.5" /> Concluído
+                    </div>
+                  )}
                 </div>
               )}
 
