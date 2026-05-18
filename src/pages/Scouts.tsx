@@ -195,17 +195,22 @@ const Scouts = () => {
     const allowed = files.filter(isAllowedImage);
     const oversized = allowed.filter(f => f.size > PHOTOS_HUB_MAX_SIZE);
     const valid = allowed.filter(f => f.size <= PHOTOS_HUB_MAX_SIZE);
+
+    const rejectedFilesDetails = [
+      ...rejectedType.map(f => ({ name: f.name, reason: 'Tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF)' })),
+      ...oversized.map(f => ({ name: f.name, reason: 'Arquivo muito grande (máximo 10MB)' }))
+    ];
     
     setPhotosHubSummary({
       accepted: valid.length,
-      rejected: rejectedType.length + oversized.length,
-      pending: valid.length
+      rejected: rejectedFilesDetails.length,
+      pending: valid.length,
+      rejectedFiles: rejectedFilesDetails
     });
 
-    rejectedType.slice(0, 3).forEach(f => toast.error(`"${f.name}" ignorado: tipo não permitido (use JPG, PNG, WEBP, HEIC ou HEIF).`));
-    if (rejectedType.length > 3) toast.error(`+${rejectedType.length - 3} arquivo(s) com tipo não permitido.`);
-    oversized.slice(0, 3).forEach(f => toast.warning(`"${f.name}" ignorado: excede 10MB.`));
-    if (oversized.length > 3) toast.warning(`+${oversized.length - 3} arquivo(s) acima de 10MB.`);
+    if (rejectedFilesDetails.length > 0) {
+      toast.error(`${rejectedFilesDetails.length} arquivo(s) foram ignorados.`);
+    }
 
     if (valid.length === 0) {
       if (rejectedType.length === 0 && oversized.length === 0) toast.error('Solte apenas imagens.');
