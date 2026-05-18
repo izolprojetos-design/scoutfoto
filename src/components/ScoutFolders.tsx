@@ -1403,8 +1403,6 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
               </>
             )}
           </DialogFooter>
-
-          </div>
         </DialogContent>
       </Dialog>
 
