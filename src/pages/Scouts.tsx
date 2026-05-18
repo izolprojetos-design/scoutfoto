@@ -206,9 +206,15 @@ const Scouts = () => {
   const processPhotosHubFiles = (files: File[]) => {
     const isAllowedImage = (f: File) => {
       const type = (f.type || '').toLowerCase();
-      if (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) return true;
       const ext = (f.name.split('.').pop() || '').toLowerCase();
-      return !type.startsWith('video/') && PHOTOS_HUB_ALLOWED_EXT.includes(ext);
+      
+      // Normalização para evitar falsos positivos
+      const isAcceptedMime = PHOTOS_HUB_ALLOWED_TYPES.some(allowed => 
+        type === allowed || (type.startsWith('image/') && allowed.includes(type.split('/')[1]))
+      );
+      const isAcceptedExt = PHOTOS_HUB_ALLOWED_EXT.includes(ext);
+
+      return isAcceptedMime || isAcceptedExt;
     };
 
     const rejectedType = files.filter(f => !isAllowedImage(f));
