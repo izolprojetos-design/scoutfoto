@@ -432,12 +432,14 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                           <div className="flex flex-col items-center gap-1 w-full">
                             {img.scoutId && (
                               <div className={cn(
-                                "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight transition-colors",
-                                isIdMatch 
-                                  ? "bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.5)]" 
-                                  : "bg-primary/90 text-primary-foreground"
+                                "px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-tight transition-all duration-300",
+                                isCurrentlyCopied
+                                  ? "bg-green-500 text-white shadow-[0_0_12px_rgba(34,197,94,0.6)] scale-105"
+                                  : isIdMatch 
+                                    ? "bg-yellow-400 text-black shadow-[0_0_8px_rgba(250,204,21,0.5)]" 
+                                    : "bg-primary/90 text-primary-foreground"
                               )}>
-                                ID: {img.scoutId.slice(0, 8)}
+                                {isCurrentlyCopied ? "COPIADO!" : `ID: ${img.scoutId.slice(0, 8)}`}
                               </div>
                             )}
                             {img.createdAt && (
