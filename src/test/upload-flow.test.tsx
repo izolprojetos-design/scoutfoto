@@ -177,7 +177,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
-    fireEvent.click(photosBtn2);
+    fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
 
@@ -209,7 +209,7 @@ describe('Smartphone E2E Simulation: Capture and Realtime', () => {
     );
 
     const photosBtn = await screen.findByRole('button', { name: /Fotos/i });
-    fireEvent.click(photosBtn3);
+    fireEvent.click(photosBtn);
     const scoutItem = await screen.findByText(/MARIA SILVA/i);
     fireEvent.click(scoutItem);
 
