@@ -33,6 +33,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
   const { toast } = useToast();
   const [images, setImages] = useState<StorageImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const isFirstRender = useRef(true);
   
   // Load initial filters from localStorage or props
   const [search, setSearch] = useState(() => {
@@ -64,6 +65,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
   // Save filters to localStorage
   useEffect(() => {
+    if (isFirstRender.current) return;
     localStorage.setItem('cloud_gallery_search', search);
     localStorage.setItem('cloud_gallery_section', sectionFilter);
     localStorage.setItem('cloud_gallery_subgroup', subgroupFilter);
@@ -71,9 +73,11 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
 
   // Reset subgroup filter when section changes
   useEffect(() => {
-    if (sectionFilter !== ALL) {
-      setSubgroupFilter(ALL);
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
     }
+    setSubgroupFilter(ALL);
   }, [sectionFilter]);
 
   // Reset pagination when filters change
