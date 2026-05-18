@@ -2807,8 +2807,15 @@ const Scouts = () => {
                                       const sameExt = oldExt && newExt && oldExt === newExt;
 
                                       if (!sameMime && !sameExt) {
-                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || 'MIME desconhecido'}`;
-                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || 'MIME desconhecido'}`;
+                                        const oldSize = oldRawFile?.size || 0;
+                                        const newSize = newFile.size;
+                                        const formatSize = (bytes: number) => {
+                                          if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+                                          return `${(bytes / 1024).toFixed(2)} KB`;
+                                        };
+
+                                        const oldInfo = `[.${oldExt.toUpperCase()}] ${oldMime || 'MIME desconhecido'} (${formatSize(oldSize)})`;
+                                        const newInfo = `[.${newExt.toUpperCase()}] ${newMime || 'MIME desconhecido'} (${formatSize(newSize)})`;
                                         
                                         toast.error(
                                           <div className="flex flex-col gap-1">
