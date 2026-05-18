@@ -199,6 +199,29 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
   // Visible photos (excluding hidden / pending-undo)
   const visiblePhotos = useMemo(() => photos.filter(p => !hiddenIds.has(p.id)), [photos, hiddenIds]);
 
+  // Subscribe to realtime updates for this scout's photos
+  useEffect(() => {
+    const channel = supabase
+      .channel(`scout-photos-${scoutId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'scout_photos',
+          filter: `scout_id=eq.${scoutId}`,
+        },
+        () => {
+          load(); // Reload all when a change occurs (insert, update, delete)
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [scoutId, load]);
+
   const years = useMemo(() => {
     const map = new Map<number, PhotoRec[]>();
     for (const p of visiblePhotos) {
@@ -415,7 +438,16 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
         }
         
         const yearSegment = date.split('-')[0];
-        const path = `gallery/${scoutId}/${yearSegment}/${date}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const safeName = scoutName
+          .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-zA-Z0-9_\-]/g, '_')
+          .replace(/_+/g, '_')
+          .replace(/^_|_$/g, '')
+          .substring(0, 30);
+          
+        const nowTs = new Date();
+        const timeStr = format(nowTs, 'HHmm');
+        const path = `gallery/${scoutId}/${yearSegment}/${date}/${safeName}_${date}_${timeStr}_${Math.random().toString(36).slice(2, 6)}.${ext}`;
         storedPath = path;
         const baseTs = new Date(`${date}T12:00:00`).toISOString();
 
