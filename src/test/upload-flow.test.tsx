@@ -112,4 +112,3 @@ describe('Upload Flow Enhancements', () => {
     await waitFor(() => expect(screen.getByText(/MARIA SILVA/i)).toBeInTheDocument());
   });
 });
-});
