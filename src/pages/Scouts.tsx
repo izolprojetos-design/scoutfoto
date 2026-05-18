@@ -2752,6 +2752,7 @@ const Scouts = () => {
                           <AlertDialogCancel>Continuar enviando</AlertDialogCancel>
                           <AlertDialogAction 
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            autoFocus
                             onClick={() => {
                               if ((window as any)._photosHubAbortController) {
                                 (window as any)._photosHubAbortController.abort();
