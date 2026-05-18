@@ -117,7 +117,7 @@ describe('ScoutFolders Upload Flow', () => {
 
 
   it('updates progressbar attributes (valuenow/min/max) and label correctly after each photo', async () => {
-    vi.mocked(xhrUploadToStorage).mockResolvedValue(undefined);
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 50)));
     render(<ScoutFolders {...mockProps} />);
     
     const file1 = new File(['c1'], 'photo1.jpg', { type: 'image/jpeg' });
@@ -131,7 +131,6 @@ describe('ScoutFolders Upload Flow', () => {
     expect(progressBar).toHaveAttribute('aria-valuemin', '0');
     expect(progressBar).toHaveAttribute('aria-valuemax', '100');
     
-    // Check progress updates
     await waitFor(() => {
       const value = parseInt(progressBar.getAttribute('aria-valuenow') || '0');
       expect(value).toBeGreaterThanOrEqual(0);
@@ -139,13 +138,19 @@ describe('ScoutFolders Upload Flow', () => {
     });
   });
 
+
   it('fails specific photos deterministically and retries only the failed ones', async () => {
     // Fail only photo1.jpg
     vi.mocked(xhrUploadToStorage).mockImplementation((opts: any) => {
-      if (opts.path.includes('photo1.jpg')) {
-        return Promise.reject(new Error('Simulated failure'));
-      }
-      return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          if (opts.path.includes('photo1.jpg')) {
+            reject(new Error('Simulated failure'));
+          } else {
+            resolve();
+          }
+        }, 50);
+      });
     });
 
     render(<ScoutFolders {...mockProps} />);
@@ -156,6 +161,7 @@ describe('ScoutFolders Upload Flow', () => {
     fireEvent.change(fileInputs[0], { target: { files: [file1, file2] } });
 
     fireEvent.click(await screen.findByText(/Confirmar e enviar/i));
+
 
     // Wait for the retry button to appear (indicating at least one failure)
     const retryBtn = await screen.findByText(/Tentar novamente 1 falha/i);
@@ -174,7 +180,9 @@ describe('ScoutFolders Upload Flow', () => {
   });
 
   it('verifies that Escape key and Cancel button behave correctly in the confirmation dialog', async () => {
+    vi.mocked(xhrUploadToStorage).mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1000)));
     render(<ScoutFolders {...mockProps} />);
+
     
     const file = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
     fireEvent.change(document.querySelectorAll('input[type="file"]')[0], { target: { files: [file] } });
