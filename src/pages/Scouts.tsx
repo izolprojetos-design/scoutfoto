@@ -2830,29 +2830,42 @@ const Scouts = () => {
                                       if (!sameMime && !sameExt) {
                                         const oldDetails = getFileDetails(oldRawFile || { name: file.name });
                                         const newDetails = getFileDetails(newFile);
+                                        
+                                        // Determinar motivo específico para ícone/cor
+                                        const isDifferentExt = oldExt !== newExt;
+                                        const isDifferentMime = oldMime !== newMime;
+                                        const isTooLarge = newFile.size > PHOTOS_HUB_MAX_SIZE;
 
                                         toast.error(
-                                          <div className="flex flex-col gap-2 py-1">
+                                          <div className="flex flex-col gap-2 py-1" role="alert" aria-live="assertive">
                                             <div className="flex items-center gap-2 border-b border-destructive/20 pb-2 mb-1">
-                                              <X className="h-4 w-4 text-destructive" />
-                                              <p className="font-bold text-sm">Incompatibilidade de Arquivo</p>
+                                              <X className="h-4 w-4 text-destructive" aria-hidden="true" />
+                                              <p className="font-bold text-sm">
+                                                {isTooLarge ? 'Arquivo muito grande' : 'Incompatibilidade de Arquivo'}
+                                              </p>
                                             </div>
                                             
-                                            <div className="space-y-1 bg-destructive/5 p-2 rounded border border-destructive/10">
+                                            <div className="space-y-1 bg-destructive/5 p-2 rounded border border-destructive/10" aria-label="Informações do arquivo atual">
                                               <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider text-destructive">Arquivo Atual</p>
                                               <p className="text-[11px] font-medium truncate leading-none">{oldDetails.name}</p>
-                                              <p className="text-[10px] font-mono opacity-80">[.{oldDetails.ext.toUpperCase()}] {oldDetails.mime}</p>
+                                              <p className="text-[10px] font-mono opacity-80" aria-label={`Extensão ${oldDetails.ext} e tipo ${oldDetails.mime}`}>
+                                                [.{oldDetails.ext.toUpperCase()}] {oldDetails.mime}
+                                              </p>
                                               <p className="text-[10px] font-mono opacity-60">{oldDetails.size}</p>
                                             </div>
 
-                                            <div className="space-y-1 bg-emerald-500/5 p-2 rounded border border-emerald-500/10">
-                                              <p className="text-[10px] uppercase font-bold text-muted-foreground opacity-60 tracking-wider text-emerald-600">Novo Arquivo</p>
+                                            <div className={`space-y-1 p-2 rounded border ${isDifferentExt || isDifferentMime ? 'bg-amber-500/5 border-amber-500/10' : 'bg-emerald-500/5 border-emerald-500/10'}`} aria-label="Informações do novo arquivo">
+                                              <p className={`text-[10px] uppercase font-bold tracking-wider ${isDifferentExt || isDifferentMime ? 'text-amber-600' : 'text-emerald-600'}`}>Novo Arquivo</p>
                                               <p className="text-[11px] font-medium truncate leading-none">{newDetails.name}</p>
-                                              <p className="text-[10px] font-mono opacity-80">[.{newDetails.ext.toUpperCase()}] {newDetails.mime}</p>
-                                              <p className="text-[10px] font-mono opacity-60">{newDetails.size}</p>
+                                              <p className={`text-[10px] font-mono ${isDifferentExt ? 'text-amber-600 font-bold' : 'opacity-80'}`}>
+                                                [.{newDetails.ext.toUpperCase()}] {newDetails.mime}
+                                              </p>
+                                              <p className={`text-[10px] font-mono ${isTooLarge ? 'text-destructive font-bold' : 'opacity-60'}`}>{newDetails.size}</p>
                                             </div>
                                             
-                                            <p className="text-[10px] italic text-center text-muted-foreground mt-1">Certifique-se de que a extensão e o tipo de arquivo sejam idênticos.</p>
+                                            <p className="text-[10px] italic text-center text-muted-foreground mt-1">
+                                              {isTooLarge ? 'O arquivo excede o limite de 10MB.' : 'Certifique-se de que a extensão e o tipo de arquivo sejam idênticos.'}
+                                            </p>
                                           </div>,
                                           { duration: 8000 }
                                         );
