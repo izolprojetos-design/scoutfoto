@@ -314,7 +314,11 @@ export default function ScoutGallery({ scoutId, scoutName }: Props) {
           ext = 'jpg';
           mime = 'image/jpeg';
         }
-        const path = `gallery/${scoutId}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        
+        const now = new Date();
+        const year = now.getFullYear();
+        const dateStr = now.toISOString().split('T')[0];
+        const path = `gallery/${scoutId}/${year}/${dateStr}/${Date.now()}-${i}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
         const { error: upErr } = await supabase.storage
           .from('scout-photos')
