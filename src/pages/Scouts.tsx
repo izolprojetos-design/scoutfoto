@@ -1938,6 +1938,7 @@ const Scouts = () => {
                 scoutPhone, setScoutPhone,
                 scoutSection, setScoutSection,
                 scoutTransitionDate, setScoutTransitionDate,
+                undefined,
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
