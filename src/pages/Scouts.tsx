@@ -182,6 +182,12 @@ const Scouts = () => {
   const PHOTOS_HUB_ALLOWED_EXT = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'];
   const PHOTOS_HUB_MAX_SIZE = 10 * 1024 * 1024; // 10MB por imagem
 
+  const removeFileFromQueue = (fileName: string) => {
+    if (!photosHubSummary?.rawFiles) return;
+    const updatedFiles = photosHubSummary.rawFiles.filter(f => f.name !== fileName);
+    processPhotosHubFiles(updatedFiles);
+  };
+
   const processPhotosHubFiles = (files: File[]) => {
     const isAllowedImage = (f: File) => {
       const type = (f.type || '').toLowerCase();
