@@ -108,7 +108,10 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
         for (const file of scoutPhotos) {
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
           const scout = findScoutByFilename(file.name);
-          scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
+          // Only include photos that can be mapped to a member as per "trazer apenas a Foto do integrante"
+          if (scout) {
+            scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
+          }
         }
       }
 
