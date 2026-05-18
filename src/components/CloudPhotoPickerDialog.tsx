@@ -102,39 +102,21 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
       const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
 
       const items: StorageImage[] = [];
-      const seenScouts = new Set<string>();
       const scoutPathsToSign: { path: string; scout?: ScoutInfo; name: string; createdAt?: string }[] = [];
 
       if (scoutPhotos) {
         for (const file of scoutPhotos) {
           if (!file.name || file.name.startsWith('.') || file.id === null || !file.metadata) continue;
           const scout = findScoutByFilename(file.name);
+          // Only include photos that can be mapped to a member as per "trazer apenas a Foto do integrante"
           if (scout) {
-            if (seenScouts.has(scout.id)) continue;
-            seenScouts.add(scout.id);
+            scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
           }
-          scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
         }
       }
 
-      // Also list from images bucket
-      const { data: privateImages } = await supabase.storage.from('images').list('', {
-        limit: 100,
-        sortBy: { column: 'created_at', order: 'desc' },
-      });
-      const imagePathsToSign: { path: string; name: string; createdAt?: string }[] = [];
-      if (privateImages) {
-        for (const file of privateImages) {
-          if (!file.name || file.name.startsWith('.') || file.name.startsWith('thumb_') || !file.metadata) continue;
-          imagePathsToSign.push({ path: file.name, name: file.name, createdAt: file.created_at });
-        }
-      }
-
-      // Sign all URLs in parallel (batched, single round-trip per bucket)
-      const [scoutUrlMap, imageUrlMap] = await Promise.all([
-        getSignedUrlsBatch('scout-photos', scoutPathsToSign.map(p => p.path), 3600),
-        getSignedUrlsBatch('images', imagePathsToSign.map(p => p.path), 3600),
-      ]);
+      // Sign all URLs in parallel (batched, single round-trip)
+      const scoutUrlMap = await getSignedUrlsBatch('scout-photos', scoutPathsToSign.map(p => p.path), 3600);
 
       for (const item of scoutPathsToSign) {
         const url = scoutUrlMap[item.path];
@@ -149,16 +131,6 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           subgroupName: item.scout?.subgroupName,
           createdAt: item.createdAt,
         });
-      }
-      for (const item of imagePathsToSign) {
-        const url = imageUrlMap[item.path];
-        if (url) {
-          items.push({
-            name: item.name,
-            url,
-            createdAt: item.createdAt,
-          });
-        }
       }
 
       setImages(items);
@@ -243,7 +215,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por nome, seção ou equipe..."
+              placeholder="Buscar por nome, ID, seção ou equipe..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 h-9"
@@ -338,14 +310,22 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
                     className="h-full w-full object-cover"
                     loading="lazy"
                   />
-                  <div className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[10px] px-1.5 py-1 truncate text-center leading-tight">
-                    {img.scoutName && <div className="font-bold">{img.scoutName.toUpperCase()}</div>}
-                    {img.scoutId && <div className="opacity-70 text-[9px]">ID: {img.scoutId.slice(0, 8)}</div>}
-                    {img.createdAt && (
-                      <div className="opacity-70 text-[9px]">
-                        {new Date(img.createdAt).toLocaleDateString('pt-BR')}
-                      </div>
-                    )}
+                  <div className="absolute bottom-0 inset-x-0 bg-black/80 text-white p-2 flex flex-col items-center justify-center text-center leading-tight">
+                    <div className="font-bold w-full truncate text-[11px] mb-1">
+                      {img.scoutName ? img.scoutName.toUpperCase() : img.name.split('.')[0]}
+                    </div>
+                    <div className="flex flex-col items-center gap-1 w-full">
+                      {img.scoutId && (
+                        <div className="bg-primary/90 text-primary-foreground px-1.5 py-0.5 rounded text-[9px] font-mono font-medium">
+                          ID: {img.scoutId.slice(0, 8)}
+                        </div>
+                      )}
+                      {img.createdAt && (
+                        <div className="opacity-90 text-[9px] font-medium">
+                          📅 {new Date(img.createdAt).toLocaleDateString('pt-BR')}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {selectedUrl === img.url && (
                     <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
