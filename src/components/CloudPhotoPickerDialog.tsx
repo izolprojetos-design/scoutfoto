@@ -113,7 +113,7 @@ const CloudPhotoPickerDialog = ({ open, onClose, onSelect, initialSearch }: Clou
             if (seenScouts.has(scout.id)) continue;
             seenScouts.add(scout.id);
           }
-          scoutPathsToSign.push({ path: file.name, scout, name: file.name });
+          scoutPathsToSign.push({ path: file.name, scout, name: file.name, createdAt: file.created_at });
         }
       }
 
