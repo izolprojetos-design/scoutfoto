@@ -800,7 +800,7 @@ const EventDetail = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : (loading || images.length === 0) ? (
+      ) : images.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <ImageIcon className="h-8 w-8" />
