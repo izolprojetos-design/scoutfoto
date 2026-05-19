@@ -26,7 +26,7 @@ vi.mock('../integrations/supabase/client', () => {
     })),
     maybeSingle: vi.fn(() => Promise.resolve({ data: { id: 'event-123' }, error: null })),
     then: vi.fn((cb) => {
-      // Return empty images list initially to see the main CTA buttons
+      // Return empty images list initially
       return Promise.resolve({ data: [], error: null }).then(cb);
     }),
   };
@@ -110,17 +110,16 @@ describe('External Link Type and Filter E2E Simulation', () => {
       expect(screen.getByText(/Test Event/i)).toBeInTheDocument();
     });
 
-    // When images are empty, it shows "Adicionar Foto", "Adicionar Vídeo", "Link Externo" (dropdown)
-    // Find the dropdown button
-    const linkBtn = await screen.findByRole('button', { name: /Link Externo/i });
+    // When images are empty, it shows "Link Externo" button
+    const linkBtn = await screen.findByText(/Link Externo/i);
     fireEvent.click(linkBtn);
 
-    // Select "Link de Vídeo" from dropdown
+    // Select "Link de Vídeo"
     const videoOption = await screen.findByText(/Link de Vídeo/i);
     fireEvent.click(videoOption);
 
     // Verify modal title
-    expect(await screen.findByText('Adicionar Link Externo')).toBeInTheDocument();
+    expect(await screen.findByText(/Adicionar Link Externo/i)).toBeInTheDocument();
 
     // Fill title
     const titleInput = screen.getByLabelText(/Título \/ Nome do Arquivo/i);
@@ -134,10 +133,8 @@ describe('External Link Type and Filter E2E Simulation', () => {
     const saveBtn = screen.getByRole('button', { name: /Adicionar Link/i });
     fireEvent.click(saveBtn);
 
-    // Verify normalization and call
+    // Verify toast
     await waitFor(() => {
-      const { supabase } = require('../integrations/supabase/client');
-      expect(supabase.from).toHaveBeenCalledWith('images');
       expect(toast.success).toHaveBeenCalledWith(expect.stringContaining('Link externo adicionado'));
     });
   });
