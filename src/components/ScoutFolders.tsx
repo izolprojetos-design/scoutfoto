@@ -1155,7 +1155,17 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           if (!v) { cleanupPreviews(pendingFiles); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0">
+        <DialogContent 
+          className="max-w-2xl max-h-[95vh] flex flex-col p-0"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              if (uploading) {
+                e.preventDefault();
+                setConfirmCancelOpen(true);
+              }
+            }
+          }}
+        >
           <div className="p-6 overflow-y-auto flex-1">
             <DialogHeader className="mb-4">
               <DialogTitle>Enviar fotos para {scoutName}</DialogTitle>
