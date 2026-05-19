@@ -72,6 +72,13 @@ const Events = () => {
   const [filterBranch, setFilterBranch] = useState<string>('all');
   const [filterYear, setFilterYear] = useState<string>('all');
 
+  useRenderDiagnostics('Events', {
+    user, events, branches, mediaCounts, eventsWithPerms, loading,
+    dialogOpen, editDialogOpen, editingEvent, searchQuery, sortBy,
+    filterBranch, filterYear,
+  });
+
+
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
       supabase.from('events').select('*').order('event_date', { ascending: false }),
