@@ -1050,7 +1050,14 @@ const EventDetail = () => {
                     alt={selectedImage.caption || ''}
                     className="mx-auto max-h-[70vh] object-contain"
                   />
-                ) : null)}
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-12 text-center text-white min-h-[40vh]">
+                    <div className="mb-4 rounded-full bg-white/10 p-6">
+                      <ImageIcon className="h-12 w-12 text-white/40" />
+                    </div>
+                    <p className="text-white/60">Não foi possível carregar esta imagem.</p>
+                  </div>
+                )}
               </div>
 
               <div className="p-6">
