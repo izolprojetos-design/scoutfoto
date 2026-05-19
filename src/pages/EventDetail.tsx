@@ -100,6 +100,9 @@ const EventDetail = () => {
   const [progress, setProgress] = useState(0);
   const [uploadingIndex, setUploadingIndex] = useState(0);
 
+  // Filters
+  const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video' | 'document'>('all');
+
   // External Link state
   const [externalOpen, setExternalOpen] = useState(false);
   const [editingExternal, setEditingExternal] = useState<ImageData | null>(null);
@@ -797,7 +800,7 @@ const EventDetail = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : images.length === 0 ? (
+      ) : (images.length === 0 && !loading) ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <ImageIcon className="h-8 w-8" />
@@ -845,40 +848,60 @@ const EventDetail = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {(canUploadEventPhotos || canUpload) && !showUpload && (
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Upload
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <LinkIcon className="h-4 w-4" />
-                    Link Externo
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
-                    <ImageIcon className="h-4 w-4" />
-                    Link de Foto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
-                    <Film className="h-4 w-4" />
-                    Link de Vídeo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
-                    <FileText className="h-4 w-4" />
-                    Link de Documento
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {(canUploadEventPhotos || canUpload) && !showUpload && (
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Upload
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <LinkIcon className="h-4 w-4" />
+                      Link Externo
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Link de Foto
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                      <Film className="h-4 w-4" />
+                      Link de Vídeo
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Link de Documento
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-sm text-muted-foreground mr-1">Filtrar:</span>
+              <Select value={mediaFilter} onValueChange={(v: any) => setMediaFilter(v)}>
+                <SelectTrigger className="w-[140px] h-9 text-xs">
+                  <SelectValue placeholder="Filtrar mídias" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="image">Fotos</SelectItem>
+                  <SelectItem value="video">Vídeos</SelectItem>
+                  <SelectItem value="document">Documentos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {images.map((img, index) => (
+            {images
+              .filter(img => mediaFilter === 'all' || img.media_type === mediaFilter)
+              .map((img, index) => (
               <motion.div
                 key={img.id}
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -937,27 +960,27 @@ const EventDetail = () => {
                   </div>
                 )}
               </div>
-              {img.media_type === 'video' && (
+              {(img.media_type === 'video' || (img.media_type === 'video' && img.external_url)) && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
                     {img.external_url ? <LinkIcon className="h-3 w-3" /> : <Film className="h-3 w-3" />}
-                    {img.external_url ? 'Link' : 'Vídeo'}
+                    {img.external_url ? 'Vídeo (Drive)' : 'Vídeo'}
                   </Badge>
                 </div>
               )}
-              {img.media_type === 'document' && (
+              {(img.media_type === 'document' || (img.media_type === 'document' && img.external_url)) && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
-                    <FileText className="h-3 w-3" />
-                    Documento
+                    {img.external_url ? <LinkIcon className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+                    {img.external_url ? 'Doc (Drive)' : 'Documento'}
                   </Badge>
                 </div>
               )}
               {img.media_type === 'image' && img.external_url && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
-                    <ImageIcon className="h-3 w-3" />
-                    Foto
+                    <LinkIcon className="h-3 w-3" />
+                    Foto (Drive)
                   </Badge>
                 </div>
               )}
@@ -1170,8 +1193,9 @@ const EventDetail = () => {
           </DialogHeader>
           <form onSubmit={handleExternalSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Título / Nome do Arquivo</Label>
+              <Label htmlFor="external-title">Título / Nome do Arquivo</Label>
               <Input 
+                id="external-title"
                 value={externalTitle} 
                 onChange={e => setExternalTitle(e.target.value)} 
                 placeholder="Ex: Documentos do Acampamento" 
@@ -1179,8 +1203,9 @@ const EventDetail = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>URL do Google Drive</Label>
+              <Label htmlFor="external-url">URL do Google Drive</Label>
               <Input 
+                id="external-url"
                 value={externalUrl} 
                 onChange={e => setExternalUrl(e.target.value)} 
                 placeholder="https://drive.google.com/..." 
@@ -1190,10 +1215,10 @@ const EventDetail = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Tipo de Mídia</Label>
+                <Label htmlFor="external-media-type">Tipo de Mídia</Label>
                 <Select value={externalType} onValueChange={(v: any) => setExternalType(v)}>
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger id="external-media-type">
+                    <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="image">Foto</SelectItem>
@@ -1203,9 +1228,9 @@ const EventDetail = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Ramo</Label>
+                <Label htmlFor="external-branch">Ramo</Label>
                 <Select value={externalBranchId} onValueChange={setExternalBranchId}>
-                  <SelectTrigger>
+                  <SelectTrigger id="external-branch">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
