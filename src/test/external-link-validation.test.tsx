@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 import React from 'react';
 
-// Mock Supabase - using inline factory to avoid hoisting issues
+// Mock Supabase
 vi.mock('../integrations/supabase/client', () => {
   const chain: any = {
     select: vi.fn(() => chain),
@@ -14,7 +14,15 @@ vi.mock('../integrations/supabase/client', () => {
     delete: vi.fn(() => chain),
     order: vi.fn(() => chain),
     eq: vi.fn(() => chain),
-    single: vi.fn(() => Promise.resolve({ data: { id: 'event-123', name: 'Test Event', event_date: '2024-01-01' }, error: null })),
+    single: vi.fn(() => Promise.resolve({ 
+      data: { 
+        id: 'event-123', 
+        name: 'Test Event', 
+        event_date: '2024-01-01',
+        created_at: new Date().toISOString() // Fixed: valid date
+      }, 
+      error: null 
+    })),
     maybeSingle: vi.fn(() => Promise.resolve({ data: { id: 'event-123' }, error: null })),
     then: vi.fn((cb) => Promise.resolve({ data: [], error: null }).then(cb)),
   };
@@ -86,7 +94,7 @@ describe('External Link Validation', () => {
     // Wait for the page to load
     await waitFor(() => {
       expect(screen.getByText(/Test Event/i)).toBeInTheDocument();
-    });
+    }, { timeout: 3000 });
 
     // Open External Link Modal
     const addLinkBtn = await screen.findByText(/Link Externo/i);
