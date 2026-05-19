@@ -1213,9 +1213,9 @@ const EventDetail = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Tipo de Mídia</Label>
+                <Label htmlFor="external-media-type">Tipo de Mídia</Label>
                 <Select value={externalType} onValueChange={(v: any) => setExternalType(v)}>
-                  <SelectTrigger>
+                  <SelectTrigger id="external-media-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
