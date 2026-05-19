@@ -881,7 +881,9 @@ const EventDetail = () => {
             </motion.div>
           ))}
         </div>
-      )}
+      </div>
+    )}
+
 
       {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
