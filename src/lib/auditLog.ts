@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export type AuditAction = 
-  | 'upload' | 'view' | 'download' | 'edit' | 'delete' 
+  | 'upload' | 'view' | 'download' | 'edit' | 'delete' | 'add_external_link' | 'edit_external_link' | 'delete_external_link' 
   | 'login' | 'login_failed' | 'logout'
   | 'password_changed' | 'password_reset' | 'account_locked' 
   | 'logout_all_sessions' | 'remote_device_removed' | 'session_revoked_password_change'
