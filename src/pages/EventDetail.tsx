@@ -125,6 +125,15 @@ const EventDetail = () => {
   const [editScoutGroup, setEditScoutGroup] = useState('');
   const [savingEdit, setSavingEdit] = useState(false);
 
+  useRenderDiagnostics('EventDetail', {
+    eventId, user, event, branches, images, loading,
+    imageUrls, thumbUrls, selectedImage, deleteImage,
+    showUpload, files, uploading, progress, mediaFilter,
+    externalOpen, editOpen,
+  });
+
+
+
   const openEditDialog = () => {
     if (!event) return;
     setEditName(event.name);
