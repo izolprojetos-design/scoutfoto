@@ -1048,9 +1048,10 @@ const EventDetail = () => {
             </div>
           </form>
         </DialogContent>
-
+      </Dialog>
     </>
   );
 };
+
 
 export default EventDetail;
