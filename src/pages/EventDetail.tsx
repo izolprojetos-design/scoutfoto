@@ -100,6 +100,9 @@ const EventDetail = () => {
   const [progress, setProgress] = useState(0);
   const [uploadingIndex, setUploadingIndex] = useState(0);
 
+  // Filters
+  const [mediaFilter, setMediaFilter] = useState<'all' | 'image' | 'video' | 'document'>('all');
+
   // External Link state
   const [externalOpen, setExternalOpen] = useState(false);
   const [editingExternal, setEditingExternal] = useState<ImageData | null>(null);
