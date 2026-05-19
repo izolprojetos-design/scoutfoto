@@ -449,9 +449,10 @@ const EventDetail = () => {
       filename: externalTitle,
       external_url: externalUrl,
       media_type: externalType,
-      visibility: 'group',
+      visibility: 'group' as 'group' | 'private' | 'public',
       consent: true,
     };
+
 
     if (editingExternal) {
       const { error } = await supabase
