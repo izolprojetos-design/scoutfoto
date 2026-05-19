@@ -209,7 +209,6 @@ const EventDetail = () => {
       .eq('event_id', eventId)
       .order('created_at', { ascending: false });
 
-    console.log('Images raw data:', data?.length);
     let filtered = data || [];
     if (!canViewMinors) {
       filtered = filtered.filter(img => img.minor_age === null);
