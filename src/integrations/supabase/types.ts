@@ -661,12 +661,13 @@ export type Database = {
           downloads: number
           duration_seconds: number | null
           event_id: string | null
-          filename: string
+          external_url: string | null
+          filename: string | null
           id: string
           media_type: string
           minor_age: number | null
           responsible_name: string | null
-          storage_path: string
+          storage_path: string | null
           tags: string[] | null
           thumbnail_path: string | null
           user_id: string
@@ -681,12 +682,13 @@ export type Database = {
           downloads?: number
           duration_seconds?: number | null
           event_id?: string | null
-          filename: string
+          external_url?: string | null
+          filename?: string | null
           id?: string
           media_type?: string
           minor_age?: number | null
           responsible_name?: string | null
-          storage_path: string
+          storage_path?: string | null
           tags?: string[] | null
           thumbnail_path?: string | null
           user_id: string
@@ -701,12 +703,13 @@ export type Database = {
           downloads?: number
           duration_seconds?: number | null
           event_id?: string | null
-          filename?: string
+          external_url?: string | null
+          filename?: string | null
           id?: string
           media_type?: string
           minor_age?: number | null
           responsible_name?: string | null
-          storage_path?: string
+          storage_path?: string | null
           tags?: string[] | null
           thumbnail_path?: string | null
           user_id?: string
