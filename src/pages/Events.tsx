@@ -73,6 +73,8 @@ const Events = () => {
   const [filterBranch, setFilterBranch] = useState<string>('all');
   const [filterYear, setFilterYear] = useState<string>('all');
 
+  const noEffects = useNoEffects();
+
   useRenderDiagnostics('Events', {
     user, events, branches, mediaCounts, eventsWithPerms, loading,
     dialogOpen, editDialogOpen, editingEvent, searchQuery, sortBy,
