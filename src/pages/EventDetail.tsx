@@ -886,12 +886,9 @@ const EventDetail = () => {
       {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden">
-
-
-
-
           {selectedImage && (
             <div>
+
               <div className="bg-black">
                 {selectedImage.external_url ? (
                   <div className="flex flex-col items-center justify-center p-12 text-center text-white min-h-[40vh]">
