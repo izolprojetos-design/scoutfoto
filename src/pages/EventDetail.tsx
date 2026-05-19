@@ -221,6 +221,7 @@ const EventDetail = () => {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
     setImages(filtered);
+    console.log('Filtered images set:', filtered.length);
 
     // Get signed URLs
     const allPaths = filtered.flatMap(img => {
