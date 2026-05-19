@@ -1248,7 +1248,7 @@ const EventDetail = () => {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="ghost" onClick={() => setExternalOpen(false)} disabled={savingExternal}>Cancelar</Button>
-              <Button type="submit" disabled={savingExternal}>
+              <Button type="submit" disabled={savingExternal} data-testid="save-external-link">
                 {savingExternal ? 'Salvando...' : (editingExternal ? 'Salvar Alterações' : 'Adicionar Link')}
               </Button>
             </div>
