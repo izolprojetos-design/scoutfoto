@@ -909,7 +909,7 @@ const EventDetail = () => {
                 transition={{ delay: Math.min(index * 0.02, 0.5) }}
                 data-testid={`media-item-${img.id}`}
                 className="group relative cursor-pointer overflow-hidden rounded-xl bg-muted"
-                onClick={() => handleViewImage(img)}
+                onClick={() => { handleViewImage(img); console.log('Opening media:', img.id); }}
               >
                 <div className="aspect-square overflow-hidden">
                   {img.external_url ? (
