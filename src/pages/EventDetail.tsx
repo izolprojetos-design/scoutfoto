@@ -1035,9 +1035,8 @@ const EventDetail = () => {
                       <ExternalLink className="h-4 w-4" />
                       Abrir no Google Drive
                     </Button>
-
                   </div>
-                ) : (imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
+                ) : (imageUrls[selectedImage.id] && selectedImage.media_type === 'video') ? (
                   <video
                     src={imageUrls[selectedImage.id]}
                     controls
@@ -1055,7 +1054,7 @@ const EventDetail = () => {
                     <div className="mb-4 rounded-full bg-white/10 p-6">
                       <ImageIcon className="h-12 w-12 text-white/40" />
                     </div>
-                    <p className="text-white/60">Não foi possível carregar esta imagem.</p>
+                    <p className="text-white/60">Não foi possível carregar esta mídia.</p>
                   </div>
                 )}
               </div>
