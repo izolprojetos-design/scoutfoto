@@ -449,14 +449,14 @@ const EventDetail = () => {
       filename: externalTitle,
       external_url: externalUrl,
       media_type: externalType,
-      visibility: 'group',
+      visibility: 'group' as 'group' | 'private' | 'public',
       consent: true,
     };
 
     if (editingExternal) {
       const { error } = await supabase
         .from('images')
-        .update(payload)
+        .update(payload as any)
         .eq('id', editingExternal.id);
 
       if (error) {
@@ -470,7 +470,7 @@ const EventDetail = () => {
     } else {
       const { error } = await supabase
         .from('images')
-        .insert(payload);
+        .insert([payload] as any);
 
       if (error) {
         toast.error('Erro ao salvar link: ' + error.message);
@@ -482,6 +482,7 @@ const EventDetail = () => {
     }
     
     setSavingExternal(false);
+
     setExternalTitle('');
     setExternalUrl('');
     setExternalType('document');
@@ -881,7 +882,9 @@ const EventDetail = () => {
             </motion.div>
           ))}
         </div>
-      )}
+      </div>
+    )}
+
 
       {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
@@ -1138,5 +1141,6 @@ const EventDetail = () => {
 };
 
 export default EventDetail;
+
 
 
