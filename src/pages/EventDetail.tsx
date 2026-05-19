@@ -412,6 +412,7 @@ const EventDetail = () => {
   };
 
   const handleDeleteImage = async (img: ImageData) => {
+    if (!user) return;
     if (img.storage_path) {
       await supabase.storage.from('images').remove([img.storage_path]);
       if (img.thumbnail_path) {
@@ -425,19 +426,29 @@ const EventDetail = () => {
       toast.success(img.external_url ? 'Link excluído!' : 'Mídia excluída!');
       setImages(prev => prev.filter(i => i.id !== img.id));
       setSelectedImage(null);
-      if (user) await logAudit(user.id, 'delete', img.id);
+      if (img.external_url) {
+        await logAudit(user.id, 'delete_external_link', img.id);
+      } else {
+        await logAudit(user.id, 'delete', img.id);
+      }
     }
   };
+
 
   const handleExternalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !eventId || !externalUrl || !externalTitle || !externalBranchId) return;
 
+    let normalizedUrl = externalUrl.trim();
+    if (!normalizedUrl.startsWith('http://') && !normalizedUrl.startsWith('https://')) {
+      normalizedUrl = `https://${normalizedUrl}`;
+    }
+
     // Validate URL
     try {
-      new URL(externalUrl);
+      new URL(normalizedUrl);
     } catch {
-      toast.error('URL inválida. Certifique-se de incluir http:// ou https://');
+      toast.error('URL inválida. Certifique-se de que o endereço está correto.');
       return;
     }
 
@@ -447,7 +458,7 @@ const EventDetail = () => {
       event_id: eventId,
       branch_id: externalBranchId === 'all' ? (event?.branch_id || branches[0]?.id || '') : externalBranchId,
       filename: externalTitle,
-      external_url: externalUrl,
+      external_url: normalizedUrl,
       media_type: externalType,
       visibility: 'group' as 'group' | 'private' | 'public',
       consent: true,
@@ -465,18 +476,24 @@ const EventDetail = () => {
         toast.success('Link atualizado!');
         setExternalOpen(false);
         setEditingExternal(null);
+        await logAudit(user.id, 'edit_external_link', editingExternal.id);
         fetchImages();
       }
     } else {
-      const { error } = await supabase
+      const { data: newLink, error } = await supabase
         .from('images')
-        .insert([payload] as any);
+        .insert([payload] as any)
+        .select('id')
+        .single();
 
       if (error) {
         toast.error('Erro ao salvar link: ' + error.message);
       } else {
         toast.success('Link externo adicionado!');
         setExternalOpen(false);
+        if (newLink) {
+          await logAudit(user.id, 'add_external_link', newLink.id);
+        }
         fetchImages();
       }
     }
@@ -487,6 +504,20 @@ const EventDetail = () => {
     setExternalUrl('');
     setExternalType('document');
   };
+
+  const openExternalLink = (url: string | null) => {
+    if (!url) {
+      toast.error('URL não disponível.');
+      return;
+    }
+    try {
+      const validUrl = new URL(url);
+      window.open(validUrl.toString(), '_blank');
+    } catch (err) {
+      toast.error('O link salvo é inválido e não pode ser aberto.');
+    }
+  };
+
 
   const openExternalEdit = (img: ImageData) => {
     setEditingExternal(img);
@@ -906,11 +937,12 @@ const EventDetail = () => {
                     <p className="text-white/60 mb-6 max-w-md">Este é um link externo do Google Drive.</p>
                     <Button 
                       className="gap-2 bg-primary hover:bg-primary/90" 
-                      onClick={() => window.open(selectedImage.external_url!, '_blank')}
+                      onClick={() => openExternalLink(selectedImage.external_url)}
                     >
                       <ExternalLink className="h-4 w-4" />
                       Abrir no Google Drive
                     </Button>
+
                   </div>
                 ) : (imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
                   <video
@@ -951,10 +983,11 @@ const EventDetail = () => {
                 )}
                 <div className="mt-4 flex gap-2">
                   {selectedImage.external_url ? (
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => window.open(selectedImage.external_url!, '_blank')}>
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => openExternalLink(selectedImage.external_url)}>
                       <ExternalLink className="h-4 w-4" />
                       Acessar Link
                     </Button>
+
                   ) : (
                     canDownloadEventPhotos && (
                       <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
