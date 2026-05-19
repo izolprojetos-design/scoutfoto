@@ -121,69 +121,75 @@ const Gallery = () => {
   };
 
   const fetchImages = useCallback(async (pageNum: number, append = false) => {
-    let query = supabase
-      .from('images')
-      .select('*')
-      .is('event_id', null)
-      .order('created_at', { ascending: false })
-      .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
+    try {
+      let query = supabase
+        .from('images')
+        .select('*')
+        .is('event_id', null)
+        .order('created_at', { ascending: false })
+        .range(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE - 1);
 
-    // If branchKey is set from URL, scope to that branch
-    if (selectedBranch) {
-      query = query.eq('branch_id', selectedBranch.id);
-    }
-
-    const { data } = await query;
-    let filtered = data || [];
-
-    if (!canViewMinors) {
-      filtered = filtered.filter(img => img.minor_age === null);
-    }
-
-    if (append) {
-      setImages(prev => [...prev, ...filtered]);
-    } else {
-      setImages(filtered);
-    }
-    setHasMore(filtered.length === PAGE_SIZE);
-
-    // Get signed URLs in a single batched call (much faster on mobile)
-    const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
-    const thumbPaths: string[] = [];
-    const fullPaths: string[] = [];
-    const thumbIdByPath = new Map<string, string>();
-    const fullIdByPath = new Map<string, string>();
-
-    for (const img of filtered) {
-      if (img.thumbnail_path) {
-        thumbPaths.push(img.thumbnail_path);
-        thumbIdByPath.set(img.thumbnail_path, img.id);
+      // If branchKey is set from URL, scope to that branch
+      if (selectedBranch) {
+        query = query.eq('branch_id', selectedBranch.id);
       }
-      if (img.storage_path) {
-        fullPaths.push(img.storage_path);
-        fullIdByPath.set(img.storage_path, img.id);
+
+      const { data } = await query;
+      let filtered = data || [];
+
+      if (!canViewMinors) {
+        filtered = filtered.filter(img => img.minor_age === null);
       }
-    }
 
-    const [thumbMap, fullMap] = await Promise.all([
-      getSignedUrlsBatch('images', thumbPaths, 3600),
-      getSignedUrlsBatch('images', fullPaths, 3600),
-    ]);
+      if (append) {
+        setImages(prev => [...prev, ...filtered]);
+      } else {
+        setImages(filtered);
+      }
+      setHasMore(filtered.length === PAGE_SIZE);
 
-    const urls: Record<string, string> = {};
-    const thumbs: Record<string, string> = {};
-    for (const [path, url] of Object.entries(thumbMap)) {
-      const id = thumbIdByPath.get(path);
-      if (id) thumbs[id] = url;
-    }
-    for (const [path, url] of Object.entries(fullMap)) {
-      const id = fullIdByPath.get(path);
-      if (id) urls[id] = url;
-    }
+      // Get signed URLs in a single batched call (much faster on mobile)
+      const { getSignedUrlsBatch } = await import('@/lib/storageUtils');
+      const thumbPaths: string[] = [];
+      const fullPaths: string[] = [];
+      const thumbIdByPath = new Map<string, string>();
+      const fullIdByPath = new Map<string, string>();
 
-    setImageUrls(prev => ({ ...prev, ...urls }));
-    setThumbUrls(prev => ({ ...prev, ...thumbs }));
-    setLoading(false);
+      for (const img of filtered) {
+        if (img.thumbnail_path) {
+          thumbPaths.push(img.thumbnail_path);
+          thumbIdByPath.set(img.thumbnail_path, img.id);
+        }
+        if (img.storage_path) {
+          fullPaths.push(img.storage_path);
+          fullIdByPath.set(img.storage_path, img.id);
+        }
+      }
+
+      const [thumbMap, fullMap] = await Promise.all([
+        getSignedUrlsBatch('images', thumbPaths, 3600),
+        getSignedUrlsBatch('images', fullPaths, 3600),
+      ]);
+
+      const urls: Record<string, string> = {};
+      const thumbs: Record<string, string> = {};
+      for (const [path, url] of Object.entries(thumbMap)) {
+        const id = thumbIdByPath.get(path);
+        if (id) thumbs[id] = url;
+      }
+      for (const [path, url] of Object.entries(fullMap)) {
+        const id = fullIdByPath.get(path);
+        if (id) urls[id] = url;
+      }
+
+      setImageUrls(prev => ({ ...prev, ...urls }));
+      setThumbUrls(prev => ({ ...prev, ...thumbs }));
+    } catch (err) {
+      console.error('Error fetching gallery images:', err);
+      toast.error('Erro ao carregar galeria.');
+    } finally {
+      setLoading(false);
+    }
   }, [selectedBranch, canViewMinors]);
 
   useEffect(() => {
