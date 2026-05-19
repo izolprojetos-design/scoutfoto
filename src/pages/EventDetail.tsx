@@ -1234,6 +1234,16 @@ const EventDetail = () => {
                 placeholder="https://drive.google.com/..." 
                 required 
               />
+              <p className="text-[10px] leading-tight text-muted-foreground">
+                Certifique-se de que o link tenha permissão de visualização para "Qualquer pessoa com o link".
+              </p>
+            </div>
+                id="external-url"
+                value={externalUrl} 
+                onChange={e => setExternalUrl(e.target.value)} 
+                placeholder="https://drive.google.com/..." 
+                required 
+              />
               <p className="text-[10px] text-muted-foreground">Certifique-se de que o link tenha permissão de visualização.</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
