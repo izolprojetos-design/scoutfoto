@@ -5,28 +5,36 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 import React from 'react';
 
-// Mock Supabase
-vi.mock('../integrations/supabase/client', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({ data: { id: 'event-123', name: 'Test Event', event_date: '2024-01-01' }, error: null }),
-      maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'event-123' }, error: null }),
-    })),
+// More robust Supabase mock
+const createMockSupabase = () => {
+  const chain: any = {
+    select: vi.fn(() => chain),
+    insert: vi.fn(() => Promise.resolve({ data: null, error: null })),
+    update: vi.fn(() => chain),
+    delete: vi.fn(() => chain),
+    order: vi.fn(() => chain),
+    eq: vi.fn(() => chain),
+    single: vi.fn(() => Promise.resolve({ data: { id: 'event-123', name: 'Test Event', event_date: '2024-01-01' }, error: null })),
+    maybeSingle: vi.fn(() => Promise.resolve({ data: { id: 'event-123' }, error: null })),
+    then: vi.fn((cb) => Promise.resolve({ data: [], error: null }).then(cb)),
+  };
+
+  return {
+    from: vi.fn(() => chain),
     storage: {
       from: vi.fn(() => ({
         createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'mock' }, error: null }),
+        remove: vi.fn().mockResolvedValue({ error: null }),
       })),
     },
     auth: {
       getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
     },
-  },
+  };
+};
+
+vi.mock('../integrations/supabase/client', () => ({
+  supabase: createMockSupabase(),
 }));
 
 // Mock Auth
@@ -50,7 +58,6 @@ vi.mock('../hooks/usePermissions', () => ({
   }),
 }));
 
-
 // Mock toast
 vi.mock('sonner', () => ({
   toast: {
@@ -60,7 +67,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-// Mock framer-motion to avoid issues in test
+// Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
@@ -78,7 +85,7 @@ describe('External Link Validation', () => {
       </MemoryRouter>
     );
 
-    // Wait for the page to load (look for event name)
+    // Wait for the page to load
     await waitFor(() => {
       expect(screen.getByText(/Test Event/i)).toBeInTheDocument();
     });
@@ -95,9 +102,6 @@ describe('External Link Validation', () => {
     const urlInput = screen.getByPlaceholderText(/https:\/\/drive.google.com\//i);
     fireEvent.change(urlInput, { target: { value: 'not-a-url' } });
 
-    // Select a branch if needed (though we mock events)
-    // Ramo is usually populated by branches state
-    
     // Try to save
     const saveBtn = screen.getByRole('button', { name: /Adicionar Link/i });
     fireEvent.click(saveBtn);
@@ -107,7 +111,7 @@ describe('External Link Validation', () => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('URL inválida'));
     });
 
-    // Verify modal is still open (save button still visible)
+    // Verify modal is still open
     expect(screen.getByRole('button', { name: /Adicionar Link/i })).toBeInTheDocument();
   });
 });
