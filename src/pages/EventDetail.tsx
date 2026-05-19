@@ -226,7 +226,7 @@ const EventDetail = () => {
     const allPaths = filtered.flatMap(img => {
       const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
       if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
-      paths.push({ path: img.storage_path, id: img.id, type: 'full' });
+      if (img.storage_path) paths.push({ path: img.storage_path, id: img.id, type: 'full' });
       return paths;
     });
 
@@ -405,7 +405,13 @@ const EventDetail = () => {
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
-    if (user) await logAudit(user.id, 'view', img.id);
+    if (user) {
+      try {
+        await logAudit(user.id, 'view', img.id);
+      } catch (err) {
+        console.error('Audit log failed:', err);
+      }
+    }
   };
 
   const handleDownload = async (img: ImageData) => {

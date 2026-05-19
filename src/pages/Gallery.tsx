@@ -159,8 +159,10 @@ const Gallery = () => {
         thumbPaths.push(img.thumbnail_path);
         thumbIdByPath.set(img.thumbnail_path, img.id);
       }
-      fullPaths.push(img.storage_path);
-      fullIdByPath.set(img.storage_path, img.id);
+      if (img.storage_path) {
+        fullPaths.push(img.storage_path);
+        fullIdByPath.set(img.storage_path, img.id);
+      }
     }
 
     const [thumbMap, fullMap] = await Promise.all([
