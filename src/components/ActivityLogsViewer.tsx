@@ -59,6 +59,9 @@ const ACTION_LABELS: Record<string, { label: string; color: string; risk: 'low' 
   access_denied: { label: 'Acesso Negado', color: 'bg-red-500/10 text-red-700 dark:text-red-400', risk: 'high' },
   mfa_enabled: { label: '2FA Ativado', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', risk: 'low' },
   mfa_disabled: { label: '2FA Desativado', color: 'bg-red-500/10 text-red-700 dark:text-red-400', risk: 'high' },
+  add_external_link: { label: 'Novo Link', color: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400', risk: 'low' },
+  edit_external_link: { label: 'Link Editado', color: 'bg-amber-500/10 text-amber-700 dark:text-amber-400', risk: 'medium' },
+  delete_external_link: { label: 'Link Excluído', color: 'bg-red-500/10 text-red-700 dark:text-red-400', risk: 'high' },
 };
 
 const RISK_ICON: Record<string, React.ReactNode> = {
@@ -244,6 +247,9 @@ const ActivityLogsViewer = () => {
                 <SelectItem value="change_permissions">Permissões</SelectItem>
                 <SelectItem value="create_user">Criar Usuário</SelectItem>
                 <SelectItem value="data_update">Atualização</SelectItem>
+                <SelectItem value="add_external_link">Novo Link</SelectItem>
+                <SelectItem value="edit_external_link">Link Editado</SelectItem>
+                <SelectItem value="delete_external_link">Link Excluído</SelectItem>
               </SelectContent>
             </Select>
             <Input
