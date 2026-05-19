@@ -185,8 +185,6 @@ const Gallery = () => {
         const id = fullIdByPath.get(path);
         if (id) urls[id] = url;
       }
-        if (id) urls[id] = url;
-      }
 
       setImageUrls(prev => ({ ...prev, ...urls }));
       setThumbUrls(prev => ({ ...prev, ...thumbs }));
