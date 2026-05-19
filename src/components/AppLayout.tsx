@@ -16,6 +16,8 @@ const PageLoader = () => (
 
 /** Persistent layout – sidebar stays mounted across route changes. */
 const AppLayout = ({ children }: { children?: React.ReactNode }) => {
+  useRenderDiagnostics('AppLayout', { children });
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
