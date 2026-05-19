@@ -482,8 +482,9 @@ const EventDetail = () => {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {(() => {
-              const photoCount = images.filter(i => i.media_type !== 'video').length;
+              const photoCount = images.filter(i => i.media_type === 'image' || i.media_type === 'photo').length;
               const videoCount = images.filter(i => i.media_type === 'video').length;
+              const docCount = images.filter(i => i.media_type === 'document').length;
               return (
                 <>
                   {photoCount > 0 && (
@@ -492,14 +493,21 @@ const EventDetail = () => {
                       {photoCount} foto{photoCount !== 1 ? 's' : ''}
                     </span>
                   )}
-                  {photoCount > 0 && videoCount > 0 && <span>•</span>}
+                  {photoCount > 0 && (videoCount > 0 || docCount > 0) && <span>•</span>}
                   {videoCount > 0 && (
                     <span className="flex items-center gap-1">
                       <Film className="h-3.5 w-3.5" />
                       {videoCount} vídeo{videoCount !== 1 ? 's' : ''}
                     </span>
                   )}
-                  {photoCount === 0 && videoCount === 0 && (
+                  {(photoCount > 0 || videoCount > 0) && docCount > 0 && <span>•</span>}
+                  {docCount > 0 && (
+                    <span className="flex items-center gap-1">
+                      <FileText className="h-3.5 w-3.5" />
+                      {docCount} documento{docCount !== 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {photoCount === 0 && videoCount === 0 && docCount === 0 && (
                     <span className="flex items-center gap-1">
                       <ImageIcon className="h-3.5 w-3.5" />
                       0 fotos
@@ -508,6 +516,7 @@ const EventDetail = () => {
                 </>
               );
             })()}
+
           </div>
         </div>
       </div>
@@ -861,12 +870,27 @@ const EventDetail = () => {
                   </div>
                 )}
                 <div className="mt-4 flex gap-2">
-                  {canDownloadEventPhotos && (
-                    <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
-                      <Download className="h-4 w-4" />
-                      Download
+                  {selectedImage.external_url ? (
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => window.open(selectedImage.external_url!, '_blank')}>
+                      <ExternalLink className="h-4 w-4" />
+                      Acessar Link
+                    </Button>
+                  ) : (
+                    canDownloadEventPhotos && (
+                      <Button variant="outline" size="sm" className="gap-1.5" onClick={() => handleDownload(selectedImage)}>
+                        <Download className="h-4 w-4" />
+                        Download
+                      </Button>
+                    )
+                  )}
+                  
+                  {selectedImage.external_url && canEditThisEvent && (
+                    <Button variant="outline" size="sm" className="gap-2" onClick={() => { openExternalEdit(selectedImage); setSelectedImage(null); }}>
+                      <Pencil className="h-4 w-4" />
+                      Editar Link
                     </Button>
                   )}
+
                   {(canDeleteEventPhotos || user?.id === selectedImage.user_id) && (
                     <Button
                       variant="outline"
@@ -879,6 +903,7 @@ const EventDetail = () => {
                     </Button>
                   )}
                 </div>
+
               </div>
             </div>
           )}
@@ -961,6 +986,69 @@ const EventDetail = () => {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* External Link Dialog */}
+      <Dialog open={externalOpen} onOpenChange={setExternalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingExternal ? 'Editar Link Externo' : 'Adicionar Link Externo'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleExternalSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label>Título / Nome do Arquivo</Label>
+              <Input 
+                value={externalTitle} 
+                onChange={e => setExternalTitle(e.target.value)} 
+                placeholder="Ex: Documentos do Acampamento" 
+                required 
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>URL do Google Drive</Label>
+              <Input 
+                value={externalUrl} 
+                onChange={e => setExternalUrl(e.target.value)} 
+                placeholder="https://drive.google.com/..." 
+                required 
+              />
+              <p className="text-[10px] text-muted-foreground">Certifique-se de que o link tenha permissão de visualização.</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Tipo de Mídia</Label>
+                <Select value={externalType} onValueChange={(v: any) => setExternalType(v)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">Foto</SelectItem>
+                    <SelectItem value="video">Vídeo</SelectItem>
+                    <SelectItem value="document">Documento</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Ramo</Label>
+                <Select value={externalBranchId} onValueChange={setExternalBranchId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os Ramos</SelectItem>
+                    {branches.map(b => (
+                      <SelectItem key={b.id} value={b.id}>{b.icon} {b.display_name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="ghost" onClick={() => setExternalOpen(false)}>Cancelar</Button>
+              <Button type="submit">{editingExternal ? 'Salvar Alterações' : 'Adicionar Link'}</Button>
+            </div>
+          </form>
+        </DialogContent>
+
     </>
   );
 };
