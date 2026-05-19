@@ -889,6 +889,7 @@ const EventDetail = () => {
 
 
 
+
           {selectedImage && (
             <div>
               <div className="bg-black">
