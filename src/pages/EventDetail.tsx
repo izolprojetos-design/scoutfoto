@@ -24,6 +24,7 @@ import { ptBR } from 'date-fns/locale';
 import { logAudit } from '@/lib/auditLog';
 import { compressImage, createThumbnail } from '@/lib/imageCompression';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 
 
 interface EventData {
