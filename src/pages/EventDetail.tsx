@@ -886,7 +886,7 @@ const EventDetail = () => {
               <span className="text-sm text-muted-foreground mr-1">Filtrar:</span>
               <Select value={mediaFilter} onValueChange={(v: any) => setMediaFilter(v)}>
                 <SelectTrigger className="w-[140px] h-9 text-xs">
-                  <SelectValue />
+                  <SelectValue placeholder="Filtrar mídias" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
