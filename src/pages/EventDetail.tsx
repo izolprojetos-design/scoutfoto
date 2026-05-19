@@ -453,11 +453,10 @@ const EventDetail = () => {
       consent: true,
     };
 
-
     if (editingExternal) {
       const { error } = await supabase
         .from('images')
-        .update(payload)
+        .update(payload as any)
         .eq('id', editingExternal.id);
 
       if (error) {
@@ -471,7 +470,7 @@ const EventDetail = () => {
     } else {
       const { error } = await supabase
         .from('images')
-        .insert(payload);
+        .insert([payload] as any);
 
       if (error) {
         toast.error('Erro ao salvar link: ' + error.message);
@@ -483,6 +482,7 @@ const EventDetail = () => {
     }
     
     setSavingExternal(false);
+
     setExternalTitle('');
     setExternalUrl('');
     setExternalType('document');
