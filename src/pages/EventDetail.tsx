@@ -1228,9 +1228,9 @@ const EventDetail = () => {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label>Ramo</Label>
+                <Label htmlFor="external-branch">Ramo</Label>
                 <Select value={externalBranchId} onValueChange={setExternalBranchId}>
-                  <SelectTrigger>
+                  <SelectTrigger id="external-branch">
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent>
