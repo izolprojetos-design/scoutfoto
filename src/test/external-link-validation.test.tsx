@@ -35,8 +35,21 @@ vi.mock('../contexts/AuthContext', () => ({
     user: { id: 'user-123' },
     isAdmin: true,
     canUpload: true,
+    roles: ['admin'],
   }),
 }));
+
+// Mock permissions hook
+vi.mock('../hooks/usePermissions', () => ({
+  usePermissions: () => ({
+    canUploadEventPhotos: true,
+    canDownloadEventPhotos: true,
+    canDeleteEventPhotos: true,
+    canEditEvents: true,
+    loading: false,
+  }),
+}));
+
 
 // Mock toast
 vi.mock('sonner', () => ({
