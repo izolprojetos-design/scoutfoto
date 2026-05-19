@@ -568,7 +568,7 @@ const Events = () => {
                     </DropdownMenu>
                   </div>
                 )}
-              </motion.div>
+              </Row>
             );
           })}
         </div>
