@@ -960,27 +960,27 @@ const EventDetail = () => {
                   </div>
                 )}
               </div>
-              {img.media_type === 'video' && (
+              {(img.media_type === 'video' || (img.media_type === 'video' && img.external_url)) && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
                     {img.external_url ? <LinkIcon className="h-3 w-3" /> : <Film className="h-3 w-3" />}
-                    {img.external_url ? 'Link' : 'Vídeo'}
+                    {img.external_url ? 'Vídeo (Drive)' : 'Vídeo'}
                   </Badge>
                 </div>
               )}
-              {img.media_type === 'document' && (
+              {(img.media_type === 'document' || (img.media_type === 'document' && img.external_url)) && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
-                    <FileText className="h-3 w-3" />
-                    Documento
+                    {img.external_url ? <LinkIcon className="h-3 w-3" /> : <FileText className="h-3 w-3" />}
+                    {img.external_url ? 'Doc (Drive)' : 'Documento'}
                   </Badge>
                 </div>
               )}
               {img.media_type === 'image' && img.external_url && (
                 <div className="absolute left-2 top-2">
                   <Badge variant="secondary" className="text-xs gap-1">
-                    <ImageIcon className="h-3 w-3" />
-                    Foto
+                    <LinkIcon className="h-3 w-3" />
+                    Foto (Drive)
                   </Badge>
                 </div>
               )}
