@@ -1234,7 +1234,9 @@ const EventDetail = () => {
                 placeholder="https://drive.google.com/..." 
                 required 
               />
-              <p className="text-[10px] text-muted-foreground">Certifique-se de que o link tenha permissão de visualização.</p>
+              <p className="text-[10px] leading-tight text-muted-foreground">
+                Certifique-se de que o link tenha permissão de visualização para "Qualquer pessoa com o link".
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
