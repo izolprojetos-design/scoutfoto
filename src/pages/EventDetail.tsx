@@ -1125,7 +1125,7 @@ const EventDetail = () => {
                 {savingExternal ? 'Salvando...' : (editingExternal ? 'Salvar Alterações' : 'Adicionar Link')}
               </Button>
             </div>
-
+            </div>
           </form>
         </DialogContent>
       </Dialog>
@@ -1133,5 +1133,5 @@ const EventDetail = () => {
   );
 };
 
-
 export default EventDetail;
+
