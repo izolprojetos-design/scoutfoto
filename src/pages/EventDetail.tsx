@@ -1090,6 +1090,7 @@ const EventDetail = () => {
                       variant="outline"
                       size="sm"
                       className="gap-1.5 text-destructive hover:text-destructive"
+                      data-testid="delete-media-button"
                       onClick={() => { setDeleteImage(selectedImage); setSelectedImage(null); }}
                     >
                       <Trash2 className="h-4 w-4" />
