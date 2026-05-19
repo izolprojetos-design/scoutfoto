@@ -1118,7 +1118,10 @@ const EventDetail = () => {
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (deleteImage) handleDeleteImage(deleteImage); setDeleteImage(null); }}>
+            <AlertDialogAction 
+              data-testid="confirm-delete-button"
+              onClick={() => { if (deleteImage) handleDeleteImage(deleteImage); setDeleteImage(null); }}
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
