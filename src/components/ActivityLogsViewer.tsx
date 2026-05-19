@@ -247,6 +247,9 @@ const ActivityLogsViewer = () => {
                 <SelectItem value="change_permissions">Permissões</SelectItem>
                 <SelectItem value="create_user">Criar Usuário</SelectItem>
                 <SelectItem value="data_update">Atualização</SelectItem>
+                <SelectItem value="add_external_link">Novo Link</SelectItem>
+                <SelectItem value="edit_external_link">Link Editado</SelectItem>
+                <SelectItem value="delete_external_link">Link Excluído</SelectItem>
               </SelectContent>
             </Select>
             <Input
