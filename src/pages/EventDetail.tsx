@@ -1218,7 +1218,7 @@ const EventDetail = () => {
                 <Label htmlFor="external-media-type">Tipo de Mídia</Label>
                 <Select value={externalType} onValueChange={(v: any) => setExternalType(v)}>
                   <SelectTrigger id="external-media-type">
-                    <SelectValue />
+                    <SelectValue placeholder="Selecione o tipo" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="image">Foto</SelectItem>
