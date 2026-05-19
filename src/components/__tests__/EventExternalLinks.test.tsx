@@ -39,7 +39,12 @@ vi.mock('@/integrations/supabase/client', () => ({
           select: vi.fn().mockReturnThis(),
           eq: vi.fn().mockReturnThis(),
           single: vi.fn().mockResolvedValue({ 
-            data: { id: 'event-123', name: 'Evento Teste', branch_id: 'branch-1' }, 
+            data: { 
+              id: 'event-123', 
+              name: 'Evento Teste', 
+              branch_id: 'branch-1',
+              created_at: new Date().toISOString()
+            }, 
             error: null 
           }),
         };
