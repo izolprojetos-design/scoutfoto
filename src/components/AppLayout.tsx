@@ -5,6 +5,7 @@ import NotificationBell from '@/components/NotificationBell';
 import SectionIndicator from '@/components/SectionIndicator';
 import DataFreshnessIndicator from '@/components/DataFreshnessIndicator';
 import { Loader2 } from 'lucide-react';
+import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import { Suspense } from 'react';
 
 const PageLoader = () => (
@@ -15,6 +16,8 @@ const PageLoader = () => (
 
 /** Persistent layout – sidebar stays mounted across route changes. */
 const AppLayout = ({ children }: { children?: React.ReactNode }) => {
+  useRenderDiagnostics('AppLayout', { children });
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">

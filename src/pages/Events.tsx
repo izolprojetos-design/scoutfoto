@@ -23,6 +23,7 @@ import { ptBR } from 'date-fns/locale';
 import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getEventCoverImage } from '@/lib/eventImages';
+import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 
 interface Branch {
   id: string;
@@ -70,6 +71,13 @@ const Events = () => {
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'alpha'>('recent');
   const [filterBranch, setFilterBranch] = useState<string>('all');
   const [filterYear, setFilterYear] = useState<string>('all');
+
+  useRenderDiagnostics('Events', {
+    user, events, branches, mediaCounts, eventsWithPerms, loading,
+    dialogOpen, editDialogOpen, editingEvent, searchQuery, sortBy,
+    filterBranch, filterYear,
+  });
+
 
   const fetchEvents = async () => {
     const [{ data }, { data: permsData }] = await Promise.all([
