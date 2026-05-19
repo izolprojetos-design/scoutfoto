@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film, Pencil, Link as LinkIcon, ExternalLink, FileText } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film, Pencil, Link as LinkIcon, ExternalLink, FileText, ChevronDown } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { parseLocalDate } from '@/lib/scoutUtils';
@@ -435,6 +436,15 @@ const EventDetail = () => {
   };
 
 
+  const openExternalAdd = (type: 'image' | 'video' | 'document' = 'document') => {
+    setEditingExternal(null);
+    setExternalTitle('');
+    setExternalUrl('');
+    setExternalType(type);
+    setExternalBranchId(event?.branch_id || 'all');
+    setExternalOpen(true);
+  };
+
   const handleExternalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !eventId || !externalUrl || !externalTitle || !externalBranchId) return;
@@ -499,7 +509,6 @@ const EventDetail = () => {
     }
     
     setSavingExternal(false);
-
     setExternalTitle('');
     setExternalUrl('');
     setExternalType('document');
@@ -807,10 +816,30 @@ const EventDetail = () => {
                 <Video className="h-4 w-4" />
                 Adicionar Vídeo
               </Button>
-              <Button variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
-                <LinkIcon className="h-4 w-4" />
-                Link Google Drive
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    Link Externo
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Link de Foto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                    <Film className="h-4 w-4" />
+                    Link de Vídeo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Link de Documento
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
@@ -822,10 +851,30 @@ const EventDetail = () => {
                 <Plus className="h-4 w-4" />
                 Novo Upload
               </Button>
-              <Button size="sm" variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
-                <LinkIcon className="h-4 w-4" />
-                Link Externo
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    Link Externo
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Link de Foto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                    <Film className="h-4 w-4" />
+                    Link de Vídeo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Link de Documento
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -901,6 +950,14 @@ const EventDetail = () => {
                   <Badge variant="secondary" className="text-xs gap-1">
                     <FileText className="h-3 w-3" />
                     Documento
+                  </Badge>
+                </div>
+              )}
+              {img.media_type === 'image' && img.external_url && (
+                <div className="absolute left-2 top-2">
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <ImageIcon className="h-3 w-3" />
+                    Foto
                   </Badge>
                 </div>
               )}
