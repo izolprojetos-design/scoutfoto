@@ -1079,7 +1079,7 @@ const EventDetail = () => {
                   )}
                   
                   {selectedImage.external_url && canEditThisEvent && (
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => { openExternalEdit(selectedImage); setSelectedImage(null); }}>
+                    <Button variant="outline" size="sm" className="gap-2" data-testid="edit-external-link" onClick={() => { openExternalEdit(selectedImage); setSelectedImage(null); }}>
                       <Pencil className="h-4 w-4" />
                       Editar Link
                     </Button>
