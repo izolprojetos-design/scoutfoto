@@ -113,7 +113,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
   const [progress, setProgress] = useState({ current: 0, total: 0 });
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const cancelUploadRef = useRef(false);
+  const cancelUploadRef = useRef<string | null>(null); // Motivo do cancelamento para logs
   const activeXhrRef = useRef<XMLHttpRequest | null>(null);
 
   // Selection (bulk) state inside a date folder
@@ -368,7 +368,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
         : p
     ));
 
-    cancelUploadRef.current = false;
+    cancelUploadRef.current = null;
     setUploading(true);
     const total = snapshot.length;
     setProgress({ current: 0, total });
@@ -385,6 +385,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
     for (let i = 0; i < snapshot.length; i++) {
       if (cancelUploadRef.current) {
+        console.log(`[Upload] Interrompido. Motivo: ${cancelUploadRef.current}`);
         // Keep non-success items in queue so user can resume
         setPendingFiles(prev => prev.map(p => {
           const inBatch = snapshot.some(s => s.id === p.id);
@@ -471,6 +472,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
         console.error('upload err', err);
         // If aborted by cancel, the loop will handle it on next iteration
         if (cancelUploadRef.current) {
+          console.log(`[Upload] Catch block - abortado por cancelamento: ${cancelUploadRef.current}`);
           if (storedPath) { try { await supabase.storage.from('scout-photos').remove([storedPath]); } catch { /* */ } }
           continue;
         }
@@ -522,8 +524,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
     runUpload(ids);
   };
 
-  const cancelOngoingUpload = () => {
-    cancelUploadRef.current = true;
+  const cancelOngoingUpload = (reason: string = 'manual') => {
+    console.log(`[Upload] Solicitando cancelamento. Motivo: ${reason}`);
+    cancelUploadRef.current = reason;
     if (activeXhrRef.current) {
       try { activeXhrRef.current.abort(); } catch { /* */ }
       activeXhrRef.current = null;
@@ -1153,19 +1156,34 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
       <Dialog
         open={uploadOpen}
         onOpenChange={(v) => {
+          console.log(`[Dialog] onOpenChange: ${v}, uploading: ${uploading}`);
           // Allow closing if not uploading, or if forced via the cancel confirm
           if (!v && uploading) {
+            console.log(`[Dialog] Tentativa de fechar durante upload (click fora ou X). Abrindo confirmação.`);
             setConfirmCancelOpen(true);
             return;
           }
           setUploadOpen(v);
-          if (!v) { cleanupPreviews(pendingFiles); setPendingFiles([]); if (fileInputRef.current) fileInputRef.current.value = ''; }
+          if (!v) { 
+            console.log(`[Dialog] Fechando diálogo e limpando fila.`);
+            cleanupPreviews(pendingFiles); 
+            setPendingFiles([]); 
+            if (fileInputRef.current) fileInputRef.current.value = ''; 
+          }
         }}
       >
         <DialogContent 
           className="max-w-2xl max-h-[95vh] flex flex-col p-0"
+          onPointerDownOutside={(e) => {
+            if (uploading) {
+              console.log(`[Dialog] Clique fora detectado durante upload.`);
+              e.preventDefault();
+              setConfirmCancelOpen(true);
+            }
+          }}
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
+              console.log(`[Dialog] Tecla Escape pressionada.`);
               if (uploading) {
                 e.preventDefault();
                 setConfirmCancelOpen(true);
@@ -1438,7 +1456,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={() => {
-                cancelOngoingUpload();
+                cancelOngoingUpload('confirmacao_alert_dialog');
                 setConfirmCancelOpen(false);
               }}
             >
