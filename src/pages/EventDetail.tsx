@@ -436,6 +436,15 @@ const EventDetail = () => {
   };
 
 
+  const openExternalAdd = (type: 'image' | 'video' | 'document' = 'document') => {
+    setEditingExternal(null);
+    setExternalTitle('');
+    setExternalUrl('');
+    setExternalType(type);
+    setExternalBranchId(event?.branch_id || 'all');
+    setExternalOpen(true);
+  };
+
   const handleExternalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !eventId || !externalUrl || !externalTitle || !externalBranchId) return;
@@ -500,7 +509,6 @@ const EventDetail = () => {
     }
     
     setSavingExternal(false);
-
     setExternalTitle('');
     setExternalUrl('');
     setExternalType('document');
