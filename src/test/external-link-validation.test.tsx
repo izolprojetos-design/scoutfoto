@@ -25,7 +25,6 @@ vi.mock('../integrations/supabase/client', () => {
     })),
     maybeSingle: vi.fn(() => Promise.resolve({ data: { id: 'event-123' }, error: null })),
     then: vi.fn((cb) => {
-      // Return a promise that resolves to match the expected structure { data, error }
       return Promise.resolve({ data: [], error: null }).then(cb);
     }),
   };
@@ -84,8 +83,8 @@ vi.mock('framer-motion', () => ({
   AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
-describe('External Link Validation', () => {
-  it('shows error when saving an invalid URL', async () => {
+describe('External Link Validation E2E Simulation', () => {
+  it('shows error when saving an invalid URL and keeps modal open', async () => {
     render(
       <MemoryRouter initialEntries={['/events/event-123']}>
         <Routes>
@@ -94,13 +93,13 @@ describe('External Link Validation', () => {
       </MemoryRouter>
     );
 
-    // Wait for the page to load by checking for the event name heading
+    // Wait for the page to load
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /Test Event/i })).toBeInTheDocument();
-    }, { timeout: 3000 });
+    });
 
-    // Open External Link Modal
-    const addLinkBtn = await screen.findByText(/Link Externo/i);
+    // Open External Link Modal (it says "Link Google Drive" when gallery is empty)
+    const addLinkBtn = await screen.findByText(/Link Google Drive/i);
     fireEvent.click(addLinkBtn);
 
     // Fill title
@@ -115,12 +114,15 @@ describe('External Link Validation', () => {
     const saveBtn = screen.getByRole('button', { name: /Adicionar Link/i });
     fireEvent.click(saveBtn);
 
-    // Verify error toast was called
+    // Verify error toast was called with URL validation error
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('URL inválida'));
     });
 
-    // Verify modal is still open
+    // Confirm modal is still open by checking visibility of the title
+    expect(screen.getByText('Adicionar Link Externo')).toBeInTheDocument();
+    
+    // Ensure the save button is still there
     expect(screen.getByRole('button', { name: /Adicionar Link/i })).toBeInTheDocument();
   });
 });
