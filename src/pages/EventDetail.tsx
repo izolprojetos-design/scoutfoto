@@ -251,6 +251,7 @@ const EventDetail = () => {
     setImageUrls(prev => ({ ...prev, ...urls }));
     setThumbUrls(prev => ({ ...prev, ...thumbs }));
     setLoading(false);
+    console.log('Images loaded:', filtered.length);
   }, [eventId, canViewMinors]);
 
   useEffect(() => {
