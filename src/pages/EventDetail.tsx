@@ -800,7 +800,7 @@ const EventDetail = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
-      ) : (images.length === 0 && !loading) ? (
+      ) : images.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted mb-4">
             <ImageIcon className="h-8 w-8" />
@@ -822,7 +822,7 @@ const EventDetail = () => {
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="outline" className="gap-2" data-testid="link-externo-dropdown">
                     <LinkIcon className="h-4 w-4" />
                     Link Externo
                     <ChevronDown className="h-3 w-3 opacity-50" />
@@ -858,7 +858,7 @@ const EventDetail = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button size="sm" variant="outline" className="gap-2" data-testid="link-externo-dropdown">
                       <LinkIcon className="h-4 w-4" />
                       Link Externo
                       <ChevronDown className="h-3 w-3 opacity-50" />
@@ -907,6 +907,7 @@ const EventDetail = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: Math.min(index * 0.02, 0.5) }}
+                data-testid={`media-item-${img.id}`}
                 className="group relative cursor-pointer overflow-hidden rounded-xl bg-muted"
                 onClick={() => handleViewImage(img)}
               >
@@ -1078,7 +1079,7 @@ const EventDetail = () => {
                   )}
                   
                   {selectedImage.external_url && canEditThisEvent && (
-                    <Button variant="outline" size="sm" className="gap-2" onClick={() => { openExternalEdit(selectedImage); setSelectedImage(null); }}>
+                    <Button variant="outline" size="sm" className="gap-2" data-testid="edit-external-link" onClick={() => { openExternalEdit(selectedImage); setSelectedImage(null); }}>
                       <Pencil className="h-4 w-4" />
                       Editar Link
                     </Button>
@@ -1089,6 +1090,7 @@ const EventDetail = () => {
                       variant="outline"
                       size="sm"
                       className="gap-1.5 text-destructive hover:text-destructive"
+                      data-testid="delete-media-button"
                       onClick={() => { setDeleteImage(selectedImage); setSelectedImage(null); }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -1117,7 +1119,10 @@ const EventDetail = () => {
 
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { if (deleteImage) handleDeleteImage(deleteImage); setDeleteImage(null); }}>
+            <AlertDialogAction 
+              data-testid="confirm-delete-button"
+              onClick={() => { if (deleteImage) handleDeleteImage(deleteImage); setDeleteImage(null); }}
+            >
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -1244,7 +1249,7 @@ const EventDetail = () => {
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="ghost" onClick={() => setExternalOpen(false)} disabled={savingExternal}>Cancelar</Button>
-              <Button type="submit" disabled={savingExternal}>
+              <Button type="submit" disabled={savingExternal} data-testid="save-external-link">
                 {savingExternal ? 'Salvando...' : (editingExternal ? 'Salvar Alterações' : 'Adicionar Link')}
               </Button>
             </div>
