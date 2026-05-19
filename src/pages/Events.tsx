@@ -24,6 +24,7 @@ import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getEventCoverImage } from '@/lib/eventImages';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
+import { useNoEffects } from '@/components/RenderDiagnosticsToolbar';
 
 interface Branch {
   id: string;
@@ -71,6 +72,8 @@ const Events = () => {
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'alpha'>('recent');
   const [filterBranch, setFilterBranch] = useState<string>('all');
   const [filterYear, setFilterYear] = useState<string>('all');
+
+  const noEffects = useNoEffects();
 
   useRenderDiagnostics('Events', {
     user, events, branches, mediaCounts, eventsWithPerms, loading,
@@ -351,9 +354,19 @@ const Events = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />
+            <div key={i} className="flex items-center gap-4 px-4 py-3">
+              <div className="h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 rounded-md bg-muted" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-4 w-2/3 rounded bg-muted" />
+                <div className="h-3 w-1/3 rounded bg-muted" />
+                <div className="flex gap-2 pt-1">
+                  <div className="h-5 w-20 rounded bg-muted" />
+                  <div className="h-5 w-24 rounded bg-muted" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : events.length === 0 ? (
@@ -404,6 +417,10 @@ const Events = () => {
           );
         }
 
+        // Disable per-item animations when in "no effects" mode or when the
+        // list is large enough that staggered animations cause flicker.
+        const disableMotion = noEffects || sortedEvents.length > 20;
+
         return (
         <div className="flex flex-col divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {sortedEvents.map((event, index) => {
@@ -413,13 +430,21 @@ const Events = () => {
             const hasPhotos = mediaCount.photos > 0;
             const hasVideos = mediaCount.videos > 0;
 
+            const rowClass = `group flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 ${disableMotion ? '' : 'transition-colors'}`;
+            const Row: any = disableMotion ? 'div' : motion.div;
+            const motionProps = disableMotion
+              ? {}
+              : {
+                  initial: { opacity: 0, y: 4 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { delay: Math.min(index * 0.015, 0.15), duration: 0.2 },
+                };
+
             return (
-              <motion.div
+              <Row
                 key={event.id}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.015, 0.15), duration: 0.2 }}
-                className="group flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                {...motionProps}
+                className={rowClass}
                 onClick={() => navigate(`/events/${event.id}`)}
               >
                 <div className="relative h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 overflow-hidden rounded-md bg-muted">
@@ -543,7 +568,7 @@ const Events = () => {
                     </DropdownMenu>
                   </div>
                 )}
-              </motion.div>
+              </Row>
             );
           })}
         </div>
