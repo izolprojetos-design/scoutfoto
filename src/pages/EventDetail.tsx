@@ -883,6 +883,7 @@ const EventDetail = () => {
         </div>
       )}
 
+
       {/* Media Viewer Modal */}
       <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
         <DialogContent className="max-w-4xl border-0 p-0 overflow-hidden">
