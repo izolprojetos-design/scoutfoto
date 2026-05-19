@@ -354,9 +354,19 @@ const Events = () => {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />
+            <div key={i} className="flex items-center gap-4 px-4 py-3">
+              <div className="h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 rounded-md bg-muted" />
+              <div className="flex-1 min-w-0 space-y-2">
+                <div className="h-4 w-2/3 rounded bg-muted" />
+                <div className="h-3 w-1/3 rounded bg-muted" />
+                <div className="flex gap-2 pt-1">
+                  <div className="h-5 w-20 rounded bg-muted" />
+                  <div className="h-5 w-24 rounded bg-muted" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       ) : events.length === 0 ? (
