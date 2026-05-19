@@ -21,43 +21,44 @@ const mockDelete = vi.fn().mockReturnValue({
   eq: vi.fn().mockResolvedValue({ error: null })
 });
 
+const mockImagesQuery = {
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  order: vi.fn().mockResolvedValue({ data: [], error: null }),
+  insert: mockInsert,
+  update: mockUpdate,
+  delete: mockDelete,
+};
+
+const mockEventsQuery = {
+  select: vi.fn().mockReturnThis(),
+  eq: vi.fn().mockReturnThis(),
+  single: vi.fn().mockResolvedValue({ 
+    data: { 
+      id: 'event-123', 
+      name: 'Evento Teste', 
+      branch_id: 'branch-1',
+      created_at: new Date().toISOString(),
+      event_date: '2026-05-20'
+    }, 
+    error: null 
+  }),
+};
+
+const mockBranchesQuery = {
+  select: vi.fn().mockReturnThis(),
+  order: vi.fn().mockResolvedValue({ 
+    data: [{ id: 'branch-1', key: 'alcateia', display_name: 'Alcateia', icon: '🐺' }], 
+    error: null 
+  }),
+};
+
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn((table) => {
-      if (table === 'images') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          order: vi.fn().mockResolvedValue({ data: [], error: null }),
-          insert: mockInsert,
-          update: mockUpdate,
-          delete: mockDelete,
-        };
-      }
-      if (table === 'events') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValue({ 
-            data: { 
-              id: 'event-123', 
-              name: 'Evento Teste', 
-              branch_id: 'branch-1',
-              created_at: new Date().toISOString()
-            }, 
-            error: null 
-          }),
-        };
-      }
-      if (table === 'branches') {
-        return {
-          select: vi.fn().mockReturnThis(),
-          order: vi.fn().mockResolvedValue({ 
-            data: [{ id: 'branch-1', key: 'alcateia', display_name: 'Alcateia', icon: '🐺' }], 
-            error: null 
-          }),
-        };
-      }
+      if (table === 'images') return mockImagesQuery;
+      if (table === 'events') return mockEventsQuery;
+      if (table === 'branches') return mockBranchesQuery;
       return {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
