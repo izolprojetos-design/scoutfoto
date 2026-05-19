@@ -1113,7 +1113,14 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
 
       {/* Lightbox */}
       <Dialog open={!!viewing} onOpenChange={() => setViewing(null)}>
-        <DialogContent className="max-w-4xl p-2 max-h-[90vh]">
+        <DialogContent 
+          className="max-w-4xl p-2 max-h-[90vh]"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setViewing(null);
+            }
+          }}
+        >
           <DialogHeader className="sr-only"><DialogTitle>Foto</DialogTitle></DialogHeader>
           {viewing && (
             <div className="space-y-3">
