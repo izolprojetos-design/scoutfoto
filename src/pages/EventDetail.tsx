@@ -559,8 +559,9 @@ const EventDetail = () => {
     setEditingExternal(img);
     setExternalTitle(img.filename || '');
     setExternalUrl(img.external_url || '');
+    setExternalThumbnail(img.thumbnail_path || '');
     setExternalType(img.media_type as any);
-    setExternalBranchId(img.branch_id);
+    setExternalBranchId(img.branch_id || event?.branch_id || 'all');
     setExternalOpen(true);
   };
 
