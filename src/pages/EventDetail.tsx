@@ -953,6 +953,14 @@ const EventDetail = () => {
                   </Badge>
                 </div>
               )}
+              {img.media_type === 'image' && img.external_url && (
+                <div className="absolute left-2 top-2">
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <ImageIcon className="h-3 w-3" />
+                    Foto
+                  </Badge>
+                </div>
+              )}
 
               {img.minor_age && (
                 <div className="absolute right-2 top-2">
