@@ -858,7 +858,7 @@ const EventDetail = () => {
                 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button size="sm" variant="outline" className="gap-2">
+                    <Button size="sm" variant="outline" className="gap-2" data-testid="link-externo-dropdown">
                       <LinkIcon className="h-4 w-4" />
                       Link Externo
                       <ChevronDown className="h-3 w-3 opacity-50" />
