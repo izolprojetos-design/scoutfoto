@@ -1193,8 +1193,9 @@ const EventDetail = () => {
           </DialogHeader>
           <form onSubmit={handleExternalSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label>Título / Nome do Arquivo</Label>
+              <Label htmlFor="external-title">Título / Nome do Arquivo</Label>
               <Input 
+                id="external-title"
                 value={externalTitle} 
                 onChange={e => setExternalTitle(e.target.value)} 
                 placeholder="Ex: Documentos do Acampamento" 
@@ -1202,8 +1203,9 @@ const EventDetail = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label>URL do Google Drive</Label>
+              <Label htmlFor="external-url">URL do Google Drive</Label>
               <Input 
+                id="external-url"
                 value={externalUrl} 
                 onChange={e => setExternalUrl(e.target.value)} 
                 placeholder="https://drive.google.com/..." 
