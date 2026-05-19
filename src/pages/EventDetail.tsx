@@ -203,54 +203,60 @@ const EventDetail = () => {
 
   const fetchImages = useCallback(async () => {
     if (!eventId) return;
-    const { data } = await supabase
-      .from('images')
-      .select('*')
-      .eq('event_id', eventId)
-      .order('created_at', { ascending: false });
+    try {
+      const { data } = await supabase
+        .from('images')
+        .select('*')
+        .eq('event_id', eventId)
+        .order('created_at', { ascending: false });
 
-    let filtered = data || [];
-    if (!canViewMinors) {
-      filtered = filtered.filter(img => img.minor_age === null);
-    }
-    // Sort: photos first, then videos
-    filtered.sort((a, b) => {
-      const aIsVideo = a.media_type === 'video' ? 1 : 0;
-      const bIsVideo = b.media_type === 'video' ? 1 : 0;
-      if (aIsVideo !== bIsVideo) return aIsVideo - bIsVideo;
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-    setImages(filtered);
-
-    // Get signed URLs
-    const allPaths = filtered.flatMap(img => {
-      const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
-      if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
-      paths.push({ path: img.storage_path, id: img.id, type: 'full' });
-      return paths;
-    });
-
-    const urls: Record<string, string> = {};
-    const thumbs: Record<string, string> = {};
-    const batchSize = 10;
-
-    for (let i = 0; i < allPaths.length; i += batchSize) {
-      const batch = allPaths.slice(i, i + batchSize);
-      const results = await Promise.all(
-        batch.map(item => supabase.storage.from('images').createSignedUrl(item.path, 3600))
-      );
-      results.forEach((res, idx) => {
-        const item = batch[idx];
-        if (res.data?.signedUrl) {
-          if (item.type === 'thumb') thumbs[item.id] = res.data.signedUrl;
-          else urls[item.id] = res.data.signedUrl;
-        }
+      let filtered = data || [];
+      if (!canViewMinors) {
+        filtered = filtered.filter(img => img.minor_age === null);
+      }
+      // Sort: photos first, then videos
+      filtered.sort((a, b) => {
+        const aIsVideo = a.media_type === 'video' ? 1 : 0;
+        const bIsVideo = b.media_type === 'video' ? 1 : 0;
+        if (aIsVideo !== bIsVideo) return aIsVideo - bIsVideo;
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
-    }
+      setImages(filtered);
 
-    setImageUrls(prev => ({ ...prev, ...urls }));
-    setThumbUrls(prev => ({ ...prev, ...thumbs }));
-    setLoading(false);
+      // Get signed URLs
+      const allPaths = filtered.flatMap(img => {
+        const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
+        if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
+        if (img.storage_path) paths.push({ path: img.storage_path, id: img.id, type: 'full' });
+        return paths;
+      });
+
+      const urls: Record<string, string> = {};
+      const thumbs: Record<string, string> = {};
+      const batchSize = 10;
+
+      for (let i = 0; i < allPaths.length; i += batchSize) {
+        const batch = allPaths.slice(i, i + batchSize);
+        const results = await Promise.all(
+          batch.map(item => supabase.storage.from('images').createSignedUrl(item.path, 3600))
+        );
+        results.forEach((res, idx) => {
+          const item = batch[idx];
+          if (res.data?.signedUrl) {
+            if (item.type === 'thumb') thumbs[item.id] = res.data.signedUrl;
+            else urls[item.id] = res.data.signedUrl;
+          }
+        });
+      }
+
+      setImageUrls(prev => ({ ...prev, ...urls }));
+      setThumbUrls(prev => ({ ...prev, ...thumbs }));
+    } catch (err) {
+      console.error('Error fetching images:', err);
+      toast.error('Erro ao carregar mídias do evento.');
+    } finally {
+      setLoading(false);
+    }
   }, [eventId, canViewMinors]);
 
   useEffect(() => {
@@ -405,7 +411,13 @@ const EventDetail = () => {
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
-    if (user) await logAudit(user.id, 'view', img.id);
+    if (user) {
+      try {
+        await logAudit(user.id, 'view', img.id);
+      } catch (err) {
+        console.error('Audit log failed:', err);
+      }
+    }
   };
 
   const handleDownload = async (img: ImageData) => {
