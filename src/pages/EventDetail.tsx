@@ -108,6 +108,7 @@ const EventDetail = () => {
   const [editingExternal, setEditingExternal] = useState<ImageData | null>(null);
   const [externalTitle, setExternalTitle] = useState('');
   const [externalUrl, setExternalUrl] = useState('');
+  const [externalThumbnail, setExternalThumbnail] = useState('');
   const [externalType, setExternalType] = useState<'image' | 'video' | 'document'>('document');
   const [externalBranchId, setExternalBranchId] = useState('');
   const [savingExternal, setSavingExternal] = useState(false);
@@ -226,8 +227,16 @@ const EventDetail = () => {
       // Get signed URLs
       const allPaths = filtered.flatMap(img => {
         const paths: { path: string; id: string; type: 'full' | 'thumb' }[] = [];
-        if (img.thumbnail_path) paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
-        if (img.storage_path) paths.push({ path: img.storage_path, id: img.id, type: 'full' });
+      if (img.thumbnail_path) {
+        // Only try to sign if it doesn't look like a direct external URL
+        if (!img.thumbnail_path.startsWith('http')) {
+          paths.push({ path: img.thumbnail_path, id: img.id, type: 'thumb' });
+        } else {
+          // Direct external URL - set it directly
+          thumbs[img.id] = img.thumbnail_path;
+        }
+      }
+      if (img.storage_path) paths.push({ path: img.storage_path, id: img.id, type: 'full' });
         return paths;
       });
 
@@ -455,6 +464,7 @@ const EventDetail = () => {
     setEditingExternal(null);
     setExternalTitle('');
     setExternalUrl('');
+    setExternalThumbnail('');
     setExternalType(type);
     setExternalBranchId(event?.branch_id || 'all');
     setExternalOpen(true);
@@ -484,6 +494,7 @@ const EventDetail = () => {
       branch_id: externalBranchId === 'all' ? (event?.branch_id || branches[0]?.id || '') : externalBranchId,
       filename: externalTitle,
       external_url: normalizedUrl,
+      thumbnail_path: externalThumbnail.trim() || null,
       media_type: externalType,
       visibility: 'group' as 'group' | 'private' | 'public',
       consent: true,
@@ -526,6 +537,7 @@ const EventDetail = () => {
     setSavingExternal(false);
     setExternalTitle('');
     setExternalUrl('');
+    setExternalThumbnail('');
     setExternalType('document');
   };
 
@@ -547,8 +559,9 @@ const EventDetail = () => {
     setEditingExternal(img);
     setExternalTitle(img.filename || '');
     setExternalUrl(img.external_url || '');
+    setExternalThumbnail(img.thumbnail_path || '');
     setExternalType(img.media_type as any);
-    setExternalBranchId(img.branch_id);
+    setExternalBranchId(img.branch_id || event?.branch_id || 'all');
     setExternalOpen(true);
   };
 
@@ -1236,6 +1249,18 @@ const EventDetail = () => {
               />
               <p className="text-[10px] leading-tight text-muted-foreground">
                 Certifique-se de que o link tenha permissão de visualização para "Qualquer pessoa com o link".
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="external-thumbnail">URL da Imagem de Capa (Opcional)</Label>
+              <Input 
+                id="external-thumbnail"
+                value={externalThumbnail} 
+                onChange={e => setExternalThumbnail(e.target.value)} 
+                placeholder="https://exemplo.com/imagem.jpg" 
+              />
+              <p className="text-[10px] leading-tight text-muted-foreground">
+                Cole a URL de uma foto para que o link não fique cinza na galeria.
               </p>
             </div>
             <div className="grid grid-cols-2 gap-4">

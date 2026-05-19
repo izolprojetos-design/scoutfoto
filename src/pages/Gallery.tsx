@@ -154,11 +154,17 @@ const Gallery = () => {
       const fullPaths: string[] = [];
       const thumbIdByPath = new Map<string, string>();
       const fullIdByPath = new Map<string, string>();
+      const urls: Record<string, string> = {};
+      const thumbs: Record<string, string> = {};
 
       for (const img of filtered) {
         if (img.thumbnail_path) {
-          thumbPaths.push(img.thumbnail_path);
-          thumbIdByPath.set(img.thumbnail_path, img.id);
+          if (!img.thumbnail_path.startsWith('http')) {
+            thumbPaths.push(img.thumbnail_path);
+            thumbIdByPath.set(img.thumbnail_path, img.id);
+          } else {
+            thumbs[img.id] = img.thumbnail_path;
+          }
         }
         if (img.storage_path) {
           fullPaths.push(img.storage_path);
@@ -171,8 +177,6 @@ const Gallery = () => {
         getSignedUrlsBatch('images', fullPaths, 3600),
       ]);
 
-      const urls: Record<string, string> = {};
-      const thumbs: Record<string, string> = {};
       for (const [path, url] of Object.entries(thumbMap)) {
         const id = thumbIdByPath.get(path);
         if (id) thumbs[id] = url;
