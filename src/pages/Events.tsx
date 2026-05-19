@@ -417,6 +417,10 @@ const Events = () => {
           );
         }
 
+        // Disable per-item animations when in "no effects" mode or when the
+        // list is large enough that staggered animations cause flicker.
+        const disableMotion = noEffects || sortedEvents.length > 20;
+
         return (
         <div className="flex flex-col divide-y rounded-xl border bg-card shadow-sm overflow-hidden">
           {sortedEvents.map((event, index) => {
@@ -426,13 +430,21 @@ const Events = () => {
             const hasPhotos = mediaCount.photos > 0;
             const hasVideos = mediaCount.videos > 0;
 
+            const rowClass = `group flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 ${disableMotion ? '' : 'transition-colors'}`;
+            const Row: any = disableMotion ? 'div' : motion.div;
+            const motionProps = disableMotion
+              ? {}
+              : {
+                  initial: { opacity: 0, y: 4 },
+                  animate: { opacity: 1, y: 0 },
+                  transition: { delay: Math.min(index * 0.015, 0.15), duration: 0.2 },
+                };
+
             return (
-              <motion.div
+              <Row
                 key={event.id}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.015, 0.15), duration: 0.2 }}
-                className="group flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-muted/40 transition-colors"
+                {...motionProps}
+                className={rowClass}
                 onClick={() => navigate(`/events/${event.id}`)}
               >
                 <div className="relative h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 overflow-hidden rounded-md bg-muted">
