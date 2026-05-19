@@ -156,10 +156,14 @@ const Gallery = () => {
       const fullIdByPath = new Map<string, string>();
 
       for (const img of filtered) {
-        if (img.thumbnail_path) {
+      if (img.thumbnail_path) {
+        if (!img.thumbnail_path.startsWith('http')) {
           thumbPaths.push(img.thumbnail_path);
           thumbIdByPath.set(img.thumbnail_path, img.id);
+        } else {
+          thumbs[img.id] = img.thumbnail_path;
         }
+      }
         if (img.storage_path) {
           fullPaths.push(img.storage_path);
           fullIdByPath.set(img.storage_path, img.id);
