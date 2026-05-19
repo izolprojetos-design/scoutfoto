@@ -816,10 +816,30 @@ const EventDetail = () => {
                 <Video className="h-4 w-4" />
                 Adicionar Vídeo
               </Button>
-              <Button variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
-                <LinkIcon className="h-4 w-4" />
-                Link Google Drive
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    Link Externo
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Link de Foto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                    <Film className="h-4 w-4" />
+                    Link de Vídeo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Link de Documento
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
@@ -831,10 +851,30 @@ const EventDetail = () => {
                 <Plus className="h-4 w-4" />
                 Novo Upload
               </Button>
-              <Button size="sm" variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
-                <LinkIcon className="h-4 w-4" />
-                Link Externo
-              </Button>
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="sm" variant="outline" className="gap-2">
+                    <LinkIcon className="h-4 w-4" />
+                    Link Externo
+                    <ChevronDown className="h-3 w-3 opacity-50" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                    <ImageIcon className="h-4 w-4" />
+                    Link de Foto
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                    <Film className="h-4 w-4" />
+                    Link de Vídeo
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                    <FileText className="h-4 w-4" />
+                    Link de Documento
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
