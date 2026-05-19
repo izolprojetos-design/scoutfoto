@@ -106,6 +106,8 @@ const EventDetail = () => {
   const [externalUrl, setExternalUrl] = useState('');
   const [externalType, setExternalType] = useState<'image' | 'video' | 'document'>('document');
   const [externalBranchId, setExternalBranchId] = useState('');
+  const [savingExternal, setSavingExternal] = useState(false);
+
 
   // Edit event state
   const [editOpen, setEditOpen] = useState(false);
@@ -410,20 +412,90 @@ const EventDetail = () => {
   };
 
   const handleDeleteImage = async (img: ImageData) => {
-    await supabase.storage.from('images').remove([img.storage_path]);
-    if (img.thumbnail_path) {
-      await supabase.storage.from('images').remove([img.thumbnail_path]);
+    if (img.storage_path) {
+      await supabase.storage.from('images').remove([img.storage_path]);
+      if (img.thumbnail_path) {
+        await supabase.storage.from('images').remove([img.thumbnail_path]);
+      }
     }
     const { error } = await supabase.from('images').delete().eq('id', img.id);
     if (error) {
       toast.error('Erro ao excluir: ' + error.message);
     } else {
-      toast.success('Foto excluída!');
+      toast.success(img.external_url ? 'Link excluído!' : 'Mídia excluída!');
       setImages(prev => prev.filter(i => i.id !== img.id));
       setSelectedImage(null);
       if (user) await logAudit(user.id, 'delete', img.id);
     }
   };
+
+  const handleExternalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user || !eventId || !externalUrl || !externalTitle || !externalBranchId) return;
+
+    // Validate URL
+    try {
+      new URL(externalUrl);
+    } catch {
+      toast.error('URL inválida. Certifique-se de incluir http:// ou https://');
+      return;
+    }
+
+    setSavingExternal(true);
+    const payload = {
+      user_id: user.id,
+      event_id: eventId,
+      branch_id: externalBranchId === 'all' ? (event?.branch_id || branches[0]?.id || '') : externalBranchId,
+      filename: externalTitle,
+      external_url: externalUrl,
+      media_type: externalType,
+      visibility: 'group',
+      consent: true,
+    };
+
+    if (editingExternal) {
+      const { error } = await supabase
+        .from('images')
+        .update(payload)
+        .eq('id', editingExternal.id);
+
+      if (error) {
+        toast.error('Erro ao atualizar link: ' + error.message);
+      } else {
+        toast.success('Link atualizado!');
+        setExternalOpen(false);
+        setEditingExternal(null);
+        fetchImages();
+      }
+    } else {
+      const { error } = await supabase
+        .from('images')
+        .insert(payload);
+
+      if (error) {
+        toast.error('Erro ao salvar link: ' + error.message);
+      } else {
+        toast.success('Link externo adicionado!');
+        setExternalOpen(false);
+        fetchImages();
+      }
+    }
+    
+    setSavingExternal(false);
+    setExternalTitle('');
+    setExternalUrl('');
+    setExternalType('document');
+  };
+
+  const openExternalEdit = (img: ImageData) => {
+    setEditingExternal(img);
+    setExternalTitle(img.filename || '');
+    setExternalUrl(img.external_url || '');
+    setExternalType(img.media_type as any);
+    setExternalBranchId(img.branch_id);
+    setExternalOpen(true);
+  };
+
 
   if (!event && !loading) return null;
 
@@ -914,9 +986,14 @@ const EventDetail = () => {
       <AlertDialog open={!!deleteImage} onOpenChange={(open) => !open && setDeleteImage(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir esta foto?</AlertDialogTitle>
-            <AlertDialogDescription>Esta ação não pode ser desfeita.</AlertDialogDescription>
+            <AlertDialogTitle>Excluir {deleteImage?.external_url ? 'este link' : 'esta foto'}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteImage?.external_url 
+                ? 'Isso removerá apenas a referência ao link externo.' 
+                : 'Esta ação removerá permanentemente o arquivo do servidor.'}
+            </AlertDialogDescription>
           </AlertDialogHeader>
+
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction onClick={() => { if (deleteImage) handleDeleteImage(deleteImage); setDeleteImage(null); }}>
@@ -1043,9 +1120,12 @@ const EventDetail = () => {
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" variant="ghost" onClick={() => setExternalOpen(false)}>Cancelar</Button>
-              <Button type="submit">{editingExternal ? 'Salvar Alterações' : 'Adicionar Link'}</Button>
+              <Button type="button" variant="ghost" onClick={() => setExternalOpen(false)} disabled={savingExternal}>Cancelar</Button>
+              <Button type="submit" disabled={savingExternal}>
+                {savingExternal ? 'Salvando...' : (editingExternal ? 'Salvar Alterações' : 'Adicionar Link')}
+              </Button>
             </div>
+
           </form>
         </DialogContent>
       </Dialog>
