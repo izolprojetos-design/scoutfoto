@@ -848,40 +848,60 @@ const EventDetail = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {(canUploadEventPhotos || canUpload) && !showUpload && (
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
-                <Plus className="h-4 w-4" />
-                Novo Upload
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-2">
-                    <LinkIcon className="h-4 w-4" />
-                    Link Externo
-                    <ChevronDown className="h-3 w-3 opacity-50" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
-                    <ImageIcon className="h-4 w-4" />
-                    Link de Foto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
-                    <Film className="h-4 w-4" />
-                    Link de Vídeo
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
-                    <FileText className="h-4 w-4" />
-                    Link de Documento
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            {(canUploadEventPhotos || canUpload) && !showUpload && (
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
+                  <Plus className="h-4 w-4" />
+                  Novo Upload
+                </Button>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="gap-2">
+                      <LinkIcon className="h-4 w-4" />
+                      Link Externo
+                      <ChevronDown className="h-3 w-3 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    <DropdownMenuItem onClick={() => openExternalAdd('image')} className="gap-2">
+                      <ImageIcon className="h-4 w-4" />
+                      Link de Foto
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openExternalAdd('video')} className="gap-2">
+                      <Film className="h-4 w-4" />
+                      Link de Vídeo
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => openExternalAdd('document')} className="gap-2">
+                      <FileText className="h-4 w-4" />
+                      Link de Documento
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 ml-auto">
+              <span className="text-sm text-muted-foreground mr-1">Filtrar:</span>
+              <Select value={mediaFilter} onValueChange={(v: any) => setMediaFilter(v)}>
+                <SelectTrigger className="w-[140px] h-9 text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="image">Fotos</SelectItem>
+                  <SelectItem value="video">Vídeos</SelectItem>
+                  <SelectItem value="document">Documentos</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-            {images.map((img, index) => (
+            {images
+              .filter(img => mediaFilter === 'all' || img.media_type === mediaFilter)
+              .map((img, index) => (
               <motion.div
                 key={img.id}
                 initial={{ opacity: 0, scale: 0.95 }}
