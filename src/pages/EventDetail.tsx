@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
-import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film, Pencil } from 'lucide-react';
+import { ArrowLeft, Calendar, MapPin, Upload, Camera, Eye, Download, Trash2, X, ImageIcon, Plus, Video, Film, Pencil, Link as LinkIcon, ExternalLink, FileText } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -59,6 +59,7 @@ interface ImageData {
   branch_id: string;
   media_type: string;
   duration_seconds: number | null;
+  external_url: string | null;
 }
 
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -97,6 +98,14 @@ const EventDetail = () => {
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [uploadingIndex, setUploadingIndex] = useState(0);
+
+  // External Link state
+  const [externalOpen, setExternalOpen] = useState(false);
+  const [editingExternal, setEditingExternal] = useState<ImageData | null>(null);
+  const [externalTitle, setExternalTitle] = useState('');
+  const [externalUrl, setExternalUrl] = useState('');
+  const [externalType, setExternalType] = useState<'image' | 'video' | 'document'>('document');
+  const [externalBranchId, setExternalBranchId] = useState('');
 
   // Edit event state
   const [editOpen, setEditOpen] = useState(false);
@@ -673,10 +682,10 @@ const EventDetail = () => {
           </div>
           <p className="text-lg font-medium text-foreground">Nenhuma mídia neste evento</p>
            <p className="mt-1 text-sm">
-             {(canUploadEventPhotos || canUpload) ? 'Adicione a primeira foto ou vídeo!' : 'Aguarde o upload de mídias.'}
+             {(canUploadEventPhotos || canUpload) ? 'Adicione fotos, vídeos ou links do Drive!' : 'Aguarde o upload de mídias.'}
            </p>
            {(canUploadEventPhotos || canUpload) && (
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
               <Button className="gap-2" onClick={() => setShowUpload(true)}>
                 <Upload className="h-4 w-4" />
                 Adicionar Foto
@@ -685,22 +694,52 @@ const EventDetail = () => {
                 <Video className="h-4 w-4" />
                 Adicionar Vídeo
               </Button>
+              <Button variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
+                <LinkIcon className="h-4 w-4" />
+                Link Google Drive
+              </Button>
             </div>
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {images.map((img, index) => (
-            <motion.div
-              key={img.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: Math.min(index * 0.02, 0.5) }}
-              className="group relative cursor-pointer overflow-hidden rounded-xl bg-muted"
-              onClick={() => handleViewImage(img)}
-            >
-              <div className="aspect-square overflow-hidden">
-                {img.media_type === 'video' ? (
+        <div className="space-y-4">
+          {(canUploadEventPhotos || canUpload) && !showUpload && (
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => setShowUpload(true)}>
+                <Plus className="h-4 w-4" />
+                Novo Upload
+              </Button>
+              <Button size="sm" variant="outline" className="gap-2" onClick={() => { setEditingExternal(null); setExternalBranchId(event?.branch_id || 'all'); setExternalOpen(true); }}>
+                <LinkIcon className="h-4 w-4" />
+                Link Externo
+              </Button>
+            </div>
+          )}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {images.map((img, index) => (
+              <motion.div
+                key={img.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: Math.min(index * 0.02, 0.5) }}
+                className="group relative cursor-pointer overflow-hidden rounded-xl bg-muted"
+                onClick={() => handleViewImage(img)}
+              >
+                <div className="aspect-square overflow-hidden">
+                  {img.external_url ? (
+                    <div className="flex h-full w-full flex-col items-center justify-center bg-muted p-4 text-center">
+                      <div className="mb-2 rounded-full bg-primary/10 p-3 text-primary">
+                        {img.media_type === 'video' ? <Film className="h-6 w-6" /> : 
+                         img.media_type === 'image' ? <ImageIcon className="h-6 w-6" /> : 
+                         <FileText className="h-6 w-6" />}
+                      </div>
+                      <p className="text-xs font-medium line-clamp-2 px-1">{img.filename}</p>
+                      <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+                        <ExternalLink className="h-3 w-3" />
+                        Google Drive
+                      </div>
+                    </div>
+                  ) : img.media_type === 'video' ? (
                   <div className="relative flex h-full w-full items-center justify-center bg-muted">
                     {imageUrls[img.id] ? (
                       <video
@@ -738,9 +777,21 @@ const EventDetail = () => {
               </div>
               {img.media_type === 'video' && (
                 <div className="absolute left-2 top-2">
-                  <Badge variant="secondary" className="text-xs gap-1"><Film className="h-3 w-3" />Vídeo</Badge>
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    {img.external_url ? <LinkIcon className="h-3 w-3" /> : <Film className="h-3 w-3" />}
+                    {img.external_url ? 'Link' : 'Vídeo'}
+                  </Badge>
                 </div>
               )}
+              {img.media_type === 'document' && (
+                <div className="absolute left-2 top-2">
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <FileText className="h-3 w-3" />
+                    Documento
+                  </Badge>
+                </div>
+              )}
+
               {img.minor_age && (
                 <div className="absolute right-2 top-2">
                   <Badge variant="destructive" className="text-xs">Menor</Badge>
@@ -757,7 +808,22 @@ const EventDetail = () => {
           {selectedImage && (
             <div>
               <div className="bg-black">
-                {imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
+                {selectedImage.external_url ? (
+                  <div className="flex flex-col items-center justify-center p-12 text-center text-white min-h-[40vh]">
+                    <div className="mb-4 rounded-full bg-white/10 p-6">
+                      <LinkIcon className="h-12 w-12" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2">{selectedImage.filename}</h3>
+                    <p className="text-white/60 mb-6 max-w-md">Este é um link externo do Google Drive.</p>
+                    <Button 
+                      className="gap-2 bg-primary hover:bg-primary/90" 
+                      onClick={() => window.open(selectedImage.external_url!, '_blank')}
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      Abrir no Google Drive
+                    </Button>
+                  </div>
+                ) : (imageUrls[selectedImage.id] && selectedImage.media_type === 'video' ? (
                   <video
                     src={imageUrls[selectedImage.id]}
                     controls
@@ -770,8 +836,9 @@ const EventDetail = () => {
                     alt={selectedImage.caption || ''}
                     className="mx-auto max-h-[70vh] object-contain"
                   />
-                ) : null}
+                ) : null)}
               </div>
+
               <div className="p-6">
                 {selectedImage.caption && (
                   <p className="mb-3 text-lg font-medium">{selectedImage.caption}</p>
