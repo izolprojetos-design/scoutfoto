@@ -19,12 +19,15 @@ vi.mock('../integrations/supabase/client', () => {
         id: 'event-123', 
         name: 'Test Event', 
         event_date: '2024-01-01',
-        created_at: new Date().toISOString() // Fixed: valid date
+        created_at: new Date().toISOString()
       }, 
       error: null 
     })),
     maybeSingle: vi.fn(() => Promise.resolve({ data: { id: 'event-123' }, error: null })),
-    then: vi.fn((cb) => Promise.resolve({ data: [], error: null }).then(cb)),
+    then: vi.fn((cb) => {
+      // Return a promise that resolves to match the expected structure { data, error }
+      return Promise.resolve({ data: [], error: null }).then(cb);
+    }),
   };
 
   return {
@@ -91,9 +94,9 @@ describe('External Link Validation', () => {
       </MemoryRouter>
     );
 
-    // Wait for the page to load
+    // Wait for the page to load by checking for the event name heading
     await waitFor(() => {
-      expect(screen.getByText(/Test Event/i)).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /Test Event/i })).toBeInTheDocument();
     }, { timeout: 3000 });
 
     // Open External Link Modal
@@ -101,18 +104,18 @@ describe('External Link Validation', () => {
     fireEvent.click(addLinkBtn);
 
     // Fill title
-    const titleInput = screen.getByPlaceholderText(/Ex: Documentos do Acampamento/i);
+    const titleInput = screen.getByLabelText(/Título \/ Nome do Arquivo/i);
     fireEvent.change(titleInput, { target: { value: 'Invalid Link Test' } });
 
     // Fill invalid URL
-    const urlInput = screen.getByPlaceholderText(/https:\/\/drive.google.com\//i);
+    const urlInput = screen.getByLabelText(/URL do Google Drive/i);
     fireEvent.change(urlInput, { target: { value: 'not-a-url' } });
 
     // Try to save
     const saveBtn = screen.getByRole('button', { name: /Adicionar Link/i });
     fireEvent.click(saveBtn);
 
-    // Verify error toast
+    // Verify error toast was called
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('URL inválida'));
     });
