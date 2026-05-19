@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import EventDetail from '../pages/EventDetail';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { toast } from 'sonner';
 import React from 'react';
 
-// More robust Supabase mock
-const createMockSupabase = () => {
+// Mock Supabase - using inline factory to avoid hoisting issues
+vi.mock('../integrations/supabase/client', () => {
   const chain: any = {
     select: vi.fn(() => chain),
     insert: vi.fn(() => Promise.resolve({ data: null, error: null })),
@@ -20,22 +20,20 @@ const createMockSupabase = () => {
   };
 
   return {
-    from: vi.fn(() => chain),
-    storage: {
-      from: vi.fn(() => ({
-        createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'mock' }, error: null }),
-        remove: vi.fn().mockResolvedValue({ error: null }),
-      })),
-    },
-    auth: {
-      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
-    },
+    supabase: {
+      from: vi.fn(() => chain),
+      storage: {
+        from: vi.fn(() => ({
+          createSignedUrl: vi.fn().mockResolvedValue({ data: { signedUrl: 'mock' }, error: null }),
+          remove: vi.fn().mockResolvedValue({ error: null }),
+        })),
+      },
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      },
+    }
   };
-};
-
-vi.mock('../integrations/supabase/client', () => ({
-  supabase: createMockSupabase(),
-}));
+});
 
 // Mock Auth
 vi.mock('../contexts/AuthContext', () => ({
