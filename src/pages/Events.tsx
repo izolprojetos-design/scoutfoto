@@ -24,6 +24,7 @@ import EventPermissionsDialog from '@/components/EventPermissionsDialog';
 import { usePermissions } from '@/hooks/usePermissions';
 import { getEventCoverImage } from '@/lib/eventImages';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
+import { useNoEffects } from '@/components/RenderDiagnosticsToolbar';
 
 interface Branch {
   id: string;
