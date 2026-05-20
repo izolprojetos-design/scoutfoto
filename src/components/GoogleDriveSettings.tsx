@@ -13,13 +13,14 @@ import { ptBR } from 'date-fns/locale';
 
 interface DriveLog {
   id: string;
-  ramo: string;
-  nome: string;
-  data_evento: string;
-  pasta_drive_id: string;
-  total_fotos: number;
-  criado_em: string;
-  criado_por: string;
+  branch: string;
+  scout_name: string;
+  photo_date: string;
+  drive_folder_id: string;
+  drive_folder_url: string;
+  file_name: string;
+  created_at: string;
+  user_id: string;
 }
 
 interface GoogleDriveConfig {
@@ -51,9 +52,9 @@ const GoogleDriveSettings = () => {
       }
 
       const { data: logsData } = await supabase
-        .from('drive_uploads_log' as any)
+        .from('drive_uploads' as any)
         .select('*')
-        .order('criado_em', { ascending: false })
+        .order('created_at', { ascending: false })
         .limit(20);
       
       setLogs((logsData as any) || []);
