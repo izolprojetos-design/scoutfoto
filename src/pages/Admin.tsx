@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
+import RolePermissionsManager from '@/components/RolePermissionsManager';
 import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
@@ -922,7 +923,18 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="permissions">
-          <PermissionsManager />
+          <Tabs defaultValue="roles_permissions" className="space-y-4">
+            <TabsList className="bg-muted/40 p-1">
+              <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm">Por Papel (Recomendado)</TabsTrigger>
+              <TabsTrigger value="user_permissions" className="text-xs sm:text-sm">Por Usuário (Exceções)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="roles_permissions">
+              <RolePermissionsManager />
+            </TabsContent>
+            <TabsContent value="user_permissions">
+              <PermissionsManager />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
 
