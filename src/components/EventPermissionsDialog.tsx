@@ -170,6 +170,23 @@ const EventPermissionsDialog = ({ open, onOpenChange, eventId, eventName }: Even
                   ))}
                 </div>
               )}
+              {permissions.length === 0 && !search && (
+                <div className="flex justify-center pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 text-primary border-primary/20 hover:bg-primary/5"
+                    onClick={() => {
+                      const activeUsers = allUsers.filter(u => u.user_id !== user?.id);
+                      activeUsers.forEach(u => addUser(u.user_id));
+                      toast.success(`${activeUsers.length} usuários adicionados. Não esqueça de salvar!`);
+                    }}
+                  >
+                    <UserPlus className="h-4 w-4" />
+                    Liberar para todos os usuários ativos
+                  </Button>
+                </div>
+              )}
             </div>
 
             {/* Permissions table */}
