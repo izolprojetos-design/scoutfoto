@@ -522,11 +522,12 @@ const EventDetail = () => {
         const allowedTypes = config.allowed_types || [];
         if (!allowedTypes.includes(externalType)) {
           const typeLabels: Record<string, string> = {
-            image: 'Links de Fotos',
-            video: 'Links de Vídeos',
-            document: 'Links de Documentos'
+            image: 'Links de Foto',
+            video: 'Links de Vídeo',
+            document: 'Links de Documento'
           };
-          toast.error(`${typeLabels[externalType] || 'Este tipo de link'} do Google Drive não está permitido nas configurações do sistema.`);
+          const requestedType = typeLabels[externalType] || 'Este tipo de link';
+          toast.error(`Acesso Negado: O administrador desativou a inclusão de ${requestedType} do Google Drive.`);
           return;
         }
       }
