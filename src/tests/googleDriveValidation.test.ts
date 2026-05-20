@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { toast } from 'sonner';
 
 // Mocking toast
@@ -9,12 +9,12 @@ vi.mock('sonner', () => ({
   },
 }));
 
-// Validation logic extracted for testing
+// Validation logic matching EventDetail.tsx exactly
 const validateDriveLink = (
   isGoogleDrive: boolean,
   isAdmin: boolean,
   canManageGoogleDrive: boolean,
-  externalType: string,
+  externalType: 'image' | 'video' | 'document',
   config: any,
   exceptions: { canAddDriveImages: boolean; canAddDriveVideos: boolean; canAddDriveDocuments: boolean }
 ) => {
@@ -48,10 +48,16 @@ const validateDriveLink = (
   return true;
 };
 
-describe('Google Drive Link Validation', () => {
+describe('Google Drive Link Validation (Integration Logic)', () => {
   const configDisabled = { enabled: false, allowed_types: [] };
   const configOnlyDocs = { enabled: true, allowed_types: ['document'] };
+  const configOnlyImages = { enabled: true, allowed_types: ['image'] };
+  const configOnlyVideos = { enabled: true, allowed_types: ['video'] };
   
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('allows admins to bypass everything', () => {
     const result = validateDriveLink(true, true, false, 'image', configDisabled, { 
       canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
@@ -67,25 +73,82 @@ describe('Google Drive Link Validation', () => {
     expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Você não tem permissão'));
   });
 
-  it('blocks disallowed types when no exception exists', () => {
-    const result = validateDriveLink(true, false, true, 'image', configOnlyDocs, { 
-      canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+  describe('Foto (Image)', () => {
+    it('blocks when globally disabled and no exception', () => {
+      const result = validateDriveLink(true, false, true, 'image', configDisabled, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(false);
+      expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Acesso Negado: O administrador desativou a inclusão de Links de Foto'));
     });
-    expect(result).toBe(false);
-    expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Acesso Negado: O administrador desativou a inclusão de Links de Foto'));
+
+    it('blocks when type specifically disabled and no exception', () => {
+      const result = validateDriveLink(true, false, true, 'image', configOnlyDocs, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(false);
+    });
+
+    it('allows when globally enabled and type allowed', () => {
+      const result = validateDriveLink(true, false, true, 'image', configOnlyImages, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(true);
+    });
+
+    it('allows when globally disabled BUT exception exists', () => {
+      const result = validateDriveLink(true, false, true, 'image', configDisabled, { 
+        canAddDriveImages: true, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(true);
+    });
   });
 
-  it('allows disallowed types when user has specific exception', () => {
-    const result = validateDriveLink(true, false, true, 'image', configOnlyDocs, { 
-      canAddDriveImages: true, canAddDriveVideos: false, canAddDriveDocuments: false 
+  describe('Vídeo (Video)', () => {
+    it('blocks when globally disabled and no exception', () => {
+      const result = validateDriveLink(true, false, true, 'video', configDisabled, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(false);
+      expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Acesso Negado: O administrador desativou a inclusão de Links de Vídeo'));
     });
-    expect(result).toBe(true);
+
+    it('allows when globally enabled and type allowed', () => {
+      const result = validateDriveLink(true, false, true, 'video', configOnlyVideos, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(true);
+    });
+
+    it('allows when globally disabled BUT exception exists', () => {
+      const result = validateDriveLink(true, false, true, 'video', configDisabled, { 
+        canAddDriveImages: false, canAddDriveVideos: true, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(true);
+    });
   });
 
-  it('allows disallowed types when global is disabled but user has exception', () => {
-    const result = validateDriveLink(true, false, true, 'video', configDisabled, { 
-      canAddDriveImages: false, canAddDriveVideos: true, canAddDriveDocuments: false 
+  describe('Documento (Document)', () => {
+    it('blocks when globally disabled and no exception', () => {
+      const result = validateDriveLink(true, false, true, 'document', configDisabled, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(false);
+      expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('Acesso Negado: O administrador desativou a inclusão de Links de Documento'));
     });
-    expect(result).toBe(true);
+
+    it('allows when globally enabled and type allowed', () => {
+      const result = validateDriveLink(true, false, true, 'document', configOnlyDocs, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: false 
+      });
+      expect(result).toBe(true);
+    });
+
+    it('allows when globally disabled BUT exception exists', () => {
+      const result = validateDriveLink(true, false, true, 'document', configDisabled, { 
+        canAddDriveImages: false, canAddDriveVideos: false, canAddDriveDocuments: true 
+      });
+      expect(result).toBe(true);
+    });
   });
 });
