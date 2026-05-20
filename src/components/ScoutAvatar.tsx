@@ -1,13 +1,8 @@
 
 import React from 'react';
 import ScoutPhoto from './ScoutPhoto';
-import { getInitials, stringToColor } from '@/avatarUtils';
-import { cn } from '@/lib/utils';
-
-// Path was corrected to '@/avatarUtils' but it should be '@/lib/avatarUtils'
-// Wait, I created it in src/lib/avatarUtils.ts
-
 import { getInitials, stringToColor } from '@/lib/avatarUtils';
+import { cn } from '@/lib/utils';
 
 interface ScoutAvatarProps {
   name: string;
