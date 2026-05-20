@@ -137,6 +137,9 @@ const EventPermissionsDialog = ({ open, onOpenChange, eventId, eventName }: Even
             <Shield className="h-5 w-5 text-primary" />
             Permissões — {eventName}
           </DialogTitle>
+          <p className="text-xs text-muted-foreground mt-1">
+            Administradores possuem acesso total automático a todos os eventos.
+          </p>
         </DialogHeader>
 
         {loading ? (
