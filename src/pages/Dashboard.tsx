@@ -17,6 +17,7 @@ import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
 import ScoutPhoto from '@/components/ScoutPhoto';
+import ScoutAvatar from '@/components/ScoutAvatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
