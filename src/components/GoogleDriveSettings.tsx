@@ -110,16 +110,78 @@ const GoogleDriveSettings = () => {
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/30">
               <div className="space-y-0.5">
-                <Label className="text-base">Links Externos do Drive</Label>
+                <Label className="text-base font-semibold">Status Global da Integração</Label>
                 <p className="text-sm text-muted-foreground">
-                  Permitir que usuários adicionem links de pastas/arquivos do Google Drive
+                  Habilita ou desabilita completamente o uso de links do Google Drive
                 </p>
               </div>
               <Switch 
                 checked={config?.enabled} 
-                onCheckedChange={(checked) => setConfig(prev => prev ? ({ ...prev, enabled: checked }) : null)}
+                onCheckedChange={(checked) => setConfig(prev => prev ? ({ 
+                  ...prev, 
+                  enabled: checked,
+                  allowed_types: checked ? (prev.allowed_types.length > 0 ? prev.allowed_types : ['image', 'video', 'document']) : []
+                }) : null)}
               />
             </div>
+
+            {config?.enabled && (
+              <div className="space-y-4 pt-2">
+                <Label className="text-sm font-medium">Tipos de Links Permitidos</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Button
+                    variant={config.allowed_types.length === 3 ? "default" : "outline"}
+                    size="sm"
+                    className="justify-start gap-2 h-10"
+                    onClick={() => setConfig({ ...config, allowed_types: ['image', 'video', 'document'] })}
+                  >
+                    <CheckCircle2 className="h-4 w-4" />
+                    Todos os Tipos
+                  </Button>
+                  <Button
+                    variant={config.allowed_types.length === 0 ? "default" : "outline"}
+                    size="sm"
+                    className="justify-start gap-2 h-10"
+                    onClick={() => setConfig({ ...config, allowed_types: [] })}
+                  >
+                    <X className="h-4 w-4" />
+                    Nenhum
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {[
+                    { id: 'image', label: 'Link de Foto', icon: ImageIcon },
+                    { id: 'video', label: 'Link de Video', icon: Video },
+                    { id: 'document', label: 'Link de Documento', icon: FileText },
+                  ].map((type) => {
+                    const isSelected = config.allowed_types.includes(type.id);
+                    return (
+                      <div 
+                        key={type.id}
+                        onClick={() => {
+                          const next = isSelected 
+                            ? config.allowed_types.filter(t => t !== type.id)
+                            : [...config.allowed_types, type.id];
+                          setConfig({ ...config, allowed_types: next });
+                        }}
+                        className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-all ${
+                          isSelected ? 'bg-primary/5 border-primary ring-1 ring-primary' : 'hover:bg-muted'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <type.icon className={`h-4 w-4 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
+                          <span className="text-sm font-medium">{type.label}</span>
+                        </div>
+                        <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30'}`}>
+                          {isSelected && <CheckCircle2 className="h-3 w-3 text-white" />}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="flex items-start gap-3 p-4 rounded-lg border border-yellow-500/30 bg-yellow-500/5">
               <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0 mt-0.5" />
