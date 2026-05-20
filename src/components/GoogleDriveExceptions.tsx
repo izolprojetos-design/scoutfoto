@@ -67,8 +67,13 @@ export const GoogleDriveExceptions = () => {
   return (
     <Card className="border-0 shadow-lg">
       <CardHeader>
-        <CardTitle>Exceções por Integrante</CardTitle>
-        <CardDescription>Habilite acesso específico para usuários que não deveriam ter permissão global</CardDescription>
+        <CardTitle className="flex items-center gap-2">
+          Gerenciar links do Google Drive e outros (Exceções)
+        </CardTitle>
+        <CardDescription>
+          Habilite (Desbloqueie) acesso específico para usuários selecionados. 
+          Marque para liberar o acesso, desmarque para manter o bloqueio global.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -93,24 +98,26 @@ export const GoogleDriveExceptions = () => {
                         <span className="text-xs text-muted-foreground">{user.email}</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-center">
-                      <Checkbox 
-                        checked={userPermIds.includes(drivePermissions['google_drive_images'])} 
-                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_images', !!c)} 
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Checkbox 
-                        checked={userPermIds.includes(drivePermissions['google_drive_videos'])} 
-                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_videos', !!c)} 
-                      />
-                    </TableCell>
-                    <TableCell className="text-center">
-                      <Checkbox 
-                        checked={userPermIds.includes(drivePermissions['google_drive_documents'])} 
-                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_documents', !!c)} 
-                      />
-                    </TableCell>
+                    {[
+                      { key: 'google_drive_images', label: 'Foto' },
+                      { key: 'google_drive_videos', label: 'Vídeo' },
+                      { key: 'google_drive_documents', label: 'Doc' }
+                    ].map(type => {
+                      const isUnlocked = userPermIds.includes(drivePermissions[type.key]);
+                      return (
+                        <TableCell key={type.key} className="text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <Checkbox 
+                              checked={isUnlocked} 
+                              onCheckedChange={(c) => togglePermission(user.user_id, type.key, !!c)} 
+                            />
+                            <span className={`text-[10px] font-medium ${isUnlocked ? 'text-green-600' : 'text-muted-foreground'}`}>
+                              {isUnlocked ? 'Liberado' : 'Bloqueado'}
+                            </span>
+                          </div>
+                        </TableCell>
+                      );
+                    })}
                   </TableRow>
                 );
               })}
