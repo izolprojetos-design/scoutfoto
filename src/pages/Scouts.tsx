@@ -2284,31 +2284,20 @@ const Scouts = () => {
                   <CardContent className="p-0">
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
-                      {scout.photo_url ? (
-                        <ScoutPhoto
-                          photoUrl={scout.photo_url}
-                          alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (scout.photo_url) {
-                              const signed = await getSignedPhotoUrl(scout.photo_url);
-                              if (signed) setViewingPhoto(signed);
-                              else toast.error('Foto não disponível');
-                            }
-                          }}
-                          onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
-                          fallback={
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                              {branch?.icon || '⚜️'}
-                            </div>
+                      <ScoutAvatar
+                        name={scout.name}
+                        photoUrl={scout.photo_url}
+                        className="h-14 w-14 ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all shadow-sm"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (scout.photo_url) {
+                            const signed = await getSignedPhotoUrl(scout.photo_url);
+                            if (signed) setViewingPhoto(signed);
+                            else toast.error('Foto não disponível');
                           }
-                        />
-                      ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      )}
+                        }}
+                        onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col items-start gap-0.5">
                           <h3
