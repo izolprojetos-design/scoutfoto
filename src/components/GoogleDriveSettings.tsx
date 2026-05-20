@@ -25,6 +25,7 @@ interface DriveLog {
 
 interface GoogleDriveConfig {
   enabled: boolean;
+  allowed_types: string[]; // 'image', 'video', 'document'
   blocked_domains: string[];
 }
 
