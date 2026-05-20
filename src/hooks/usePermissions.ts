@@ -27,7 +27,10 @@ export type PermissionKey =
   | 'delete_data'
   | 'access_admin'
   | 'transfer_branch'
-  | 'google_drive_links';
+  | 'google_drive_links'
+  | 'google_drive_images'
+  | 'google_drive_videos'
+  | 'google_drive_documents';
 
 export interface Permission {
   id: string;
@@ -142,5 +145,8 @@ export const usePermissions = () => {
     canDeleteData: hasPermission('delete_data'),
     canAccessAdmin: hasPermission('access_admin'),
     canManageGoogleDrive: hasPermission('google_drive_links'),
+    canAddDriveImages: hasPermission('google_drive_images'),
+    canAddDriveVideos: hasPermission('google_drive_videos'),
+    canAddDriveDocuments: hasPermission('google_drive_documents'),
   };
 };
