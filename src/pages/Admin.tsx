@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
+import RolePermissionsManager from '@/components/RolePermissionsManager';
 import RolesManager from '@/components/RolesManager';
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
