@@ -152,9 +152,10 @@ const Profile = () => {
                 ) : null}
                 <AvatarFallback
                   className={cn(
-                    "bg-primary/10 text-primary text-2xl font-bold",
+                    "text-white text-2xl font-bold",
                     displayAvatarUrl && avatarLoaded ? "hidden" : "flex"
                   )}
+                  style={{ backgroundColor: stringToColor(profile?.name || '') }}
                 >
                   {initials}
                 </AvatarFallback>
