@@ -9,8 +9,17 @@ vi.mock('sonner', () => ({
   },
 }));
 
+// Mocking logAudit
+const mockLogAudit = vi.fn();
+vi.mock('@/lib/auditLog', () => ({
+  logAudit: (...args: any[]) => mockLogAudit(...args),
+}));
+
 // Validation logic matching EventDetail.tsx exactly
-const validateDriveLink = (
+const validateDriveLink = async (
+  userId: string,
+  eventId: string,
+  normalizedUrl: string,
   isGoogleDrive: boolean,
   isAdmin: boolean,
   canManageGoogleDrive: boolean,
@@ -21,6 +30,12 @@ const validateDriveLink = (
   if (isGoogleDrive && !isAdmin) {
     if (!canManageGoogleDrive) {
       toast.error('Você não tem permissão para adicionar links do Google Drive. Entre em contato com um administrador.');
+      await mockLogAudit(userId, 'access_denied', undefined, { 
+        reason: 'missing_google_drive_links_permission',
+        url: normalizedUrl,
+        type: externalType,
+        event_id: eventId
+      });
       return false;
     }
 
@@ -40,7 +55,17 @@ const validateDriveLink = (
           document: 'Links de Documento'
         };
         const requestedType = typeLabels[externalType] || 'Este tipo de link';
+        const reason = isGloballyDisabled ? 'global_drive_disabled' : 'type_blocked';
+        
         toast.error(`Acesso Negado: O administrador desativou a inclusão de ${requestedType} do Google Drive.`);
+        
+        await mockLogAudit(userId, 'access_denied', undefined, { 
+          reason,
+          url: normalizedUrl,
+          type: externalType,
+          requested_label: requestedType,
+          event_id: eventId
+        });
         return false;
       }
     }
