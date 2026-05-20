@@ -923,7 +923,18 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="permissions">
-          <PermissionsManager />
+          <Tabs defaultValue="roles_permissions" className="space-y-4">
+            <TabsList className="bg-muted/40 p-1">
+              <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm">Por Papel (Recomendado)</TabsTrigger>
+              <TabsTrigger value="user_permissions" className="text-xs sm:text-sm">Por Usuário (Exceções)</TabsTrigger>
+            </TabsList>
+            <TabsContent value="roles_permissions">
+              <RolePermissionsManager />
+            </TabsContent>
+            <TabsContent value="user_permissions">
+              <PermissionsManager />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
 
 
