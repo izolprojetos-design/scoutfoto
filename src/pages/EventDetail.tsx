@@ -74,7 +74,16 @@ const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user, canUpload, canViewMinors, isAdmin, isVoluntario } = useAuth();
-  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos, canEditEvents, canManageGoogleDrive } = usePermissions();
+  const { 
+    canUploadEventPhotos, 
+    canDownloadEventPhotos, 
+    canDeleteEventPhotos, 
+    canEditEvents, 
+    canManageGoogleDrive,
+    canAddDriveImages,
+    canAddDriveVideos,
+    canAddDriveDocuments
+  } = usePermissions();
   const canEditThisEvent = isAdmin || isVoluntario || canEditEvents;
 
   const [event, setEvent] = useState<EventData | null>(null);
