@@ -74,7 +74,7 @@ const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
   const { user, canUpload, canViewMinors, isAdmin, isVoluntario } = useAuth();
-  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos, canEditEvents } = usePermissions();
+  const { canUploadEventPhotos, canDownloadEventPhotos, canDeleteEventPhotos, canEditEvents, canManageGoogleDrive } = usePermissions();
   const canEditThisEvent = isAdmin || isVoluntario || canEditEvents;
 
   const [event, setEvent] = useState<EventData | null>(null);
@@ -495,6 +495,28 @@ const EventDetail = () => {
     } catch {
       toast.error('URL inválida. Certifique-se de que o endereço está correto.');
       return;
+    }
+
+    // Check for Google Drive links and permissions
+    const isGoogleDrive = normalizedUrl.includes('drive.google.com') || normalizedUrl.includes('docs.google.com');
+    if (isGoogleDrive && !canManageGoogleDrive) {
+      toast.error('Você não tem permissão para adicionar links do Google Drive. Entre em contato com um administrador.');
+      return;
+    }
+
+    // Check global block for Drive
+    if (isGoogleDrive) {
+      const { data: configData } = await supabase
+        .from('global_settings')
+        .select('value')
+        .eq('key', 'google_drive_integration')
+        .single();
+      
+      const config = configData?.value as any;
+      if (config && config.enabled === false) {
+        toast.error('O uso de links do Google Drive está temporariamente desativado pelo administrador.');
+        return;
+      }
     }
 
     setSavingExternal(true);
