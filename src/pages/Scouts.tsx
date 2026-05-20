@@ -1371,18 +1371,26 @@ const Scouts = () => {
               }
             }}
           >
-            <div className={`relative h-24 w-24 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors ${
-              cameraStatus === 'available' 
-                ? 'border-muted-foreground/30 hover:border-primary' 
-                : 'border-amber-200 bg-amber-50/30'
-            }`}>
+            <div 
+              className={cn(
+                "relative h-24 w-24 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors",
+                cameraStatus === 'available' 
+                  ? 'border-muted-foreground/30 hover:border-primary' 
+                  : 'border-amber-200 bg-amber-50/30'
+              )}
+              style={!photoPreview && name ? { backgroundColor: stringToColor(name) } : undefined}
+            >
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
               ) : (
-                cameraStatus === 'available' ? (
-                  <Camera className="h-6 w-6 text-muted-foreground" />
+                name ? (
+                  <span className="text-2xl font-bold text-white select-none">{getInitials(name)}</span>
                 ) : (
-                  <ImageIcon className="h-6 w-6 text-amber-500" />
+                  cameraStatus === 'available' ? (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 text-amber-500" />
+                  )
                 )
               )}
             </div>
