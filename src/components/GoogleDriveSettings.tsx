@@ -51,12 +51,12 @@ const GoogleDriveSettings = () => {
       }
 
       const { data: logsData } = await supabase
-        .from('drive_uploads_log')
+        .from('drive_uploads_log' as any)
         .select('*')
         .order('criado_em', { ascending: false })
         .limit(20);
       
-      setLogs((logsData as DriveLog[]) || []);
+      setLogs((logsData as any) || []);
     } catch (error) {
       console.error('Error fetching Drive data:', error);
     }

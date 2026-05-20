@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard, Cloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolePermissionsManager from '@/components/RolePermissionsManager';
@@ -27,6 +27,7 @@ import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
 import GroupLogoSettings from '@/components/GroupLogoSettings';
+import GoogleDriveSettings from '@/components/GoogleDriveSettings';
 import { validatePassword } from '@/lib/passwordValidation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -565,6 +566,7 @@ const Admin = () => {
           <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
           <TabsTrigger value="branding" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><ImageOff className="h-3.5 w-3.5" />Identidade</TabsTrigger>
+          <TabsTrigger value="drive" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Cloud className="h-3.5 w-3.5" />Google Drive</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -573,6 +575,10 @@ const Admin = () => {
 
         <TabsContent value="branding">
           <GroupLogoSettings />
+        </TabsContent>
+
+        <TabsContent value="drive">
+          <GoogleDriveSettings />
         </TabsContent>
 
         <TabsContent value="users">
