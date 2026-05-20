@@ -155,7 +155,7 @@ const GoogleDriveSettings = () => {
                       <div className="flex gap-2">
                         <Button
                           variant="outline"
-                          size="xs"
+                          size="sm"
                           className="text-[10px] h-7 px-2"
                           onClick={() => setConfig({ ...config, allowed_types: ['image', 'video', 'document'] })}
                         >
@@ -164,7 +164,7 @@ const GoogleDriveSettings = () => {
                         </Button>
                         <Button
                           variant="outline"
-                          size="xs"
+                          size="sm"
                           className="text-[10px] h-7 px-2"
                           onClick={() => setConfig({ ...config, allowed_types: [] })}
                         >
