@@ -199,7 +199,10 @@ const AppSidebar = () => {
             >
               <button className="flex items-center gap-2 w-full">
                 <Avatar className="h-7 w-7 shrink-0">
-                  <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
+                  <AvatarFallback 
+                    className="text-white text-xs font-bold"
+                    style={{ backgroundColor: stringToColor(profile?.name || '') }}
+                  >
                     {initials}
                   </AvatarFallback>
                 </Avatar>
