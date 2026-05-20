@@ -37,6 +37,7 @@ import {
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
+import { getInitials, stringToColor } from '@/lib/avatarUtils';
 import ScoutGallery from '@/components/ScoutGallery';
 import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
