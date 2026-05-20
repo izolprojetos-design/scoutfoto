@@ -517,7 +517,8 @@ const EventDetail = () => {
         await logAudit(user.id, 'access_denied', undefined, { 
           reason: 'missing_google_drive_links_permission',
           url: normalizedUrl,
-          type: externalType
+          type: externalType,
+          event_id: eventId
         });
         return;
       }
@@ -554,7 +555,8 @@ const EventDetail = () => {
             reason,
             url: normalizedUrl,
             type: externalType,
-            requested_label: requestedType
+            requested_label: requestedType,
+            event_id: eventId
           });
           return;
         }
