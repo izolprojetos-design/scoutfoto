@@ -723,20 +723,13 @@ const Dashboard = () => {
                   return (
                     <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
                       <div className="flex items-start gap-2">
-                        {s.photo_url ? (
-                          <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                            <ScoutPhoto
-                              photoUrl={s.photo_url}
-                              alt={s.name}
-                              className="h-full w-full object-cover"
-                              fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
-                            />
-                          </button>
-                        ) : (
-                          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
+                        <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 flex-shrink-0">
+                          <ScoutAvatar
+                            name={s.name}
+                            photoUrl={s.photo_url}
+                            className="h-9 w-9 ring-2 ring-background hover:ring-primary transition-all shadow-sm"
+                          />
+                        </button>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
