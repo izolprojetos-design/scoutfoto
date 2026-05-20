@@ -508,13 +508,20 @@ const EventDetail = () => {
 
     // Check for Google Drive links and permissions
     const isGoogleDrive = normalizedUrl.includes('drive.google.com') || normalizedUrl.includes('docs.google.com');
-    if (isGoogleDrive && !canManageGoogleDrive) {
-      toast.error('Você não tem permissão para adicionar links do Google Drive. Entre em contato com um administrador.');
-      return;
-    }
-
+    
     // Check global block for Drive and specific allowed types (Admins bypass global settings)
     if (isGoogleDrive && !isAdmin) {
+      // 1. Basic permission check
+      if (!canManageGoogleDrive) {
+        toast.error('Você não tem permissão para adicionar links do Google Drive. Entre em contato com um administrador.');
+        await logAudit(user.id, 'access_denied', undefined, { 
+          reason: 'missing_google_drive_links_permission',
+          url: normalizedUrl,
+          type: externalType
+        });
+        return;
+      }
+
       const { data: configData } = await supabase
         .from('global_settings')
         .select('value')
@@ -523,20 +530,32 @@ const EventDetail = () => {
       
       const config = configData?.value as any;
       if (config) {
-        if (config.enabled === false) {
-          toast.error('O uso de links do Google Drive está desativado pelo administrador.');
-          return;
-        }
-
         const allowedTypes = config.allowed_types || [];
-        if (!allowedTypes.includes(externalType)) {
+        const isGloballyDisabled = config.enabled === false;
+        const isTypeGloballyAllowed = allowedTypes.includes(externalType);
+        
+        // Exception check: Specific permissions override global block
+        const hasException = (externalType === 'image' && canAddDriveImages) ||
+                            (externalType === 'video' && canAddDriveVideos) ||
+                            (externalType === 'document' && canAddDriveDocuments);
+
+        if (!hasException && (isGloballyDisabled || !isTypeGloballyAllowed)) {
           const typeLabels: Record<string, string> = {
             image: 'Links de Foto',
             video: 'Links de Vídeo',
             document: 'Links de Documento'
           };
           const requestedType = typeLabels[externalType] || 'Este tipo de link';
+          const reason = isGloballyDisabled ? 'global_drive_disabled' : 'type_blocked';
+          
           toast.error(`Acesso Negado: O administrador desativou a inclusão de ${requestedType} do Google Drive.`);
+          
+          await logAudit(user.id, 'access_denied', undefined, { 
+            reason,
+            url: normalizedUrl,
+            type: externalType,
+            requested_label: requestedType
+          });
           return;
         }
       }
