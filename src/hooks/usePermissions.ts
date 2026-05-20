@@ -27,7 +27,10 @@ export type PermissionKey =
   | 'delete_data'
   | 'access_admin'
   | 'transfer_branch'
-  | 'google_drive_links';
+  | 'google_drive_links'
+  | 'google_drive_images'
+  | 'google_drive_videos'
+  | 'google_drive_documents';
 
 export interface Permission {
   id: string;
