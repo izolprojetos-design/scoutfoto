@@ -24,6 +24,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
+import { stringToColor } from '@/lib/avatarUtils';
 
 const AppSidebar = () => {
   const { profile, signOut, roles } = useAuth();
