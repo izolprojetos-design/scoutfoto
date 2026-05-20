@@ -76,20 +76,29 @@ export const usePermissions = () => {
         return;
       }
 
-      // Fetch individual user permissions
-      const { data } = await supabase
-        .from('user_permissions')
-        .select('permission_id, permissions(key)')
-        .eq('user_id', user.id);
+      // Fetch permissions from both individual user_permissions AND role_permissions
+      const [userPermsRes, rolePermsRes] = await Promise.all([
+        supabase
+          .from('user_permissions')
+          .select('permission_id, permissions(key)')
+          .eq('user_id', user.id),
+        supabase
+          .from('role_permissions')
+          .select('permission_id, permissions(key)')
+          .in('role', roles)
+      ]);
 
-      if (data) {
-        const keys = data
-          .map((up: any) => up.permissions?.key)
-          .filter(Boolean) as string[];
-        const uniqueKeys = [...new Set(keys)];
-        setPermissions(uniqueKeys);
-        permissionsCache.set(user.id, { permissions: uniqueKeys, timestamp: Date.now() });
-      }
+      const userPermKeys = (userPermsRes.data || [])
+        .map((up: any) => up.permissions?.key)
+        .filter(Boolean) as string[];
+
+      const rolePermKeys = (rolePermsRes.data || [])
+        .map((rp: any) => rp.permissions?.key)
+        .filter(Boolean) as string[];
+
+      const combinedKeys = [...new Set([...userPermKeys, ...rolePermKeys])];
+      setPermissions(combinedKeys);
+      permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now() });
       setLoading(false);
     };
 
