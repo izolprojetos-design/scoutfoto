@@ -14,72 +14,109 @@ interface User {
 
 export const GoogleDriveExceptions = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [permissions, setPermissions] = useState<any[]>([]);
+  const [userPermissions, setUserPermissions] = useState<any[]>([]);
+  const [drivePermissions, setDrivePermissions] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
-      const { data: usersData } = await supabase.from('profiles').select('user_id, name, email');
-      const { data: permsData } = await supabase.from('user_permissions').select('*');
-      setUsers(usersData || []);
-      setPermissions(permsData || []);
+      setLoading(true);
+      const [uRes, upRes, pRes] = await Promise.all([
+        supabase.from('profiles').select('user_id, name, email'),
+        supabase.from('user_permissions').select('*'),
+        supabase.from('permissions').select('id, key').like('key', 'google_drive_%')
+      ]);
+      
+      setUsers(uRes.data || []);
+      setUserPermissions(upRes.data || []);
+      
+      const pMap: Record<string, string> = {};
+      pRes.data?.forEach(p => {
+        pMap[p.key] = p.id;
+      });
+      setDrivePermissions(pMap);
       setLoading(false);
     };
     fetchData();
   }, []);
 
   const togglePermission = async (userId: string, permissionKey: string, checked: boolean) => {
-    // Find permission ID
-    const { data: pData } = await supabase.from('permissions').select('id').eq('key', permissionKey).single();
-    if (!pData) return;
+    const permissionId = drivePermissions[permissionKey];
+    if (!permissionId) return;
 
     if (checked) {
-      await supabase.from('user_permissions').insert({ user_id: userId, permission_id: pData.id });
-      setPermissions([...permissions, { user_id: userId, permission_id: pData.id }]);
+      const { error } = await supabase.from('user_permissions').insert({ user_id: userId, permission_id: permissionId });
+      if (error) {
+        toast.error('Erro ao salvar: ' + error.message);
+        return;
+      }
+      setUserPermissions([...userPermissions, { user_id: userId, permission_id: permissionId }]);
     } else {
-      await supabase.from('user_permissions').delete().eq('user_id', userId).eq('permission_id', pData.id);
-      setPermissions(permissions.filter(p => !(p.user_id === userId && p.permission_id === pData.id)));
+      const { error } = await supabase.from('user_permissions').delete().eq('user_id', userId).eq('permission_id', permissionId);
+      if (error) {
+        toast.error('Erro ao remover: ' + error.message);
+        return;
+      }
+      setUserPermissions(userPermissions.filter(p => !(p.user_id === userId && p.permission_id === permissionId)));
     }
     toast.success('Permissão atualizada!');
   };
 
-  if (loading) return <Loader2 className="animate-spin" />;
+  if (loading) return <div className="flex justify-center p-8"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <Card>
+    <Card className="border-0 shadow-lg">
       <CardHeader>
         <CardTitle>Exceções por Integrante</CardTitle>
         <CardDescription>Habilite acesso específico para usuários que não deveriam ter permissão global</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Usuário</TableHead>
-              <TableHead>Fotos</TableHead>
-              <TableHead>Vídeos</TableHead>
-              <TableHead>Documentos</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.map(user => {
-              const userPerms = permissions.filter(p => p.user_id === user.user_id).map(p => p.permission_id);
-              // Map keys to IDs
-              const imgId = 'f8a62f91-acf1-46f1-bb44-2415d6cf3486';
-              const vidId = 'b85f1a92-b1b0-4399-86e6-32e6766e4f00';
-              const docId = '1973e42e-6ff9-43c1-8a6d-30094e514808';
-
-              return (
-                <TableRow key={user.user_id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell><Checkbox checked={userPerms.includes(imgId)} onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_images', !!c)} /></TableCell>
-                  <TableCell><Checkbox checked={userPerms.includes(vidId)} onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_videos', !!c)} /></TableCell>
-                  <TableCell><Checkbox checked={userPerms.includes(docId)} onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_documents', !!c)} /></TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Usuário</TableHead>
+                <TableHead className="text-center">Fotos</TableHead>
+                <TableHead className="text-center">Vídeos</TableHead>
+                <TableHead className="text-center">Documentos</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map(user => {
+                const userPermIds = userPermissions.filter(p => p.user_id === user.user_id).map(p => p.permission_id);
+                
+                return (
+                  <TableRow key={user.user_id}>
+                    <TableCell>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-xs text-muted-foreground">{user.email}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox 
+                        checked={userPermIds.includes(drivePermissions['google_drive_images'])} 
+                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_images', !!c)} 
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox 
+                        checked={userPermIds.includes(drivePermissions['google_drive_videos'])} 
+                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_videos', !!c)} 
+                      />
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Checkbox 
+                        checked={userPermIds.includes(drivePermissions['google_drive_documents'])} 
+                        onCheckedChange={(c) => togglePermission(user.user_id, 'google_drive_documents', !!c)} 
+                      />
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
