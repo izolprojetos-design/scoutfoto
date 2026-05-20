@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
 import ScoutPhoto from '@/components/ScoutPhoto';
+import ScoutAvatar from '@/components/ScoutAvatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 import { Trash2 } from 'lucide-react';
@@ -722,20 +724,13 @@ const Dashboard = () => {
                   return (
                     <div key={s.id} className="rounded-lg bg-destructive/10 border border-destructive/20 p-3">
                       <div className="flex items-start gap-2">
-                        {s.photo_url ? (
-                          <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                            <ScoutPhoto
-                              photoUrl={s.photo_url}
-                              alt={s.name}
-                              className="h-full w-full object-cover"
-                              fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
-                            />
-                          </button>
-                        ) : (
-                          <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                          </div>
-                        )}
+                        <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 flex-shrink-0">
+                          <ScoutAvatar
+                            name={s.name}
+                            photoUrl={s.photo_url}
+                            className="h-9 w-9 ring-2 ring-background hover:ring-primary transition-all shadow-sm"
+                          />
+                        </button>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
                           <p className="text-xs text-muted-foreground mt-0.5">
@@ -797,20 +792,13 @@ const Dashboard = () => {
                         )}
                         <div className="rounded-lg bg-muted/50 p-3">
                           <div className="flex items-start gap-2">
-                            {s.photo_url ? (
-                              <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                                <ScoutPhoto
-                                  photoUrl={s.photo_url}
-                                  alt={s.name}
-                                  className="h-full w-full object-cover"
-                                  fallback={<div className="h-full w-full bg-muted flex items-center justify-center"><User className="h-4 w-4 text-muted-foreground" /></div>}
-                                />
-                              </button>
-                            ) : (
-                              <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                                <User className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            )}
+                            <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 flex-shrink-0">
+                              <ScoutAvatar
+                                name={s.name}
+                                photoUrl={s.photo_url}
+                                className="h-9 w-9 ring-2 ring-background hover:ring-primary transition-all shadow-sm"
+                              />
+                            </button>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
                                 <p className="text-sm font-medium break-words leading-tight">{s.name}</p>
@@ -869,20 +857,16 @@ const Dashboard = () => {
                         )}
                         <div className={`rounded-lg p-3 transition-all ${s.isToday ? 'bg-green-100 dark:bg-green-950/40 ring-1 ring-green-400/40' : 'bg-muted/50'}`}>
                           <div className="flex items-start gap-2">
-                            {s.photo_url ? (
-                              <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 rounded-full overflow-hidden ring-2 ring-background hover:ring-primary transition-all flex-shrink-0 cursor-pointer">
-                                <ScoutPhoto 
-                                  photoUrl={s.photo_url} 
-                                  alt={s.name} 
-                                  className="h-full w-full object-cover" 
-                                  fallback={<div className={`h-full w-full flex items-center justify-center ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}><User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} /></div>}
-                                />
-                              </button>
-                            ) : (
-                              <div className={`h-9 w-9 rounded-full flex items-center justify-center flex-shrink-0 ${s.isToday ? 'bg-green-200 dark:bg-green-900' : 'bg-muted'}`}>
-                                <User className={`h-4 w-4 ${s.isToday ? 'text-green-700 dark:text-green-300' : 'text-muted-foreground'}`} />
-                              </div>
-                            )}
+                            <button onClick={() => setSelectedPhoto({ name: s.name, url: s.photo_url! })} className="h-9 w-9 flex-shrink-0">
+                              <ScoutAvatar
+                                name={s.name}
+                                photoUrl={s.photo_url}
+                                className={cn(
+                                  "h-9 w-9 ring-2 ring-background hover:ring-primary transition-all shadow-sm",
+                                  s.isToday && "ring-green-400/40"
+                                )}
+                              />
+                            </button>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-start justify-between gap-2">
                                 <p className={`text-sm font-bold break-words leading-tight ${s.isToday ? 'text-green-700 dark:text-green-300' : ''}`} style={!s.isToday ? { color: 'hsl(var(--scout-green))' } : undefined}>{s.name}</p>
@@ -1011,11 +995,10 @@ const Dashboard = () => {
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
           {selectedPhoto && (
             <>
-              <ScoutPhoto 
-                photoUrl={selectedPhoto.url} 
-                alt={selectedPhoto.name} 
-                className="w-64 h-64 rounded-xl object-cover shadow-lg" 
-                fallback={<div className="w-64 h-64 bg-muted flex items-center justify-center rounded-xl"><User className="h-16 w-16 text-muted-foreground" /></div>}
+              <ScoutAvatar
+                name={selectedPhoto.name}
+                photoUrl={selectedPhoto.url}
+                className="w-64 h-64 rounded-xl shadow-lg"
               />
               <p className="text-lg font-semibold">{selectedPhoto.name}</p>
             </>

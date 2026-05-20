@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import ScoutPhoto from '@/components/ScoutPhoto';
+import ScoutAvatar from '@/components/ScoutAvatar';
 import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 
 interface Scout {
@@ -228,23 +229,11 @@ const BranchScouts = () => {
               }}
             >
               <div className="aspect-square overflow-hidden bg-muted">
-                {scout.photo_url ? (
-                  <ScoutPhoto
-                    photoUrl={scout.photo_url}
-                    alt={scout.name}
-                    className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
-                    fallback={
-                      <div className="flex h-full items-center justify-center">
-                        <User className="h-12 w-12 text-muted-foreground/30" />
-                      </div>
-                    }
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center">
-                    <User className="h-12 w-12 text-muted-foreground/30" />
-                  </div>
-                )}
+                <ScoutAvatar
+                  name={scout.name}
+                  photoUrl={scout.photo_url}
+                  className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105 rounded-none"
+                />
               </div>
               <div className="p-3">
                 <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>

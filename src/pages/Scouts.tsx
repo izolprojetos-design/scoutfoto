@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { getSignedPhotoUrl } from '@/lib/storageUtils';
 import { formatDatePtBR, formatTimePtBR, formatPhoneBR } from '@/lib/formatting';
 import ScoutPhoto from '@/components/ScoutPhoto';
+import ScoutAvatar from '@/components/ScoutAvatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { format } from 'date-fns';
@@ -36,6 +38,7 @@ import {
   ALL_CATEGORIES,
 } from '@/lib/scoutUtils';
 import ImageCropper from '@/components/ImageCropper';
+import { getInitials, stringToColor } from '@/lib/avatarUtils';
 import ScoutGallery from '@/components/ScoutGallery';
 import ScoutFolders from '@/components/ScoutFolders';
 import ScoutHistory from '@/components/ScoutHistory';
@@ -1369,18 +1372,26 @@ const Scouts = () => {
               }
             }}
           >
-            <div className={`relative h-24 w-24 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors ${
-              cameraStatus === 'available' 
-                ? 'border-muted-foreground/30 hover:border-primary' 
-                : 'border-amber-200 bg-amber-50/30'
-            }`}>
+            <div 
+              className={cn(
+                "relative h-24 w-24 rounded-full border-2 border-dashed flex items-center justify-center overflow-hidden transition-colors",
+                cameraStatus === 'available' 
+                  ? 'border-muted-foreground/30 hover:border-primary' 
+                  : 'border-amber-200 bg-amber-50/30'
+              )}
+              style={!photoPreview && name ? { backgroundColor: stringToColor(name) } : undefined}
+            >
               {photoPreview ? (
                 <img src={photoPreview} alt="Preview" className="h-full w-full object-cover rounded-full" />
               ) : (
-                cameraStatus === 'available' ? (
-                  <Camera className="h-6 w-6 text-muted-foreground" />
+                name ? (
+                  <span className="text-2xl font-bold text-white select-none">{getInitials(name)}</span>
                 ) : (
-                  <ImageIcon className="h-6 w-6 text-amber-500" />
+                  cameraStatus === 'available' ? (
+                    <Camera className="h-6 w-6 text-muted-foreground" />
+                  ) : (
+                    <ImageIcon className="h-6 w-6 text-amber-500" />
+                  )
                 )
               )}
             </div>
@@ -2283,31 +2294,20 @@ const Scouts = () => {
                   <CardContent className="p-0">
                     {/* Main row: photo, branch, name, age */}
                     <div className="flex items-center gap-3 p-4">
-                      {scout.photo_url ? (
-                        <ScoutPhoto
-                          photoUrl={scout.photo_url}
-                          alt={scout.name}
-                          className="h-14 w-14 rounded-full object-cover object-top ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all"
-                          onClick={async (e) => {
-                            e.stopPropagation();
-                            if (scout.photo_url) {
-                              const signed = await getSignedPhotoUrl(scout.photo_url);
-                              if (signed) setViewingPhoto(signed);
-                              else toast.error('Foto não disponível');
-                            }
-                          }}
-                          onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
-                          fallback={
-                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                              {branch?.icon || '⚜️'}
-                            </div>
+                      <ScoutAvatar
+                        name={scout.name}
+                        photoUrl={scout.photo_url}
+                        className="h-14 w-14 ring-2 ring-muted flex-shrink-0 cursor-pointer hover:ring-primary transition-all shadow-sm"
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          if (scout.photo_url) {
+                            const signed = await getSignedPhotoUrl(scout.photo_url);
+                            if (signed) setViewingPhoto(signed);
+                            else toast.error('Foto não disponível');
                           }
-                        />
-                      ) : (
-                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-2xl ring-2 ring-muted flex-shrink-0">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      )}
+                        }}
+                        onBroken={() => handleBrokenPhoto(scout.id, document.createElement('img'))}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-col items-start gap-0.5">
                           <h3
@@ -2695,11 +2695,10 @@ const Scouts = () => {
                       onClick={() => setPhotosHubScoutId(s.id)}
                       className="w-full flex items-center gap-3 p-3 text-left hover:bg-accent transition-colors"
                     >
-                      <ScoutPhoto
+                      <ScoutAvatar
+                        name={s.name}
                         photoUrl={s.photo_url}
-                        alt={s.name}
-                        className="h-10 w-10 rounded-full object-cover bg-muted shrink-0"
-                        fallback={<div className="h-10 w-10 rounded-full bg-muted shrink-0" />}
+                        className="h-10 w-10 shrink-0"
                       />
                       <div className="flex-1 min-w-0" aria-hidden="true">
                         <p className="font-semibold uppercase break-words">{s.name}</p>
@@ -3213,23 +3212,12 @@ const Scouts = () => {
             return (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  {viewingScout.photo_url ? (
-                    <ScoutPhoto
-                      photoUrl={viewingScout.photo_url}
-                      alt={viewingScout.name}
-                      className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
-                      onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
-                      fallback={
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      }
-                    />
-                  ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                      {branch?.icon || '⚜️'}
-                    </div>
-                  )}
+                  <ScoutAvatar
+                    name={viewingScout.name}
+                    photoUrl={viewingScout.photo_url}
+                    className="h-20 w-20 ring-2 ring-muted cursor-pointer hover:ring-primary transition-all text-3xl shadow-sm"
+                    onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
+                  />
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold uppercase break-words">{viewingScout.name}</h3>
