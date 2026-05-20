@@ -3202,23 +3202,12 @@ const Scouts = () => {
             return (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  {viewingScout.photo_url ? (
-                    <ScoutPhoto
-                      photoUrl={viewingScout.photo_url}
-                      alt={viewingScout.name}
-                      className="h-20 w-20 rounded-full object-cover object-top ring-2 ring-muted cursor-pointer hover:ring-primary transition-all"
-                      onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
-                      fallback={
-                        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                          {branch?.icon || '⚜️'}
-                        </div>
-                      }
-                    />
-                  ) : (
-                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-3xl ring-2 ring-muted">
-                      {branch?.icon || '⚜️'}
-                    </div>
-                  )}
+                  <ScoutAvatar
+                    name={viewingScout.name}
+                    photoUrl={viewingScout.photo_url}
+                    className="h-20 w-20 ring-2 ring-muted cursor-pointer hover:ring-primary transition-all text-3xl shadow-sm"
+                    onBroken={() => handleBrokenPhoto(viewingScout.id, document.createElement('img'))}
+                  />
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-semibold uppercase break-words">{viewingScout.name}</h3>
