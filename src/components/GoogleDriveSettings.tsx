@@ -150,55 +150,64 @@ const GoogleDriveSettings = () => {
 
                 {config?.enabled && (
                   <div className="space-y-4 pt-2">
-                    <Label className="text-sm font-medium">Tipos de Links Permitidos</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <Button
-                        variant={config.allowed_types.length === 3 ? "default" : "outline"}
-                        size="sm"
-                        className="justify-start gap-2 h-10"
-                        onClick={() => setConfig({ ...config, allowed_types: ['image', 'video', 'document'] })}
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                        Todos os Tipos
-                      </Button>
-                      <Button
-                        variant={config.allowed_types.length === 0 ? "default" : "outline"}
-                        size="sm"
-                        className="justify-start gap-2 h-10"
-                        onClick={() => setConfig({ ...config, allowed_types: [] })}
-                      >
-                        <X className="h-4 w-4" />
-                        Nenhum
-                      </Button>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">Gerenciar links do Google Drive e outros (Tipos Permitidos)</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] h-7 px-2"
+                          onClick={() => setConfig({ ...config, allowed_types: ['image', 'video', 'document'] })}
+                        >
+                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          Marcar Todos
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-[10px] h-7 px-2"
+                          onClick={() => setConfig({ ...config, allowed_types: [] })}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Bloquear Todos
+                        </Button>
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {[
                         { id: 'image', label: 'Link de Foto', icon: ImageIcon },
-                        { id: 'video', label: 'Link de Video', icon: Video },
+                        { id: 'video', label: 'Link de Vídeo', icon: Video },
                         { id: 'document', label: 'Link de Documento', icon: FileText },
                       ].map((type) => {
-                        const isSelected = config.allowed_types.includes(type.id);
+                        const isUnlocked = config.allowed_types.includes(type.id);
                         return (
                           <div 
                             key={type.id}
-                            onClick={() => {
-                              const next = isSelected 
-                                ? config.allowed_types.filter(t => t !== type.id)
-                                : [...config.allowed_types, type.id];
-                              setConfig({ ...config, allowed_types: next });
-                            }}
-                            className={`flex items-center justify-between p-3 rounded-md border cursor-pointer transition-all ${
-                              isSelected ? 'bg-primary/5 border-primary ring-1 ring-primary' : 'hover:bg-muted'
+                            className={`flex items-center justify-between p-4 rounded-lg border transition-all ${
+                              isUnlocked ? 'bg-green-500/5 border-green-500/30' : 'bg-red-500/5 border-red-500/30'
                             }`}
                           >
-                            <div className="flex items-center gap-3">
-                              <type.icon className={`h-4 w-4 ${isSelected ? 'text-primary' : 'text-muted-foreground'}`} />
-                              <span className="text-sm font-medium">{type.label}</span>
+                            <div className="flex items-center gap-4">
+                              <div className={`p-2 rounded-full ${isUnlocked ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                <type.icon className="h-5 w-5" />
+                              </div>
+                              <div className="space-y-0.5">
+                                <span className="text-sm font-semibold block">{type.label}</span>
+                                <span className={`text-xs font-medium ${isUnlocked ? 'text-green-600' : 'text-red-600'}`}>
+                                  {isUnlocked ? '✓ Desbloqueado' : '✕ Bloqueado'}
+                                </span>
+                              </div>
                             </div>
-                            <div className={`h-4 w-4 rounded-full border flex items-center justify-center ${isSelected ? 'bg-primary border-primary' : 'border-muted-foreground/30'}`}>
-                              {isSelected && <CheckCircle2 className="h-3 w-3 text-white" />}
-                            </div>
+                            <Switch 
+                              checked={isUnlocked} 
+                              onCheckedChange={(checked) => {
+                                const next = checked 
+                                  ? [...config.allowed_types, type.id]
+                                  : config.allowed_types.filter(t => t !== type.id);
+                                setConfig({ ...config, allowed_types: next });
+                              }}
+                            />
                           </div>
                         );
                       })}
