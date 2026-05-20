@@ -199,20 +199,20 @@ const GoogleDriveSettings = () => {
                 {logs.length > 0 ? logs.map((log) => (
                   <TableRow key={log.id}>
                     <TableCell className="text-xs">
-                      {format(new Date(log.criado_em), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                      {log.created_at ? format(new Date(log.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR }) : '—'}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-col">
-                        <span className="font-medium">{log.nome}</span>
-                        <span className="text-xs text-muted-foreground">{log.ramo} • {log.data_evento}</span>
+                        <span className="font-medium">{log.scout_name}</span>
+                        <span className="text-xs text-muted-foreground">{log.branch} • {log.photo_date}</span>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary">{log.total_fotos} fotos</Badge>
+                      <Badge variant="secondary">{log.file_name}</Badge>
                     </TableCell>
                     <TableCell>
                       <a 
-                        href={`https://drive.google.com/drive/folders/${log.pasta_drive_id}`} 
+                        href={log.drive_folder_url} 
                         target="_blank" 
                         rel="noopener noreferrer"
                         className="text-primary hover:underline flex items-center gap-1 text-sm"
