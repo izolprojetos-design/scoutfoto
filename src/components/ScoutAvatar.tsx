@@ -1,8 +1,13 @@
 
 import React from 'react';
 import ScoutPhoto from './ScoutPhoto';
-import { getInitials, stringToColor } from '@/lib/avatarUtils';
+import { getInitials, stringToColor } from '@/avatarUtils';
 import { cn } from '@/lib/utils';
+
+// Path was corrected to '@/avatarUtils' but it should be '@/lib/avatarUtils'
+// Wait, I created it in src/lib/avatarUtils.ts
+
+import { getInitials, stringToColor } from '@/lib/avatarUtils';
 
 interface ScoutAvatarProps {
   name: string;
@@ -41,7 +46,7 @@ const ScoutAvatar = ({
     <ScoutPhoto
       photoUrl={photoUrl}
       alt={name}
-      className={className}
+      className={cn("rounded-full object-cover", className)}
       onClick={onClick}
       onBroken={onBroken}
       fallback={fallback}
