@@ -504,8 +504,8 @@ const EventDetail = () => {
       return;
     }
 
-    // Check global block for Drive and specific allowed types
-    if (isGoogleDrive) {
+    // Check global block for Drive and specific allowed types (Admins bypass global settings)
+    if (isGoogleDrive && !isAdmin) {
       const { data: configData } = await supabase
         .from('global_settings')
         .select('value')
@@ -520,7 +520,6 @@ const EventDetail = () => {
         }
 
         const allowedTypes = config.allowed_types || [];
-        // Map externalType to config types if needed (image, video, document)
         if (!allowedTypes.includes(externalType)) {
           const typeLabels: Record<string, string> = {
             image: 'Links de Fotos',
