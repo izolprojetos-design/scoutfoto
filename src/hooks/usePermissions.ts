@@ -145,5 +145,8 @@ export const usePermissions = () => {
     canDeleteData: hasPermission('delete_data'),
     canAccessAdmin: hasPermission('access_admin'),
     canManageGoogleDrive: hasPermission('google_drive_links'),
+    canAddDriveImages: hasPermission('google_drive_images'),
+    canAddDriveVideos: hasPermission('google_drive_videos'),
+    canAddDriveDocuments: hasPermission('google_drive_documents'),
   };
 };
