@@ -504,7 +504,7 @@ const EventDetail = () => {
       return;
     }
 
-    // Check global block for Drive
+    // Check global block for Drive and specific allowed types
     if (isGoogleDrive) {
       const { data: configData } = await supabase
         .from('global_settings')
@@ -513,9 +513,23 @@ const EventDetail = () => {
         .single();
       
       const config = configData?.value as any;
-      if (config && config.enabled === false) {
-        toast.error('O uso de links do Google Drive está temporariamente desativado pelo administrador.');
-        return;
+      if (config) {
+        if (config.enabled === false) {
+          toast.error('O uso de links do Google Drive está desativado pelo administrador.');
+          return;
+        }
+
+        const allowedTypes = config.allowed_types || [];
+        // Map externalType to config types if needed (image, video, document)
+        if (!allowedTypes.includes(externalType)) {
+          const typeLabels: Record<string, string> = {
+            image: 'Links de Fotos',
+            video: 'Links de Vídeos',
+            document: 'Links de Documentos'
+          };
+          toast.error(`${typeLabels[externalType] || 'Este tipo de link'} do Google Drive não está permitido nas configurações do sistema.`);
+          return;
+        }
       }
     }
 
