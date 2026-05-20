@@ -224,7 +224,7 @@ const GoogleDriveSettings = () => {
               </li>
               <li className="flex items-center gap-2">
                 <Badge variant="outline" className="h-2 w-2 rounded-full p-0 bg-blue-500 border-blue-500" />
-                <span><strong>Integrantes:</strong> Precisam ter a permissão habilitada para adicionar ou remover links do Drive.</span>
+                <span><strong>Integrantes:</strong> Respeitam as restrições globais, a menos que possuam uma <strong>permissão de exceção</strong> específica para o tipo de link.</span>
               </li>
             </ul>
             <div className="pt-4">
