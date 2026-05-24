@@ -688,6 +688,8 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
+          {/* Hosting Information */}
+          <HostingConfig />
         </div>
       ))}
 
