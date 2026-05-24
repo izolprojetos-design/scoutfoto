@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud, Info } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
