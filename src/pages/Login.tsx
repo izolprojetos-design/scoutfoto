@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { usePermissions } from '@/hooks/usePermissions';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ import { Helmet } from 'react-helmet-async';
 const Login = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const { canViewPhotos } = usePermissions();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -83,7 +85,7 @@ const Login = () => {
       }
     } else {
       await clearLoginAttempts(email);
-      navigate('/dashboard');
+      navigate(canViewPhotos ? '/dashboard' : '/profile');
     }
     setLoading(false);
   };
