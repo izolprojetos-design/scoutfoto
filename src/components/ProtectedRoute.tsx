@@ -30,11 +30,13 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   }
 
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
-    return <Navigate to="/dashboard" replace />;
+    console.warn(`Access denied: missing role ${requiredRole}. Redirecting to profile.`);
+    return <Navigate to="/profile" replace />;
   }
 
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
-    return <Navigate to="/dashboard" replace />;
+    console.warn(`Access denied: missing permission ${requiredPermission}. Redirecting to profile.`);
+    return <Navigate to="/profile" replace />;
   }
 
   return <>{children ?? <Outlet />}</>;
