@@ -1009,7 +1009,6 @@ const Dashboard = () => {
         </DialogContent>
       </Dialog>
     </>
-    </>
   );
 };
 
