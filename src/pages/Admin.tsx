@@ -567,6 +567,7 @@ const Admin = () => {
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Link2 className="h-3.5 w-3.5" />Convites</TabsTrigger>
           <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
+          <TabsTrigger value="system" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><RefreshCw className="h-3.5 w-3.5" />Sistema</TabsTrigger>
           <TabsTrigger value="branding" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><ImageOff className="h-3.5 w-3.5" />Identidade</TabsTrigger>
           <TabsTrigger value="drive" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Cloud className="h-3.5 w-3.5" />Google Drive</TabsTrigger>
         </TabsList>
