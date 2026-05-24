@@ -389,6 +389,36 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          metadata: Json | null
+          recipient: string
+          status: string
+          template_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient: string
+          status: string
+          template_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          metadata?: Json | null
+          recipient?: string
+          status?: string
+          template_name?: string | null
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -669,6 +699,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hosting_config: {
+        Row: {
+          description: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          description?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          description?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string
+        }
+        Relationships: []
       }
       images: {
         Row: {
@@ -1268,6 +1322,33 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      system_health: {
+        Row: {
+          details: Json | null
+          id: string
+          last_check: string | null
+          service_name: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          details?: Json | null
+          id?: string
+          last_check?: string | null
+          service_name: string
+          status: string
+          updated_at?: string | null
+        }
+        Update: {
+          details?: Json | null
+          id?: string
+          last_check?: string | null
+          service_name?: string
+          status?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
