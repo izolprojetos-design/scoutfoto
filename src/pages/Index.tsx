@@ -14,7 +14,7 @@ const Index = () => {
     if (!authLoading && !permLoading) {
       if (user) {
         // Redirect to dashboard if they can view photos, otherwise to profile
-        navigate(canViewPhotos ? '/dashboard' : '/profile', { replace: true });
+        navigate('/dashboard', { replace: true });
       } else {
         navigate('/login', { replace: true });
       }
