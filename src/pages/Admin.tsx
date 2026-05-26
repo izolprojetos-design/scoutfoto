@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { logAudit } from '@/lib/auditLog';
@@ -70,6 +72,8 @@ interface Subgroup {
 
 const Admin = () => {
   const { user } = useAuth();
+  const location = useLocation();
+
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   
@@ -254,7 +258,8 @@ const Admin = () => {
     if (tab) {
       setActiveTab(tab);
     }
-  }, [window.location.search]);
+  }, [location.search]);
+
 
 
   useEffect(() => {
