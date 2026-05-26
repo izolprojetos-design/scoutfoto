@@ -297,8 +297,8 @@ const AgendamentosManager = () => {
     if (current !== 'pendente') {
       setConflictId(a.id);
       toast({
-        title: 'Agendamento já respondido',
-        description: `Este agendamento já foi ${current} e não pode ser respondido novamente.`,
+        title: 'Mensagem já respondida',
+        description: `Esta mensagem já foi ${current} e não pode ser respondida novamente.`,
         variant: 'destructive',
       });
       await refreshAgendamento(a.id);
@@ -312,8 +312,8 @@ const AgendamentosManager = () => {
       if (freshStatus !== 'pendente') {
         setConflictId(a.id);
         toast({
-          title: 'Agendamento já respondido',
-          description: `Este agendamento já foi ${freshStatus} por outro acesso. A lista foi sincronizada.`,
+          title: 'Mensagem já respondida',
+          description: `Esta mensagem já foi ${freshStatus} por outro acesso. A lista foi sincronizada.`,
           variant: 'destructive',
         });
         setRejectTarget(null);
@@ -332,8 +332,8 @@ const AgendamentosManager = () => {
         if (msg.includes('já foi') || msg.includes('conflito') || error.code === '22023' || error.code === '40001') {
           setConflictId(a.id);
           toast({
-            title: 'Agendamento já respondido',
-            description: 'Outro acesso atualizou este agendamento. A lista será sincronizada.',
+          title: 'Mensagem já respondida',
+          description: 'Outro acesso atualizou esta mensagem. A lista será sincronizada.',
             variant: 'destructive',
           });
           await refreshAgendamento(a.id);
@@ -348,7 +348,7 @@ const AgendamentosManager = () => {
         setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...updated } : x));
       }
       toast({
-        title: response === 'confirmado' ? 'Agendamento confirmado' : 'Agendamento recusado',
+        title: response === 'confirmado' ? 'Mensagem confirmada' : 'Mensagem recusada',
         description: response === 'confirmado'
           ? 'O solicitante foi notificado.'
           : 'O solicitante foi notificado com seu motivo.',
@@ -612,7 +612,7 @@ const AgendamentosManager = () => {
       toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Agendamento excluído', description: 'O registro foi removido com sucesso.' });
+    toast({ title: 'Mensagem excluída', description: 'O registro foi removido com sucesso.' });
     fetchData();
   };
 
@@ -642,7 +642,7 @@ const AgendamentosManager = () => {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Agendamento atualizado', description: 'Alterações salvas com sucesso.' });
+    toast({ title: 'Mensagem atualizada', description: 'Alterações salvas com sucesso.' });
     setEditing(null);
     fetchData();
   };
@@ -650,7 +650,7 @@ const AgendamentosManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando agendamentos...
+        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando mensagens...
       </div>
     );
   }
@@ -741,7 +741,7 @@ const AgendamentosManager = () => {
 
       {/* Counter */}
       <div className="text-sm text-muted-foreground">
-        {filtered.length} agendamento{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+        {filtered.length} mensagen{filtered.length !== 1 ? 's' : 'm'} encontrada{filtered.length !== 1 ? 's' : ''}
       </div>
 
       {/* List */}
@@ -749,11 +749,11 @@ const AgendamentosManager = () => {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-muted-foreground">
             <CalendarDays className="h-10 w-10 mb-3 opacity-50" />
-            <p className="text-sm">Nenhum agendamento encontrado.</p>
+            <p className="text-sm">Nenhuma mensagem encontrada.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
+        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de mensagens">
           {paginated.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
@@ -1129,8 +1129,8 @@ const AgendamentosManager = () => {
       <Dialog open={!!editing} onOpenChange={(o) => { if (!o) { setEditing(null); setLockRecipient(false); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar agendamento</DialogTitle>
-            <DialogDescription>Atualize as informações do agendamento.</DialogDescription>
+            <DialogTitle>Editar mensagem</DialogTitle>
+            <DialogDescription>Atualize as informações da mensagem.</DialogDescription>
           </DialogHeader>
 
           {editing && (
@@ -1223,7 +1223,7 @@ const AgendamentosManager = () => {
                       Destinatário
                     </p>
                     <p className="text-[11px] text-muted-foreground/80">
-                      Estes dados aparecem no bloco "Destinatário" do card deste agendamento.
+                      Estes dados aparecem no bloco "Destinatário" do card desta mensagem.
                     </p>
                   </div>
                   <label
@@ -1362,9 +1362,9 @@ const AgendamentosManager = () => {
       <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir agendamento?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir mensagem?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. O agendamento será permanentemente removido.
+              Esta ação não pode ser desfeita. A mensagem será permanentemente removida.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1385,7 +1385,7 @@ const AgendamentosManager = () => {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" /> Recusar agendamento
+              <XCircle className="h-5 w-5 text-destructive" /> Recusar mensagem
             </DialogTitle>
             <DialogDescription>
               Informe o motivo da recusa. O solicitante será notificado.
@@ -1425,14 +1425,14 @@ const AgendamentosManager = () => {
               <ShieldCheck className="h-5 w-5 text-primary" /> Testar RLS
             </DialogTitle>
             <DialogDescription>
-              Simula se o usuário com este e-mail conseguiria visualizar este agendamento.
+              Simula se o usuário com este e-mail conseguiria visualizar esta mensagem.
             </DialogDescription>
           </DialogHeader>
 
           {rlsTestRecord && (
             <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">Agendamento testado</span>
+                <span className="text-muted-foreground">Mensagem testada</span>
                 <code className="font-mono text-[11px] text-foreground/80 break-all">
                   #{rlsTestRecord.id.slice(0, 8)}
                 </code>

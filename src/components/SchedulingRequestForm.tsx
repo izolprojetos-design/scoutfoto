@@ -284,7 +284,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         ),
       );
     } catch (err) {
-      console.error('Falha no envio do e-mail de agendamento', err);
+      console.error('Falha no envio do e-mail de mensagem', err);
       emailOk = false;
     }
 
@@ -292,13 +292,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
     if (emailOk) {
       toast({
-        title: 'Agendamento criado e e-mail enviado',
-        description: 'O agendamento foi confirmado e a notificação foi enviada aos contatos.',
+        title: 'Mensagem criada e e-mail enviado',
+        description: 'A mensagem foi confirmada e a notificação foi enviada aos contatos.',
       });
     } else {
       toast({
-        title: 'Agendamento criado, mas falha no envio do e-mail',
-        description: 'Seu agendamento foi salvo, porém não conseguimos enviar a notificação por e-mail.',
+        title: 'Mensagem criada, mas falha no envio do e-mail',
+        description: 'Sua mensagem foi salva, porém não conseguimos enviar a notificação por e-mail.',
         variant: 'destructive',
       });
     }
@@ -313,14 +313,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       <div className="space-y-4 max-w-3xl mx-auto">
         <Alert className="border-primary/30 bg-primary/5">
           <CheckCircle2 className="h-5 w-5 text-primary" />
-          <AlertTitle>Agendamento registrado com sucesso</AlertTitle>
+          <AlertTitle>Mensagem registrada com sucesso</AlertTitle>
           <AlertDescription className="mt-1">
-            Seu agendamento foi salvo com status <strong>Confirmado</strong>.
+            Sua mensagem foi salva com status <strong>Confirmado</strong>.
           </AlertDescription>
         </Alert>
         <div className="flex gap-2">
           <Button onClick={() => setSubmitted(false)} variant="default">
-            Criar novo agendamento
+            Criar nova mensagem
           </Button>
         </div>
       </div>
@@ -416,7 +416,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </div>
             <div>
               <CardTitle className="text-lg">Dados do Destinatário</CardTitle>
-              <CardDescription>Para quem este agendamento será enviado</CardDescription>
+              <CardDescription>Para quem esta mensagem será enviada</CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -683,7 +683,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           {submitting ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
           ) : (
-            <><Send className="h-4 w-4" /> Criar agendamento</>
+            <><Send className="h-4 w-4" /> Criar mensagem</>
           )}
         </Button>
       </div>
