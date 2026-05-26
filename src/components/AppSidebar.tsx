@@ -41,7 +41,7 @@ const AppSidebar = () => {
   };
 
   const eventSubItems = [
-    { to: '/agendamentos', label: 'Minha Agenda', icon: ListChecks, show: true },
+    { to: '/agendamentos', label: 'Mensagem', icon: ListChecks, show: true },
     { to: '/calendar', label: 'Calendário', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
   ].filter(i => i.show);
