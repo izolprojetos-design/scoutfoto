@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw, Lock, FolderTree, Link2, Archive, ImageOff, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -50,8 +50,17 @@ const AppSidebar = () => {
     { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
     { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
     { to: '/admin?tab=roles', label: 'Papéis', icon: Shield, show: canAccessAdmin },
+    { to: '/admin?tab=permissions', label: 'Permissões', icon: Lock, show: canAccessAdmin },
+    { to: '/admin?tab=audit', label: 'Auditoria', icon: ListChecks, show: canAccessAdmin },
+    { to: '/admin?tab=subgroups', label: 'Equipes', icon: FolderTree, show: canAccessAdmin },
+    { to: '/admin?tab=invites', label: 'Convites', icon: Link2, show: canAccessAdmin },
+    { to: '/admin?tab=archived', label: 'Arquivadas', icon: Archive, show: canAccessAdmin },
+    { to: '/admin?tab=security', label: 'Segurança', icon: Shield, show: canAccessAdmin },
     { to: '/admin?tab=system', label: 'Sistema & Status', icon: RefreshCw, show: canAccessAdmin },
+    { to: '/admin?tab=branding', label: 'Identidade', icon: ImageOff, show: canAccessAdmin },
+    { to: '/admin?tab=drive', label: 'Google Drive', icon: Cloud, show: canAccessAdmin },
   ].filter(i => i.show);
+
 
   const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
   const isAdminRoute = location.pathname.startsWith('/admin');
