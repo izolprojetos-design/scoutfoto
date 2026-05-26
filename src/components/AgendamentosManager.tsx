@@ -1432,7 +1432,7 @@ const AgendamentosManager = () => {
           {rlsTestRecord && (
             <div className="rounded-md border bg-muted/40 p-3 text-xs space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-muted-foreground">Agendamento testado</span>
+                <span className="text-muted-foreground">Mensagem testada</span>
                 <code className="font-mono text-[11px] text-foreground/80 break-all">
                   #{rlsTestRecord.id.slice(0, 8)}
                 </code>
