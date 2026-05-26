@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,24 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink, ShieldCheck, Trash2, User, Clock, LogIn, ArrowRight } from 'lucide-react';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
 import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, differenceInYears, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
-import { toast } from 'sonner';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { useAuth } from '@/contexts/AuthContext';
-
 
 interface Stats {
   totalScouts: number;
@@ -70,15 +56,9 @@ const BRANCH_COLOR_MAP: Record<string, string> = {
 };
 
 const AdminOverview = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Online & Recent Logins state
-  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
-  const [recentLogins, setRecentLogins] = useState<any[]>([]);
-  const [roleDistribution, setRoleDistribution] = useState<any[]>([]);
 
   // Dialog states
   const [schedDialogOpen, setSchedDialogOpen] = useState(false);
@@ -88,67 +68,6 @@ const AdminOverview = () => {
   const [photoList, setPhotoList] = useState<ScoutPending[]>([]);
   const [guardianList, setGuardianList] = useState<ScoutPending[]>([]);
   const [dialogLoading, setDialogLoading] = useState(false);
-
-
-  const fetchAdminData = async () => {
-    // 1. Fetch profiles and roles for distribution
-    const [{ data: profiles }, { data: roles }] = await Promise.all([
-      supabase.from('profiles').select('user_id, name, is_active, section'),
-      supabase.from('user_roles').select('user_id, role'),
-    ]);
-
-    if (profiles && roles) {
-      const counts: Record<string, number> = {};
-      roles.forEach(r => {
-        counts[r.role] = (counts[r.role] || 0) + 1;
-      });
-      const ROLE_COLORS: Record<string, string> = { admin: '#ef4444', voluntario: '#a855f7', dirigente_gestor: '#3b82f6', parent: '#10b981', viewer: '#94a3b8' };
-      const ROLE_LABELS: Record<string, string> = { admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', parent: 'Pai/Mãe', viewer: 'Visitante' };
-      
-      setRoleDistribution(Object.entries(counts).map(([role, count]) => ({
-        role,
-        label: ROLE_LABELS[role] || role,
-        count,
-        color: ROLE_COLORS[role] || '#8884d8',
-      })).sort((a, b) => b.count - a.count));
-    }
-
-    // 2. Recent logins from audit logs
-    const { data: loginLogs } = await supabase
-      .from('audit_logs')
-      .select('user_id, created_at')
-      .eq('action', 'login')
-      .order('created_at', { ascending: false })
-      .limit(50);
-
-    if (loginLogs && profiles) {
-      const profileMap = new Map<string, string>();
-      profiles.forEach(p => profileMap.set(p.user_id, p.name));
-      const seen = new Set<string>();
-      const logins: any[] = [];
-      for (const log of loginLogs) {
-        if (!seen.has(log.user_id)) {
-          seen.add(log.user_id);
-          logins.push({
-            user_id: log.user_id,
-            name: profileMap.get(log.user_id) || 'Desconhecido',
-            last_login: log.created_at,
-          });
-        }
-      }
-      setRecentLogins(logins);
-    }
-
-    // 3. Online users
-    const { data: onlineData } = await supabase.rpc('admin_list_online_users');
-    if (onlineData) {
-      setOnlineUsers(onlineData.map((u: any) => ({
-        user_id: u.user_id,
-        name: u.name,
-        last_login: u.last_active,
-      })));
-    }
-  };
 
   useEffect(() => {
     const load = async () => {
@@ -222,6 +141,7 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
+      // Guardian check applies only to minors (under 18) per ECA Digital (Lei nº 15.211/2025)
       const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
       const isMinor = (birth: string | null | undefined) => {
@@ -248,25 +168,13 @@ const AdminOverview = () => {
         scoutsWithoutGuardian: scoutsWithoutGuardian.length,
       });
 
+      // Store lists for dialogs
       setPhotoList(scoutsWithoutPhoto.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
       setGuardianList(scoutsWithoutGuardian.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
 
-      await fetchAdminData();
       setLoading(false);
     };
     load();
-
-    const interval = setInterval(async () => {
-      const { data } = await supabase.rpc('admin_list_online_users');
-      if (data) {
-        setOnlineUsers(data.map((u: any) => ({
-          user_id: u.user_id,
-          name: u.name,
-          last_login: u.last_active,
-        })));
-      }
-    }, 10000);
-    return () => clearInterval(interval);
   }, []);
 
   const loadPendingSchedulings = async () => {
@@ -336,120 +244,6 @@ const AdminOverview = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {/* User and Role Distribution row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Role Distribution Pie */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {roleDistribution.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
-            ) : (
-              <div className="space-y-4">
-                <LazyPieChart
-                  data={roleDistribution}
-                  dataKey="count"
-                  nameKey="label"
-                  colors={(entry: any) => entry.color}
-                  tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
-                />
-                <div className="grid grid-cols-2 gap-2">
-                  {roleDistribution.map(r => (
-                    <div key={r.role} className="flex items-center gap-1.5 text-xs">
-                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
-                      <span className="text-muted-foreground">{r.label}</span>
-                      <span className="font-semibold">{r.count}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Online Now Section */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Online Agora
-            </CardTitle>
-            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
-              {onlineUsers.length}
-            </Badge>
-          </CardHeader>
-          <CardContent>
-            {onlineUsers.length === 0 ? (
-              <p className="text-xs text-muted-foreground py-8 text-center">Nenhum usuário online</p>
-            ) : (
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                {onlineUsers.map(login => (
-                  <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5 border border-emerald-500/10">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
-                      <User className="h-3 w-3 text-emerald-600" />
-                    </div>
-                    <span className="text-xs font-medium uppercase truncate flex-1">{login.name}</span>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
-                      {(() => {
-                        const now = new Date();
-                        const date = new Date(login.last_login);
-                        const diffMin = Math.floor((now.getTime() - date.getTime()) / 60000);
-                        return diffMin < 1 ? 'Agora' : `${diffMin}min`;
-                      })()}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Logins Section */}
-        <Card className="border shadow-sm">
-          <CardHeader className="pb-3 flex flex-row items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <LogIn className="h-4 w-4 text-muted-foreground" />
-              Últimos Acessos
-            </CardTitle>
-            <Badge variant="secondary">{recentLogins.length}</Badge>
-          </CardHeader>
-          <CardContent>
-            {recentLogins.length === 0 ? (
-              <p className="text-xs text-muted-foreground text-center py-8">Sem registros</p>
-            ) : (
-              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
-                {recentLogins.map((login) => (
-                  <div key={`${login.user_id}-${login.last_login}`} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors border border-transparent hover:border-muted-foreground/10">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                      <User className="h-3 w-3 text-primary" />
-                    </div>
-                    <span className="text-xs font-medium uppercase truncate flex-1">{login.name}</span>
-                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-                      <Clock className="h-2.5 w-2.5" />
-                      {(() => {
-                        const now = new Date();
-                        const date = new Date(login.last_login);
-                        const diffMs = now.getTime() - date.getTime();
-                        const diffMin = Math.floor(diffMs / 60000);
-                        if (diffMin < 1) return 'Agora';
-                        if (diffMin < 60) return `${diffMin}min`;
-                        const diffHours = Math.floor(diffMin / 60);
-                        if (diffHours < 24) return `${diffHours}h`;
-                        return `${Math.floor(diffHours / 24)}d`;
-                      })()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
 
       {/* Charts row */}

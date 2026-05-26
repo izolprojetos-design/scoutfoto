@@ -8,17 +8,32 @@ import { useUserSection } from '@/hooks/useUserSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
 import { motion } from 'framer-motion';
-import { Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, MapPin, UserCheck, UserX } from 'lucide-react';
-import { StatsSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud, Info, Wrench } from 'lucide-react';
+import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { getCurrentBranch, getNextBranchChange, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
+import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import LazyPieChart from '@/components/LazyPieChart';
+import ScoutPhoto from '@/components/ScoutPhoto';
 import ScoutAvatar from '@/components/ScoutAvatar';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-
-
+import { Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import HostingConfig from '@/components/HostingConfig';
 
 interface BranchWithCount {
   id: string;
@@ -124,9 +139,12 @@ const Dashboard = () => {
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Removed admin-only local state from dashboard
+  // New state for enhanced dashboard
+  const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
+  const [allRoles, setAllRoles] = useState<UserRole[]>([]);
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
-
+  const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<RecentLogin[]>([]);
 
   interface EventWithCount {
     id: string;
@@ -146,11 +164,23 @@ const Dashboard = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
 
-    // Core queries for all users
-    const [branchRes, evtRes, scoutRes] = await Promise.all([
+    // Core queries for all users; admin-only queries run conditionally
+    const corePromises = [
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
+    ] as const;
+
+    const adminPromises = isAdmin
+      ? [
+        supabase.from('profiles').select('user_id, name, is_active, section'),
+        supabase.from('user_roles').select('user_id, role'),
+      ] as const
+      : null;
+
+    const [branchRes, evtRes, scoutRes, ...adminResults] = await Promise.all([
+      ...corePromises,
+      ...(adminPromises ?? []),
     ]);
 
     const branchesData = branchRes.data || [];
@@ -196,13 +226,75 @@ const Dashboard = () => {
     }
 
     setScouts((scoutRes.data as any) || []);
+
+    if (isAdmin && adminResults.length === 2) {
+      setAllProfiles((adminResults[0] as any).data || []);
+      setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
+
+      // Fetch recent logins in parallel with admin data
+      const { data: loginLogs } = await supabase
+        .from('audit_logs')
+        .select('user_id, created_at')
+        .eq('action', 'login')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (loginLogs) {
+        const profilesData = (adminResults[0] as any).data || [];
+        const profileMap = new Map<string, string>();
+        profilesData.forEach((p: UserProfile) => profileMap.set(p.user_id, p.name));
+
+        const seen = new Set<string>();
+        const logins: RecentLogin[] = [];
+        for (const log of loginLogs) {
+          if (!seen.has(log.user_id)) {
+            seen.add(log.user_id);
+            logins.push({
+              user_id: log.user_id,
+              name: profileMap.get(log.user_id) || 'Desconhecido',
+              last_login: log.created_at,
+            });
+          }
+        }
+        setRecentLogins(logins);
+      }
+
+      // Fetch real online users (active sessions in the last 30 minutes)
+      const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+      if (onlineData) {
+        setOnlineUsers(
+          onlineData.map((u: any) => ({
+            user_id: u.user_id,
+            name: u.name,
+            last_login: u.last_active,
+          }))
+        );
+      }
+    }
+
     setLoading(false);
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  // Administrative data refresh moved to Admin panel
-
+  // Auto-refresh "Online Agora" every 10 seconds (admin only)
+  useEffect(() => {
+    if (!isAdmin) return;
+    const refreshOnline = async () => {
+      const { data } = await supabase.rpc('admin_list_online_users');
+      if (data) {
+        setOnlineUsers(
+          data.map((u: any) => ({
+            user_id: u.user_id,
+            name: u.name,
+            last_login: u.last_active,
+          }))
+        );
+      }
+    };
+    const interval = setInterval(refreshOnline, 10_000);
+    return () => clearInterval(interval);
+  }, [isAdmin]);
 
 
   const handleTransition = async (scoutId: string, targetBranchKey: string, scoutName: string) => {
@@ -236,18 +328,29 @@ const Dashboard = () => {
 
   // Filtered profiles based on section
   const filteredProfiles = useMemo(() => {
-    return []; // Removed administrative profile tracking
-  }, []);
+    if (sectionFilter === 'all') return allProfiles;
+    return allProfiles.filter(p => p.section === sectionFilter);
+  }, [allProfiles, sectionFilter]);
 
   // KPIs
-  const totalUsers = 0;
-  const activeUsers = 0;
-  const inactiveUsers = 0;
+  const totalUsers = filteredProfiles.length;
+  const activeUsers = filteredProfiles.filter(p => p.is_active).length;
+  const inactiveUsers = totalUsers - activeUsers;
 
   // Role distribution
   const roleDistribution = useMemo(() => {
-    return []; // Removed administrative role tracking
-  }, []);
+    const filteredUserIds = new Set(filteredProfiles.map(p => p.user_id));
+    const counts: Record<string, number> = {};
+    allRoles.filter(r => filteredUserIds.has(r.user_id)).forEach(r => {
+      counts[r.role] = (counts[r.role] || 0) + 1;
+    });
+    return Object.entries(counts).map(([role, count]) => ({
+      role,
+      label: ROLE_LABELS[role] || role,
+      count,
+      color: ROLE_COLORS[role] || '#8884d8',
+    })).sort((a, b) => b.count - a.count);
+  }, [filteredProfiles, allRoles]);
 
   // Format login time ago
   const formatTimeAgo = (dateStr: string) => {
@@ -360,8 +463,253 @@ const Dashboard = () => {
       )}
 
       {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
-      {/* Admin metrics removed from main Dashboard - accessible via Administration panel */}
+      {isAdmin && (
+        loading ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+            <PieChartSkeleton />
+            <PieChartSkeleton />
+            <PieChartSkeleton />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+          {/* Role Distribution Pie */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {roleDistribution.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
+              ) : (
+                <div className="space-y-4">
+                  <LazyPieChart
+                    data={roleDistribution}
+                    dataKey="count"
+                    nameKey="label"
+                    colors={(entry: any) => entry.color}
+                    tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {roleDistribution.map(r => (
+                      <div key={r.role} className="flex items-center gap-1.5 text-xs">
+                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
+                        <span className="text-muted-foreground">{r.label}</span>
+                        <span className="font-semibold">{r.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
+          {/* Branch Distribution Pie */}
+          <Card className="border shadow-sm">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base flex items-center gap-2">
+                <Users className="h-4 w-4" /> Integrantes por Ramo
+                <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {scouts.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
+              ) : (
+                <div className="space-y-4">
+                  <LazyPieChart
+                    data={branchDistribution.filter(b => b.count > 0)}
+                    dataKey="count"
+                    nameKey="name"
+                    colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
+                    tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
+                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    {branchDistribution.map(b => (
+                      <div key={b.key} className="flex items-center gap-1.5 text-xs">
+                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                        <span className="text-muted-foreground">{b.icon} {b.name}</span>
+                        <span className="font-semibold">{b.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Online & Recent Logins */}
+          <Card className="border shadow-sm">
+            <CardContent className="p-0">
+              {/* Online Now Section */}
+              <div className="px-4 pt-4 pb-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-sm font-semibold">Online Agora</span>
+                  <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+                    {onlineUsers.length}
+                  </Badge>
+                  {isAdmin && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          title="Encerrar sessões antigas"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Encerrar sessões antigas?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação encerrará todas as sessões inativas há mais de 30 minutos. Os usuários afetados precisarão entrar novamente.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              const { data, error } = await supabase.rpc('admin_clear_inactive_sessions' as any);
+                              if (error) {
+                                toast.error('Erro ao encerrar sessões');
+                                return;
+                              }
+                              toast.success(`Sessões encerradas (${data ?? 0})`);
+                              const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+                              if (onlineData) {
+                                setOnlineUsers(
+                                  onlineData.map((u: any) => ({
+                                    user_id: u.user_id,
+                                    name: u.name,
+                                    last_login: u.last_active,
+                                  }))
+                                );
+                              }
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Encerrar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+                {onlineUsers.length === 0 ? (
+                  <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+                ) : (
+                  <div className="space-y-1.5">
+                    {onlineUsers.map(login => (
+                      <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
+                          <User className="h-3 w-3 text-emerald-600" />
+                        </div>
+                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">{formatTimeAgo(login.last_login)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Divider */}
+              <div className="mx-4 my-2 border-t" />
+
+              {/* Recent Logins Section */}
+              <div className="px-4 pb-3">
+                <div className="flex items-center gap-2 mb-2">
+                  <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-sm font-semibold">Últimos Acessos</span>
+                  <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
+                  {isAdmin && recentLogins.length > 0 && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          title="Limpar histórico"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Limpar histórico de acessos?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação removerá permanentemente todos os registros de login do histórico de auditoria. Não é possível desfazer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              const { data, error } = await supabase.rpc('admin_clear_login_history' as any);
+                              if (error) {
+                                toast.error('Erro ao limpar histórico');
+                                return;
+                              }
+                              setRecentLogins([]);
+                              toast.success(`Histórico limpo (${data ?? 0} registros)`);
+                            }}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Limpar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+                {recentLogins.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
+                ) : (
+                  <div className="max-h-[180px] overflow-y-auto space-y-1">
+                    {recentLogins.map((login) => (
+                      <div key={login.user_id} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors">
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                          <User className="h-3 w-3 text-primary" />
+                        </div>
+                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Admin System Link */}
+          <Card 
+            className="border shadow-sm bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 cursor-pointer hover:shadow-md transition-all group"
+            onClick={() => navigate('/admin?tab=system')}
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform" /> 
+                Ferramentas do Sistema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Acesse o painel de monitoramento, logs de e-mail e status da infraestrutura em tempo real.
+              </p>
+              <div className="flex items-center gap-1.5 text-primary text-xs font-semibold">
+                Ir para o Painel Admin <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+              </div>
+            </CardContent>
+          </Card>
+          </div>
+        )
+      )}
 
       {/* Operational Cards Row */}
       {loading ? (
