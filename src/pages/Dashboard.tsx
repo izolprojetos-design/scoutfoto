@@ -689,7 +689,7 @@ const Dashboard = () => {
           {/* Admin System Link */}
           <Card 
             className="border shadow-sm bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 cursor-pointer hover:shadow-md transition-all group"
-            onClick={() => navigate('/admin?tab=sistema')}
+            onClick={() => navigate('/admin?tab=system')}
           >
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-bold flex items-center gap-2">
