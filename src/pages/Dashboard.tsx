@@ -119,6 +119,7 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Visitante',
 };
 
+
 interface RecentLogin {
   user_id: string;
   name: string;
@@ -436,14 +437,11 @@ const Dashboard = () => {
 
       {/* KPI Stats Grid */}
       {loading ? <StatsSkeleton /> : (
-        <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
+        <div className={`mb-6 grid grid-cols-2 gap-3 lg:grid-cols-2`}>
           {[
-            { icon: Users, value: totalUsers, label: 'Total de Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
-            { icon: UserCheck, value: activeUsers, label: 'Usuários Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
-            { icon: UserX, value: inactiveUsers, label: 'Usuários Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
             { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
             { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
-          ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
+          ].map((stat, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
               <Card className="border bg-card shadow-sm">
                 <CardContent className="flex items-center gap-3 p-4">
@@ -461,6 +459,7 @@ const Dashboard = () => {
           ))}
         </div>
       )}
+
 
       {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
       {isAdmin && (
