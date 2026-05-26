@@ -1129,8 +1129,8 @@ const AgendamentosManager = () => {
       <Dialog open={!!editing} onOpenChange={(o) => { if (!o) { setEditing(null); setLockRecipient(false); } }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Editar agendamento</DialogTitle>
-            <DialogDescription>Atualize as informações do agendamento.</DialogDescription>
+            <DialogTitle>Editar mensagem</DialogTitle>
+            <DialogDescription>Atualize as informações da mensagem.</DialogDescription>
           </DialogHeader>
 
           {editing && (
@@ -1223,7 +1223,7 @@ const AgendamentosManager = () => {
                       Destinatário
                     </p>
                     <p className="text-[11px] text-muted-foreground/80">
-                      Estes dados aparecem no bloco "Destinatário" do card deste agendamento.
+                      Estes dados aparecem no bloco "Destinatário" do card desta mensagem.
                     </p>
                   </div>
                   <label
@@ -1362,9 +1362,9 @@ const AgendamentosManager = () => {
       <AlertDialog open={!!deletingId} onOpenChange={(o) => !o && setDeletingId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Excluir agendamento?</AlertDialogTitle>
+            <AlertDialogTitle>Excluir mensagem?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta ação não pode ser desfeita. O agendamento será permanentemente removido.
+              Esta ação não pode ser desfeita. A mensagem será permanentemente removida.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1385,7 +1385,7 @@ const AgendamentosManager = () => {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <XCircle className="h-5 w-5 text-destructive" /> Recusar agendamento
+              <XCircle className="h-5 w-5 text-destructive" /> Recusar mensagem
             </DialogTitle>
             <DialogDescription>
               Informe o motivo da recusa. O solicitante será notificado.
@@ -1425,7 +1425,7 @@ const AgendamentosManager = () => {
               <ShieldCheck className="h-5 w-5 text-primary" /> Testar RLS
             </DialogTitle>
             <DialogDescription>
-              Simula se o usuário com este e-mail conseguiria visualizar este agendamento.
+              Simula se o usuário com este e-mail conseguiria visualizar esta mensagem.
             </DialogDescription>
           </DialogHeader>
 
