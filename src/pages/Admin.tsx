@@ -253,10 +253,9 @@ const Admin = () => {
     const tab = params.get('tab');
     if (tab) {
       setActiveTab(tab);
-      // Clean up the URL
-      window.history.replaceState({}, '', window.location.pathname);
     }
-  }, []);
+  }, [window.location.search]);
+
 
   useEffect(() => {
     fetchUsers();
