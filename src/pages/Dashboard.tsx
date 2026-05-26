@@ -139,12 +139,9 @@ const Dashboard = () => {
   const [transitioningId, setTransitioningId] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // New state for enhanced dashboard
-  const [allProfiles, setAllProfiles] = useState<UserProfile[]>([]);
-  const [allRoles, setAllRoles] = useState<UserRole[]>([]);
+  // Removed admin-only local state from dashboard
   const [sectionFilter] = useState<string>(isRestricted && userSection ? userSection : 'all');
-  const [recentLogins, setRecentLogins] = useState<RecentLogin[]>([]);
-  const [onlineUsers, setOnlineUsers] = useState<RecentLogin[]>([]);
+
 
   interface EventWithCount {
     id: string;
@@ -171,106 +168,8 @@ const Dashboard = () => {
       supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
     ] as const;
 
-    const adminPromises = isAdmin
-      ? [
-        supabase.from('profiles').select('user_id, name, is_active, section'),
-        supabase.from('user_roles').select('user_id, role'),
-      ] as const
-      : null;
+    // Admins will now see these in the Admin panel only.
 
-    const [branchRes, evtRes, scoutRes, ...adminResults] = await Promise.all([
-      ...corePromises,
-      ...(adminPromises ?? []),
-    ]);
-
-    const branchesData = branchRes.data || [];
-    const eventsData = evtRes.data || [];
-
-    // Otimização: Buscar apenas as imagens dos 20 eventos retornados
-    const eventIds = eventsData.map(e => e.id);
-    const [eventImagesRes, memberImagesRes] = await Promise.all([
-      eventIds.length > 0
-        ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
-        : Promise.resolve({ data: [] }),
-      // Buscar apenas os metadados necessários para ramos
-      supabase.from('images').select('branch_id').is('event_id', null)
-    ]);
-
-    const eventImages = eventImagesRes.data || [];
-    const memberImages = memberImagesRes.data || [];
-
-    if (branchesData) {
-      const withCounts = branchesData.map(branch => ({
-        ...branch,
-        imageCount: memberImages.filter((img: any) => img.branch_id === branch.id).length,
-      }));
-      setBranches(withCounts);
-      setTotalImages(memberImages.length);
-    }
-
-    if (eventsData) {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const recentEvents = eventsData.filter(evt => {
-        if (!evt.event_date) return false;
-        return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
-      });
-      const evtsWithCounts = recentEvents.map(evt => {
-        const evtImgs = eventImages.filter((img: any) => img.event_id === evt.id);
-        const photoCount = evtImgs.filter((img: any) => img.media_type !== 'video').length;
-        const videoCount = evtImgs.filter((img: any) => img.media_type === 'video').length;
-        return { ...evt, imageCount: evtImgs.length, photoCount, videoCount };
-      });
-      setEventsWithPhotos(evtsWithCounts);
-      setTotalEvents(eventsData.length);
-    }
-
-    setScouts((scoutRes.data as any) || []);
-
-    if (isAdmin && adminResults.length === 2) {
-      setAllProfiles((adminResults[0] as any).data || []);
-      setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
-
-      // Fetch recent logins in parallel with admin data
-      const { data: loginLogs } = await supabase
-        .from('audit_logs')
-        .select('user_id, created_at')
-        .eq('action', 'login')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (loginLogs) {
-        const profilesData = (adminResults[0] as any).data || [];
-        const profileMap = new Map<string, string>();
-        profilesData.forEach((p: UserProfile) => profileMap.set(p.user_id, p.name));
-
-        const seen = new Set<string>();
-        const logins: RecentLogin[] = [];
-        for (const log of loginLogs) {
-          if (!seen.has(log.user_id)) {
-            seen.add(log.user_id);
-            logins.push({
-              user_id: log.user_id,
-              name: profileMap.get(log.user_id) || 'Desconhecido',
-              last_login: log.created_at,
-            });
-          }
-        }
-        setRecentLogins(logins);
-      }
-
-      // Fetch real online users (active sessions in the last 30 minutes)
-      const { data: onlineData } = await supabase.rpc('admin_list_online_users');
-      if (onlineData) {
-        setOnlineUsers(
-          onlineData.map((u: any) => ({
-            user_id: u.user_id,
-            name: u.name,
-            last_login: u.last_active,
-          }))
-        );
-      }
-    }
 
     setLoading(false);
   }, [isAdmin]);
