@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -46,17 +46,37 @@ const AppSidebar = () => {
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
   ].filter(i => i.show);
 
+  const adminSubItems = [
+    { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
+    { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
+    { to: '/admin?tab=roles', label: 'Papéis', icon: Shield, show: canAccessAdmin },
+    { to: '/admin?tab=system', label: 'Sistema & Status', icon: RefreshCw, show: canAccessAdmin },
+  ].filter(i => i.show);
+
   const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   const [eventsOpen, setEventsOpen] = useState(isEventRoute);
+  const [adminOpen, setAdminOpen] = useState(isAdminRoute);
 
   useEffect(() => {
     setEventsOpen(isEventRoute);
   }, [location.pathname, isEventRoute]);
 
+  useEffect(() => {
+    setAdminOpen(isAdminRoute);
+  }, [location.pathname, isAdminRoute]);
+
+  const primaryRole = getPrimaryRole(roles);
+
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
-    { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
-    { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
+    { 
+      to: '/scouts', 
+      label: primaryRole === 'parent' ? 'Meus Jovens' : 'Integrantes', 
+      icon: Users, 
+      show: canViewScouts 
+    },
   ];
 
   const initials = profile?.name
@@ -65,8 +85,6 @@ const AppSidebar = () => {
     .join('')
     .slice(0, 2)
     .toUpperCase() || '??';
-
-  const primaryRole = getPrimaryRole(roles);
 
   return (
     <Sidebar collapsible="icon">
@@ -97,7 +115,7 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.filter(i => i.show && i.to !== '/admin').map(item => {
+              {navItems.filter(i => i.show).map(item => {
                 const isActive = location.pathname === item.to;
                 return (
                   <SidebarMenuItem key={item.to}>
@@ -155,24 +173,44 @@ const AppSidebar = () => {
                 </Collapsible>
               )}
 
-              {navItems.filter(i => i.show && i.to === '/admin').map(item => {
-                const isActive = location.pathname === item.to;
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                      <NavLink
-                        to={item.to}
-                        end
-                        className="flex items-center gap-2"
-                        onClick={() => isMobile && setOpenMobile(false)}
+              {adminSubItems.length > 0 && (
+                <Collapsible open={collapsed ? false : adminOpen} onOpenChange={setAdminOpen} asChild>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        isActive={isAdminRoute}
+                        tooltip="Administração"
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
+                        <Settings className="h-4 w-4" />
+                        <span>Administração</span>
+                        <ChevronRight className="ml-auto h-4 w-4 transition-transform data-[state=open]:rotate-90 group-data-[collapsible=icon]:hidden" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {adminSubItems.map(sub => {
+                          const subActive = location.pathname === sub.to || location.pathname.startsWith(sub.to + '/');
+                          return (
+                            <SidebarMenuSubItem key={sub.to}>
+                              <SidebarMenuSubButton asChild isActive={subActive}>
+                                <NavLink
+                                  to={sub.to}
+                                  end
+                                  className="flex items-center gap-2"
+                                  onClick={() => isMobile && setOpenMobile(false)}
+                                >
+                                  <sub.icon className="h-4 w-4" />
+                                  <span>{sub.label}</span>
+                                </NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
                   </SidebarMenuItem>
-                );
-              })}
+                </Collapsible>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
