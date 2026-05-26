@@ -338,6 +338,120 @@ const AdminOverview = () => {
         ))}
       </div>
 
+      {/* User and Role Distribution row */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        {/* Role Distribution Pie */}
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {roleDistribution.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
+            ) : (
+              <div className="space-y-4">
+                <LazyPieChart
+                  data={roleDistribution}
+                  dataKey="count"
+                  nameKey="label"
+                  colors={(entry: any) => entry.color}
+                  tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  {roleDistribution.map(r => (
+                    <div key={r.role} className="flex items-center gap-1.5 text-xs">
+                      <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
+                      <span className="text-muted-foreground">{r.label}</span>
+                      <span className="font-semibold">{r.count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Online Now Section */}
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              Online Agora
+            </CardTitle>
+            <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
+              {onlineUsers.length}
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            {onlineUsers.length === 0 ? (
+              <p className="text-xs text-muted-foreground py-8 text-center">Nenhum usuário online</p>
+            ) : (
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                {onlineUsers.map(login => (
+                  <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5 border border-emerald-500/10">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
+                      <User className="h-3 w-3 text-emerald-600" />
+                    </div>
+                    <span className="text-xs font-medium uppercase truncate flex-1">{login.name}</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium whitespace-nowrap">
+                      {(() => {
+                        const now = new Date();
+                        const date = new Date(login.last_login);
+                        const diffMin = Math.floor((now.getTime() - date.getTime()) / 60000);
+                        return diffMin < 1 ? 'Agora' : `${diffMin}min`;
+                      })()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent Logins Section */}
+        <Card className="border shadow-sm">
+          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <LogIn className="h-4 w-4 text-muted-foreground" />
+              Últimos Acessos
+            </CardTitle>
+            <Badge variant="secondary">{recentLogins.length}</Badge>
+          </CardHeader>
+          <CardContent>
+            {recentLogins.length === 0 ? (
+              <p className="text-xs text-muted-foreground text-center py-8">Sem registros</p>
+            ) : (
+              <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1">
+                {recentLogins.map((login) => (
+                  <div key={`${login.user_id}-${login.last_login}`} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors border border-transparent hover:border-muted-foreground/10">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
+                      <User className="h-3 w-3 text-primary" />
+                    </div>
+                    <span className="text-xs font-medium uppercase truncate flex-1">{login.name}</span>
+                    <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <Clock className="h-2.5 w-2.5" />
+                      {(() => {
+                        const now = new Date();
+                        const date = new Date(login.last_login);
+                        const diffMs = now.getTime() - date.getTime();
+                        const diffMin = Math.floor(diffMs / 60000);
+                        if (diffMin < 1) return 'Agora';
+                        if (diffMin < 60) return `${diffMin}min`;
+                        const diffHours = Math.floor(diffMin / 60);
+                        if (diffHours < 24) return `${diffHours}h`;
+                        return `${Math.floor(diffHours / 24)}d`;
+                      })()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Charts row */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="border shadow-sm">
