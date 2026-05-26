@@ -612,7 +612,7 @@ const AgendamentosManager = () => {
       toast({ title: 'Erro ao excluir', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Agendamento excluído', description: 'O registro foi removido com sucesso.' });
+    toast({ title: 'Mensagem excluída', description: 'O registro foi removido com sucesso.' });
     fetchData();
   };
 
@@ -642,7 +642,7 @@ const AgendamentosManager = () => {
       toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
       return;
     }
-    toast({ title: 'Agendamento atualizado', description: 'Alterações salvas com sucesso.' });
+    toast({ title: 'Mensagem atualizada', description: 'Alterações salvas com sucesso.' });
     setEditing(null);
     fetchData();
   };
@@ -650,7 +650,7 @@ const AgendamentosManager = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-muted-foreground">
-        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando agendamentos...
+        <Loader2 className="h-5 w-5 animate-spin mr-2" /> Carregando mensagens...
       </div>
     );
   }
@@ -741,7 +741,7 @@ const AgendamentosManager = () => {
 
       {/* Counter */}
       <div className="text-sm text-muted-foreground">
-        {filtered.length} agendamento{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+        {filtered.length} mensagen{filtered.length !== 1 ? 's' : 'm'} encontrada{filtered.length !== 1 ? 's' : ''}
       </div>
 
       {/* List */}
@@ -749,11 +749,11 @@ const AgendamentosManager = () => {
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-muted-foreground">
             <CalendarDays className="h-10 w-10 mb-3 opacity-50" />
-            <p className="text-sm">Nenhum agendamento encontrado.</p>
+            <p className="text-sm">Nenhuma mensagem encontrada.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de agendamentos">
+        <div className="rounded-md border divide-y bg-card" role="listbox" aria-label="Lista de mensagens">
           {paginated.map((a, index) => {
             const mine = a.user_id === user?.id;
             const isOpen = expandedId === a.id;
