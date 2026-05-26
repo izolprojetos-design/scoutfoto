@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 import { motion } from 'framer-motion';
-import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud, Info } from 'lucide-react';
+import { ImageIcon, Upload, Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, ShieldCheck, UserCheck, UserX, Clock, LogIn, MapPin, Film, Cloud, Info, Wrench } from 'lucide-react';
 import { StatsSkeleton, PieChartSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatAge, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
@@ -686,10 +686,28 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Hosting Information */}
-          <HostingConfig />
+          {/* Admin System Link */}
+          <Card 
+            className="border shadow-sm bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20 cursor-pointer hover:shadow-md transition-all group"
+            onClick={() => navigate('/admin?tab=sistema')}
+          >
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-bold flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-primary group-hover:rotate-12 transition-transform" /> 
+                Ferramentas do Sistema
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Acesse o painel de monitoramento, logs de e-mail e status da infraestrutura em tempo real.
+              </p>
+              <div className="flex items-center gap-1.5 text-primary text-xs font-semibold">
+                Ir para o Painel Admin <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-1" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      ))}
+      )}
 
       {/* Operational Cards Row */}
       {loading ? (

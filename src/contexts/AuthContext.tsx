@@ -117,12 +117,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const syncSessionState = useCallback(async (nextSession: Session | null, showExpiredToast = true, skipValidation = false) => {
     if (!nextSession) {
-      clearAuthState();
+      if (user || session || profile) {
+        clearAuthState();
+      }
       setLoading(false);
       return;
     }
 
-    setLoading(true);
+    // Only set loading if we don't have a session or if it's a new user
+    const isNewUser = !user || user.id !== nextSession.user.id;
+    if (isNewUser) {
+      setLoading(true);
+    }
+
     let activeSession = nextSession;
     const expiresSoon = typeof activeSession.expires_at === 'number' && activeSession.expires_at * 1000 <= Date.now() + 30_000;
 
@@ -152,17 +159,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    setSession(activeSession);
-    setUser(validatedUser);
+    // Only update state if something actually changed to avoid unnecessary re-renders
+    if (isNewUser || session?.access_token !== activeSession.access_token) {
+      setSession(activeSession);
+      setUser(validatedUser);
 
-    await Promise.all([
-      fetchProfile(validatedUser.id),
-      fetchRoles(validatedUser.id),
-      checkMfaStatus(),
-    ]);
+      await Promise.all([
+        fetchProfile(validatedUser.id),
+        fetchRoles(validatedUser.id),
+        checkMfaStatus(),
+      ]);
+    }
 
     setLoading(false);
-  }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession]);
+  }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession, session?.access_token, user, profile]);
 
   useEffect(() => {
     if (!user) return;
@@ -230,7 +240,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (initialHandled) return;
           initialHandled = true;
           void syncSessionState(nextSes, false, true);
-        } else {
+        } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          // Avoid triggering sync for minor events if we already have a valid session
+          if (event === 'TOKEN_REFRESHED' && session?.access_token === nextSes?.access_token) {
+            return;
+          }
+          
           setTimeout(() => {
             void syncSessionState(nextSes, true, false);
           }, 0);
@@ -246,7 +261,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [clearAuthState, syncSessionState]);
+  }, [clearAuthState, syncSessionState, session?.access_token]);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
