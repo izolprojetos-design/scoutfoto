@@ -246,6 +246,18 @@ const Admin = () => {
     setAuditLogs((data as AuditLog[]) || []);
   };
 
+  const [activeTab, setActiveTab] = useState('overview');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tab = params.get('tab');
+    if (tab) {
+      setActiveTab(tab);
+      // Clean up the URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
+
   useEffect(() => {
     fetchUsers();
     
@@ -555,7 +567,7 @@ const Admin = () => {
         </Card>
       </div>
 
-      <Tabs defaultValue="overview">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto">
           <TabsTrigger value="overview" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><LayoutDashboard className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>

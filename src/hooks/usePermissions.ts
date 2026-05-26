@@ -45,12 +45,17 @@ const permissionsCache = new Map<string, { permissions: string[]; timestamp: num
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
 export const usePermissions = () => {
-  const { user, roles } = useAuth();
+  const { user, roles, loading: authLoading } = useAuth();
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user || roles.length === 0) {
       setPermissions([]);
       setLoading(false);
@@ -108,7 +113,7 @@ export const usePermissions = () => {
 
     fetchedRef.current = user.id;
     fetchPermissions();
-  }, [user, roles]);
+  }, [user, roles, authLoading]);
 
   const hasPermission = (key: PermissionKey) => permissions.includes(key);
 
