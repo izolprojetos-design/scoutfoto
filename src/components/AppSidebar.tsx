@@ -46,17 +46,37 @@ const AppSidebar = () => {
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
   ].filter(i => i.show);
 
+  const adminSubItems = [
+    { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
+    { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
+    { to: '/admin?tab=roles', label: 'Papéis', icon: Shield, show: canAccessAdmin },
+    { to: '/admin?tab=system', label: 'Sistema & Status', icon: RefreshCw, show: canAccessAdmin },
+  ].filter(i => i.show);
+
   const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  
   const [eventsOpen, setEventsOpen] = useState(isEventRoute);
+  const [adminOpen, setAdminOpen] = useState(isAdminRoute);
 
   useEffect(() => {
     setEventsOpen(isEventRoute);
   }, [location.pathname, isEventRoute]);
 
+  useEffect(() => {
+    setAdminOpen(isAdminRoute);
+  }, [location.pathname, isAdminRoute]);
+
+  const primaryRole = getPrimaryRole(roles);
+
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
-    { to: '/scouts', label: 'Integrantes', icon: Users, show: canViewScouts },
-    { to: '/admin', label: 'Admin', icon: Settings, show: canAccessAdmin },
+    { 
+      to: '/scouts', 
+      label: primaryRole === 'parent' ? 'Meus Jovens' : 'Integrantes', 
+      icon: Users, 
+      show: canViewScouts 
+    },
   ];
 
   const initials = profile?.name
