@@ -161,18 +161,58 @@ const Dashboard = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
 
-    // Core queries for all users; admin-only queries run conditionally
-    const corePromises = [
+    // Core queries for all users
+    const [branchRes, evtRes, scoutRes] = await Promise.all([
       supabase.from('branches').select('*').order('sort_order'),
       supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
       supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
-    ] as const;
+    ]);
 
-    // Admins will now see these in the Admin panel only.
+    const branchesData = branchRes.data || [];
+    const eventsData = evtRes.data || [];
 
+    // Otimização: Buscar apenas as imagens dos 20 eventos retornados
+    const eventIds = eventsData.map(e => e.id);
+    const [eventImagesRes, memberImagesRes] = await Promise.all([
+      eventIds.length > 0
+        ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
+        : Promise.resolve({ data: [] }),
+      // Buscar apenas os metadados necessários para ramos
+      supabase.from('images').select('branch_id').is('event_id', null)
+    ]);
 
+    const eventImages = eventImagesRes.data || [];
+    const memberImages = memberImagesRes.data || [];
+
+    if (branchesData) {
+      const withCounts = branchesData.map(branch => ({
+        ...branch,
+        imageCount: memberImages.filter((img: any) => img.branch_id === branch.id).length,
+      }));
+      setBranches(withCounts);
+      setTotalImages(memberImages.length);
+    }
+
+    if (eventsData) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentEvents = eventsData.filter(evt => {
+        if (!evt.event_date) return false;
+        return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
+      });
+      const evtsWithCounts = recentEvents.map(evt => {
+        const evtImgs = eventImages.filter((img: any) => img.event_id === evt.id);
+        const photoCount = evtImgs.filter((img: any) => img.media_type !== 'video').length;
+        const videoCount = evtImgs.filter((img: any) => img.media_type === 'video').length;
+        return { ...evt, imageCount: evtImgs.length, photoCount, videoCount };
+      });
+      setEventsWithPhotos(evtsWithCounts);
+      setTotalEvents(eventsData.length);
+    }
+
+    setScouts((scoutRes.data as any) || []);
     setLoading(false);
-  }, [isAdmin]);
+  }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

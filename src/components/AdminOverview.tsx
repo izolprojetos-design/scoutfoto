@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,10 +6,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink } from 'lucide-react';
+import { Users, UserCheck, UserX, Calendar, Cake, ArrowRightLeft, Image as ImageIcon, Shield, Loader2, ClipboardList, CameraOff, UserMinus, ExternalLink, ShieldCheck, Trash2, User, Clock, LogIn, ArrowRight } from 'lucide-react';
 import { ALL_CATEGORIES, getCurrentBranch, getNextBranchChange, parseLocalDate } from '@/lib/scoutUtils';
 import { differenceInDays, differenceInYears, startOfDay, startOfYear, endOfYear, getMonth } from 'date-fns';
 import LazyPieChart from '@/components/LazyPieChart';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { useAuth } from '@/contexts/AuthContext';
+
 
 interface Stats {
   totalScouts: number;
@@ -56,9 +70,15 @@ const BRANCH_COLOR_MAP: Record<string, string> = {
 };
 
 const AdminOverview = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Online & Recent Logins state
+  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [recentLogins, setRecentLogins] = useState<any[]>([]);
+  const [roleDistribution, setRoleDistribution] = useState<any[]>([]);
 
   // Dialog states
   const [schedDialogOpen, setSchedDialogOpen] = useState(false);
@@ -68,6 +88,7 @@ const AdminOverview = () => {
   const [photoList, setPhotoList] = useState<ScoutPending[]>([]);
   const [guardianList, setGuardianList] = useState<ScoutPending[]>([]);
   const [dialogLoading, setDialogLoading] = useState(false);
+
 
   useEffect(() => {
     const load = async () => {
