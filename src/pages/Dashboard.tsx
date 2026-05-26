@@ -9,13 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
-import { Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, MapPin } from 'lucide-react';
+import { Calendar, TrendingUp, ArrowRight, Users, ArrowRightLeft, Cake, User, Check, MapPin, UserCheck, UserX } from 'lucide-react';
 import { StatsSkeleton, ListCardSkeleton, GalleryCardsSkeleton } from '@/components/DashboardSkeleton';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { getCurrentBranch, getNextBranchChange, formatTimeLeft, parseLocalDate, SCOUT_BRANCHES, ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { format, differenceInDays, startOfDay, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ScoutAvatar from '@/components/ScoutAvatar';
+import { toast } from 'sonner';
+
 
 
 interface BranchWithCount {
