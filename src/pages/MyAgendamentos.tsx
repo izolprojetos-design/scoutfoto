@@ -12,7 +12,7 @@ const MyAgendamentos = () => {
 
   useEffect(() => {
     const prev = document.title;
-    document.title = 'Mensagem | ScoutFoto';
+    document.title = 'Nova Mensagem | ScoutFoto';
 
     const setMeta = (key: 'name' | 'property', keyValue: string, content: string) => {
       const selector = `meta[${key}="${keyValue}"]`;
@@ -30,8 +30,8 @@ const MyAgendamentos = () => {
       };
     };
 
-    const restoreOg = setMeta('property', 'og:title', 'Mensagem | ScoutFoto');
-    const restoreTw = setMeta('name', 'twitter:title', 'Mensagem | ScoutFoto');
+    const restoreOg = setMeta('property', 'og:title', 'Nova Mensagem | ScoutFoto');
+    const restoreTw = setMeta('name', 'twitter:title', 'Nova Mensagem | ScoutFoto');
     const restoreDesc = setMeta('name', 'description', 'Gerencie suas mensagens e solicitações no ScoutFoto.');
 
     return () => {
@@ -45,7 +45,7 @@ const MyAgendamentos = () => {
   return (
     <>
       <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Mensagem</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Nova Mensagem</h1>
         <p className="mt-1 text-muted-foreground">Gerencie seus agendamentos e solicitações</p>
       </div>
 
