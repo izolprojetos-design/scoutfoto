@@ -160,8 +160,10 @@ serve(async (req) => {
     // 3. Fazer o Upload do arquivo
     const metadata = {
       name: file.name,
-      parents: [dataFolderId]
+      parents: [dataFolderId],
+      description: 'Upload via ScoutFoto App'
     };
+
 
     const boundary = '-------314159265358979323846';
     const delimiter = `\r\n--${boundary}\r\n`;

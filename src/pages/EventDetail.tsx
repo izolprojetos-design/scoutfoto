@@ -1049,6 +1049,13 @@ const EventDetail = () => {
                       </div>
                     </div>
                   </div>
+                ) : (img.external_url && img.thumbnail_path && img.thumbnail_path.startsWith('http')) ? (
+                  <img
+                    src={img.thumbnail_path}
+                    alt={img.filename}
+                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
                 ) : (thumbUrls[img.id] || imageUrls[img.id]) ? (
                   <img
                     src={thumbUrls[img.id] || imageUrls[img.id]}
@@ -1058,9 +1065,10 @@ const EventDetail = () => {
                   />
                 ) : (
                   <div className="flex h-full items-center justify-center">
-                    <span className="text-2xl">📷</span>
+                    <span className="text-2xl">{img.media_type === 'video' ? '🎬' : img.media_type === 'document' ? '📄' : '📷'}</span>
                   </div>
                 )}
+
               </div>
               {(img.media_type === 'video' || (img.media_type === 'video' && img.external_url)) && (
                 <div className="absolute left-2 top-2">
@@ -1111,10 +1119,23 @@ const EventDetail = () => {
 
               <div className="bg-black">
                 {selectedImage.external_url ? (
-                  <div className="flex flex-col items-center justify-center p-12 text-center text-white min-h-[40vh]">
-                    <div className="mb-4 rounded-full bg-white/10 p-6">
-                      <LinkIcon className="h-12 w-12" />
-                    </div>
+                  <div className="flex flex-col items-center justify-center p-6 text-center text-white min-h-[40vh]">
+                    {selectedImage.thumbnail_path && selectedImage.thumbnail_path.startsWith('http') ? (
+                      <div className="relative mb-6 w-full max-w-sm aspect-video rounded-lg overflow-hidden border border-white/10 group">
+                        <img 
+                          src={selectedImage.thumbnail_path} 
+                          alt={selectedImage.filename} 
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                           <ExternalLink className="h-10 w-10 text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mb-4 rounded-full bg-white/10 p-6">
+                        <LinkIcon className="h-12 w-12" />
+                      </div>
+                    )}
                     <h3 className="text-xl font-bold mb-2">{selectedImage.filename}</h3>
                     <p className="text-white/60 mb-6 max-w-md">Este é um link externo do Google Drive.</p>
                     <Button 
@@ -1125,6 +1146,7 @@ const EventDetail = () => {
                       Abrir no Google Drive
                     </Button>
                   </div>
+
                 ) : (imageUrls[selectedImage.id] && selectedImage.media_type === 'video') ? (
                   <video
                     src={imageUrls[selectedImage.id]}
