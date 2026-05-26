@@ -463,14 +463,15 @@ const Dashboard = () => {
       )}
 
       {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
-      {isAdmin && (loading ? (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-          <PieChartSkeleton />
-          <PieChartSkeleton />
-          <PieChartSkeleton />
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+      {isAdmin && (
+        loading ? (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
+            <PieChartSkeleton />
+            <PieChartSkeleton />
+            <PieChartSkeleton />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
           {/* Role Distribution Pie */}
           <Card className="border shadow-sm">
             <CardHeader className="pb-3">
@@ -706,8 +707,9 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-        </div>
-      ))}
+          </div>
+        )
+      )}
 
       {/* Operational Cards Row */}
       {loading ? (
