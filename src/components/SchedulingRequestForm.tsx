@@ -683,7 +683,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           {submitting ? (
             <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
           ) : (
-            <><Send className="h-4 w-4" /> Criar agendamento</>
+            <><Send className="h-4 w-4" /> Criar mensagem</>
           )}
         </Button>
       </div>
