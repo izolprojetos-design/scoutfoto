@@ -462,8 +462,8 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
-      {isAdmin && (
+      {/* Conteúdo específico para Administradores removido da tela inicial conforme solicitado */}
+
         loading ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
             <PieChartSkeleton />
