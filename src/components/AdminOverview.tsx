@@ -346,7 +346,7 @@ const AdminOverview = () => {
           )}
           <div className="flex justify-end pt-2">
             <Button variant="outline" onClick={() => navigate('/agendamentos')} className="gap-2">
-              <ExternalLink className="h-4 w-4" /> Ir para Minha Agenda
+              <ExternalLink className="h-4 w-4" /> Ir para Mensagem
             </Button>
           </div>
         </DialogContent>
