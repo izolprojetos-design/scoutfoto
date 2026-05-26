@@ -46,7 +46,7 @@ const MyAgendamentos = () => {
     <>
       <div className="mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Mensagem</h1>
-        <p className="mt-1 text-muted-foreground">Gerencie seus agendamentos e solicitações</p>
+        <p className="mt-1 text-muted-foreground">Gerencie suas mensagens e solicitações</p>
       </div>
 
       {showForm ? (
@@ -62,7 +62,7 @@ const MyAgendamentos = () => {
             <div className="flex justify-end">
               <Button onClick={() => setShowForm(true)} className="gap-2">
                 <CalendarPlus className="h-4 w-4" />
-                Novo agendamento
+                Nova mensagem
               </Button>
             </div>
           )}

@@ -297,8 +297,8 @@ const AgendamentosManager = () => {
     if (current !== 'pendente') {
       setConflictId(a.id);
       toast({
-        title: 'Agendamento já respondido',
-        description: `Este agendamento já foi ${current} e não pode ser respondido novamente.`,
+        title: 'Mensagem já respondida',
+        description: `Esta mensagem já foi ${current} e não pode ser respondida novamente.`,
         variant: 'destructive',
       });
       await refreshAgendamento(a.id);
@@ -312,8 +312,8 @@ const AgendamentosManager = () => {
       if (freshStatus !== 'pendente') {
         setConflictId(a.id);
         toast({
-          title: 'Agendamento já respondido',
-          description: `Este agendamento já foi ${freshStatus} por outro acesso. A lista foi sincronizada.`,
+          title: 'Mensagem já respondida',
+          description: `Esta mensagem já foi ${freshStatus} por outro acesso. A lista foi sincronizada.`,
           variant: 'destructive',
         });
         setRejectTarget(null);
@@ -332,8 +332,8 @@ const AgendamentosManager = () => {
         if (msg.includes('já foi') || msg.includes('conflito') || error.code === '22023' || error.code === '40001') {
           setConflictId(a.id);
           toast({
-            title: 'Agendamento já respondido',
-            description: 'Outro acesso atualizou este agendamento. A lista será sincronizada.',
+          title: 'Mensagem já respondida',
+          description: 'Outro acesso atualizou esta mensagem. A lista será sincronizada.',
             variant: 'destructive',
           });
           await refreshAgendamento(a.id);
@@ -348,7 +348,7 @@ const AgendamentosManager = () => {
         setAgendamentos(prev => prev.map(x => x.id === a.id ? { ...x, ...updated } : x));
       }
       toast({
-        title: response === 'confirmado' ? 'Agendamento confirmado' : 'Agendamento recusado',
+        title: response === 'confirmado' ? 'Mensagem confirmada' : 'Mensagem recusada',
         description: response === 'confirmado'
           ? 'O solicitante foi notificado.'
           : 'O solicitante foi notificado com seu motivo.',
