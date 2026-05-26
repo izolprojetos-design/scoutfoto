@@ -41,10 +41,7 @@ export function getEventCoverImage(eventName: string): string {
     }
   }
 
-  // Fallback: pick a consistent image based on the name hash
-  let hash = 0;
-  for (let i = 0; i < eventName.length; i++) {
-    hash = ((hash << 5) - hash + eventName.charCodeAt(i)) | 0;
-  }
-  return ALL_IMAGES[Math.abs(hash) % ALL_IMAGES.length];
+  // Fallback: pick a truly random image from the available pool
+  const randomIndex = Math.floor(Math.random() * ALL_IMAGES.length);
+  return ALL_IMAGES[randomIndex];
 }
