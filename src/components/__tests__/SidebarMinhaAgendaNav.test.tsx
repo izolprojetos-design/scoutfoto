@@ -41,7 +41,7 @@ const LocationProbe = () => {
 };
 
 describe("Sidebar → /agendamentos navegação completa", () => {
-  it("clicar em 'Minha Agenda' navega para /agendamentos, marca ativo e atualiza meta tags", async () => {
+  it("clicar em 'Mensagem' navega para /agendamentos, marca ativo e atualiza meta tags", async () => {
     render(
       <MemoryRouter initialEntries={["/dashboard"]}>
         <SidebarProvider>
@@ -59,7 +59,7 @@ describe("Sidebar → /agendamentos navegação completa", () => {
       </MemoryRouter>
     );
 
-    const link = screen.getByRole("link", { name: /Minha Agenda/i });
+    const link = screen.getByRole("link", { name: /Mensagem/i });
     expect(link.getAttribute("href")).toBe("/agendamentos");
 
     fireEvent.click(link);
@@ -69,19 +69,19 @@ describe("Sidebar → /agendamentos navegação completa", () => {
     });
 
     // Cabeçalho da página
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Minha Agenda");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Mensagem");
 
     // Item ativo destaca a rota correta
-    const activeLink = screen.getByRole("link", { name: /Minha Agenda/i });
+    const activeLink = screen.getByRole("link", { name: /Mensagem/i });
     expect(activeLink.getAttribute("aria-current")).toBe("page");
 
     // Meta tags
     await waitFor(() => {
-      expect(document.title).toBe("Minha Agenda | ScoutFoto");
+      expect(document.title).toBe("Mensagem | ScoutFoto");
     });
     const og = document.head.querySelector('meta[property="og:title"]');
-    expect(og?.getAttribute("content")).toBe("Minha Agenda | ScoutFoto");
+    expect(og?.getAttribute("content")).toBe("Mensagem | ScoutFoto");
     const tw = document.head.querySelector('meta[name="twitter:title"]');
-    expect(tw?.getAttribute("content")).toBe("Minha Agenda | ScoutFoto");
+    expect(tw?.getAttribute("content")).toBe("Mensagem | ScoutFoto");
   });
 });
