@@ -90,6 +90,66 @@ const AdminOverview = () => {
   const [dialogLoading, setDialogLoading] = useState(false);
 
 
+  const fetchAdminData = async () => {
+    // 1. Fetch profiles and roles for distribution
+    const [{ data: profiles }, { data: roles }] = await Promise.all([
+      supabase.from('profiles').select('user_id, name, is_active, section'),
+      supabase.from('user_roles').select('user_id, role'),
+    ]);
+
+    if (profiles && roles) {
+      const counts: Record<string, number> = {};
+      roles.forEach(r => {
+        counts[r.role] = (counts[r.role] || 0) + 1;
+      });
+      const ROLE_COLORS: Record<string, string> = { admin: '#ef4444', voluntario: '#a855f7', dirigente_gestor: '#3b82f6', parent: '#10b981', viewer: '#94a3b8' };
+      const ROLE_LABELS: Record<string, string> = { admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', parent: 'Pai/Mãe', viewer: 'Visitante' };
+      
+      setRoleDistribution(Object.entries(counts).map(([role, count]) => ({
+        role,
+        label: ROLE_LABELS[role] || role,
+        count,
+        color: ROLE_COLORS[role] || '#8884d8',
+      })).sort((a, b) => b.count - a.count));
+    }
+
+    // 2. Recent logins from audit logs
+    const { data: loginLogs } = await supabase
+      .from('audit_logs')
+      .select('user_id, created_at')
+      .eq('action', 'login')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (loginLogs && profiles) {
+      const profileMap = new Map<string, string>();
+      profiles.forEach(p => profileMap.set(p.user_id, p.name));
+      const seen = new Set<string>();
+      const logins: any[] = [];
+      for (const log of loginLogs) {
+        if (!seen.has(log.user_id)) {
+          seen.add(log.user_id);
+          logins.push({
+            user_id: log.user_id,
+            name: profileMap.get(log.user_id) || 'Desconhecido',
+            last_login: log.created_at,
+          });
+        }
+      }
+      setRecentLogins(logins);
+    }
+
+    // 3. Online users
+    const { data: onlineData } = await supabase.rpc('admin_list_online_users');
+    if (onlineData) {
+      setOnlineUsers(onlineData.map((u: any) => ({
+        user_id: u.user_id,
+        name: u.name,
+        last_login: u.last_active,
+      })));
+    }
+  };
+
   useEffect(() => {
     const load = async () => {
       const today = startOfDay(new Date());
@@ -162,7 +222,6 @@ const AdminOverview = () => {
       const upcomingEvents = events.filter(e => e.event_date && e.event_date >= todayStr).length;
 
       // Scouts without photo / guardian (active only)
-      // Guardian check applies only to minors (under 18) per ECA Digital (Lei nº 15.211/2025)
       const scoutsWithoutPhoto = active.filter(s => !s.photo_url);
       const guardianScoutIds = new Set((guardiansRes.data || []).map(g => g.scout_id));
       const isMinor = (birth: string | null | undefined) => {
@@ -189,13 +248,25 @@ const AdminOverview = () => {
         scoutsWithoutGuardian: scoutsWithoutGuardian.length,
       });
 
-      // Store lists for dialogs
       setPhotoList(scoutsWithoutPhoto.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
       setGuardianList(scoutsWithoutGuardian.map(s => ({ id: s.id, name: s.name, section: s.section || '', birth_date: s.birth_date || '' })));
 
+      await fetchAdminData();
       setLoading(false);
     };
     load();
+
+    const interval = setInterval(async () => {
+      const { data } = await supabase.rpc('admin_list_online_users');
+      if (data) {
+        setOnlineUsers(data.map((u: any) => ({
+          user_id: u.user_id,
+          name: u.name,
+          last_login: u.last_active,
+        })));
+      }
+    }, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadPendingSchedulings = async () => {
