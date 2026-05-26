@@ -86,6 +86,7 @@ const AppSidebar = () => {
     .slice(0, 2)
     .toUpperCase() || '??';
 
+  return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <SidebarMenu>
@@ -114,7 +115,7 @@ const AppSidebar = () => {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.filter(i => i.show && i.to !== '/admin').map(item => {
+              {navItems.filter(i => i.show).map(item => {
                 const isActive = location.pathname === item.to;
                 return (
                   <SidebarMenuItem key={item.to}>
@@ -172,24 +173,44 @@ const AppSidebar = () => {
                 </Collapsible>
               )}
 
-              {navItems.filter(i => i.show && i.to === '/admin').map(item => {
-                const isActive = location.pathname === item.to;
-                return (
-                  <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
-                      <NavLink
-                        to={item.to}
-                        end
-                        className="flex items-center gap-2"
-                        onClick={() => isMobile && setOpenMobile(false)}
+              {adminSubItems.length > 0 && (
+                <Collapsible open={collapsed ? false : adminOpen} onOpenChange={setAdminOpen} asChild>
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton
+                        isActive={isAdminRoute}
+                        tooltip="Administração"
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
+                        <Settings className="h-4 w-4" />
+                        <span>Administração</span>
+                        <ChevronRight className="ml-auto h-4 w-4 transition-transform data-[state=open]:rotate-90 group-data-[collapsible=icon]:hidden" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {adminSubItems.map(sub => {
+                          const subActive = location.pathname === sub.to || location.pathname.startsWith(sub.to + '/');
+                          return (
+                            <SidebarMenuSubItem key={sub.to}>
+                              <SidebarMenuSubButton asChild isActive={subActive}>
+                                <NavLink
+                                  to={sub.to}
+                                  end
+                                  className="flex items-center gap-2"
+                                  onClick={() => isMobile && setOpenMobile(false)}
+                                >
+                                  <sub.icon className="h-4 w-4" />
+                                  <span>{sub.label}</span>
+                                </NavLink>
+                              </SidebarMenuSubButton>
+                            </SidebarMenuSubItem>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
                   </SidebarMenuItem>
-                );
-              })}
+                </Collapsible>
+              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
