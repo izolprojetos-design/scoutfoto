@@ -252,13 +252,20 @@ const Admin = () => {
 
   const [activeTab, setActiveTab] = useState('overview');
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
+  const updateTabFromUrl = (searchParams: string) => {
+    const params = new URLSearchParams(searchParams);
     const tab = params.get('tab');
     if (tab) {
       setActiveTab(tab);
+    } else {
+      setActiveTab('overview');
     }
+  };
+
+  useEffect(() => {
+    updateTabFromUrl(window.location.search);
   }, [location.search]);
+
 
 
 
@@ -571,7 +578,16 @@ const Admin = () => {
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={(val) => {
+          setActiveTab(val);
+          const newPath = val === 'overview' ? '/admin' : `/admin?tab=${val}`;
+          window.history.pushState(null, '', newPath);
+        }} 
+        className="space-y-4"
+      >
+
         <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto">
           <TabsTrigger value="overview" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><LayoutDashboard className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
