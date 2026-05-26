@@ -119,6 +119,7 @@ const ROLE_LABELS: Record<string, string> = {
   viewer: 'Visitante',
 };
 
+
 interface RecentLogin {
   user_id: string;
   name: string;
@@ -436,14 +437,11 @@ const Dashboard = () => {
 
       {/* KPI Stats Grid */}
       {loading ? <StatsSkeleton /> : (
-        <div className={`mb-6 grid grid-cols-2 gap-3 ${isAdmin ? 'lg:grid-cols-5' : 'lg:grid-cols-2'}`}>
+        <div className={`mb-6 grid grid-cols-2 gap-3 lg:grid-cols-2`}>
           {[
-            { icon: Users, value: totalUsers, label: 'Total de Usuários', source: 'Perfis', color: 'text-primary', adminOnly: true },
-            { icon: UserCheck, value: activeUsers, label: 'Usuários Ativos', source: 'Perfis', color: 'text-emerald-600', adminOnly: true },
-            { icon: UserX, value: inactiveUsers, label: 'Usuários Inativos', source: 'Perfis', color: 'text-destructive', adminOnly: true },
             { icon: Calendar, value: totalEvents, label: 'Eventos', source: 'Eventos', color: 'text-accent', adminOnly: false },
             { icon: Users, value: scouts.length, label: 'Integrantes', source: 'Cadastro', color: 'text-emerald-600', adminOnly: false },
-          ].filter(stat => !stat.adminOnly || isAdmin).map((stat, i) => (
+          ].map((stat, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + i * 0.04 }}>
               <Card className="border bg-card shadow-sm">
                 <CardContent className="flex items-center gap-3 p-4">
@@ -462,147 +460,66 @@ const Dashboard = () => {
         </div>
       )}
 
+
       {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
       {isAdmin && (
         loading ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-            <PieChartSkeleton />
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
             <PieChartSkeleton />
             <PieChartSkeleton />
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-          {/* Role Distribution Pie */}
-          <Card className="border shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4" /> Usuários por Cargo
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {roleDistribution.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Sem dados</p>
-              ) : (
-                <div className="space-y-4">
-                  <LazyPieChart
-                    data={roleDistribution}
-                    dataKey="count"
-                    nameKey="label"
-                    colors={(entry: any) => entry.color}
-                    tooltipFormatter={(value: number, name: string) => [`${value} usuários`, name]}
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    {roleDistribution.map(r => (
-                      <div key={r.role} className="flex items-center gap-1.5 text-xs">
-                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: r.color }} />
-                        <span className="text-muted-foreground">{r.label}</span>
-                        <span className="font-semibold">{r.count}</span>
-                      </div>
-                    ))}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
+            {/* Branch Distribution Pie */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Users className="h-4 w-4" /> Integrantes por Ramo
+                  <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {scouts.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
+                ) : (
+                  <div className="space-y-4">
+                    <LazyPieChart
+                      data={branchDistribution.filter(b => b.count > 0)}
+                      dataKey="count"
+                      nameKey="name"
+                      colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
+                      tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      {branchDistribution.map(b => (
+                        <div key={b.key} className="flex items-center gap-1.5 text-xs">
+                          <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
+                          <span className="text-muted-foreground">{b.icon} {b.name}</span>
+                          <span className="font-semibold">{b.count}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
 
-          {/* Branch Distribution Pie */}
-          <Card className="border shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4" /> Integrantes por Ramo
-                <Badge className="ml-auto text-sm font-bold px-3 py-1 bg-primary text-primary-foreground">{scouts.length}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {scouts.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-8">Cadastre integrantes</p>
-              ) : (
-                <div className="space-y-4">
-                  <LazyPieChart
-                    data={branchDistribution.filter(b => b.count > 0)}
-                    dataKey="count"
-                    nameKey="name"
-                    colors={(entry: any) => PIE_COLORS[entry.key] || '#8884d8'}
-                    tooltipFormatter={(value: number, name: string) => [`${value} integrantes`, name]}
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    {branchDistribution.map(b => (
-                      <div key={b.key} className="flex items-center gap-1.5 text-xs">
-                        <div className="h-3 w-3 rounded-full flex-shrink-0" style={{ background: PIE_COLORS[b.key] || '#8884d8' }} />
-                        <span className="text-muted-foreground">{b.icon} {b.name}</span>
-                        <span className="font-semibold">{b.count}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Online & Recent Logins */}
-          <Card className="border shadow-sm">
-            <CardContent className="p-0">
-              {/* Online Now Section */}
-              <div className="px-4 pt-4 pb-2">
-                <div className="flex items-center gap-2 mb-2">
+            {/* Online Agora Section */}
+            <Card className="border shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-sm font-semibold">Online Agora</span>
+                  Online Agora
                   <Badge className="ml-auto text-xs font-medium bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/20">
                     {onlineUsers.length}
                   </Badge>
-                  {isAdmin && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          title="Encerrar sessões antigas"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Encerrar sessões antigas?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação encerrará todas as sessões inativas há mais de 30 minutos. Os usuários afetados precisarão entrar novamente.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={async () => {
-                              const { data, error } = await supabase.rpc('admin_clear_inactive_sessions' as any);
-                              if (error) {
-                                toast.error('Erro ao encerrar sessões');
-                                return;
-                              }
-                              toast.success(`Sessões encerradas (${data ?? 0})`);
-                              const { data: onlineData } = await supabase.rpc('admin_list_online_users');
-                              if (onlineData) {
-                                setOnlineUsers(
-                                  onlineData.map((u: any) => ({
-                                    user_id: u.user_id,
-                                    name: u.name,
-                                    last_login: u.last_active,
-                                  }))
-                                );
-                              }
-                            }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Encerrar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
                 {onlineUsers.length === 0 ? (
-                  <p className="text-xs text-muted-foreground py-3 text-center">Nenhum usuário online</p>
+                  <p className="text-xs text-muted-foreground py-8 text-center">Nenhum usuário online</p>
                 ) : (
-                  <div className="space-y-1.5">
+                  <div className="space-y-1.5 max-h-[250px] overflow-y-auto pr-1">
                     {onlineUsers.map(login => (
                       <div key={login.user_id} className="flex items-center gap-2 rounded-md bg-emerald-500/5 px-2.5 py-1.5">
                         <div className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500/15">
@@ -614,81 +531,12 @@ const Dashboard = () => {
                     ))}
                   </div>
                 )}
-              </div>
-
-              {/* Divider */}
-              <div className="mx-4 my-2 border-t" />
-
-              {/* Recent Logins Section */}
-              <div className="px-4 pb-3">
-                <div className="flex items-center gap-2 mb-2">
-                  <LogIn className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="text-sm font-semibold">Últimos Acessos</span>
-                  <Badge className="ml-auto text-xs font-medium bg-muted text-muted-foreground">{recentLogins.length}</Badge>
-                  {isAdmin && recentLogins.length > 0 && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                          title="Limpar histórico"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Limpar histórico de acessos?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Esta ação removerá permanentemente todos os registros de login do histórico de auditoria. Não é possível desfazer.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={async () => {
-                              const { data, error } = await supabase.rpc('admin_clear_login_history' as any);
-                              if (error) {
-                                toast.error('Erro ao limpar histórico');
-                                return;
-                              }
-                              setRecentLogins([]);
-                              toast.success(`Histórico limpo (${data ?? 0} registros)`);
-                            }}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Limpar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
-                </div>
-                {recentLogins.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-3">Sem registros</p>
-                ) : (
-                  <div className="max-h-[180px] overflow-y-auto space-y-1">
-                    {recentLogins.map((login) => (
-                      <div key={login.user_id} className="flex items-center gap-2 rounded-md px-2.5 py-1.5 hover:bg-muted/30 transition-colors">
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10">
-                          <User className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-xs font-medium uppercase break-words whitespace-normal leading-tight flex-1" style={{ overflowWrap: 'anywhere' }}>{login.name}</span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(login.last_login)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
           </div>
         )
       )}
+
 
       {/* Operational Cards Row */}
       {loading ? (
