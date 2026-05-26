@@ -297,8 +297,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       });
     } else {
       toast({
-        title: 'Agendamento criado, mas falha no envio do e-mail',
-        description: 'Seu agendamento foi salvo, porém não conseguimos enviar a notificação por e-mail.',
+        title: 'Mensagem criada, mas falha no envio do e-mail',
+        description: 'Sua mensagem foi salva, porém não conseguimos enviar a notificação por e-mail.',
         variant: 'destructive',
       });
     }
