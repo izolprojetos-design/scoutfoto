@@ -35,8 +35,8 @@ import AppSidebar from "@/components/AppSidebar";
 import MyAgendamentos from "@/pages/MyAgendamentos";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
-describe("Renomeação Nova Mensagem", () => {
-  it("sidebar exibe 'Nova Mensagem' apontando para /agendamentos e marca como ativo", () => {
+describe("Renomeação Mensagem", () => {
+  it("sidebar exibe 'Mensagem' apontando para /agendamentos e marca como ativo", () => {
     render(
       <MemoryRouter initialEntries={["/agendamentos"]}>
         <SidebarProvider>
@@ -45,20 +45,20 @@ describe("Renomeação Nova Mensagem", () => {
       </MemoryRouter>
     );
 
-    const link = screen.getByRole("link", { name: /Nova Mensagem/i });
+    const link = screen.getByRole("link", { name: /Mensagem/i });
     expect(link).toBeTruthy();
     expect(link.getAttribute("href")).toBe("/agendamentos");
     // NavLink active class is applied via aria-current or "active" — react-router sets aria-current="page"
     expect(link.getAttribute("aria-current")).toBe("page");
   });
 
-  it("página /agendamentos mostra cabeçalho 'Nova Mensagem' e atualiza document.title", () => {
+  it("página /agendamentos mostra cabeçalho 'Mensagem' e atualiza document.title", () => {
     render(
       <MemoryRouter initialEntries={["/agendamentos"]}>
         <MyAgendamentos />
       </MemoryRouter>
     );
-    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Nova Mensagem");
-    expect(document.title).toContain("Nova Mensagem");
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Mensagem");
+    expect(document.title).toContain("Mensagem");
   });
 });
