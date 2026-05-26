@@ -64,6 +64,22 @@ const AppSidebar = () => {
 
   const isEventRoute = eventSubItems.some(i => location.pathname === i.to || location.pathname.startsWith(i.to + '/'));
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // Helper to determine if an admin sub-item is active based on path AND query params
+  const isAdminSubActive = (to: string) => {
+    const url = new URL(to, window.location.origin);
+    const targetTab = url.searchParams.get('tab');
+    const currentParams = new URLSearchParams(location.search);
+    const currentTab = currentParams.get('tab');
+
+    // If target has a tab param, match it with current tab param
+    if (targetTab) {
+      return location.pathname === '/admin' && currentTab === targetTab;
+    }
+    // If target has NO tab param (Overview), it's active if pathname is /admin and tab is null
+    return location.pathname === '/admin' && !currentTab;
+  };
+
   
   const [eventsOpen, setEventsOpen] = useState(isEventRoute);
   const [adminOpen, setAdminOpen] = useState(isAdminRoute);
@@ -198,7 +214,8 @@ const AppSidebar = () => {
                     <CollapsibleContent>
                       <SidebarMenuSub>
                         {adminSubItems.map(sub => {
-                          const subActive = location.pathname === sub.to || location.pathname.startsWith(sub.to + '/');
+                          const subActive = isAdminSubActive(sub.to);
+
                           return (
                             <SidebarMenuSubItem key={sub.to}>
                               <SidebarMenuSubButton asChild isActive={subActive}>
