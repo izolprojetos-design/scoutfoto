@@ -85,7 +85,7 @@ const Login = () => {
       }
     } else {
       await clearLoginAttempts(email);
-      navigate(canViewPhotos ? '/dashboard' : '/profile');
+      navigate('/dashboard');
     }
     setLoading(false);
   };
