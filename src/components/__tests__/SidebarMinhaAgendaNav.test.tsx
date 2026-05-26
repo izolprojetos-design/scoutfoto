@@ -59,6 +59,10 @@ describe("Sidebar → /agendamentos navegação completa", () => {
       </MemoryRouter>
     );
 
+    // Abrir o menu Central de Eventos primeiro
+    const trigger = screen.getByRole("button", { name: /Central de Eventos/i });
+    fireEvent.click(trigger);
+
     const link = screen.getByRole("link", { name: /Mensagem/i });
     expect(link.getAttribute("href")).toBe("/agendamentos");
 
