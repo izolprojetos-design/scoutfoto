@@ -426,14 +426,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Assunto (Nome do Evento) */}
-        <div className="flex items-center px-4 py-2 border-b border-gray-100">
+        <div className="flex items-center px-4 py-3 border-b border-gray-100 bg-white">
           <input
             id="nomeEvento"
             value={nomeEvento}
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
+              "w-full text-base text-black bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
@@ -441,7 +441,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Detalhes da Atividade */}
-        <div className="bg-gray-100/50 px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
+        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
           <div className="flex items-center gap-2 min-w-[150px]">
             <CalendarDays className="h-4 w-4 text-gray-700" />
             <input
