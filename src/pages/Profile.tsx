@@ -24,7 +24,7 @@ import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 import { stringToColor } from '@/lib/avatarUtils';
 
 const Profile = () => {
-  const { profile, roles, user, isAdmin, refreshRoles } = useAuth();
+  const { profile, roles, user, isAdmin, refreshRoles, refreshProfile } = useAuth();
 
   useEffect(() => {
     refreshRoles();
@@ -113,7 +113,9 @@ const Profile = () => {
       toast.error('Erro ao salvar avatar: ' + updateError.message);
     } else {
       setAvatarUrl(path);
+      await refreshProfile();
       toast.success('Foto de perfil atualizada!');
+
     }
     setUploading(false);
   };
