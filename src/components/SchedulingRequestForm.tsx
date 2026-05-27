@@ -358,119 +358,31 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const errCls = (key: string) => errors[key] ? 'border-destructive focus-visible:ring-destructive' : '';
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto" noValidate>
-      {/* Seção 1: Dados do Remetente (somente leitura - usuário logado) */}
-      <Card className="border shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary/10 p-2">
-              <User className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Dados do Remetente</CardTitle>
-              <CardDescription>Identificação do solicitante (carregado do seu perfil)</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <Label htmlFor="nomeAssociado">Nome do associado</Label>
-            <Input
-              id="nomeAssociado"
-              value={nomeAssociado}
-              onChange={(e) => setNomeAssociado(e.target.value)}
-              className={cn("mt-1.5", errCls('nomeAssociado'))}
-              placeholder="Informe seu nome completo"
-            />
-          </div>
+    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200" noValidate>
+      {/* Cabeçalho estilo Gmail */}
+      <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-700">Nova mensagem</span>
+      </div>
 
-          <div>
-            <Label htmlFor="secao">Seção</Label>
-            <select
-              id="secao"
-              value={secao}
-              onChange={(e) => setSecao(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('secao')
-              )}
-            >
-              <option value="">Selecione...</option>
-              {VOLUNTEER_SECTIONS.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+      <div className="flex flex-col">
+        {/* Campo De */}
+        <div className="flex items-center px-4 py-2 border-b border-gray-100 group">
+          <span className="text-sm text-gray-500 w-12">De</span>
+          <div className="flex-1 flex items-center gap-2 overflow-hidden">
+            <span className="text-sm font-medium text-gray-900 truncate">{nomeAssociado}</span>
+            <span className="text-xs text-gray-500 truncate">&lt;{emailDe}&gt;</span>
           </div>
+          <div className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">
+            {secao} • {cargo1}
+          </div>
+        </div>
 
-          <div>
-            <Label htmlFor="cargo1">Cargo 1</Label>
-            <select
-              id="cargo1"
-              value={cargo1}
-              onChange={(e) => setCargo1(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('cargo1')
-              )}
-            >
-              <option value="">Selecione...</option>
-              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
-                <optgroup key={cat} label={cat}>
-                  {list.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="cargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <select
-              id="cargo2"
-              value={cargo2}
-              onChange={(e) => setCargo2(e.target.value)}
-              className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {CARGO_2_OPTIONS.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="emailDe">E-mail de</Label>
-            <Input
-              id="emailDe"
-              type="email"
-              value={emailDe}
-              onChange={(e) => setEmailDe(e.target.value)}
-              className={cn("mt-1.5", errCls('emailDe'))}
-              placeholder="seu-email@exemplo.com"
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Seção 1b: Dados do Destinatário (editáveis) */}
-      <Card className="border shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary/10 p-2">
-              <Mail className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Dados do Destinatário</CardTitle>
-              <CardDescription>Para quem esta mensagem será enviada</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2 relative">
-            <Label htmlFor="destNome">Nome do destinatário <span className="text-destructive">*</span></Label>
-            <div className="relative mt-1.5">
-              <Input
+        {/* Campo Para */}
+        <div className="flex flex-col px-4 py-2 border-b border-gray-100 relative group">
+          <div className="flex items-center">
+            <span className="text-sm text-gray-500 w-12">Para</span>
+            <div className="flex-1 relative">
+              <input
                 id="destNome"
                 value={destNome}
                 onChange={(e) => handleDestNomeChange(e.target.value)}
@@ -479,279 +391,159 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
                   destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
                 }}
-                placeholder="Digite o nome para buscar usuários cadastrados"
+                placeholder="Destinatário"
                 autoComplete="off"
-                className={cn(errCls('destNome'))}
-                aria-invalid={!!errors.destNome}
-                aria-autocomplete="list"
-                aria-expanded={destDropdownOpen}
-              />
-              {destSearching && (
-                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-              )}
-              {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
-                <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-72 overflow-y-auto">
-                  {destSuggestions.length === 0 && !destSearching ? (
-                    <div className="px-3 py-2 text-sm text-muted-foreground">Nenhum usuário encontrado</div>
-                  ) : (
-                    destSuggestions.map((s) => (
-                      <button
-                        key={s.user_id}
-                        type="button"
-                        onMouseDown={(ev) => ev.preventDefault()}
-                        onClick={() => handleSelectDestSuggestion(s)}
-                        className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground border-b last:border-b-0"
-                      >
-                        <div className="text-sm font-medium">{s.name}</div>
-                        <div className="text-xs text-muted-foreground">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
-            {fieldError('destNome')}
-          </div>
-
-
-          <div>
-            <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
-            <select
-              id="destSecao"
-              value={destSecao}
-              onChange={(e) => setDestSecao(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('destSecao')
-              )}
-              aria-invalid={!!errors.destSecao}
-            >
-              <option value="">Selecione...</option>
-              {VOLUNTEER_SECTIONS.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            {fieldError('destSecao')}
-          </div>
-
-          <div>
-            <Label htmlFor="destCargo1">Cargo 1 <span className="text-destructive">*</span></Label>
-            <select
-              id="destCargo1"
-              value={destCargo1}
-              onChange={(e) => setDestCargo1(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('destCargo1')
-              )}
-              aria-invalid={!!errors.destCargo1}
-            >
-              <option value="">Selecione...</option>
-              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
-                <optgroup key={cat} label={cat}>
-                  {list.map(c => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </optgroup>
-              ))}
-            </select>
-            {fieldError('destCargo1')}
-          </div>
-
-          <div>
-            <Label htmlFor="destCargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <select
-              id="destCargo2"
-              value={destCargo2}
-              onChange={(e) => setDestCargo2(e.target.value)}
-              className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <option value="">Nenhum</option>
-              {CARGO_2_OPTIONS.map(c => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <Label htmlFor="emailPara">E-mail do destinatário <span className="text-destructive">*</span></Label>
-            <Input
-              id="emailPara"
-              type="email"
-              value={emailPara}
-              onChange={(e) => setEmailPara(e.target.value)}
-              placeholder="email-do-destinatario@exemplo.com"
-              className={cn('mt-1.5', errCls('emailPara'))}
-              aria-invalid={!!errors.emailPara}
-            />
-            {fieldError('emailPara')}
-          </div>
-
-        </CardContent>
-      </Card>
-
-      {/* Seção 2: Evento */}
-      <Card className="border shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary/10 p-2">
-              <CalendarDays className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Evento</CardTitle>
-              <CardDescription>Quando, onde e o tipo de atividade</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <Label htmlFor="nomeEvento">Nome do evento <span className="text-destructive">*</span></Label>
-            <Input
-              id="nomeEvento"
-              value={nomeEvento}
-              onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
-              placeholder="Ex: Reunião ordinária da Alcateia"
-              required
-              maxLength={120}
-              className={cn('mt-1.5', errCls('nomeEvento'))}
-              aria-invalid={!!errors.nomeEvento}
-              aria-describedby="nomeEvento-counter"
-            />
-            <div className="mt-1 flex items-center justify-between gap-2">
-              <div className="flex-1">{fieldError('nomeEvento')}</div>
-              <span
-                id="nomeEvento-counter"
                 className={cn(
-                  'text-xs tabular-nums',
-                  nomeEvento.trim().length > 120 ? 'text-destructive' : 'text-muted-foreground',
+                  "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                  errCls('destNome')
                 )}
-              >
-                {nomeEvento.trim().length}/120
-              </span>
+              />
             </div>
+            {destSearching && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
           </div>
+          
+          {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
+            <div className="absolute left-16 right-4 top-full z-50 mt-1 rounded-md border bg-white shadow-xl max-h-60 overflow-y-auto">
+              {destSuggestions.length === 0 && !destSearching ? (
+                <div className="px-3 py-2 text-sm text-gray-500">Nenhum usuário encontrado</div>
+              ) : (
+                destSuggestions.map((s) => (
+                  <button
+                    key={s.user_id}
+                    type="button"
+                    onMouseDown={(ev) => ev.preventDefault()}
+                    onClick={() => handleSelectDestSuggestion(s)}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
+                  >
+                    <div className="text-sm font-medium text-gray-900">{s.name}</div>
+                    <div className="text-xs text-gray-500">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+          {fieldError('destNome')}
+        </div>
 
-          <div>
-            <Label htmlFor="dataSecao">Data da seção <span className="text-destructive">*</span></Label>
-            <Input
-              id="dataSecao"
+        {/* Assunto (Nome do Evento) */}
+        <div className="flex items-center px-4 py-2 border-b border-gray-100">
+          <input
+            id="nomeEvento"
+            value={nomeEvento}
+            onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
+            placeholder="Assunto"
+            className={cn(
+              "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400 font-medium",
+              errCls('nomeEvento')
+            )}
+          />
+          <span className="text-[10px] text-gray-400 ml-2">{nomeEvento.length}/120</span>
+        </div>
+
+        {/* Detalhes da Atividade (Substituindo os cards por uma barra de configuração compacta) */}
+        <div className="bg-gray-50/50 px-4 py-3 border-b border-gray-100 flex flex-wrap gap-3">
+          <div className="flex items-center gap-1.5 min-w-[140px]">
+            <CalendarDays className="h-3.5 w-3.5 text-gray-500" />
+            <input
               type="date"
               value={dataSecao}
               onChange={(e) => setDataSecao(e.target.value)}
-              min={new Date().toISOString().split('T')[0]}
-              className={cn('mt-1.5', errCls('dataSecao'))}
-              aria-invalid={!!errors.dataSecao}
+              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('dataSecao'))}
             />
-            {fieldError('dataSecao')}
           </div>
-
-          <div>
-            <Label htmlFor="horario">Horário <span className="text-destructive">*</span></Label>
-            <Input
-              id="horario"
+          <div className="flex items-center gap-1.5">
+            <input
               type="time"
               value={horario}
               onChange={(e) => setHorario(e.target.value)}
-              className={cn('mt-1.5', errCls('horario'))}
-              aria-invalid={!!errors.horario}
+              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('horario'))}
             />
-            {fieldError('horario')}
           </div>
-
-          <div className="md:col-span-2">
-            <Label htmlFor="local">Local <span className="text-destructive">*</span></Label>
+          <div className="flex items-center gap-1.5 flex-1 min-w-[200px]">
             <Input
-              id="local"
               value={local}
               onChange={(e) => setLocal(e.target.value)}
-              placeholder="Ex: Sede do Grupo Escoteiro"
-              className={cn('mt-1.5', errCls('local'))}
-              aria-invalid={!!errors.local}
+              placeholder="Local da atividade"
+              className={cn("h-7 text-xs bg-white border-gray-200", errCls('local'))}
             />
-            {fieldError('local')}
           </div>
-
-          <div>
-            <Label htmlFor="ramoEscoteiro">Ramo escoteiro <span className="text-destructive">*</span></Label>
+          <div className="flex items-center gap-2 w-full md:w-auto">
             <select
-              id="ramoEscoteiro"
               value={ramoEscoteiro}
               onChange={(e) => setRamoEscoteiro(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('ramoEscoteiro'),
-              )}
-              aria-invalid={!!errors.ramoEscoteiro}
+              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('ramoEscoteiro'))}
             >
-              <option value="">Selecione...</option>
+              <option value="">Ramo...</option>
               {branches.map(b => (
                 <option key={b.id} value={b.id}>{b.icon} {b.display_name}</option>
               ))}
             </select>
-            {fieldError('ramoEscoteiro')}
-          </div>
-
-          <div>
-            <Label htmlFor="tipoAtividade">Tipo de atividade <span className="text-destructive">*</span></Label>
             <select
-              id="tipoAtividade"
               value={tipoAtividade}
               onChange={(e) => setTipoAtividade(e.target.value)}
-              className={cn(
-                'mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                errCls('tipoAtividade'),
-              )}
-              aria-invalid={!!errors.tipoAtividade}
+              className="text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
             >
               {SCHEDULING_TYPES.map(t => (
                 <option key={t.value} value={t.value}>{t.label}</option>
               ))}
             </select>
-            {fieldError('tipoAtividade')}
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Seção 3: Detalhes */}
-      <Card className="border shadow-sm">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <div className="rounded-md bg-primary/10 p-2">
-              <FileText className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <CardTitle className="text-lg">Detalhes</CardTitle>
-              <CardDescription>Observações adicionais sobre o agendamento</CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Label htmlFor="observacoes">Observações <span className="text-destructive">*</span></Label>
-          <Textarea
+        {/* Corpo da Mensagem */}
+        <div className="px-4 py-4 min-h-[300px] flex flex-col">
+          <textarea
             id="observacoes"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
-            placeholder="Descreva detalhes importantes do agendamento..."
-            rows={5}
-            className={cn('mt-1.5 resize-y', errCls('observacoes'))}
-            aria-invalid={!!errors.observacoes}
+            placeholder="Escreva sua mensagem aqui..."
+            className={cn(
+              "flex-1 w-full text-sm bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-400 leading-relaxed",
+              errCls('observacoes')
+            )}
           />
-          {fieldError('observacoes')}
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-        <Button type="button" variant="outline" onClick={resetForm} disabled={submitting}>
-          Limpar formulário
-        </Button>
-        <Button type="submit" disabled={submitting} className="gap-2 sm:min-w-[200px]">
-          {submitting ? (
-            <><Loader2 className="h-4 w-4 animate-spin" /> Enviando...</>
-          ) : (
-            <><Send className="h-4 w-4" /> Criar mensagem</>
-          )}
-        </Button>
+        {/* Rodapé de Ações */}
+        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-white">
+          <div className="flex items-center gap-2">
+            <Button 
+              type="submit" 
+              disabled={submitting} 
+              className="bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full px-6 py-2 h-9 text-sm font-medium transition-shadow hover:shadow-md"
+            >
+              {submitting ? (
+                <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Enviando...</>
+              ) : (
+                <>Enviar</>
+              )}
+            </Button>
+            <Button 
+              type="button" 
+              variant="ghost" 
+              size="icon" 
+              onClick={resetForm} 
+              disabled={submitting}
+              className="text-gray-500 hover:bg-gray-100 rounded-full h-9 w-9"
+              title="Descartar rascunho"
+            >
+              <FileText className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center gap-1 text-[11px] text-gray-400 italic">
+            <CheckCircle2 className="h-3 w-3" />
+            Salvo automaticamente no sistema
+          </div>
+        </div>
       </div>
+      
+      {/* Exibição de erros flutuante ou discreta */}
+      {Object.keys(errors).length > 0 && (
+        <div className="px-4 py-1 bg-red-50 text-[10px] text-red-500 border-t border-red-100">
+          Por favor, preencha todos os campos obrigatórios marcados em vermelho.
+        </div>
+      )}
     </form>
   );
 };
