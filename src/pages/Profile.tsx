@@ -99,12 +99,9 @@ const Profile = () => {
       return;
     }
 
-    const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
-    if (!signedData?.signedUrl) {
-      toast.error('Erro ao gerar URL da imagem');
-      setUploading(false);
-      return;
-    }
+    // No need to create a signed URL here anymore, the component handles it.
+    // We just need to make sure the upload succeeded.
+
 
     // Save only the storage path so it can be re-signed on demand (signed URLs expire in 1h)
     const { error: updateError } = await supabase
