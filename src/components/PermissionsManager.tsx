@@ -186,7 +186,7 @@ const PermissionsManager = () => {
               >
                 <div className="font-bold truncate flex items-center gap-2 text-foreground">
                   {u.user_number != null && (
-                    <span className="text-xs text-muted-foreground font-mono">#{String(u.user_number).padStart(7, '0')}</span>
+                    <span className="text-xs text-muted-foreground font-mono">#{String(u.user_number).padStart(4, '0')}</span>
                   )}
                   {u.name}
                 </div>
