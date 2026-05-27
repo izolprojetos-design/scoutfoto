@@ -394,7 +394,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 placeholder="Destinatário"
                 autoComplete="off"
                 className={cn(
-                  "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                  "w-full text-xs text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
                   errCls('destNome')
                 )}
               />
