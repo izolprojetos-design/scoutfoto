@@ -23,14 +23,21 @@ Deno.serve(async (req) => {
   for (const file of (files || [])) {
     if (file.name.startsWith(".")) continue;
     
+    console.log(`Processing ${file.name}...`);
     const { data: blob, error: dlErr } = await supabaseAdmin.storage.from("scout-photos").download(`arquivadas/${file.name}`);
-    if (dlErr) continue;
+    if (dlErr) {
+        console.error(`Download error for ${file.name}:`, dlErr.message);
+        continue;
+    }
 
     const buf = new Uint8Array(await blob.arrayBuffer());
     const { error: upErr } = await supabaseAdmin.storage.from("scout-photos").upload(file.name, buf, {
       upsert: true, contentType: blob.type,
     });
-    if (upErr) continue;
+    if (upErr) {
+        console.error(`Upload error for ${file.name}:`, upErr.message);
+        continue;
+    }
 
     await supabaseAdmin.storage.from("scout-photos").remove([`arquivadas/${file.name}`]);
     restored.push(file.name);
