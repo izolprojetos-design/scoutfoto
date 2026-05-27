@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Cloud, Save, Loader2, Link2, ExternalLink, AlertTriangle, ShieldCheck, Image as ImageIcon, Video, FileText, CheckCircle2, X } from 'lucide-react';
+import { Cloud, Save, Loader2, Link2, ExternalLink, AlertTriangle, ShieldCheck, Image as ImageIcon, Video, FileText, CheckCircle2, X, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
