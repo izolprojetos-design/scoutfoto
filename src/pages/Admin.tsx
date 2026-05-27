@@ -800,7 +800,9 @@ const Admin = () => {
                       <TableHead className="font-bold">Nome</TableHead>
                       <TableHead className="font-bold">Email</TableHead>
                       <TableHead className="font-bold">Seção</TableHead>
-                      <TableHead className="font-bold">Cargo</TableHead>
+                      <TableHead className="font-bold">Cargo 1</TableHead>
+                      <TableHead className="font-bold">Cargo 2</TableHead>
+                      <TableHead className="font-bold">Papel</TableHead>
                       <TableHead className="font-bold">Status</TableHead>
                       <TableHead className="font-bold">Ações</TableHead>
                     </TableRow>
