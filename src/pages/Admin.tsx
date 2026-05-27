@@ -590,26 +590,23 @@ const Admin = () => {
       >
 
         <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto p-1 gap-1">
-          <TabsTrigger value="overview" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <LayoutDashboard className="h-4 w-4" /> Visão Geral
-          </TabsTrigger>
-          <TabsTrigger value="users" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            Usuários
-          </TabsTrigger>
-          <TabsTrigger value="roles_permissions" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <Shield className="h-4 w-4" /> Papéis e Permissões
+          <TabsTrigger value="archived" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Archive className="h-4 w-4" /> Arquivadas
           </TabsTrigger>
           <TabsTrigger value="audit" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             Auditoria
           </TabsTrigger>
-          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <FolderTree className="h-4 w-4" /> Equipes
-          </TabsTrigger>
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <Link2 className="h-4 w-4" /> Convites
           </TabsTrigger>
-          <TabsTrigger value="archived" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <Archive className="h-4 w-4" /> Arquivadas
+          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <FolderTree className="h-4 w-4" /> Equipes
+          </TabsTrigger>
+          <TabsTrigger value="branding" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <ImageOff className="h-4 w-4" /> Identidade
+          </TabsTrigger>
+          <TabsTrigger value="roles_permissions" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Shield className="h-4 w-4" /> Papéis e Permissões
           </TabsTrigger>
           <TabsTrigger value="security" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <Shield className="h-4 w-4" /> Segurança
@@ -617,8 +614,11 @@ const Admin = () => {
           <TabsTrigger value="system" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <RefreshCw className="h-4 w-4" /> Sistema
           </TabsTrigger>
-          <TabsTrigger value="branding" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <ImageOff className="h-4 w-4" /> Identidade
+          <TabsTrigger value="users" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            Usuários
+          </TabsTrigger>
+          <TabsTrigger value="overview" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <LayoutDashboard className="h-4 w-4" /> Visão Geral
           </TabsTrigger>
         </TabsList>
 
