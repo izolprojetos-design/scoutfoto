@@ -437,6 +437,10 @@ const Admin = () => {
       setNewName('');
       setNewEmail('');
       setNewPassword('');
+      setConfirmPassword('');
+      setNewNumber('');
+      setNewCargo1('');
+      setNewCargo2('');
       setNewRole('voluntario');
       setNewSection('');
       fetchUsers();
