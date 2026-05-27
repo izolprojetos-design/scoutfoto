@@ -400,6 +400,10 @@ const Admin = () => {
       toast.error('Preencha todos os campos');
       return;
     }
+    if (newPassword !== confirmPassword) {
+      toast.error('As senhas não coincidem');
+      return;
+    }
     const pwValidation = validatePassword(newPassword);
     if (!pwValidation.isValid) {
       toast.error('A senha não atende aos requisitos mínimos de segurança');
@@ -408,7 +412,17 @@ const Admin = () => {
     setCreating(true);
 
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
-      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole, section: newSection },
+      body: { 
+        action: 'create', 
+        email: newEmail, 
+        password: newPassword, 
+        name: newName, 
+        role: newRole, 
+        section: newSection,
+        user_number: newNumber ? parseInt(newNumber) : null,
+        cargo_1: newCargo1,
+        cargo_2: newCargo2
+      },
     });
 
     if (error || data?.error) {
