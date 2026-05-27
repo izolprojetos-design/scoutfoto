@@ -90,6 +90,10 @@ const Admin = () => {
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [newCargo1, setNewCargo1] = useState('');
+  const [newCargo2, setNewCargo2] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('voluntario');
   const [newSection, setNewSection] = useState('');
   const [creating, setCreating] = useState(false);
