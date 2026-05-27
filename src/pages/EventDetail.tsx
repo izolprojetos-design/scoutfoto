@@ -1185,7 +1185,7 @@ const EventDetail = () => {
                     <p className="text-white/60 mb-6 max-w-md">Este é um link externo do Google Drive.</p>
                     <Button 
                       className="gap-2 bg-primary hover:bg-primary/90" 
-                      onClick={() => openExternalLink(selectedImage.external_url)}
+                      onClick={() => openExternalLink(selectedImage.external_url, selectedImage)}
                     >
                       <ExternalLink className="h-4 w-4" />
                       Abrir no Google Drive
