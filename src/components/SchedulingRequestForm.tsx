@@ -441,7 +441,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Detalhes da Atividade */}
-        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
+        <div className="bg-white px-3 py-3 border-b border-gray-200 flex flex-wrap gap-2 sm:gap-4">
           <div className="flex flex-col gap-1.5 min-w-[160px]">
             <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700">
               Data
