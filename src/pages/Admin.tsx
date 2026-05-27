@@ -1022,7 +1022,7 @@ const Admin = () => {
           <Card className="border-0 shadow-lg">
             <CardHeader>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 font-bold">
                   <FolderTree className="h-5 w-5" />
                   Equipes ({subgroups.length})
                 </CardTitle>
@@ -1191,7 +1191,7 @@ const Admin = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
               <Card className="border shadow-sm bg-gradient-to-br from-slate-900 to-slate-800 text-white">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-bold">
                     <ShieldCheck className="h-5 w-5 text-emerald-400" /> Monitoramento & Erros (Sentry/Metrics)
                   </CardTitle>
                 </CardHeader>
