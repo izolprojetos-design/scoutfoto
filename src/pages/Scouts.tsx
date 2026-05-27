@@ -1473,7 +1473,9 @@ const Scouts = () => {
       </div>
       <div className="space-y-2">
         <Label>Data de nascimento *</Label>
-        <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
+        <div className="relative">
+          <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
+        </div>
       </div>
       <div className="space-y-2">
         <Label>Ramo</Label>
@@ -1524,17 +1526,19 @@ const Scouts = () => {
           <p className="text-xs text-amber-600 dark:text-amber-400">
             Integrante atingiu a idade para o próximo ramo. Informe a data da passagem para confirmar a transição.
           </p>
-          <Input
-            type="date"
-            value={transitionDate}
-            onChange={e => {
-              setTransitionDate(e.target.value);
-              if (e.target.value) {
-                setBranchOverride(nextBranch.key);
-              }
-            }}
-            className="h-11"
-          />
+          <div className="relative">
+            <Input
+              type="date"
+              value={transitionDate}
+              onChange={e => {
+                setTransitionDate(e.target.value);
+                if (e.target.value) {
+                  setBranchOverride(nextBranch.key);
+                }
+              }}
+              className="h-11"
+            />
+          </div>
           {transitionDate && (
             <Button
               type="button"
