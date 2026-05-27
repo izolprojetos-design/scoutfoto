@@ -266,6 +266,7 @@ const AppSidebar = () => {
                 onClick={() => isMobile && setOpenMobile(false)}
               >
                 <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarImage src={profile?.avatar_url || getAvatarUrl(profile?.name || '')} alt={profile?.name || ''} />
                   <AvatarFallback 
                     className="text-white text-xs font-bold"
                     style={{ backgroundColor: stringToColor(profile?.name || '') }}
