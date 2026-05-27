@@ -147,7 +147,7 @@ const RolesManager = () => {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <Badge variant={ROLE_BADGE_VARIANT[role.role] || 'secondary'}>
+                      <Badge variant={ROLE_BADGE_VARIANT[role.role] || 'secondary'} className="font-bold">
                         {role.display_name}
                       </Badge>
                       <span className="text-xs text-muted-foreground font-mono">({role.role})</span>
