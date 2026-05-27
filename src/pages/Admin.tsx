@@ -19,7 +19,7 @@ import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil,
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolePermissionsManager from '@/components/RolePermissionsManager';
-import RolesManager from '@/components/RolesManager';
+
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
 import InviteLinkPanel from '@/components/InviteLinkPanel';
@@ -982,28 +982,26 @@ const Admin = () => {
 
         <TabsContent value="roles_permissions">
           <div className="space-y-6">
-            <RolesManager />
-            
             <Card className="border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg font-bold">
                   <ShieldCheck className="h-5 w-5 text-primary" />
-                  Gerenciamento de Permissões
+                  Gerenciamento de Acessos
                 </CardTitle>
                 <CardDescription>
-                  Configure as permissões globais por papel ou ajuste acessos individuais por usuário.
+                  Unificamos a gestão de papéis e permissões. Configure as regras globais por papel ou ajuste acessos individuais.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Tabs defaultValue="roles_permissions" className="space-y-4">
+                <Tabs defaultValue="by_role" className="space-y-4">
                   <TabsList className="bg-muted/40 p-1 mb-4">
-                    <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Recomendado)</TabsTrigger>
-                    <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Exceções)</TabsTrigger>
+                    <TabsTrigger value="by_role" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Configuração do Sistema)</TabsTrigger>
+                    <TabsTrigger value="by_user" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Ajustes Específicos)</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="roles_permissions">
+                  <TabsContent value="by_role">
                     <RolePermissionsManager />
                   </TabsContent>
-                  <TabsContent value="user_permissions">
+                  <TabsContent value="by_user">
                     <PermissionsManager />
                   </TabsContent>
                 </Tabs>
