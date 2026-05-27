@@ -981,35 +981,35 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="roles_permissions">
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg font-bold">
-                <Shield className="h-5 w-5 text-primary" />
-                Papéis e Permissões
-              </CardTitle>
-              <CardDescription>
-                Gerencie os níveis de acesso e as permissões de cada função no sistema.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="roles_list" className="space-y-4">
-                <TabsList className="bg-muted/40 p-1 mb-4">
-                  <TabsTrigger value="roles_list" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Papéis do Sistema</TabsTrigger>
-                  <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Recomendado)</TabsTrigger>
-                  <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Exceções)</TabsTrigger>
-                </TabsList>
-                <TabsContent value="roles_list">
-                  <RolesManager />
-                </TabsContent>
-                <TabsContent value="roles_permissions">
-                  <RolePermissionsManager />
-                </TabsContent>
-                <TabsContent value="user_permissions">
-                  <PermissionsManager />
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <RolesManager />
+            
+            <Card className="border-0 shadow-lg">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                  <ShieldCheck className="h-5 w-5 text-primary" />
+                  Gerenciamento de Permissões
+                </CardTitle>
+                <CardDescription>
+                  Configure as permissões globais por papel ou ajuste acessos individuais por usuário.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="roles_permissions" className="space-y-4">
+                  <TabsList className="bg-muted/40 p-1 mb-4">
+                    <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Recomendado)</TabsTrigger>
+                    <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Exceções)</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="roles_permissions">
+                    <RolePermissionsManager />
+                  </TabsContent>
+                  <TabsContent value="user_permissions">
+                    <PermissionsManager />
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
 
