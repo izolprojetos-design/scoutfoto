@@ -51,6 +51,8 @@ interface UserWithRole {
   role: AppRole;
   section: string;
   user_number: number | null;
+  cargo_1: string | null;
+  cargo_2: string | null;
 }
 
 interface AuditLog {
@@ -88,6 +90,10 @@ const Admin = () => {
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [newCargo1, setNewCargo1] = useState('');
+  const [newCargo2, setNewCargo2] = useState('');
   const [newRole, setNewRole] = useState<AppRole>('voluntario');
   const [newSection, setNewSection] = useState('');
   const [creating, setCreating] = useState(false);
@@ -135,9 +141,15 @@ const Admin = () => {
   const [pendingRoles, setPendingRoles] = useState<Record<string, AppRole>>({});
   const [pendingStatus, setPendingStatus] = useState<Record<string, boolean>>({});
   const [pendingSections, setPendingSections] = useState<Record<string, string>>({});
+  const [pendingCargo1, setPendingCargo1] = useState<Record<string, string>>({});
+  const [pendingCargo2, setPendingCargo2] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0 || Object.keys(pendingSections).length > 0;
+  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || 
+    Object.keys(pendingStatus).length > 0 || 
+    Object.keys(pendingSections).length > 0 ||
+    Object.keys(pendingCargo1).length > 0 ||
+    Object.keys(pendingCargo2).length > 0;
 
   // Subgroups state
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -229,6 +241,8 @@ const Admin = () => {
           role: userRole?.role || 'viewer',
           section: (p as any).section || '',
           user_number: (p as any).user_number || null,
+          cargo_1: (p as any).cargo_1 || '',
+          cargo_2: (p as any).cargo_2 || '',
         };
       });
       merged.sort((a, b) => {
@@ -304,6 +318,24 @@ const Admin = () => {
     }
   };
 
+  const stageCargo1Change = (userId: string, value: string) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && (original.cargo_1 || '') === value) {
+      setPendingCargo1(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } else {
+      setPendingCargo1(prev => ({ ...prev, [userId]: value }));
+    }
+  };
+
+  const stageCargo2Change = (userId: string, value: string) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && (original.cargo_2 || '') === value) {
+      setPendingCargo2(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } else {
+      setPendingCargo2(prev => ({ ...prev, [userId]: value }));
+    }
+  };
+
   const handleSaveAll = async () => {
     setSaving(true);
     let hasError = false;
@@ -367,6 +399,30 @@ const Admin = () => {
       }
     }
 
+    // Save cargo_1 changes
+    for (const [userId, cargo_1] of Object.entries(pendingCargo1)) {
+      const original = users.find(u => u.user_id === userId);
+      const { error } = await supabase.from('profiles').update({ cargo_1 }).eq('user_id', userId);
+      if (error) {
+        toast.error('Erro ao alterar Cargo 1: ' + error.message);
+        hasError = true;
+      } else {
+        affectedUserIds.add(userId);
+      }
+    }
+
+    // Save cargo_2 changes
+    for (const [userId, cargo_2] of Object.entries(pendingCargo2)) {
+      const original = users.find(u => u.user_id === userId);
+      const { error } = await supabase.from('profiles').update({ cargo_2 }).eq('user_id', userId);
+      if (error) {
+        toast.error('Erro ao alterar Cargo 2: ' + error.message);
+        hasError = true;
+      } else {
+        affectedUserIds.add(userId);
+      }
+    }
+
     if (affectedUserIds.size > 0) {
       const { error: refreshError } = await supabase
         .from('profiles')
@@ -383,6 +439,8 @@ const Admin = () => {
     setPendingRoles({});
     setPendingStatus({});
     setPendingSections({});
+    setPendingCargo1({});
+    setPendingCargo2({});
     fetchUsers();
     setSaving(false);
   };
@@ -390,6 +448,10 @@ const Admin = () => {
   const handleCreateUser = async () => {
     if (!newName || !newEmail || !newPassword) {
       toast.error('Preencha todos os campos');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error('As senhas não coincidem');
       return;
     }
     const pwValidation = validatePassword(newPassword);
@@ -400,7 +462,17 @@ const Admin = () => {
     setCreating(true);
 
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
-      body: { action: 'create', email: newEmail, password: newPassword, name: newName, role: newRole, section: newSection },
+      body: { 
+        action: 'create', 
+        email: newEmail, 
+        password: newPassword, 
+        name: newName, 
+        role: newRole, 
+        section: newSection,
+        user_number: newNumber ? parseInt(newNumber) : null,
+        cargo_1: newCargo1,
+        cargo_2: newCargo2
+      },
     });
 
     if (error || data?.error) {
@@ -415,6 +487,10 @@ const Admin = () => {
       setNewName('');
       setNewEmail('');
       setNewPassword('');
+      setConfirmPassword('');
+      setNewNumber('');
+      setNewCargo1('');
+      setNewCargo2('');
       setNewRole('voluntario');
       setNewSection('');
       fetchUsers();
@@ -695,35 +771,14 @@ const Admin = () => {
                       <DialogHeader>
                         <DialogTitle>Criar novo usuário</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         <div className="space-y-2">
-                          <Label>Nome completo</Label>
-                          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome do usuário" />
+                          <Label>Id</Label>
+                          <Input value={newNumber} onChange={e => setNewNumber(e.target.value)} placeholder="Número de registro" />
                         </div>
                         <div className="space-y-2">
-                          <Label>Email</Label>
-                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Senha</Label>
-                          <div className="relative">
-                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="pr-10" />
-                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                          <PasswordStrengthIndicator password={newPassword} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Cargo</Label>
-                          <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="voluntario">Voluntário</SelectItem>
-                              <SelectItem value="viewer">Visitante</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label>Nome do associado</Label>
+                          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome completo" />
                         </div>
                         <div className="space-y-2">
                           <Label>Seção</Label>
@@ -737,10 +792,49 @@ const Admin = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
-                          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                          Criar Usuário
-                        </Button>
+                        <div className="space-y-2">
+                          <Label>Cargo 1</Label>
+                          <Input value={newCargo1} onChange={e => setNewCargo1(e.target.value)} placeholder="Ex: Chefe de Seção" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Cargo 2 (opcional)</Label>
+                          <Input value={newCargo2} onChange={e => setNewCargo2(e.target.value)} placeholder="Ex: Diretor" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Papel no Sistema</Label>
+                          <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="voluntario">Voluntário</SelectItem>
+                              <SelectItem value="viewer">Visitante</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>E-mail</Label>
+                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Senha</Label>
+                          <div className="relative">
+                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="pr-10" />
+                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <PasswordStrengthIndicator password={newPassword} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Confirmar senha</Label>
+                          <Input type={showNewPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repita a senha" />
+                        </div>
+                        <div className="md:col-span-2 pt-2">
+                          <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
+                            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                            Criar Usuário
+                          </Button>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -752,11 +846,13 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px] font-bold">ID</TableHead>
+                      <TableHead className="w-[80px] font-bold">ID</TableHead>
                       <TableHead className="font-bold">Nome</TableHead>
-                      <TableHead className="font-bold">Email</TableHead>
                       <TableHead className="font-bold">Seção</TableHead>
-                      <TableHead className="font-bold">Cargo</TableHead>
+                      <TableHead className="font-bold">Cargo 1</TableHead>
+                      <TableHead className="font-bold">Cargo 2</TableHead>
+                      <TableHead className="font-bold">E-mail</TableHead>
+                      <TableHead className="font-bold">Papel</TableHead>
                       <TableHead className="font-bold">Status</TableHead>
                       <TableHead className="font-bold">Ações</TableHead>
                     </TableRow>
@@ -776,7 +872,6 @@ const Admin = () => {
                             {u.name}
                           </button>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{u.email}</TableCell>
                         <TableCell>
                           {(() => {
                             const currentSection = pendingSections[u.user_id] !== undefined ? pendingSections[u.user_id] : (u.section || '');
@@ -816,6 +911,23 @@ const Admin = () => {
                             );
                           })()}
                         </TableCell>
+                        <TableCell>
+                          <Input 
+                            value={pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '')} 
+                            onChange={e => stageCargo1Change(u.user_id, e.target.value)}
+                            className={`h-8 text-xs ${pendingCargo1[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
+                            placeholder="Cargo 1"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input 
+                            value={pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '')} 
+                            onChange={e => stageCargo2Change(u.user_id, e.target.value)}
+                            className={`h-8 text-xs ${pendingCargo2[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
+                            placeholder="Cargo 2"
+                          />
+                        </TableCell>
+                        <TableCell className="text-muted-foreground text-xs">{u.email}</TableCell>
                         <TableCell>
                           {(() => {
                             const currentRole = (pendingRoles[u.user_id] || u.role) as AppRole;
