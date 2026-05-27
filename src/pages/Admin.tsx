@@ -399,6 +399,30 @@ const Admin = () => {
       }
     }
 
+    // Save cargo_1 changes
+    for (const [userId, cargo_1] of Object.entries(pendingCargo1)) {
+      const original = users.find(u => u.user_id === userId);
+      const { error } = await supabase.from('profiles').update({ cargo_1 }).eq('user_id', userId);
+      if (error) {
+        toast.error('Erro ao alterar Cargo 1: ' + error.message);
+        hasError = true;
+      } else {
+        affectedUserIds.add(userId);
+      }
+    }
+
+    // Save cargo_2 changes
+    for (const [userId, cargo_2] of Object.entries(pendingCargo2)) {
+      const original = users.find(u => u.user_id === userId);
+      const { error } = await supabase.from('profiles').update({ cargo_2 }).eq('user_id', userId);
+      if (error) {
+        toast.error('Erro ao alterar Cargo 2: ' + error.message);
+        hasError = true;
+      } else {
+        affectedUserIds.add(userId);
+      }
+    }
+
     if (affectedUserIds.size > 0) {
       const { error: refreshError } = await supabase
         .from('profiles')
@@ -415,6 +439,8 @@ const Admin = () => {
     setPendingRoles({});
     setPendingStatus({});
     setPendingSections({});
+    setPendingCargo1({});
+    setPendingCargo2({});
     fetchUsers();
     setSaving(false);
   };
