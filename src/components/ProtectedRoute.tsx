@@ -32,7 +32,7 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
     if (currentPath !== '/profile') {
-      console.warn(`Access denied: missing role ${requiredRole}. Redirecting to profile.`);
+      console.warn(`[ProtectedRoute] Access denied to "${currentPath}": missing role "${requiredRole}". Roles: [${roles.join(', ')}]. Redirecting to /profile.`);
       return <Navigate to="/profile" replace />;
     }
   }
@@ -40,7 +40,7 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
     if (currentPath !== '/profile') {
-      console.warn(`Access denied: missing permission ${requiredPermission}. Redirecting to profile.`);
+      console.warn(`[ProtectedRoute] Access denied to "${currentPath}": missing permission "${requiredPermission}". Redirecting to /profile.`);
       return <Navigate to="/profile" replace />;
     }
   }

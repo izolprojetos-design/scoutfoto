@@ -38,44 +38,46 @@ const IMAGE_KEYWORDS: { keywords: string[]; image: string }[] = [
 const ALL_IMAGES = [campingImg, celebrationImg, activitiesImg, hikingImg, meetingImg].filter(Boolean);
 
 /**
- * Returns a cover image for an event based on its name.
+ * Returns a cover image for an event based on its name and optionally its ID.
  * Uses keywords first, then a deterministic hash-based selection to ensure 
- * consistency per event but variety between events, avoiding immediate repeats.
+ * variety between events and avoid immediate repeats in lists.
  */
-export function getEventCoverImage(eventName: string): string {
-  // Validation for empty library
+export function getEventCoverImage(eventName: string, eventId?: string): string {
+  // Validation for empty library or failed load
   if (!ALL_IMAGES || ALL_IMAGES.length === 0) {
-    console.warn('Event image library is empty or failed to load.');
+    console.warn('[EventImage] Library is empty or failed to load. Using empty fallback.');
     return ''; 
   }
 
   const lower = eventName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
+  // 1. Keyword-based matching (Highest priority)
   for (const entry of IMAGE_KEYWORDS) {
     for (const kw of entry.keywords) {
       const normalizedKw = kw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
       if (lower.includes(normalizedKw)) {
-        const imgName = Object.keys(IMAGE_MAP).find(key => IMAGE_MAP[key] === entry.image) || 'Keyword Match';
-        console.log(`[EventImage] Selected "${imgName}" for event "${eventName}" via keyword.`);
+        const imgName = Object.keys(IMAGE_MAP).find(key => IMAGE_MAP[key] === entry.image) || 'Keyword';
+        console.log(`[EventImage] Selected "${imgName}" for event "${eventName}" via keyword match.`);
         return entry.image;
       }
     }
   }
 
-  // Deterministic but distributed selection based on name hash
-  // This ensures same name gets same image, but variety among different names
-  // and avoids the "truly random" jumping on every re-render.
+  // 2. Deterministic distribution to avoid repeats
+  // Use eventId if available for better entropy, fallback to eventName
+  const seed = eventId || eventName;
   let hash = 0;
-  for (let i = 0; i < eventName.length; i++) {
-    hash = ((hash << 5) - hash) + eventName.charCodeAt(i);
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
     hash |= 0;
   }
   
+  // Use the hash to pick an image, ensuring variety
   const index = Math.abs(hash) % ALL_IMAGES.length;
   const selectedImage = ALL_IMAGES[index];
   
-  const imgName = Object.keys(IMAGE_MAP).find(key => IMAGE_MAP[key] === selectedImage) || `Index ${index}`;
-  console.log(`[EventImage] Selected "${imgName}" for event "${eventName}" via random distribution.`);
+  const imgName = Object.keys(IMAGE_MAP).find(key => IMAGE_MAP[key] === selectedImage) || `Random Index ${index}`;
+  console.log(`[EventImage] Selected "${imgName}" for event "${eventName}" via distribution hash.`);
   
   return selectedImage;
 }

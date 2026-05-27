@@ -449,7 +449,7 @@ const Events = () => {
               >
                 <div className="relative h-16 w-24 sm:h-20 sm:w-32 flex-shrink-0 overflow-hidden rounded-md bg-muted">
                   <img
-                    src={getEventCoverImage(event.name)}
+                    src={getEventCoverImage(event.name, event.id)}
                     alt={event.name}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
@@ -462,7 +462,7 @@ const Events = () => {
                        event.name.toLowerCase().includes('celebração') ||
                        event.name.toLowerCase().includes('reunião') ||
                        event.name.toLowerCase().includes('atividade') 
-                       ? 'Keyword' : 'Random'}: {getEventCoverImage(event.name).split('/').pop()?.split('.')[0] || 'img'}
+                       ? 'Keyword' : 'Random'}: {getEventCoverImage(event.name, event.id).split('/').pop()?.split('.')[0] || 'img'}
                     </p>
                   </div>
                 </div>
