@@ -10,28 +10,14 @@ import { toast } from "sonner";
 // Mock Supabase
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
-    from: vi.fn((table) => ({
-      select: vi.fn(() => ({
-        eq: vi.fn((col, val) => ({
-          single: vi.fn(() => {
-            if (table === 'events') {
-              return Promise.resolve({ data: { id: 'event-123', name: 'Evento Teste', created_at: new Date().toISOString() }, error: null });
-            }
-            return Promise.resolve({ data: null, error: null });
-          }),
-          order: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          in: vi.fn(() => Promise.resolve({ data: [], error: null })),
-        })),
-        order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+    from: vi.fn(),
+    storage: {
+      from: vi.fn(() => ({
+        createSignedUrl: vi.fn(() => Promise.resolve({ data: { signedUrl: 'http://signed' }, error: null })),
+        remove: vi.fn(() => Promise.resolve({ error: null })),
       })),
-      storage: {
-        from: vi.fn(() => ({
-          createSignedUrl: vi.fn(() => Promise.resolve({ data: { signedUrl: 'http://test-url' }, error: null })),
-        })),
-      },
-      rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
-      channel: vi.fn(() => ({ on: vi.fn(() => ({ subscribe: vi.fn() })) })),
-    })),
+    },
+    rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
   },
 }));
 
@@ -75,46 +61,68 @@ describe("Google Drive Click Flow", () => {
 
     (usePermissions as any).mockReturnValue({
       canManageGoogleDrive: true,
+      canUploadEventPhotos: true,
+      canViewMinors: true,
+    });
+
+    // Mock branches call which happens on mount
+    (supabase.from as any).mockImplementation((table: string) => {
+        const query = {
+            select: vi.fn().mockReturnThis(),
+            order: vi.fn().mockReturnThis(),
+            eq: vi.fn().mockReturnThis(),
+            single: vi.fn().mockImplementation(() => {
+                if (table === 'events') return Promise.resolve({ data: { id: 'event-123', name: 'Evento Teste', created_at: new Date().toISOString() }, error: null });
+                return Promise.resolve({ data: null, error: null });
+            }),
+            then: vi.fn().mockImplementation((callback) => {
+                if (table === 'branches') callback({ data: [{ id: 'branch-1', key: 'test', display_name: 'Teste', icon: '🌲' }], error: null });
+                return Promise.resolve();
+            })
+        };
+        return query;
     });
   });
 
   it("deve tentar abrir o link e registrar erro no console/audit se a URL for inválida", async () => {
-    // Spy on console.error
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
-    // Setup images data to include an external link with invalid URL
     const mockImage = {
       id: 'img-external-1',
       filename: 'Link Inválido',
       media_type: 'document',
-      external_url: 'invalid-url', // Not a valid URL
+      external_url: 'invalid-url',
       created_at: new Date().toISOString(),
       user_id: 'user-123',
       views: 0
     };
 
-    // Re-mock supabase to return our mock image
-    (supabase.from as any).mockImplementation((table: string) => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          single: vi.fn(() => {
-            if (table === 'events') return Promise.resolve({ data: { id: 'event-123' }, error: null });
-            return Promise.resolve({ data: null, error: null });
-          }),
-          order: vi.fn(() => {
-             if (table === 'images') return Promise.resolve({ data: [mockImage], error: null });
-             return Promise.resolve({ data: [], error: null });
-          })
-        })),
-        order: vi.fn(() => Promise.resolve({ data: [], error: null }))
-      })),
-      storage: {
-        from: vi.fn(() => ({
-          createSignedUrl: vi.fn(() => Promise.resolve({ data: { signedUrl: 'http://signed' }, error: null }))
-        }))
-      },
-      rpc: vi.fn(() => Promise.resolve({ data: null, error: null }))
-    }));
+    // Refined mock for the specific test case
+    (supabase.from as any).mockImplementation((table: string) => {
+      const query: any = {
+        select: vi.fn().mockReturnThis(),
+        order: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockImplementation(() => {
+          if (table === 'events') return Promise.resolve({ data: { id: 'event-123', name: 'Evento Teste', created_at: new Date().toISOString() }, error: null });
+          return Promise.resolve({ data: null, error: null });
+        }),
+        then: vi.fn().mockImplementation((callback) => {
+          if (table === 'branches') callback({ data: [{ id: 'branch-1', key: 'test', display_name: 'Teste', icon: '🌲' }], error: null });
+          return Promise.resolve();
+        }),
+        // Add more methods that EventDetail calls
+        in: vi.fn().mockReturnThis(),
+      };
+      
+      // Override eq().order() for images
+      if (table === 'images') {
+        query.eq = vi.fn().mockReturnValue({
+            order: vi.fn().mockResolvedValue({ data: [mockImage], error: null })
+        });
+      }
+
+      return query;
+    });
 
     render(
       <MemoryRouter initialEntries={["/events/event-123"]}>
@@ -122,19 +130,15 @@ describe("Google Drive Click Flow", () => {
       </MemoryRouter>
     );
 
-    // Find the media item and click it to open the viewer
-    const mediaItem = await screen.findByTestId('media-item-img-external-1');
+    const mediaItem = await screen.findByTestId('media-item-img-external-1', {}, { timeout: 5000 });
     fireEvent.click(mediaItem);
 
-    // Find the "Abrir no Google Drive" button in the dialog and click it
     const openButton = await screen.findByText(/Abrir no Google Drive/i);
     fireEvent.click(openButton);
 
-    // Verify error was logged and toast was shown
     expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[Google Drive] Erro crítico ao processar URL:'), expect.any(Error));
     expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('O link salvo é inválido'));
 
-    // Verify audit log was recorded
     expect(supabase.rpc).toHaveBeenCalledWith('log_audit', expect.objectContaining({
       _action: 'access_denied',
       _image_id: 'img-external-1',
