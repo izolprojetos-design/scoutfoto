@@ -11,7 +11,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole, requiredPermission }: ProtectedRouteProps) => {
-  const { user, loading, hasRole, mfaRequired, mfaVerified, setMfaVerified } = useAuth();
+  const { user, loading, roles, hasRole, mfaRequired, mfaVerified, setMfaVerified } = useAuth();
   const { hasPermission, loading: permLoading } = usePermissions();
 
   if (loading || permLoading) {
