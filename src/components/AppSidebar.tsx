@@ -164,10 +164,10 @@ const AppSidebar = () => {
                     <CollapsibleTrigger asChild>
                       <SidebarMenuButton
                         isActive={isEventRoute}
-                        tooltip="Central de Eventos"
+                        tooltip="Agenda"
                       >
                         <CalendarRange className="h-4 w-4" />
-                        <span>Central de Eventos</span>
+                        <span>Agenda</span>
                         <ChevronRight className="ml-auto h-4 w-4 transition-transform data-[state=open]:rotate-90 group-data-[collapsible=icon]:hidden" />
                       </SidebarMenuButton>
                     </CollapsibleTrigger>
