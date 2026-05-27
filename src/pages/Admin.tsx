@@ -318,6 +318,24 @@ const Admin = () => {
     }
   };
 
+  const stageCargo1Change = (userId: string, value: string) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && (original.cargo_1 || '') === value) {
+      setPendingCargo1(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } else {
+      setPendingCargo1(prev => ({ ...prev, [userId]: value }));
+    }
+  };
+
+  const stageCargo2Change = (userId: string, value: string) => {
+    const original = users.find(u => u.user_id === userId);
+    if (original && (original.cargo_2 || '') === value) {
+      setPendingCargo2(prev => { const next = { ...prev }; delete next[userId]; return next; });
+    } else {
+      setPendingCargo2(prev => ({ ...prev, [userId]: value }));
+    }
+  };
+
   const handleSaveAll = async () => {
     setSaving(true);
     let hasError = false;
