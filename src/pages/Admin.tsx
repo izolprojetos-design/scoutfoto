@@ -630,9 +630,6 @@ const Admin = () => {
           <GroupLogoSettings />
         </TabsContent>
 
-        <TabsContent value="drive">
-          <GoogleDriveSettings />
-        </TabsContent>
 
         <TabsContent value="users">
           <Card className="border-0 shadow-lg">
