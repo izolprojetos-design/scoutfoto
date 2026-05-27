@@ -155,10 +155,10 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     const e: Record<string, string> = {};
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
-    if (nomeAssociado.trim().length < 2) e.nomeAssociado = 'Informe o nome completo do associado';
-    if (!secao) e.secao = 'Selecione a seção';
-    if (!cargo1) e.cargo1 = 'Selecione o cargo principal';
-    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'E-mail inválido';
+    if (nomeAssociado.trim().length < 2) e.nomeAssociado = 'Informe o seu nome completo';
+    if (!secao) e.secao = 'Selecione a sua seção';
+    if (!cargo1) e.cargo1 = 'Selecione o seu cargo principal';
+    if (!emailRegex.test(emailDe.trim())) e.emailDe = 'Seu e-mail é inválido';
 
     // Destinatário
     if (destNome.trim().length < 2) e.destNome = 'Informe o nome do destinatário';
@@ -174,6 +174,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     } else if (nomeEventoTrim.length > 120) {
       e.nomeEvento = 'O nome do evento deve ter no máximo 120 caracteres.';
     }
+    
     if (!dataSecao) {
       e.dataSecao = 'Selecione a data da seção';
     } else {
@@ -183,14 +184,19 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       if (sel < today) e.dataSecao = 'A data não pode ser no passado';
     }
 
-    if (!/^\d{2}:\d{2}$/.test(horario)) e.horario = 'Informe um horário válido (HH:MM)';
+    if (!horario) {
+      e.horario = 'Informe o horário';
+    } else if (!/^\d{2}:\d{2}$/.test(horario)) {
+      e.horario = 'Informe um horário válido (HH:MM)';
+    }
+
     if (local.trim().length < 2) e.local = 'Informe o local';
     if (!ramoEscoteiro) e.ramoEscoteiro = 'Selecione o ramo escoteiro';
     if (!tipoAtividade) e.tipoAtividade = 'Selecione o tipo de atividade';
     if (observacoes.trim().length < 5) e.observacoes = 'As observações são obrigatórias (mín. 5 caracteres)';
 
     setErrors(e);
-    return Object.keys(e).length === 0;
+    return e;
   };
 
   const handleSubmit = async (ev: React.FormEvent) => {
@@ -208,9 +214,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       return;
     }
 
-    if (!validate()) {
-      const firstError = Object.values(errors)[0] || 'Há campos obrigatórios pendentes.';
-      toast({ title: 'Verifique os campos', description: firstError, variant: 'destructive' });
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      const firstError = Object.values(validationErrors)[0];
+      toast({ 
+        title: 'Verifique os campos', 
+        description: firstError, 
+        variant: 'destructive' 
+      });
       return;
     }
 
@@ -223,7 +234,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         secao,
         dirigente: nomeAssociado.trim(),
         cargo_1: cargo1,
-        cargo_2: cargo2,
+        cargo_2: cargo2 || '',
         email_de: emailDe.trim(),
         email_para: emailPara.trim(),
         destinatario_nome: destNome.trim(),
