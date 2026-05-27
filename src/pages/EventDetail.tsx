@@ -617,16 +617,61 @@ const EventDetail = () => {
     setExternalType('document');
   };
 
-  const openExternalLink = (url: string | null) => {
+  const openExternalLink = (url: string | null, img?: ImageData) => {
+    console.log('[Google Drive] Iniciando abertura de link:', { url, imgId: img?.id });
+    
     if (!url) {
-      toast.error('URL não disponível.');
+      const errorMsg = 'URL não disponível.';
+      console.error('[Google Drive] Erro: ' + errorMsg);
+      toast.error(errorMsg);
+      if (user && img) {
+        logAudit(user.id, 'access_denied', img.id, { 
+          reason: 'missing_url',
+          filename: img.filename,
+          step: 'pre-open'
+        }).catch(err => console.error('[Google Drive] Erro ao registrar auditoria:', err));
+      }
       return;
     }
+
     try {
+      console.log('[Google Drive] Validando URL:', url);
       const validUrl = new URL(url);
-      window.open(validUrl.toString(), '_blank');
-    } catch (err) {
-      toast.error('O link salvo é inválido e não pode ser aberto.');
+      
+      console.log('[Google Drive] Tentando abrir janela para:', validUrl.toString());
+      const newWindow = window.open(validUrl.toString(), '_blank');
+      
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        const errorMsg = 'O navegador bloqueou a abertura do link (Pop-up bloqueado).';
+        console.warn('[Google Drive] ' + errorMsg);
+        toast.warning(errorMsg, {
+          description: "Por favor, permita pop-ups para este site para abrir links externos."
+        });
+        if (user && img) {
+          logAudit(user.id, 'access_denied', img.id, { 
+            reason: 'popup_blocked',
+            url: validUrl.toString(),
+            step: 'window.open'
+          }).catch(err => console.error('[Google Drive] Erro ao registrar auditoria:', err));
+        }
+      } else {
+        console.log('[Google Drive] Link aberto com sucesso.');
+        toast.success('Abrindo no Google Drive...');
+      }
+    } catch (err: any) {
+      const errorMsg = 'O link salvo é inválido e não pode ser aberto.';
+      console.error('[Google Drive] Erro crítico ao processar URL:', err);
+      toast.error(errorMsg, {
+        description: err.message || 'Erro desconhecido na formatação da URL'
+      });
+      if (user && img) {
+        logAudit(user.id, 'access_denied', img.id, { 
+          reason: 'invalid_url_format',
+          error_message: err.message,
+          raw_url: url,
+          step: 'url-parsing'
+        }).catch(e => console.error('[Google Drive] Erro ao registrar auditoria:', e));
+      }
     }
   };
 
