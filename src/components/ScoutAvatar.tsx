@@ -39,7 +39,7 @@ const ScoutAvatar = ({
 
   return (
     <ScoutPhoto
-      photoUrl={photoUrl}
+      photoUrl={photoUrl || getAvatarUrl(name)}
       alt={name}
       className={cn("rounded-full object-cover", className)}
       onClick={onClick}
