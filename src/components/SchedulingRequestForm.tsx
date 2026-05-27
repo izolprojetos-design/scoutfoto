@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { SCHEDULING_TYPES } from '@/lib/schedulingTypes';
-import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGOS, VOLUNTEER_CARGO_CATEGORIES, parseVolunteerSection } from '@/lib/sectionOptions';
+import { VOLUNTEER_SECTIONS, VOLUNTEER_CARGOS, VOLUNTEER_CARGO_CATEGORIES, CARGO_2_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
