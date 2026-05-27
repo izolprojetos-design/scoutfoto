@@ -157,7 +157,11 @@
 
   /* Hide native date and time picker icons in webkit browsers */
   input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator {
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-clear-button,
+  input[type="time"]::-webkit-clear-button,
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button {
     background: transparent;
     bottom: 0;
     color: transparent;
@@ -168,5 +172,6 @@
     right: 0;
     top: 0;
     width: auto;
+    opacity: 0;
   }
 }
