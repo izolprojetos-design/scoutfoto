@@ -721,35 +721,14 @@ const Admin = () => {
                       <DialogHeader>
                         <DialogTitle>Criar novo usuário</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 pt-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         <div className="space-y-2">
-                          <Label>Nome completo</Label>
-                          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome do usuário" />
+                          <Label>Id</Label>
+                          <Input value={newNumber} onChange={e => setNewNumber(e.target.value)} placeholder="Número de registro" />
                         </div>
                         <div className="space-y-2">
-                          <Label>Email</Label>
-                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Senha</Label>
-                          <div className="relative">
-                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="pr-10" />
-                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                            </button>
-                          </div>
-                          <PasswordStrengthIndicator password={newPassword} />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Cargo</Label>
-                          <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="voluntario">Voluntário</SelectItem>
-                              <SelectItem value="viewer">Visitante</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Label>Nome do associado</Label>
+                          <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome completo" />
                         </div>
                         <div className="space-y-2">
                           <Label>Seção</Label>
@@ -763,10 +742,49 @@ const Admin = () => {
                             </SelectContent>
                           </Select>
                         </div>
-                        <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
-                          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-                          Criar Usuário
-                        </Button>
+                        <div className="space-y-2">
+                          <Label>Cargo 1</Label>
+                          <Input value={newCargo1} onChange={e => setNewCargo1(e.target.value)} placeholder="Ex: Chefe de Seção" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Cargo 2 (opcional)</Label>
+                          <Input value={newCargo2} onChange={e => setNewCargo2(e.target.value)} placeholder="Ex: Diretor" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Papel no Sistema</Label>
+                          <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="voluntario">Voluntário</SelectItem>
+                              <SelectItem value="viewer">Visitante</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                          <Label>E-mail</Label>
+                          <Input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} placeholder="email@exemplo.com" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Senha</Label>
+                          <div className="relative">
+                            <Input type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className="pr-10" />
+                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          </div>
+                          <PasswordStrengthIndicator password={newPassword} />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Confirmar senha</Label>
+                          <Input type={showNewPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repita a senha" />
+                        </div>
+                        <div className="md:col-span-2 pt-2">
+                          <Button onClick={handleCreateUser} disabled={creating} className="w-full gap-2">
+                            {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
+                            Criar Usuário
+                          </Button>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
