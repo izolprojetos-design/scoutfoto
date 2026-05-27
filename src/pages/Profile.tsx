@@ -21,7 +21,7 @@ import UpdateCheckCard from '@/components/profile/UpdateCheckCard';
 import MFASetup from '@/components/MFASetup';
 import PushNotificationCard from '@/components/profile/PushNotificationCard';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
-import { stringToColor } from '@/lib/avatarUtils';
+import { stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
 
 const Profile = () => {
   const { profile, roles, user, isAdmin, refreshRoles, refreshProfile } = useAuth();
