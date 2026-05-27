@@ -378,9 +378,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Campo Para */}
-        <div className="flex flex-col px-4 py-2 border-b border-gray-100 relative group">
+        <div className="flex flex-col px-3 py-1.5 border-b border-gray-100 relative group">
           <div className="flex items-center">
-            <span className="text-sm text-gray-700 font-medium w-12">Para</span>
+            <span className="text-xs text-gray-700 font-medium w-10">Para</span>
             <div className="flex-1 relative">
               <input
                 id="destNome"
