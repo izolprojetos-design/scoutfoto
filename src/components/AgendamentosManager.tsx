@@ -1197,17 +1197,17 @@ const AgendamentosManager = () => {
                   id="ed-local"
                   value={editing.local}
                   onChange={(e) => setEditing({ ...editing, local: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-ramo">Ramo escoteiro</Label>
+                <Label htmlFor="ed-ramo" className="text-xs font-semibold text-muted-foreground uppercase">Ramo escoteiro</Label>
                 <select
                   id="ed-ramo"
                   value={editing.ramo_escoteiro}
                   onChange={(e) => setEditing({ ...editing, ramo_escoteiro: e.target.value })}
-                  className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">Selecione...</option>
                   {branches.map(b => (
