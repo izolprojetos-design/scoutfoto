@@ -11,18 +11,10 @@ import {
   ChevronRight, 
   MapPin, 
   Calendar as CalIcon, 
-  CalendarPlus, 
   Clock,
-  User,
   Info,
-  X,
-  ListChecks
+  X
 } from 'lucide-react';
-import SchedulingRequestForm from '@/components/SchedulingRequestForm';
-import AgendamentosManager from '@/components/AgendamentosManager';
-import { getSchedulingTypeLabel } from '@/lib/schedulingTypes';
-import { toTitleCase } from '@/lib/formatting';
-
 import {
   format,
   startOfMonth,
@@ -35,7 +27,6 @@ import {
   startOfWeek,
   endOfWeek,
   isToday,
-  parseISO,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/scoutUtils';
@@ -46,12 +37,9 @@ interface CalendarItem {
   date: Date;
   time?: string;
   location?: string;
-  type: 'event' | 'scheduling';
-  status?: string;
+  type: 'event';
   branchId?: string;
   description?: string;
-  sender?: string;
-  recipient?: string;
 }
 
 interface Branch {
@@ -64,42 +52,31 @@ interface Branch {
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 const ScoutCalendar = () => {
-  const { roles, user } = useAuth();
-  const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
+  const { roles } = useAuth();
   const [events, setEvents] = useState<any[]>([]);
-  const [agendamentos, setAgendamentos] = useState<any[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'calendar' | 'manage' | 'schedule'>('calendar');
-  const [scheduleMounted, setScheduleMounted] = useState(false);
-  const [manageMounted, setManageMounted] = useState(false);
-
-  useEffect(() => {
-    if (activeTab === 'schedule') setScheduleMounted(true);
-    if (activeTab === 'manage') setManageMounted(true);
-  }, [activeTab]);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      const [eventsRes, branchesRes, agendamentosRes] = await Promise.all([
+      const [eventsRes, branchesRes] = await Promise.all([
         supabase.from('events').select('*'),
-        supabase.from('branches').select('*'),
-        supabase.from('agendamentos').select('*')
+        supabase.from('branches').select('*')
       ]);
 
       setEvents(eventsRes.data || []);
       setBranches(branchesRes.data || []);
-      setAgendamentos(agendamentosRes.data || []);
       setLoading(false);
     };
 
     fetchData();
   }, []);
 
-  const unifiedItems = useMemo(() => {
+  const calendarItems = useMemo(() => {
     const items: CalendarItem[] = [];
 
     events.forEach(e => {
@@ -116,26 +93,8 @@ const ScoutCalendar = () => {
       }
     });
 
-    agendamentos.forEach(a => {
-      if (a.data_secao) {
-        items.push({
-          id: a.id,
-          title: a.local || getSchedulingTypeLabel(a.tipo_atividade),
-          date: parseLocalDate(a.data_secao),
-          time: a.horario,
-          location: a.local,
-          type: 'scheduling',
-          status: a.recipient_response || 'pendente',
-          branchId: a.ramo_escoteiro,
-          description: a.observacoes,
-          sender: a.nome_associado,
-          recipient: a.destinatario_nome
-        });
-      }
-    });
-
     return items;
-  }, [events, agendamentos]);
+  }, [events]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -144,198 +103,143 @@ const ScoutCalendar = () => {
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
   const getItemsForDay = (day: Date) =>
-    unifiedItems.filter(item => isSameDay(item.date, day));
+    calendarItems.filter(item => isSameDay(item.date, day));
 
-  const selectedItems = useMemo(() => getItemsForDay(selectedDate), [selectedDate, unifiedItems]);
+  const selectedItems = useMemo(() => getItemsForDay(selectedDate), [selectedDate, calendarItems]);
 
   const getBranch = (bId?: string) =>
     bId ? branches.find(b => b.id === bId) : null;
-
-  const getStatusColor = (status?: string) => {
-    switch (status) {
-      case 'confirmado': return 'bg-emerald-500';
-      case 'recusado': return 'bg-destructive';
-      default: return 'bg-amber-500';
-    }
-  };
 
   return (
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
-          <p className="text-muted-foreground">Visualize eventos e agendamentos no calendário</p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          {canRequestScheduling && (
-            <>
-              <Button 
-                variant={activeTab === 'manage' ? 'default' : 'outline'} 
-                size="sm"
-                onClick={() => setActiveTab('manage')}
-                className="rounded-full"
-              >
-                <ListChecks className="mr-2 h-4 w-4" />
-                Gerenciar
-              </Button>
-              <Button 
-                variant={activeTab === 'schedule' ? 'default' : 'outline'} 
-                size="sm"
-                onClick={() => setActiveTab('schedule')}
-                className="rounded-full bg-primary hover:bg-primary/90"
-              >
-                <CalendarPlus className="mr-2 h-4 w-4" />
-                Novo
-              </Button>
-            </>
-          )}
+          <p className="text-muted-foreground">Visualize os eventos no calendário</p>
         </div>
       </div>
 
-      {activeTab === 'schedule' && canRequestScheduling && scheduleMounted && (
-        <div className="max-w-4xl mx-auto w-full">
-          <div className="mb-4">
-            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
-              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
-            </Button>
-          </div>
-          <SchedulingRequestForm onSuccess={() => setActiveTab('manage')} />
-        </div>
-      )}
-
-      {activeTab === 'manage' && canRequestScheduling && manageMounted && (
-        <div className="w-full">
-          <div className="mb-4">
-            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
-              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
-            </Button>
-          </div>
-          <AgendamentosManager />
-        </div>
-      )}
-
-      {activeTab === 'calendar' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[600px]">
-          {/* Main Calendar Grid */}
-          <Card className="lg:col-span-8 overflow-hidden border-none shadow-md bg-card">
-            <div className="p-4 border-b flex items-center justify-between bg-muted/30">
-              <div className="flex items-center gap-4">
-                <h2 className="text-xl font-bold capitalize text-foreground">
-                  {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-                </h2>
-                <div className="flex items-center border rounded-md overflow-hidden bg-background">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-none border-r"
-                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 px-3 rounded-none text-xs font-medium"
-                    onClick={() => {
-                      setCurrentMonth(new Date());
-                      setSelectedDate(new Date());
-                    }}
-                  >
-                    Hoje
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-8 w-8 rounded-none border-l"
-                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[600px]">
+        {/* Main Calendar Grid */}
+        <Card className={cn(
+          "overflow-hidden border-none shadow-md bg-card transition-all duration-300",
+          showDetails ? "lg:col-span-8" : "lg:col-span-12"
+        )}>
+          <div className="p-4 border-b flex items-center justify-between bg-muted/30">
+            <div className="flex items-center gap-4">
+              <h2 className="text-xl font-bold capitalize text-foreground">
+                {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+              </h2>
+              <div className="flex items-center border rounded-md overflow-hidden bg-background">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-none border-r"
+                  onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 px-3 rounded-none text-xs font-medium"
+                  onClick={() => {
+                    setCurrentMonth(new Date());
+                    setSelectedDate(new Date());
+                  }}
+                >
+                  Hoje
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 rounded-none border-l"
+                  onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-7 border-b bg-muted/20">
-              {WEEKDAYS.map(day => (
-                <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  {day}
-                </div>
-              ))}
-            </div>
+          <div className="grid grid-cols-7 border-b bg-muted/20">
+            {WEEKDAYS.map(day => (
+              <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {day}
+              </div>
+            ))}
+          </div>
 
-            <div className="grid grid-cols-7 grid-rows-6 h-[500px] sm:h-[600px]">
-              {days.map((day, i) => {
-                const dayItems = getItemsForDay(day);
-                const isCurrMonth = isSameMonth(day, currentMonth);
-                const isSel = isSameDay(day, selectedDate);
-                const isTod = isToday(day);
+          <div className="grid grid-cols-7 grid-rows-6 h-[500px] sm:h-[600px]">
+            {days.map((day, i) => {
+              const dayItems = getItemsForDay(day);
+              const isCurrMonth = isSameMonth(day, currentMonth);
+              const isSel = isSameDay(day, selectedDate);
+              const isTod = isToday(day);
 
-                return (
-                  <div
-                    key={i}
-                    onClick={() => setSelectedDate(day)}
-                    className={cn(
-                      "relative flex flex-col border-r border-b group cursor-pointer transition-colors p-1 overflow-hidden",
-                      !isCurrMonth && "bg-muted/10 text-muted-foreground/40",
-                      isSel && "bg-primary/5 ring-1 ring-inset ring-primary/20",
-                      "hover:bg-accent/50"
-                    )}
-                  >
-                    <span className={cn(
-                      "inline-flex items-center justify-center h-6 w-6 text-xs font-medium rounded-full mb-1 transition-colors",
-                      isTod ? "bg-primary text-primary-foreground font-bold shadow-sm" : 
-                      isSel ? "text-primary bg-primary/10" : "text-foreground group-hover:bg-muted"
-                    )}>
-                      {format(day, 'd')}
-                    </span>
-
-                    <div className="flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
-                      {dayItems.slice(0, 3).map((item) => (
-                        <div 
-                          key={item.id}
-                          className={cn(
-                            "px-1.5 py-0.5 text-[9px] font-medium rounded truncate border",
-                            item.type === 'event' 
-                              ? "bg-blue-500/10 text-blue-700 border-blue-200 dark:border-blue-900 dark:text-blue-300" 
-                              : cn(
-                                  "text-white border-transparent",
-                                  getStatusColor(item.status)
-                                )
-                          )}
-                        >
-                          {item.time ? `${item.time} ` : ''}{item.title}
-                        </div>
-                      ))}
-                      {dayItems.length > 3 && (
-                        <div className="text-[9px] font-bold text-muted-foreground pl-1 mt-0.5">
-                          + {dayItems.length - 3} mais
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </Card>
-
-          {/* Sidebar Details */}
-          <div className="lg:col-span-4 space-y-6">
-            <Card className="border-none shadow-md overflow-hidden bg-card h-full">
-              <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-bold text-foreground">
-                    {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
-                  </h3>
-                  {isToday(selectedDate) && (
-                    <Badge variant="secondary" className="mt-1 text-[10px] font-bold uppercase tracking-tight">
-                      Hoje
-                    </Badge>
+              return (
+                <div
+                  key={i}
+                  onClick={() => {
+                    setSelectedDate(day);
+                    if (dayItems.length > 0) setShowDetails(true);
+                  }}
+                  className={cn(
+                    "relative flex flex-col border-r border-b group cursor-pointer transition-colors p-1 overflow-hidden",
+                    !isCurrMonth && "bg-muted/10 text-muted-foreground/40",
+                    isSel && "bg-primary/5 ring-1 ring-inset ring-primary/20",
+                    "hover:bg-accent/50"
                   )}
+                >
+                  <span className={cn(
+                    "inline-flex items-center justify-center h-6 w-6 text-xs font-medium rounded-full mb-1 transition-colors",
+                    isTod ? "bg-primary text-primary-foreground font-bold shadow-sm" : 
+                    isSel ? "text-primary bg-primary/10" : "text-foreground group-hover:bg-muted"
+                  )}>
+                    {format(day, 'd')}
+                  </span>
+
+                  <div className="flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
+                    {dayItems.slice(0, 3).map((item) => (
+                      <div 
+                        key={item.id}
+                        className="px-1.5 py-0.5 text-[9px] font-medium rounded truncate border bg-blue-500/10 text-blue-700 border-blue-200 dark:border-blue-900 dark:text-blue-300"
+                      >
+                        {item.title}
+                      </div>
+                    ))}
+                    {dayItems.length > 3 && (
+                      <div className="text-[9px] font-bold text-muted-foreground pl-1 mt-0.5">
+                        + {dayItems.length - 3} mais
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {selectedItems.length > 0 && (
-                  <Badge variant="outline" className="h-6 px-2 text-[10px] font-bold">
-                    {selectedItems.length} {selectedItems.length === 1 ? 'atividade' : 'atividades'}
+              );
+            })}
+          </div>
+        </Card>
+
+        {/* Sidebar Details - Toggleable */}
+        {showDetails && (
+          <div className="lg:col-span-4 animate-in slide-in-from-right duration-300">
+            <Card className="border-none shadow-md overflow-hidden bg-card h-full relative">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full bg-background/50 hover:bg-background"
+                onClick={() => setShowDetails(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+
+              <div className="p-4 border-b bg-muted/30">
+                <h3 className="text-lg font-bold text-foreground">
+                  {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                </h3>
+                {isToday(selectedDate) && (
+                  <Badge variant="secondary" className="mt-1 text-[10px] font-bold uppercase tracking-tight">
+                    Hoje
                   </Badge>
                 )}
               </div>
@@ -347,7 +251,7 @@ const ScoutCalendar = () => {
                       <CalIcon className="h-6 w-6 opacity-40" />
                     </div>
                     <p className="text-sm font-medium">Nenhum evento agendado</p>
-                    <p className="text-xs mt-1">Aproveite o tempo livre!</p>
+                    <p className="text-xs mt-1">Clique em um dia com eventos para ver detalhes</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -356,27 +260,21 @@ const ScoutCalendar = () => {
                       return (
                         <div 
                           key={item.id}
-                          className={cn(
-                            "relative overflow-hidden rounded-xl border p-4 transition-all hover:shadow-md",
-                            item.type === 'event' ? "border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-950/10" : "border-l-4 border-l-primary bg-primary/5"
-                          )}
+                          className="relative overflow-hidden rounded-xl border p-4 transition-all hover:shadow-md border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-950/10"
                         >
                           <div className="flex items-start justify-between gap-2 mb-2">
                             <h4 className="font-bold text-base text-foreground leading-tight">
                               {item.title}
                             </h4>
-                            <Badge className={cn(
-                              "text-[10px] px-1.5 h-5 font-bold uppercase tracking-tight",
-                              item.type === 'event' ? "bg-blue-600 hover:bg-blue-700" : "bg-primary hover:bg-primary/90"
-                            )}>
-                              {item.type === 'event' ? 'Evento' : 'Mensagem'}
+                            <Badge className="text-[10px] px-1.5 h-5 font-bold uppercase tracking-tight bg-blue-600 hover:bg-blue-700">
+                              Evento
                             </Badge>
                           </div>
 
                           <div className="space-y-2.5">
                             {item.time && (
                               <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium">
-                                <Clock className="h-4 w-4 text-primary" />
+                                <Clock className="h-4 w-4 text-blue-500" />
                                 <span>{item.time}</span>
                               </div>
                             )}
@@ -385,13 +283,6 @@ const ScoutCalendar = () => {
                               <div className="flex items-start gap-2 text-sm text-foreground/80">
                                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                                 <span className="leading-tight">{item.location}</span>
-                              </div>
-                            )}
-
-                            {item.sender && (
-                              <div className="flex items-center gap-2 text-sm text-foreground/80">
-                                <User className="h-4 w-4 text-muted-foreground shrink-0" />
-                                <span className="truncate">De: <span className="font-semibold">{item.sender}</span></span>
                               </div>
                             )}
 
@@ -408,20 +299,6 @@ const ScoutCalendar = () => {
                                   {branch.icon} {branch.display_name}
                                 </Badge>
                               )}
-                              {item.type === 'scheduling' && (
-                                <Badge 
-                                  variant="outline" 
-                                  className={cn(
-                                    "h-5 px-1.5 text-[9px] font-bold uppercase",
-                                    item.status === 'confirmado' ? "border-emerald-500/50 text-emerald-600 bg-emerald-50" :
-                                    item.status === 'recusado' ? "border-destructive/50 text-destructive bg-destructive/5" :
-                                    "border-amber-500/50 text-amber-600 bg-amber-50"
-                                  )}
-                                >
-                                  {item.status === 'confirmado' ? 'Confirmado' : 
-                                   item.status === 'recusado' ? 'Recusado' : 'Pendente'}
-                                </Badge>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -432,8 +309,8 @@ const ScoutCalendar = () => {
               </CardContent>
             </Card>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
