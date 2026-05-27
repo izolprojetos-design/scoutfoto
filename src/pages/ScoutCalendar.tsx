@@ -164,19 +164,10 @@ const ScoutCalendar = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
-          <p className="text-muted-foreground">Eventos e agendamentos unificados</p>
+          <p className="text-muted-foreground">Visualize eventos e agendamentos no calendário</p>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button 
-            variant={activeTab === 'calendar' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setActiveTab('calendar')}
-            className="rounded-full"
-          >
-            <CalIcon className="mr-2 h-4 w-4" />
-            Calendário
-          </Button>
           {canRequestScheduling && (
             <>
               <Button 
@@ -204,12 +195,24 @@ const ScoutCalendar = () => {
 
       {activeTab === 'schedule' && canRequestScheduling && scheduleMounted && (
         <div className="max-w-4xl mx-auto w-full">
+          <div className="mb-4">
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
+              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
+            </Button>
+          </div>
           <SchedulingRequestForm onSuccess={() => setActiveTab('manage')} />
         </div>
       )}
 
       {activeTab === 'manage' && canRequestScheduling && manageMounted && (
-        <AgendamentosManager />
+        <div className="w-full">
+          <div className="mb-4">
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
+              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
+            </Button>
+          </div>
+          <AgendamentosManager />
+        </div>
       )}
 
       {activeTab === 'calendar' && (
