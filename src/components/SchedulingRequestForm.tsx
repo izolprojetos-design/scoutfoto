@@ -359,7 +359,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto" noValidate>
-      {/* Seção 1: Dados Pessoais (somente leitura - usuário logado) */}
+      {/* Seção 1: Dados do Remetente (somente leitura - usuário logado) */}
       <Card className="border shadow-sm">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -367,7 +367,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               <User className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">Dados Pessoais</CardTitle>
+              <CardTitle className="text-lg">Dados do Remetente</CardTitle>
               <CardDescription>Identificação do solicitante (carregado do seu perfil)</CardDescription>
             </div>
           </div>
