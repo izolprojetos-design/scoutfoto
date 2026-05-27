@@ -1,13 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { usePermissions } from '@/hooks/usePermissions';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, ChevronRight, MapPin, Calendar as CalIcon, CalendarPlus, ListChecks } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  MapPin, 
+  Calendar as CalIcon, 
+  CalendarPlus, 
+  Clock,
+  User,
+  Info,
+  X,
+  ListChecks
+} from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
 import { getSchedulingTypeLabel } from '@/lib/schedulingTypes';
@@ -25,19 +35,23 @@ import {
   startOfWeek,
   endOfWeek,
   isToday,
+  parseISO,
 } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { parseLocalDate } from '@/lib/scoutUtils';
 
-interface CalendarEvent {
+interface CalendarItem {
   id: string;
-  name: string;
-  description: string | null;
-  event_date: string | null;
-  location: string | null;
-  branch_id: string | null;
-  source?: string | null;
-  created_by?: string | null;
+  title: string;
+  date: Date;
+  time?: string;
+  location?: string;
+  type: 'event' | 'scheduling';
+  status?: string;
+  branchId?: string;
+  description?: string;
+  sender?: string;
+  recipient?: string;
 }
 
 interface Branch {
@@ -52,11 +66,11 @@ const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const ScoutCalendar = () => {
   const { roles, user } = useAuth();
   const canRequestScheduling = roles?.includes('admin') || roles?.includes('voluntario');
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [myAgendamentos, setMyAgendamentos] = useState<any[]>([]);
+  const [events, setEvents] = useState<any[]>([]);
+  const [agendamentos, setAgendamentos] = useState<any[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'calendar' | 'manage' | 'schedule'>('calendar');
   const [scheduleMounted, setScheduleMounted] = useState(false);
@@ -68,26 +82,60 @@ const ScoutCalendar = () => {
   }, [activeTab]);
 
   useEffect(() => {
-    const promises: Promise<any>[] = [
-      Promise.resolve(supabase.from('events').select('*').order('event_date')),
-      Promise.resolve(supabase.from('branches').select('*')),
-    ];
+    const fetchData = async () => {
+      setLoading(true);
+      const [eventsRes, branchesRes, agendamentosRes] = await Promise.all([
+        supabase.from('events').select('*'),
+        supabase.from('branches').select('*'),
+        supabase.from('agendamentos').select('*')
+      ]);
 
-    if (user) {
-      promises.push(
-        Promise.resolve(supabase.from('scheduling_requests').select('*').eq('user_id', user.id).neq('status', 'aprovado').order('data'))
-      );
-    }
-
-    Promise.all(promises).then((results) => {
-      setEvents(results[0].data || []);
-      setBranches(results[1].data || []);
-      if (user && results[2]) {
-        setMyAgendamentos(results[2].data || []);
-      }
+      setEvents(eventsRes.data || []);
+      setBranches(branchesRes.data || []);
+      setAgendamentos(agendamentosRes.data || []);
       setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const unifiedItems = useMemo(() => {
+    const items: CalendarItem[] = [];
+
+    events.forEach(e => {
+      if (e.event_date) {
+        items.push({
+          id: e.id,
+          title: e.name,
+          date: parseLocalDate(e.event_date),
+          location: e.location,
+          type: 'event',
+          branchId: e.branch_id,
+          description: e.description
+        });
+      }
     });
-  }, [user]);
+
+    agendamentos.forEach(a => {
+      if (a.data_secao) {
+        items.push({
+          id: a.id,
+          title: a.local || getSchedulingTypeLabel(a.tipo_atividade),
+          date: parseLocalDate(a.data_secao),
+          time: a.horario,
+          location: a.local,
+          type: 'scheduling',
+          status: a.recipient_response || 'pendente',
+          branchId: a.ramo_escoteiro,
+          description: a.observacoes,
+          sender: a.nome_associado,
+          recipient: a.destinatario_nome
+        });
+      }
+    });
+
+    return items;
+  }, [events, agendamentos]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -95,234 +143,296 @@ const ScoutCalendar = () => {
   const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 0 });
   const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd });
 
-  const getAgendamentosForDay = (day: Date) =>
-    myAgendamentos.filter(a => a.data && isSameDay(parseLocalDate(a.data), day));
+  const getItemsForDay = (day: Date) =>
+    unifiedItems.filter(item => isSameDay(item.date, day));
 
-  const getEventsForDay = (day: Date) =>
-    events.filter(e => e.event_date && isSameDay(parseLocalDate(e.event_date), day));
+  const selectedItems = useMemo(() => getItemsForDay(selectedDate), [selectedDate, unifiedItems]);
 
-  const selectedEvents = selectedDate ? getEventsForDay(selectedDate) : [];
-  const selectedAgendamentos = selectedDate ? getAgendamentosForDay(selectedDate) : [];
-
-  const getBranch = (bId: string | null) =>
+  const getBranch = (bId?: string) =>
     bId ? branches.find(b => b.id === bId) : null;
 
+  const getStatusColor = (status?: string) => {
+    switch (status) {
+      case 'confirmado': return 'bg-emerald-500';
+      case 'recusado': return 'bg-destructive';
+      default: return 'bg-amber-500';
+    }
+  };
+
   return (
-    <>
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Calendário</h1>
-        <p className="mt-1 text-muted-foreground">Atividades e eventos do grupo</p>
-      </div>
-
-
-      <div className={activeTab === 'schedule' ? '' : 'hidden'}>
-        {canRequestScheduling && scheduleMounted && (
-          <SchedulingRequestForm />
-        )}
-      </div>
-
-      <div className={activeTab === 'manage' ? 'space-y-6' : 'hidden'}>
-        {canRequestScheduling && (
-          <div className="flex justify-end">
-            <Button onClick={() => setActiveTab('schedule')} className="gap-2">
-              <CalendarPlus className="h-4 w-4" />
-              Novo agendamento
-            </Button>
-          </div>
-        )}
-        {manageMounted && <AgendamentosManager />}
-      </div>
-
-      <div className={cn('grid grid-cols-1 gap-6 lg:grid-cols-3', activeTab !== 'calendar' && 'hidden')}>
-        {/* Calendar Grid */}
-        <Card className="lg:col-span-2 border shadow-sm">
-          <CardContent className="p-4 sm:p-6">
-            {/* Month Navigation */}
-            <div className="mb-6 flex items-center justify-between">
-              <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
-                <ChevronLeft className="h-5 w-5" />
+    <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
+          <p className="text-muted-foreground">Eventos e agendamentos unificados</p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button 
+            variant={activeTab === 'calendar' ? 'default' : 'outline'} 
+            size="sm"
+            onClick={() => setActiveTab('calendar')}
+            className="rounded-full"
+          >
+            <CalIcon className="mr-2 h-4 w-4" />
+            Calendário
+          </Button>
+          {canRequestScheduling && (
+            <>
+              <Button 
+                variant={activeTab === 'manage' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setActiveTab('manage')}
+                className="rounded-full"
+              >
+                <ListChecks className="mr-2 h-4 w-4" />
+                Gerenciar
               </Button>
-              <h2 className="text-xl font-semibold capitalize">
-                {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
-              </h2>
-              <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>
-                <ChevronRight className="h-5 w-5" />
+              <Button 
+                variant={activeTab === 'schedule' ? 'default' : 'outline'} 
+                size="sm"
+                onClick={() => setActiveTab('schedule')}
+                className="rounded-full bg-primary hover:bg-primary/90"
+              >
+                <CalendarPlus className="mr-2 h-4 w-4" />
+                Novo
               </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {activeTab === 'schedule' && canRequestScheduling && scheduleMounted && (
+        <div className="max-w-4xl mx-auto w-full">
+          <SchedulingRequestForm onSuccess={() => setActiveTab('manage')} />
+        </div>
+      )}
+
+      {activeTab === 'manage' && canRequestScheduling && manageMounted && (
+        <AgendamentosManager />
+      )}
+
+      {activeTab === 'calendar' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full min-h-[600px]">
+          {/* Main Calendar Grid */}
+          <Card className="lg:col-span-8 overflow-hidden border-none shadow-md bg-card">
+            <div className="p-4 border-b flex items-center justify-between bg-muted/30">
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-bold capitalize text-foreground">
+                  {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
+                </h2>
+                <div className="flex items-center border rounded-md overflow-hidden bg-background">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-none border-r"
+                    onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 px-3 rounded-none text-xs font-medium"
+                    onClick={() => {
+                      setCurrentMonth(new Date());
+                      setSelectedDate(new Date());
+                    }}
+                  >
+                    Hoje
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-8 w-8 rounded-none border-l"
+                    onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
 
-            {/* Weekday Headers */}
-            <div className="mb-2 grid grid-cols-7 gap-1">
-              {WEEKDAYS.map(d => (
-                <div key={d} className="text-center text-xs font-medium text-muted-foreground py-2">
-                  {d}
+            <div className="grid grid-cols-7 border-b bg-muted/20">
+              {WEEKDAYS.map(day => (
+                <div key={day} className="py-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  {day}
                 </div>
               ))}
             </div>
 
-            {/* Days Grid */}
-            <div className="grid grid-cols-7 gap-1">
+            <div className="grid grid-cols-7 grid-rows-6 h-[500px] sm:h-[600px]">
               {days.map((day, i) => {
-                const dayEvents = getEventsForDay(day);
-                const dayAgendamentos = getAgendamentosForDay(day);
-                const totalItems = dayEvents.length + dayAgendamentos.length;
-                const isCurrentMonth = isSameMonth(day, currentMonth);
-                const isSelected = selectedDate && isSameDay(day, selectedDate);
-                const today = isToday(day);
+                const dayItems = getItemsForDay(day);
+                const isCurrMonth = isSameMonth(day, currentMonth);
+                const isSel = isSameDay(day, selectedDate);
+                const isTod = isToday(day);
 
                 return (
-                  <button
+                  <div
                     key={i}
-                    type="button"
-                    className={`relative flex flex-col items-center rounded-lg p-2 text-sm transition-colors min-h-[60px] ${
-                      !isCurrentMonth
-                        ? 'text-muted-foreground/40'
-                        : isSelected
-                        ? 'bg-primary text-primary-foreground'
-                        : today
-                        ? 'bg-primary/10 text-primary font-semibold'
-                        : 'hover:bg-muted'
-                    }`}
                     onClick={() => setSelectedDate(day)}
+                    className={cn(
+                      "relative flex flex-col border-r border-b group cursor-pointer transition-colors p-1 overflow-hidden",
+                      !isCurrMonth && "bg-muted/10 text-muted-foreground/40",
+                      isSel && "bg-primary/5 ring-1 ring-inset ring-primary/20",
+                      "hover:bg-accent/50"
+                    )}
                   >
-                    <span className={`text-sm ${today && !isSelected ? 'font-bold' : ''}`}>
+                    <span className={cn(
+                      "inline-flex items-center justify-center h-6 w-6 text-xs font-medium rounded-full mb-1 transition-colors",
+                      isTod ? "bg-primary text-primary-foreground font-bold shadow-sm" : 
+                      isSel ? "text-primary bg-primary/10" : "text-foreground group-hover:bg-muted"
+                    )}>
                       {format(day, 'd')}
                     </span>
-                    {totalItems > 0 && (
-                      <div className="mt-1 flex gap-0.5">
-                        {Array.from({ length: Math.min(totalItems, 3) }).map((_, idx) => (
-                          <div
-                            key={idx}
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              isSelected ? 'bg-primary-foreground' : 'bg-primary'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </button>
+
+                    <div className="flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
+                      {dayItems.slice(0, 3).map((item) => (
+                        <div 
+                          key={item.id}
+                          className={cn(
+                            "px-1.5 py-0.5 text-[9px] font-medium rounded truncate border",
+                            item.type === 'event' 
+                              ? "bg-blue-500/10 text-blue-700 border-blue-200 dark:border-blue-900 dark:text-blue-300" 
+                              : cn(
+                                  "text-white border-transparent",
+                                  getStatusColor(item.status)
+                                )
+                          )}
+                        >
+                          {item.time ? `${item.time} ` : ''}{item.title}
+                        </div>
+                      ))}
+                      {dayItems.length > 3 && (
+                        <div className="text-[9px] font-bold text-muted-foreground pl-1 mt-0.5">
+                          + {dayItems.length - 3} mais
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          </CardContent>
-        </Card>
+          </Card>
 
-        {/* Event Details Sidebar */}
-        <Card className="border shadow-sm">
-          <CardContent className="p-5">
-            <h3 className="text-lg font-semibold mb-4">
-              {selectedDate
-                ? format(selectedDate, "dd 'de' MMMM", { locale: ptBR })
-                : 'Selecione um dia'}
-            </h3>
-
-            {selectedDate && selectedEvents.length === 0 && selectedAgendamentos.length === 0 && (
-              <div className="flex flex-col items-center py-8 text-muted-foreground">
-                <CalIcon className="h-8 w-8 mb-2" />
-                <p className="text-sm">Nenhum evento neste dia</p>
+          {/* Sidebar Details */}
+          <div className="lg:col-span-4 space-y-6">
+            <Card className="border-none shadow-md overflow-hidden bg-card h-full">
+              <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground">
+                    {format(selectedDate, "EEEE, d 'de' MMMM", { locale: ptBR })}
+                  </h3>
+                  {isToday(selectedDate) && (
+                    <Badge variant="secondary" className="mt-1 text-[10px] font-bold uppercase tracking-tight">
+                      Hoje
+                    </Badge>
+                  )}
+                </div>
+                {selectedItems.length > 0 && (
+                  <Badge variant="outline" className="h-6 px-2 text-[10px] font-bold">
+                    {selectedItems.length} {selectedItems.length === 1 ? 'atividade' : 'atividades'}
+                  </Badge>
+                )}
               </div>
-            )}
 
-            <div className="space-y-6">
-              {selectedAgendamentos.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Mensagem
-                  </h4>
-                  <div className="space-y-3">
-                    {selectedAgendamentos.map(agendamento => {
-                      const branch = getBranch(agendamento.branch_id);
+              <CardContent className="p-4 overflow-y-auto max-h-[600px] scrollbar-thin">
+                {selectedItems.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center text-muted-foreground">
+                    <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-3">
+                      <CalIcon className="h-6 w-6 opacity-40" />
+                    </div>
+                    <p className="text-sm font-medium">Nenhum evento agendado</p>
+                    <p className="text-xs mt-1">Aproveite o tempo livre!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {selectedItems.map((item) => {
+                      const branch = getBranch(item.branchId);
                       return (
-                        <div
-                          key={agendamento.id}
-                          className="rounded-lg border bg-muted/30 p-4 border-l-4 border-l-primary/60"
-                        >
-                          <h4 className="font-semibold text-foreground text-sm">
-                            {getSchedulingTypeLabel(agendamento.tipo)}
-                          </h4>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {format(parseLocalDate(agendamento.data), "dd/MM/yyyy", { locale: ptBR })} às {agendamento.horario}
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            <span className="font-semibold text-foreground">Local:</span> {toTitleCase(agendamento.local) || "Não informado"}
-                          </div>
-                          
-                          {branch && (
-                            <div className="mt-2">
-                              <Badge variant="secondary" className="font-normal text-[10px]">
-                                {branch.icon} {branch.display_name}
-                              </Badge>
-                            </div>
+                        <div 
+                          key={item.id}
+                          className={cn(
+                            "relative overflow-hidden rounded-xl border p-4 transition-all hover:shadow-md",
+                            item.type === 'event' ? "border-l-4 border-l-blue-500 bg-blue-50/30 dark:bg-blue-950/10" : "border-l-4 border-l-primary bg-primary/5"
                           )}
+                        >
+                          <div className="flex items-start justify-between gap-2 mb-2">
+                            <h4 className="font-bold text-base text-foreground leading-tight">
+                              {item.title}
+                            </h4>
+                            <Badge className={cn(
+                              "text-[10px] px-1.5 h-5 font-bold uppercase tracking-tight",
+                              item.type === 'event' ? "bg-blue-600 hover:bg-blue-700" : "bg-primary hover:bg-primary/90"
+                            )}>
+                              {item.type === 'event' ? 'Evento' : 'Mensagem'}
+                            </Badge>
+                          </div>
+
+                          <div className="space-y-2.5">
+                            {item.time && (
+                              <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium">
+                                <Clock className="h-4 w-4 text-primary" />
+                                <span>{item.time}</span>
+                              </div>
+                            )}
+
+                            {item.location && (
+                              <div className="flex items-start gap-2 text-sm text-foreground/80">
+                                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                                <span className="leading-tight">{item.location}</span>
+                              </div>
+                            )}
+
+                            {item.sender && (
+                              <div className="flex items-center gap-2 text-sm text-foreground/80">
+                                <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                                <span className="truncate">De: <span className="font-semibold">{item.sender}</span></span>
+                              </div>
+                            )}
+
+                            {item.description && (
+                              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/50">
+                                <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                                <p className="leading-relaxed italic">{item.description}</p>
+                              </div>
+                            )}
+
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              {branch && (
+                                <Badge variant="secondary" className="h-5 px-1.5 text-[9px] font-bold uppercase bg-muted/50 border-none">
+                                  {branch.icon} {branch.display_name}
+                                </Badge>
+                              )}
+                              {item.type === 'scheduling' && (
+                                <Badge 
+                                  variant="outline" 
+                                  className={cn(
+                                    "h-5 px-1.5 text-[9px] font-bold uppercase",
+                                    item.status === 'confirmado' ? "border-emerald-500/50 text-emerald-600 bg-emerald-50" :
+                                    item.status === 'recusado' ? "border-destructive/50 text-destructive bg-destructive/5" :
+                                    "border-amber-500/50 text-amber-600 bg-amber-50"
+                                  )}
+                                >
+                                  {item.status === 'confirmado' ? 'Confirmado' : 
+                                   item.status === 'recusado' ? 'Recusado' : 'Pendente'}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       );
                     })}
                   </div>
-                </div>
-              )}
-
-              {selectedEvents.length > 0 && (
-                <div>
-                  <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
-                    Em Eventos
-                  </h4>
-                  <div className="space-y-3">
-                    {selectedEvents.map(event => {
-                      const branch = getBranch(event.branch_id);
-                      return (
-                        <div
-                          key={event.id}
-                          className="rounded-lg border bg-muted/30 p-4 border-l-4 border-l-blue-500"
-                        >
-                          <h4 className="font-semibold text-foreground text-sm">
-                            {event.name}
-                          </h4>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            {event.event_date ? format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR }) : "Não informada"}
-                          </div>
-                          <div className="text-sm text-muted-foreground mt-1">
-                            <span className="font-semibold text-foreground">Local:</span> {event.location || "Não informado"}
-                          </div>
-                          
-                          {branch && (
-                            <div className="mt-2">
-                              <Badge variant="secondary" className="font-normal text-[10px]">
-                                {branch.icon} {branch.display_name}
-                              </Badge>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Upcoming events (when no date is selected) */}
-              {!selectedDate && (
-                <div className="space-y-3">
-                  <p className="text-sm text-muted-foreground mb-3">Próximos eventos:</p>
-                  {events
-                    .filter(e => e.event_date && parseLocalDate(e.event_date) >= new Date())
-                    .slice(0, 5)
-                    .map(event => (
-                      <div key={event.id} className="rounded-lg border bg-muted/30 p-3">
-                        <p className="font-medium text-sm">{event.name}</p>
-                        {event.event_date && (
-                          <p className="text-xs text-muted-foreground mt-0.5">
-                            {format(parseLocalDate(event.event_date), "dd/MM/yyyy", { locale: ptBR })}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 
 export default ScoutCalendar;
-
