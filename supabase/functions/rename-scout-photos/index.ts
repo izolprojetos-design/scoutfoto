@@ -32,25 +32,28 @@ Deno.serve(async (req) => {
   
   const { data: photos, error } = await supabaseAdmin
     .from('scout_photos')
-    .select(`
-      id,
-      storage_path,
-      created_at,
-      scout_id,
-      scouts (
-        name,
-        registration_id
-      )
-    `);
+    .select('id, storage_path, created_at, scout_id');
 
   if (error) {
     return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 
+  const scoutIds = [...new Set((photos || []).map(p => p.scout_id).filter(Boolean))];
+  const { data: scouts, error: scoutsError } = await supabaseAdmin
+    .from('scouts')
+    .select('id, name, registration_id')
+    .in('id', scoutIds);
+
+  if (scoutsError) {
+    return Response.json({ error: scoutsError.message }, { status: 500, headers: corsHeaders });
+  }
+
+  const scoutsMap = new Map((scouts || []).map(s => [s.id, s]));
+
   const results = [];
   for (const photo of (photos || [])) {
     try {
-      const scout = photo.scouts;
+      const scout = scoutsMap.get(photo.scout_id);
       if (!scout) continue;
 
       const pathParts = photo.storage_path.split('/');
