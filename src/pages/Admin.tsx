@@ -35,7 +35,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
 import { ALL_CATEGORIES } from '@/lib/scoutUtils';
-import { SECTION_OPTIONS } from '@/lib/sectionOptions';
+import { SECTION_OPTIONS, VOLUNTEER_CARGOS, CARGO_2_OPTIONS } from '@/lib/sectionOptions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import HealthCheck from '@/components/HealthCheck';
 import EmailLogs from '@/components/EmailLogs';
@@ -784,7 +784,7 @@ const Admin = () => {
                           <Label>Seção</Label>
                           <Select value={newSection || 'none'} onValueChange={(v) => setNewSection(v === 'none' ? '' : v)}>
                             <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-[300px]">
                               <SelectItem value="none">Nenhuma</SelectItem>
                               {SECTION_OPTIONS.map(s => (
                                 <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -794,11 +794,27 @@ const Admin = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo 1</Label>
-                          <Input value={newCargo1} onChange={e => setNewCargo1(e.target.value)} placeholder="Ex: Chefe de Seção" />
+                          <Select value={newCargo1 || 'none'} onValueChange={(v) => setNewCargo1(v === 'none' ? '' : v)}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {VOLUNTEER_CARGOS.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo 2 (opcional)</Label>
-                          <Input value={newCargo2} onChange={e => setNewCargo2(e.target.value)} placeholder="Ex: Diretor" />
+                          <Select value={newCargo2 || 'none'} onValueChange={(v) => setNewCargo2(v === 'none' ? '' : v)}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {CARGO_2_OPTIONS.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label>Papel no Sistema</Label>
@@ -912,20 +928,82 @@ const Admin = () => {
                           })()}
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            value={pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '')} 
-                            onChange={e => stageCargo1Change(u.user_id, e.target.value)}
-                            className={`h-8 text-xs ${pendingCargo1[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
-                            placeholder="Cargo 1"
-                          />
+                          {(() => {
+                            const currentCargo1 = pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '');
+                            const isPending = pendingCargo1[u.user_id] !== undefined;
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button
+                                    className={`h-8 px-3 rounded-md border text-xs text-left truncate max-w-[200px] hover:bg-accent transition-colors ${isPending ? 'ring-2 ring-primary/50' : ''}`}
+                                  >
+                                    {currentCargo1 || '— Nenhum —'}
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-base">Selecionar Cargo 1 — {u.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
+                                    <button
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                      onClick={() => stageCargo1Change(u.user_id, '')}
+                                    >
+                                      — Nenhum —
+                                    </button>
+                                    {VOLUNTEER_CARGOS.map(c => (
+                                      <button
+                                        key={c}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo1Change(u.user_id, c)}
+                                      >
+                                        {c}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            value={pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '')} 
-                            onChange={e => stageCargo2Change(u.user_id, e.target.value)}
-                            className={`h-8 text-xs ${pendingCargo2[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
-                            placeholder="Cargo 2"
-                          />
+                          {(() => {
+                            const currentCargo2 = pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '');
+                            const isPending = pendingCargo2[u.user_id] !== undefined;
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button
+                                    className={`h-8 px-3 rounded-md border text-xs text-left truncate max-w-[200px] hover:bg-accent transition-colors ${isPending ? 'ring-2 ring-primary/50' : ''}`}
+                                  >
+                                    {currentCargo2 || '— Nenhum —'}
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-base">Selecionar Cargo 2 — {u.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
+                                    <button
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                      onClick={() => stageCargo2Change(u.user_id, '')}
+                                    >
+                                      — Nenhum —
+                                    </button>
+                                    {CARGO_2_OPTIONS.map(c => (
+                                      <button
+                                        key={c}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo2Change(u.user_id, c)}
+                                      >
+                                        {c}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">{u.email}</TableCell>
                         <TableCell>
