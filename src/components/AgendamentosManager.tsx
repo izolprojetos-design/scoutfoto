@@ -1322,6 +1322,8 @@ const AgendamentosManager = () => {
                     />
                   </div>
                 </div>
+              </div>
+
               <div className="sm:col-span-2">
                 <Label htmlFor="ed-obs" className="text-xs font-semibold text-muted-foreground uppercase">Observações</Label>
                 <Textarea
