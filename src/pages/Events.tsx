@@ -241,8 +241,19 @@ const Events = () => {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Data</Label>
-          <Input type="date" value={eventDate} onChange={e => setEventDate(e.target.value)} className="h-11" />
+          <Label htmlFor="eventDate">Data</Label>
+          <div className="relative">
+            <Input 
+              id="eventDate"
+              type="date" 
+              value={eventDate} 
+              onChange={e => setEventDate(e.target.value)} 
+              className="h-11 pr-10 appearance-none" 
+            />
+            <Calendar 
+              className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" 
+            />
+          </div>
         </div>
         <div className="space-y-2">
           <Label>Local</Label>
