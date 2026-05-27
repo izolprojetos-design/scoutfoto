@@ -115,7 +115,10 @@ export const usePermissions = () => {
     fetchPermissions();
   }, [user, roles, authLoading]);
 
-  const hasPermission = (key: PermissionKey) => permissions.includes(key);
+  const hasPermission = (key: PermissionKey) => {
+    if (roles.includes('admin')) return true;
+    return permissions.includes(key);
+  };
 
   return {
     permissions,
