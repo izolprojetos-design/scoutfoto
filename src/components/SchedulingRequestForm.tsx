@@ -27,7 +27,7 @@ interface Props {
 }
 
 const SchedulingRequestForm = ({ onSuccess }: Props) => {
-  const { user, profile } = useAuth();
+  const { user, profile, hasRole } = useAuth();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -196,8 +196,21 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
     if (!user) return;
+    
+    // Check role before submitting
+    const canCreate = hasRole('admin') || hasRole('voluntario');
+    if (!canCreate) {
+      toast({ 
+        title: 'Permissão negada', 
+        description: 'Seu usuário não possui permissão para criar agendamentos (necessário ser Administrador ou Voluntário).', 
+        variant: 'destructive' 
+      });
+      return;
+    }
+
     if (!validate()) {
-      toast({ title: 'Verifique os campos', description: 'Há campos obrigatórios pendentes.', variant: 'destructive' });
+      const firstError = Object.values(errors)[0] || 'Há campos obrigatórios pendentes.';
+      toast({ title: 'Verifique os campos', description: firstError, variant: 'destructive' });
       return;
     }
 
@@ -354,43 +367,69 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             <Input
               id="nomeAssociado"
               value={nomeAssociado}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+              onChange={(e) => setNomeAssociado(e.target.value)}
+              className={cn("mt-1.5", errCls('nomeAssociado'))}
+              placeholder="Informe seu nome completo"
             />
           </div>
 
           <div>
             <Label htmlFor="secao">Seção</Label>
-            <Input
+            <select
               id="secao"
               value={secao}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
-            />
+              onChange={(e) => setSecao(e.target.value)}
+              className={cn(
+                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                errCls('secao')
+              )}
+            >
+              <option value="">Selecione...</option>
+              {VOLUNTEER_SECTIONS.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
           </div>
 
           <div>
             <Label htmlFor="cargo1">Cargo 1</Label>
-            <Input
+            <select
               id="cargo1"
               value={cargo1}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
-            />
+              onChange={(e) => setCargo1(e.target.value)}
+              className={cn(
+                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                errCls('cargo1')
+              )}
+            >
+              <option value="">Selecione...</option>
+              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
+                <optgroup key={cat} label={cat}>
+                  {list.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
 
           <div>
             <Label htmlFor="cargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input
+            <select
               id="cargo2"
-              value={cargo2 || 'Nenhum'}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
-            />
+              value={cargo2}
+              onChange={(e) => setCargo2(e.target.value)}
+              className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
+                <optgroup key={cat} label={cat}>
+                  {list.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -399,9 +438,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               id="emailDe"
               type="email"
               value={emailDe}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
+              onChange={(e) => setEmailDe(e.target.value)}
+              className={cn("mt-1.5", errCls('emailDe'))}
+              placeholder="seu-email@exemplo.com"
             />
           </div>
         </CardContent>
@@ -470,41 +509,65 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
           <div>
             <Label htmlFor="destSecao">Seção <span className="text-destructive">*</span></Label>
-            <Input
+            <select
               id="destSecao"
               value={destSecao}
-              readOnly
-              disabled
-              placeholder="Será preenchido ao selecionar o destinatário"
-              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('destSecao'))}
+              onChange={(e) => setDestSecao(e.target.value)}
+              className={cn(
+                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                errCls('destSecao')
+              )}
               aria-invalid={!!errors.destSecao}
-            />
+            >
+              <option value="">Selecione...</option>
+              {VOLUNTEER_SECTIONS.map(s => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
             {fieldError('destSecao')}
           </div>
 
           <div>
             <Label htmlFor="destCargo1">Cargo 1 <span className="text-destructive">*</span></Label>
-            <Input
+            <select
               id="destCargo1"
               value={destCargo1}
-              readOnly
-              disabled
-              placeholder="Será preenchido ao selecionar o destinatário"
-              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('destCargo1'))}
+              onChange={(e) => setDestCargo1(e.target.value)}
+              className={cn(
+                'mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                errCls('destCargo1')
+              )}
               aria-invalid={!!errors.destCargo1}
-            />
+            >
+              <option value="">Selecione...</option>
+              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
+                <optgroup key={cat} label={cat}>
+                  {list.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
             {fieldError('destCargo1')}
           </div>
 
           <div>
             <Label htmlFor="destCargo2">Cargo 2 <span className="text-muted-foreground text-xs">(opcional)</span></Label>
-            <Input
+            <select
               id="destCargo2"
-              value={destCargo2 || 'Nenhum'}
-              readOnly
-              disabled
-              className="mt-1.5 bg-muted/50 cursor-not-allowed"
-            />
+              value={destCargo2}
+              onChange={(e) => setDestCargo2(e.target.value)}
+              className="mt-1.5 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">Nenhum</option>
+              {Object.entries(VOLUNTEER_CARGO_CATEGORIES).map(([cat, list]) => (
+                <optgroup key={cat} label={cat}>
+                  {list.map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
           </div>
 
           <div>
@@ -513,10 +576,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               id="emailPara"
               type="email"
               value={emailPara}
-              readOnly
-              disabled
-              placeholder="Será preenchido ao selecionar o destinatário"
-              className={cn('mt-1.5 bg-muted/50 cursor-not-allowed', errCls('emailPara'))}
+              onChange={(e) => setEmailPara(e.target.value)}
+              placeholder="email-do-destinatario@exemplo.com"
+              className={cn('mt-1.5', errCls('emailPara'))}
               aria-invalid={!!errors.emailPara}
             />
             {fieldError('emailPara')}
