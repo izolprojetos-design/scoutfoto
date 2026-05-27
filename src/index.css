@@ -155,7 +155,15 @@
     background-color: hsl(var(--muted-foreground) / 0.5);
   }
 
-  /* Hide native date and time picker icons in webkit browsers */
+  /* Custom date and time picker styles */
+  input[type="date"],
+  input[type="time"] {
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Hide native icons and make the whole input clickable for the picker */
   input[type="date"]::-webkit-calendar-picker-indicator,
   input[type="time"]::-webkit-calendar-picker-indicator,
   input[type="date"]::-webkit-clear-button,
@@ -173,5 +181,6 @@
     top: 0;
     width: auto;
     opacity: 0;
+    z-index: 10;
   }
 }

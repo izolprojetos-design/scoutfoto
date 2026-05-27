@@ -1347,11 +1347,9 @@ const Scouts = () => {
             htmlFor={photoInputId}
             className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
-              // Do not stopPropagation or preventDefault here as we want the label to trigger the input file
-              // but we need to ensure this click doesn't bubble up to something that opens a calendar
-              handlePhotoPickStart();
-
-
+              // Stop propagation to avoid triggering any parent click listeners
+              // but don't preventDefault so the label still triggers the file input
+              e.stopPropagation();
               handlePhotoPickStart();
               
               if (cameraStatus === 'available') {
