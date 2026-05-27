@@ -441,7 +441,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Detalhes da Atividade */}
-        <div className="bg-gray-100/50 px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
+        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
           <div className="flex items-center gap-2 min-w-[150px]">
             <CalendarDays className="h-4 w-4 text-gray-700" />
             <input
