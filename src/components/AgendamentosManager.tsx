@@ -1171,24 +1171,30 @@ const AgendamentosManager = () => {
 
               <div>
                 <Label htmlFor="ed-data" className="text-xs font-semibold text-muted-foreground uppercase">Data</Label>
-                <Input
-                  id="ed-data"
-                  type="date"
-                  value={editing.data_secao}
-                  onChange={(e) => setEditing({ ...editing, data_secao: e.target.value })}
-                  className="mt-1 h-9 text-sm"
-                />
+                <div className="relative group cursor-pointer mt-1" onClick={() => (document.getElementById('ed-data') as any)?.showPicker()}>
+                  <Input
+                    id="ed-data"
+                    type="date"
+                    value={editing.data_secao}
+                    onChange={(e) => setEditing({ ...editing, data_secao: e.target.value })}
+                    className="h-9 text-sm pr-9 cursor-pointer"
+                  />
+                  <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
+                </div>
               </div>
 
               <div>
                 <Label htmlFor="ed-hora" className="text-xs font-semibold text-muted-foreground uppercase">Horário</Label>
-                <Input
-                  id="ed-hora"
-                  type="time"
-                  value={editing.horario.slice(0, 5)}
-                  onChange={(e) => setEditing({ ...editing, horario: e.target.value })}
-                  className="mt-1 h-9 text-sm"
-                />
+                <div className="relative group cursor-pointer mt-1" onClick={() => (document.getElementById('ed-hora') as any)?.showPicker()}>
+                  <Input
+                    id="ed-hora"
+                    type="time"
+                    value={editing.horario.slice(0, 5)}
+                    onChange={(e) => setEditing({ ...editing, horario: e.target.value })}
+                    className="h-9 text-sm pr-9 cursor-pointer"
+                  />
+                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
+                </div>
               </div>
 
               <div className="sm:col-span-2">
