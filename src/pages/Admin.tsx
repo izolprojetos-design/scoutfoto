@@ -1377,9 +1377,6 @@ const Admin = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="archived">
-          <ArchivedPhotosPanel />
-        </TabsContent>
 
         <TabsContent value="system">
           <div className="space-y-8 pb-12">
