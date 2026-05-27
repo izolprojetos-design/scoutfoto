@@ -2317,7 +2317,7 @@ const Scouts = () => {
                             {scout.name}
                           </h3>
                           {scout.registration_id && (
-                            <span className="text-xs font-mono text-muted-foreground">#{String(parseInt(scout.registration_id, 10) || 0).padStart(String(scouts.length).length, '0')}</span>
+                            <span className="text-xs font-mono text-muted-foreground">#{String(parseInt(scout.registration_id, 10) || 0).padStart(4, '0')}</span>
                           )}
                         </div>
                         <p className="text-sm text-muted-foreground">{formatAge(parseLocalDate(scout.birth_date))}</p>
