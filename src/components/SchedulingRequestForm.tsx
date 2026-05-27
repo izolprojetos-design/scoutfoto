@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail, Clock } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail, Clock, MapPin, Tag } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -472,13 +472,16 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           </div>
           <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
             <Label htmlFor="localAtividade" className="text-xs font-bold text-gray-700">Local da atividade</Label>
-            <Input
-              id="localAtividade"
-              value={local}
-              onChange={(e) => setLocal(e.target.value)}
-              placeholder="Ex: Sede do Grupo Escoteiro"
-              className={cn("h-10 text-sm font-bold text-black bg-white border-gray-400 placeholder:text-gray-500", errCls('local'))}
-            />
+            <div className="relative group">
+              <Input
+                id="localAtividade"
+                value={local}
+                onChange={(e) => setLocal(e.target.value)}
+                placeholder="Ex: Sede do Grupo Escoteiro"
+                className={cn("h-10 text-sm font-bold text-black bg-white border-gray-400 placeholder:text-gray-500 pr-10", errCls('local'))}
+              />
+              <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+            </div>
           </div>
           <div className="flex items-center gap-3 w-full md:w-auto mt-auto pb-0.5">
             <div className="flex flex-col gap-1.5">
@@ -496,15 +499,18 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </div>
             <div className="flex flex-col gap-1.5">
               <Label className="text-xs font-bold text-gray-700">Tipo</Label>
-              <select
-                value={tipoAtividade}
-                onChange={(e) => setTipoAtividade(e.target.value)}
-                className="text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none h-10"
-              >
-                {SCHEDULING_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
+              <div className="relative group">
+                <select
+                  value={tipoAtividade}
+                  onChange={(e) => setTipoAtividade(e.target.value)}
+                  className="text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none h-10 appearance-none w-full"
+                >
+                  {SCHEDULING_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
+                <Tag className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+              </div>
             </div>
           </div>
         </div>
