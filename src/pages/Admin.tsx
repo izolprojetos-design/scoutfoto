@@ -993,10 +993,10 @@ const Admin = () => {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="roles_list" className="space-y-4">
-                <TabsList className="bg-muted/40 p-1">
-                  <TabsTrigger value="roles_list" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:text-primary">Papéis do Sistema</TabsTrigger>
-                  <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:text-primary">Por Papel (Recomendado)</TabsTrigger>
-                  <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:text-primary">Por Usuário (Exceções)</TabsTrigger>
+                <TabsList className="bg-muted/40 p-1 mb-4">
+                  <TabsTrigger value="roles_list" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Papéis do Sistema</TabsTrigger>
+                  <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Recomendado)</TabsTrigger>
+                  <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Exceções)</TabsTrigger>
                 </TabsList>
                 <TabsContent value="roles_list">
                   <RolesManager />
