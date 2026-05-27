@@ -846,12 +846,12 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px] font-bold">ID</TableHead>
+                      <TableHead className="w-[80px] font-bold">ID</TableHead>
                       <TableHead className="font-bold">Nome</TableHead>
-                      <TableHead className="font-bold">Email</TableHead>
                       <TableHead className="font-bold">Seção</TableHead>
                       <TableHead className="font-bold">Cargo 1</TableHead>
                       <TableHead className="font-bold">Cargo 2</TableHead>
+                      <TableHead className="font-bold">E-mail</TableHead>
                       <TableHead className="font-bold">Papel</TableHead>
                       <TableHead className="font-bold">Status</TableHead>
                       <TableHead className="font-bold">Ações</TableHead>
