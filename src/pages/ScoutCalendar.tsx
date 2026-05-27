@@ -160,38 +160,63 @@ const ScoutCalendar = () => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
-          <p className="text-muted-foreground">Visualize eventos e agendamentos no calendário</p>
+    <div className="flex h-full bg-background animate-in fade-in duration-500 overflow-hidden">
+      {/* Sidebar de Ações */}
+      <div className="w-16 sm:w-20 border-r bg-muted/20 flex flex-col items-center py-6 gap-6 shrink-0">
+        <div className="p-2 rounded-xl bg-primary/10 mb-4">
+          <CalIcon className="h-6 w-6 text-primary" />
         </div>
         
-        <div className="flex items-center gap-2">
-          {canRequestScheduling && (
-            <>
+        {canRequestScheduling && (
+          <div className="flex flex-col items-center gap-4">
+            <Button 
+              variant={activeTab === 'manage' ? 'default' : 'ghost'} 
+              size="icon"
+              onClick={() => setActiveTab('manage')}
+              className={cn(
+                "h-12 w-12 rounded-xl transition-all",
+                activeTab === 'manage' ? "shadow-md" : "hover:bg-primary/10 hover:text-primary"
+              )}
+              title="Gerenciar"
+            >
+              <ListChecks className="h-5 w-5" />
+            </Button>
+            
+            <Button 
+              variant={activeTab === 'schedule' ? 'default' : 'ghost'} 
+              size="icon"
+              onClick={() => setActiveTab('schedule')}
+              className={cn(
+                "h-12 w-12 rounded-xl transition-all",
+                activeTab === 'schedule' ? "bg-primary shadow-md" : "hover:bg-primary/10 hover:text-primary"
+              )}
+              title="Novo Agendamento"
+            >
+              <CalendarPlus className="h-5 w-5" />
+            </Button>
+            
+            {activeTab !== 'calendar' && (
               <Button 
-                variant={activeTab === 'manage' ? 'default' : 'outline'} 
-                size="sm"
-                onClick={() => setActiveTab('manage')}
-                className="rounded-full"
+                variant="ghost" 
+                size="icon"
+                onClick={() => setActiveTab('calendar')}
+                className="h-12 w-12 rounded-xl hover:bg-primary/10 hover:text-primary"
+                title="Voltar ao Calendário"
               >
-                <ListChecks className="mr-2 h-4 w-4" />
-                Gerenciar
+                <ChevronLeft className="h-5 w-5" />
               </Button>
-              <Button 
-                variant={activeTab === 'schedule' ? 'default' : 'outline'} 
-                size="sm"
-                onClick={() => setActiveTab('schedule')}
-                className="rounded-full bg-primary hover:bg-primary/90"
-              >
-                <CalendarPlus className="mr-2 h-4 w-4" />
-                Novo
-              </Button>
-            </>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
+
+      <div className="flex-1 flex flex-col min-w-0 p-4 sm:p-6 overflow-y-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
+            <p className="text-muted-foreground text-sm">Visualize eventos e agendamentos no calendário</p>
+          </div>
+        </div>
 
       {activeTab === 'schedule' && canRequestScheduling && scheduleMounted && (
         <div className="max-w-4xl mx-auto w-full">
