@@ -519,7 +519,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Corpo da Mensagem */}
-        <div className="px-4 py-4 min-h-[300px] flex flex-col bg-white">
+        <div className="px-3 py-3 min-h-[200px] flex flex-col bg-white">
           <textarea
             id="observacoes"
             value={observacoes}
