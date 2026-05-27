@@ -127,7 +127,7 @@ const RolePermissionsManager = () => {
       {/* Role selection sidebar */}
       <Card className="border-0 shadow-lg h-fit">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
             <Users className="h-4 w-4" />
             Selecionar Papel
           </CardTitle>
