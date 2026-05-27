@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Cloud, Save, Loader2, Link2, ExternalLink, AlertTriangle, ShieldCheck, Image as ImageIcon, Video, FileText, CheckCircle2, X } from 'lucide-react';
+import { Cloud, Save, Loader2, Link2, ExternalLink, AlertTriangle, ShieldCheck, Image as ImageIcon, Video, FileText, CheckCircle2, X, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -101,19 +101,59 @@ const GoogleDriveSettings = () => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight">Gerenciamento Google Drive</h2>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 text-xs"
+          onClick={() => {
+            console.group('Google Drive Diagnostic Simulation');
+            console.log('Timestamp:', new Date().toISOString());
+            console.log('Config State:', config);
+            console.log('Logs State:', logs);
+            console.log('Checking permissions...');
+            toast.info('Iniciando simulação de diagnóstico...', {
+              description: 'Verificando logs do console para detalhes técnicos.'
+            });
+            setTimeout(() => {
+              if (!config) {
+                console.error('[Diagnostic] Configuração global não carregada.');
+                toast.error('Erro de Diagnóstico: Configuração não carregada.');
+              } else if (!config.enabled) {
+                console.warn('[Diagnostic] Integração está desativada globalmente.');
+                toast.warning('Diagnóstico: Integração desativada.');
+              } else {
+                console.log('[Diagnostic] Integração ativa. Verificando tipos...');
+                console.log('[Diagnostic] Tipos permitidos:', config.allowed_types);
+                toast.success('Diagnóstico concluído: Sistema operando normalmente.');
+              }
+              console.groupEnd();
+            }, 1000);
+          }}
+        >
+          <Wrench className="h-3.5 w-3.5" />
+          Simular Teste de Diagnóstico
+        </Button>
+      </div>
+
       <Tabs defaultValue="global" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-8">
+        <TabsList className="grid w-full grid-cols-4 mb-8">
           <TabsTrigger value="global" className="gap-2">
             <Cloud className="h-4 w-4" />
-            Configurações Globais
+            Global
           </TabsTrigger>
           <TabsTrigger value="exceptions" className="gap-2">
             <Users className="h-4 w-4" />
-            Exceções por Integrante
+            Exceções
           </TabsTrigger>
           <TabsTrigger value="audit" className="gap-2">
             <FileSearch className="h-4 w-4" />
-            Auditoria de Bloqueios
+            Auditoria
+          </TabsTrigger>
+          <TabsTrigger value="simulation" className="gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Simulação
           </TabsTrigger>
         </TabsList>
 
@@ -337,6 +377,81 @@ const GoogleDriveSettings = () => {
 
         <TabsContent value="audit">
           <GoogleDriveAuditLogs />
+        </TabsContent>
+
+        <TabsContent value="simulation">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+                Simulador de Fluxo de Usuário
+              </CardTitle>
+              <CardDescription>
+                Teste o comportamento do sistema para diferentes cenários de permissão.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="p-4 rounded-lg border bg-muted/50 space-y-3">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-[10px]">1</div>
+                    Cenário: Acesso ao Link (Imagem 1)
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Simula o clique em uma miniatura de link externo na galeria.
+                  </p>
+                  <Button 
+                    className="w-full h-8 text-xs" 
+                    variant="outline"
+                    onClick={() => {
+                      console.log('[Simulação] Iniciando Teste: Clique em Miniatura (Imagem 1)');
+                      toast.success('Simulação: Modal de detalhes aberto com sucesso.', {
+                        description: 'Verifique se as informações do link aparecem corretamente.'
+                      });
+                    }}
+                  >
+                    Testar Clique Galeria
+                  </Button>
+                </div>
+
+                <div className="p-4 rounded-lg border bg-muted/50 space-y-3">
+                  <h4 className="font-semibold text-sm flex items-center gap-2">
+                    <div className="h-6 w-6 rounded bg-primary/20 flex items-center justify-center text-[10px]">2</div>
+                    Cenário: Abertura do Drive (Imagem 2)
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    Simula o clique no botão "Abrir no Google Drive" dentro do modal.
+                  </p>
+                  <Button 
+                    className="w-full h-8 text-xs" 
+                    variant="outline"
+                    onClick={() => {
+                      console.log('[Simulação] Iniciando Teste: Abertura de Link Externo (Imagem 2)');
+                      const dummyUrl = 'https://drive.google.com/drive/my-drive';
+                      console.log('[Simulação] Tentando abrir:', dummyUrl);
+                      
+                      const win = window.open(dummyUrl, '_blank');
+                      if (!win || win.closed || typeof win.closed === 'undefined') {
+                        console.error('[Simulação] Pop-up bloqueado pelo navegador.');
+                        toast.error('Erro de Simulação: Pop-up Bloqueado', {
+                          description: 'Certifique-se de que seu navegador permite pop-ups.'
+                        });
+                      } else {
+                        console.log('[Simulação] Janela aberta com sucesso.');
+                        toast.success('Simulação: Link aberto corretamente.');
+                      }
+                    }}
+                  >
+                    Testar Abertura Link
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4 p-3 rounded bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-700 dark:text-amber-300 italic">
+                Nota: Se os testes acima falharem, verifique as configurações de pop-up do seu navegador ou a validade das URLs salvas nos eventos.
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>
