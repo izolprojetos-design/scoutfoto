@@ -445,7 +445,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-600 uppercase tracking-tight">
                 Data
               </Label>
-              <div className="relative group cursor-pointer" onClick={() => (document.getElementById('dataSecao') as any)?.showPicker()}>
+              <div className="relative group cursor-default">
                 <input
                   id="dataSecao"
                   type="date"
@@ -453,13 +453,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   onChange={(e) => setDataSecao(e.target.value)}
                   className={cn("h-9 text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-9 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none transition-all", errCls('dataSecao'))}
                 />
-                <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
+                <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-auto cursor-pointer hover:text-blue-600 transition-colors" onClick={() => (document.getElementById('dataSecao') as any)?.showPicker()} />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="horario" className="text-xs font-bold text-gray-600 uppercase tracking-tight">Horário</Label>
-              <div className="relative group cursor-pointer" onClick={() => (document.getElementById('horario') as any)?.showPicker()}>
+              <div className="relative group cursor-default">
                 <input
                   id="horario"
                   type="time"
@@ -467,7 +467,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                   onChange={(e) => setHorario(e.target.value)}
                   className={cn("h-9 text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-9 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none transition-all", errCls('horario'))}
                 />
-                <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
+                <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-auto cursor-pointer group-hover:text-blue-600 transition-colors" onClick={() => (document.getElementById('horario') as any)?.showPicker()} />
               </div>
             </div>
 
