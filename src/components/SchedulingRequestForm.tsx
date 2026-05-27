@@ -466,7 +466,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-2 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full text-center cursor-pointer hover:border-gray-500 transition-colors", errCls('horario'))}
             />
           </div>
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[250px] max-w-md">
             <Label htmlFor="localAtividade" className="text-xs font-bold text-gray-700">Local da atividade</Label>
             <Input
               id="localAtividade"
