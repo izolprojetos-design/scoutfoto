@@ -259,9 +259,13 @@ const AppSidebar = () => {
             <SidebarMenuButton
               asChild
               tooltip="Perfil"
-              onClick={() => { isMobile && setOpenMobile(false); navigate('/profile'); }}
+              isActive={location.pathname === '/profile'}
             >
-              <button className="flex items-center gap-2 w-full">
+              <NavLink 
+                to="/profile" 
+                className="flex items-center gap-2 w-full"
+                onClick={() => isMobile && setOpenMobile(false)}
+              >
                 <Avatar className="h-7 w-7 shrink-0">
                   <AvatarFallback 
                     className="text-white text-xs font-bold"
@@ -276,7 +280,7 @@ const AppSidebar = () => {
                     <span className="text-xs text-sidebar-foreground/60">{ROLE_LABELS[primaryRole]}</span>
                   </div>
                 )}
-              </button>
+              </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
