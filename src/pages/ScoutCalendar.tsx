@@ -15,7 +15,8 @@ import {
   Clock,
   User,
   Info,
-  X
+  X,
+  ListChecks
 } from 'lucide-react';
 import SchedulingRequestForm from '@/components/SchedulingRequestForm';
 import AgendamentosManager from '@/components/AgendamentosManager';
