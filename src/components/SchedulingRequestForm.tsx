@@ -426,7 +426,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Assunto (Nome do Evento) */}
-        <div className="flex items-center px-4 py-3 border-b border-gray-100 bg-white">
+        <div className="flex items-center px-3 py-2 border-b border-gray-100 bg-white">
           <input
             id="nomeEvento"
             value={nomeEvento}
