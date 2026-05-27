@@ -1174,7 +1174,15 @@ export type Database = {
           storage_path?: string
           uploaded_by?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "scout_photos_scout_id_fkey"
+            columns: ["scout_id"]
+            isOneToOne: false
+            referencedRelation: "scouts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scouts: {
         Row: {
