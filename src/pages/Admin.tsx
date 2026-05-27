@@ -906,21 +906,28 @@ const Admin = () => {
                                     <DialogTitle className="text-base">Selecionar Seção — {u.name}</DialogTitle>
                                   </DialogHeader>
                                   <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
-                                    <button
-                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                      onClick={() => stageSectionChange(u.user_id, '')}
-                                    >
-                                      — Nenhuma —
-                                    </button>
-                                    {SECTION_OPTIONS.map(s => (
+                                    <div className="flex flex-col gap-1 pb-20">
                                       <button
-                                        key={s}
-                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === s ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                        onClick={() => stageSectionChange(u.user_id, s)}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageSectionChange(u.user_id, '')}
                                       >
-                                        {s}
+                                        — Nenhuma —
                                       </button>
-                                    ))}
+                                      {SECTION_OPTIONS.map(s => (
+                                        <button
+                                          key={s}
+                                          className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentSection === s ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                          onClick={() => stageSectionChange(u.user_id, s)}
+                                        >
+                                          {s}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="pt-4 mt-auto border-t bg-background">
+                                    <DialogTrigger asChild>
+                                      <Button className="w-full">Confirmar Seleção</Button>
+                                    </DialogTrigger>
                                   </div>
                                 </DialogContent>
                               </Dialog>
@@ -945,21 +952,28 @@ const Admin = () => {
                                     <DialogTitle className="text-base">Selecionar Cargo 1 — {u.name}</DialogTitle>
                                   </DialogHeader>
                                   <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
-                                    <button
-                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                      onClick={() => stageCargo1Change(u.user_id, '')}
-                                    >
-                                      — Nenhum —
-                                    </button>
-                                    {VOLUNTEER_CARGOS.map(c => (
+                                    <div className="flex flex-col gap-1 pb-20">
                                       <button
-                                        key={c}
-                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                        onClick={() => stageCargo1Change(u.user_id, c)}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo1Change(u.user_id, '')}
                                       >
-                                        {c}
+                                        — Nenhum —
                                       </button>
-                                    ))}
+                                      {VOLUNTEER_CARGOS.map(c => (
+                                        <button
+                                          key={c}
+                                          className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                          onClick={() => stageCargo1Change(u.user_id, c)}
+                                        >
+                                          {c}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="pt-4 mt-auto border-t bg-background">
+                                    <DialogTrigger asChild>
+                                      <Button className="w-full">Confirmar Seleção</Button>
+                                    </DialogTrigger>
                                   </div>
                                 </DialogContent>
                               </Dialog>
@@ -984,21 +998,28 @@ const Admin = () => {
                                     <DialogTitle className="text-base">Selecionar Cargo 2 — {u.name}</DialogTitle>
                                   </DialogHeader>
                                   <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
-                                    <button
-                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                      onClick={() => stageCargo2Change(u.user_id, '')}
-                                    >
-                                      — Nenhum —
-                                    </button>
-                                    {CARGO_2_OPTIONS.map(c => (
+                                    <div className="flex flex-col gap-1 pb-20">
                                       <button
-                                        key={c}
-                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
-                                        onClick={() => stageCargo2Change(u.user_id, c)}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo2Change(u.user_id, '')}
                                       >
-                                        {c}
+                                        — Nenhum —
                                       </button>
-                                    ))}
+                                      {CARGO_2_OPTIONS.map(c => (
+                                        <button
+                                          key={c}
+                                          className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                          onClick={() => stageCargo2Change(u.user_id, c)}
+                                        >
+                                          {c}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="pt-4 mt-auto border-t bg-background">
+                                    <DialogTrigger asChild>
+                                      <Button className="w-full">Confirmar Seleção</Button>
+                                    </DialogTrigger>
                                   </div>
                                 </DialogContent>
                               </Dialog>
