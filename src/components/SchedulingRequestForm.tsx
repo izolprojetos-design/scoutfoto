@@ -531,8 +531,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </Button>
           </div>
           
-          <div className="flex items-center gap-1 text-[11px] text-gray-400 italic">
-            <CheckCircle2 className="h-3 w-3" />
+          <div className="flex items-center gap-2 text-xs text-gray-600 font-bold italic">
+            <CheckCircle2 className="h-4 w-4" />
             Salvo automaticamente no sistema
           </div>
         </div>
