@@ -758,13 +758,13 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[100px]">ID</TableHead>
-                      <TableHead>Nome</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Seção</TableHead>
-                      <TableHead>Cargo</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Ações</TableHead>
+                      <TableHead className="w-[100px] font-bold">ID</TableHead>
+                      <TableHead className="font-bold">Nome</TableHead>
+                      <TableHead className="font-bold">Email</TableHead>
+                      <TableHead className="font-bold">Seção</TableHead>
+                      <TableHead className="font-bold">Cargo</TableHead>
+                      <TableHead className="font-bold">Status</TableHead>
+                      <TableHead className="font-bold">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
