@@ -360,8 +360,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-[500px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 my-8 flex flex-col scale-90 sm:scale-100 origin-top" noValidate>
       {/* Cabeçalho estilo Gmail */}
-      <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-900">Nova mensagem</span>
+      <div className="bg-[#f2f6fc] px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-900">Nova mensagem</span>
       </div>
 
       <div className="flex flex-col">
