@@ -32,7 +32,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Dados pessoais (do usuário logado, somente leitura)
+  // Dados do remetente (do usuário logado, somente leitura)
   const [nomeAssociado, setNomeAssociado] = useState('');
   const [secao, setSecao] = useState('');
   const [cargo1, setCargo1] = useState('');
