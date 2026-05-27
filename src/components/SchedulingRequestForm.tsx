@@ -380,7 +380,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         {/* Campo Para */}
         <div className="flex flex-col px-4 py-2 border-b border-gray-100 relative group">
           <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-12">Para</span>
+            <span className="text-sm text-gray-700 font-medium w-12">Para</span>
             <div className="flex-1 relative">
               <input
                 id="destNome"
@@ -394,12 +394,12 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 placeholder="Destinatário"
                 autoComplete="off"
                 className={cn(
-                  "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                  "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
                   errCls('destNome')
                 )}
               />
             </div>
-            {destSearching && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
+            {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
           </div>
           
           {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
