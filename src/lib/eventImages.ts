@@ -14,23 +14,23 @@ const IMAGE_MAP: Record<string, string> = {
 
 const IMAGE_KEYWORDS: { keywords: string[]; image: string }[] = [
   {
-    keywords: ['acampamento', 'acampapais', 'bivaque', 'bivak', 'pernoite', 'camping', 'barraca'],
+    keywords: ['acampamento', 'acampapais', 'bivaque', 'bivak', 'pernoite', 'camping', 'barraca', 'campo', 'natureza'],
     image: campingImg,
   },
   {
-    keywords: ['dia da mulher', 'comemoração', 'celebração', 'festa', 'aniversário', 'natal', 'páscoa', 'confraternização'],
+    keywords: ['dia da mulher', 'comemoração', 'celebração', 'festa', 'aniversário', 'natal', 'páscoa', 'confraternização', 'bolo', 'refeição', 'almoço', 'jantar'],
     image: celebrationImg,
   },
   {
-    keywords: ['retorno', 'abertura', 'início', 'inauguração', 'atividade', 'reunião', 'encontro'],
+    keywords: ['retorno', 'abertura', 'início', 'inauguração', 'atividade', 'reunião', 'encontro', 'aula', 'instrução', 'treinamento'],
     image: activitiesImg,
   },
   {
-    keywords: ['trilha', 'caminhada', 'excursão', 'exploração', 'jornada', 'raid'],
+    keywords: ['trilha', 'caminhada', 'excursão', 'exploração', 'jornada', 'raid', 'montanha', 'passeio'],
     image: hikingImg,
   },
   {
-    keywords: ['fogão', 'fogata', 'fogo', 'conselho', 'cerimônia', 'promessa', 'investidura'],
+    keywords: ['fogão', 'fogata', 'fogo', 'conselho', 'cerimônia', 'promessa', 'investidura', 'espiritualidade', 'reflexão'],
     image: meetingImg,
   },
 ];
