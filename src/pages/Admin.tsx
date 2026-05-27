@@ -51,6 +51,8 @@ interface UserWithRole {
   role: AppRole;
   section: string;
   user_number: number | null;
+  cargo_1: string | null;
+  cargo_2: string | null;
 }
 
 interface AuditLog {
