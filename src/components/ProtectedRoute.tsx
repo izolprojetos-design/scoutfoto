@@ -30,13 +30,19 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   }
 
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
-    console.warn(`Access denied: missing role ${requiredRole}. Redirecting to profile.`);
-    return <Navigate to="/profile" replace />;
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/profile') {
+      console.warn(`Access denied: missing role ${requiredRole}. Redirecting to profile.`);
+      return <Navigate to="/profile" replace />;
+    }
   }
 
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
-    console.warn(`Access denied: missing permission ${requiredPermission}. Redirecting to profile.`);
-    return <Navigate to="/profile" replace />;
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/profile') {
+      console.warn(`Access denied: missing permission ${requiredPermission}. Redirecting to profile.`);
+      return <Navigate to="/profile" replace />;
+    }
   }
 
   return <>{children ?? <Outlet />}</>;

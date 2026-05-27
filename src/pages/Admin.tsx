@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -73,6 +73,7 @@ interface Subgroup {
 const Admin = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -583,8 +584,8 @@ const Admin = () => {
         onValueChange={(val) => {
           setActiveTab(val);
           const newPath = val === 'overview' ? '/admin' : `/admin?tab=${val}`;
-          window.history.pushState(null, '', newPath);
-        }} 
+          navigate(newPath, { replace: true });
+        }}
         className="space-y-4"
       >
 
