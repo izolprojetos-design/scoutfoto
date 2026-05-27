@@ -892,6 +892,8 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          cargo_1: string | null
+          cargo_2: string | null
           created_at: string
           email: string
           force_refresh_at: string | null
@@ -906,6 +908,8 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          cargo_1?: string | null
+          cargo_2?: string | null
           created_at?: string
           email?: string
           force_refresh_at?: string | null
@@ -920,6 +924,8 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          cargo_1?: string | null
+          cargo_2?: string | null
           created_at?: string
           email?: string
           force_refresh_at?: string | null
