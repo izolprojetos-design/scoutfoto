@@ -913,6 +913,22 @@ const Admin = () => {
                           })()}
                         </TableCell>
                         <TableCell>
+                          <Input 
+                            value={pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '')} 
+                            onChange={e => stageCargo1Change(u.user_id, e.target.value)}
+                            className={`h-8 text-xs ${pendingCargo1[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
+                            placeholder="Cargo 1"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Input 
+                            value={pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '')} 
+                            onChange={e => stageCargo2Change(u.user_id, e.target.value)}
+                            className={`h-8 text-xs ${pendingCargo2[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
+                            placeholder="Cargo 2"
+                          />
+                        </TableCell>
+                        <TableCell>
                           {(() => {
                             const currentRole = (pendingRoles[u.user_id] || u.role) as AppRole;
                             const isPending = !!pendingRoles[u.user_id];
