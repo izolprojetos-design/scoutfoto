@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail, Clock } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -443,26 +443,32 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         {/* Detalhes da Atividade */}
         <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
           <div className="flex flex-col gap-1.5 min-w-[160px]">
-            <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700 flex items-center gap-1">
-              <CalendarDays className="h-3.5 w-3.5" /> Data
+            <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700">
+              Data
             </Label>
-            <input
-              id="dataSecao"
-              type="date"
-              value={dataSecao}
-              onChange={(e) => setDataSecao(e.target.value)}
-              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full", errCls('dataSecao'))}
-            />
+            <div className="relative group cursor-pointer" onClick={() => (document.getElementById('dataSecao') as any)?.showPicker()}>
+              <input
+                id="dataSecao"
+                type="date"
+                value={dataSecao}
+                onChange={(e) => setDataSecao(e.target.value)}
+                className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none", errCls('dataSecao'))}
+              />
+              <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+            </div>
           </div>
           <div className="flex flex-col gap-1.5 min-w-[120px]">
             <Label htmlFor="horario" className="text-xs font-bold text-gray-700">Horário</Label>
-            <input
-              id="horario"
-              type="time"
-              value={horario}
-              onChange={(e) => setHorario(e.target.value)}
-              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full", errCls('horario'))}
-            />
+            <div className="relative group cursor-pointer" onClick={() => (document.getElementById('horario') as any)?.showPicker()}>
+              <input
+                id="horario"
+                type="time"
+                value={horario}
+                onChange={(e) => setHorario(e.target.value)}
+                className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none", errCls('horario'))}
+              />
+              <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+            </div>
           </div>
           <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
             <Label htmlFor="localAtividade" className="text-xs font-bold text-gray-700">Local da atividade</Label>
