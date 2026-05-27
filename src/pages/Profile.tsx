@@ -24,7 +24,7 @@ import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 import { stringToColor } from '@/lib/avatarUtils';
 
 const Profile = () => {
-  const { profile, roles, user, isAdmin, refreshRoles } = useAuth();
+  const { profile, roles, user, isAdmin, refreshRoles, refreshProfile } = useAuth();
 
   useEffect(() => {
     refreshRoles();
@@ -99,12 +99,9 @@ const Profile = () => {
       return;
     }
 
-    const { data: signedData } = await supabase.storage.from('scout-photos').createSignedUrl(path, 3600);
-    if (!signedData?.signedUrl) {
-      toast.error('Erro ao gerar URL da imagem');
-      setUploading(false);
-      return;
-    }
+    // No need to create a signed URL here anymore, the component handles it.
+    // We just need to make sure the upload succeeded.
+
 
     // Save only the storage path so it can be re-signed on demand (signed URLs expire in 1h)
     const { error: updateError } = await supabase
@@ -116,7 +113,9 @@ const Profile = () => {
       toast.error('Erro ao salvar avatar: ' + updateError.message);
     } else {
       setAvatarUrl(path);
+      await refreshProfile();
       toast.success('Foto de perfil atualizada!');
+
     }
     setUploading(false);
   };

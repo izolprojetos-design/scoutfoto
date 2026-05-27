@@ -30,6 +30,8 @@ interface AuthContextType {
   mfaRequired: boolean;
   mfaVerified: boolean;
   setMfaVerified: (v: boolean) => void;
+  refreshProfile: () => Promise<void>;
+
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -353,7 +355,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       mfaRequired, mfaVerified, setMfaVerified,
       signIn, signUp, signOut, hasRole,
       isAdmin, isVoluntario, canUpload, canViewMinors,
+      refreshProfile: () => user ? fetchProfile(user.id) : Promise.resolve(),
       refreshRoles: () => user ? fetchRoles(user.id) : Promise.resolve(),
+
     }}>
       {children}
     </AuthContext.Provider>
