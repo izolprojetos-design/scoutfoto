@@ -927,6 +927,7 @@ const Admin = () => {
                             placeholder="Cargo 2"
                           />
                         </TableCell>
+                        <TableCell className="text-muted-foreground text-xs">{u.email}</TableCell>
                         <TableCell>
                           {(() => {
                             const currentRole = (pendingRoles[u.user_id] || u.role) as AppRole;
