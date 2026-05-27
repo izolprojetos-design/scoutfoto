@@ -1004,8 +1004,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                     className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     <button
+                      type="button"
                       onClick={() => setYear(y)}
-                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
+                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left flex items-stretch"
                     >
                       {url ? (
                         <img src={url} alt={`Ano ${y}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" />
@@ -1049,8 +1050,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                     className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     <button
+                      type="button"
                       onClick={() => setDateKey(key)}
-                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
+                      className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left flex items-stretch"
                     >
                       {url ? (
                         <img src={url} alt={key} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
@@ -1090,9 +1092,10 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                 const isSel = selectedIds.has(p.id);
                 return (
                   <button
+                    type="button"
                     key={p.id}
                     onClick={() => selectMode ? toggleSelect(p.id) : setViewing(p)}
-                    className={`group relative aspect-square rounded-lg overflow-hidden border bg-muted ${isSel ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+                    className={`group relative aspect-square rounded-lg overflow-hidden border bg-muted flex items-stretch ${isSel ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     {url ? (
                       <img src={url} alt="Foto" loading="lazy" className="w-full h-full object-cover" />
