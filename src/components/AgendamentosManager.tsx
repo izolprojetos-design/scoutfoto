@@ -1134,34 +1134,34 @@ const AgendamentosManager = () => {
           </DialogHeader>
 
           {editing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
-              <div className="md:col-span-2">
-                <Label htmlFor="ed-nome">Nome do associado</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1">
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-nome" className="text-xs font-semibold text-muted-foreground uppercase">Nome do associado</Label>
                 <Input
                   id="ed-nome"
                   value={editing.nome_associado}
                   onChange={(e) => setEditing({ ...editing, nome_associado: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-dir">Dirigente</Label>
+                <Label htmlFor="ed-dir" className="text-xs font-semibold text-muted-foreground uppercase">Dirigente</Label>
                 <Input
                   id="ed-dir"
                   value={editing.dirigente}
                   onChange={(e) => setEditing({ ...editing, dirigente: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-tipo">Tipo de atividade</Label>
+                <Label htmlFor="ed-tipo" className="text-xs font-semibold text-muted-foreground uppercase">Tipo de atividade</Label>
                 <select
                   id="ed-tipo"
                   value={editing.tipo_atividade}
                   onChange={(e) => setEditing({ ...editing, tipo_atividade: e.target.value })}
-                  className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {SCHEDULING_TYPES.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -1170,44 +1170,44 @@ const AgendamentosManager = () => {
               </div>
 
               <div>
-                <Label htmlFor="ed-data">Data</Label>
+                <Label htmlFor="ed-data" className="text-xs font-semibold text-muted-foreground uppercase">Data</Label>
                 <Input
                   id="ed-data"
                   type="date"
                   value={editing.data_secao}
                   onChange={(e) => setEditing({ ...editing, data_secao: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-hora">Horário</Label>
+                <Label htmlFor="ed-hora" className="text-xs font-semibold text-muted-foreground uppercase">Horário</Label>
                 <Input
                   id="ed-hora"
                   type="time"
                   value={editing.horario.slice(0, 5)}
                   onChange={(e) => setEditing({ ...editing, horario: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="ed-local">Local</Label>
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-local" className="text-xs font-semibold text-muted-foreground uppercase">Local</Label>
                 <Input
                   id="ed-local"
                   value={editing.local}
                   onChange={(e) => setEditing({ ...editing, local: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-ramo">Ramo escoteiro</Label>
+                <Label htmlFor="ed-ramo" className="text-xs font-semibold text-muted-foreground uppercase">Ramo escoteiro</Label>
                 <select
                   id="ed-ramo"
                   value={editing.ramo_escoteiro}
                   onChange={(e) => setEditing({ ...editing, ramo_escoteiro: e.target.value })}
-                  className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   <option value="">Selecione...</option>
                   {branches.map(b => (
@@ -1216,39 +1216,34 @@ const AgendamentosManager = () => {
                 </select>
               </div>
 
-              <div className="md:col-span-2 mt-2 rounded-md border border-border/60 bg-muted/30 p-3 space-y-3">
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-                      Destinatário
-                    </p>
-                    <p className="text-[11px] text-muted-foreground/80">
-                      Estes dados aparecem no bloco "Destinatário" do card desta mensagem.
-                    </p>
-                  </div>
+              <div className="sm:col-span-2 mt-1 rounded-md border border-border/40 bg-muted/20 p-2.5 space-y-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-tight text-muted-foreground">
+                    Destinatário
+                  </p>
                   <label
                     htmlFor="ed-lock-recipient"
-                    className="flex items-center gap-2 rounded-md border border-border/60 bg-background px-2.5 py-1.5 text-xs font-medium cursor-pointer select-none whitespace-nowrap"
+                    className="flex items-center gap-1.5 rounded-md border border-border/60 bg-background px-2 py-1 text-[10px] font-bold cursor-pointer select-none uppercase"
                   >
                     <input
                       id="ed-lock-recipient"
                       type="checkbox"
                       checked={lockRecipient}
                       onChange={(e) => setLockRecipient(e.target.checked)}
-                      className="h-4 w-4 rounded border-input accent-primary cursor-pointer"
+                      className="h-3.5 w-3.5 rounded border-input accent-primary"
                     />
-                    Não permitir alterar
+                    Bloquear campos
                   </label>
                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="md:col-span-2">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="sm:col-span-2">
                     <div className="flex items-center justify-between gap-2">
-                      <Label htmlFor="ed-dest-nome">Nome</Label>
+                      <Label htmlFor="ed-dest-nome" className="text-[10px] font-bold text-muted-foreground uppercase">Nome</Label>
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-7 px-2 text-xs"
+                        className="h-6 px-1.5 text-[10px] uppercase font-bold text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                         disabled={lockRecipient || !editing.email_para?.trim()}
                         onClick={async () => {
                           const email = editing.email_para?.trim().toLowerCase();
@@ -1273,7 +1268,7 @@ const AgendamentosManager = () => {
                           toast({ title: 'Carregado', description: 'Nome carregado conforme cadastro.' });
                         }}
                       >
-                        Carregar do cadastro
+                        Sincronizar
                       </Button>
                     </div>
                     <Input
@@ -1281,38 +1276,38 @@ const AgendamentosManager = () => {
                       value={editing.destinatario_nome ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_nome: e.target.value })}
                       readOnly={lockRecipient}
-                      className={cn('mt-1.5 uppercase', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
+                      className={cn('mt-0.5 h-8 text-sm uppercase font-semibold', lockRecipient && 'bg-muted/60')}
                       placeholder="Não informado"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ed-dest-secao">Seção</Label>
+                    <Label htmlFor="ed-dest-secao" className="text-[10px] font-bold text-muted-foreground uppercase">Seção</Label>
                     <Input
                       id="ed-dest-secao"
                       value={editing.destinatario_secao ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_secao: e.target.value })}
                       readOnly={lockRecipient}
-                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
+                      className={cn('mt-0.5 h-8 text-sm font-semibold', lockRecipient && 'bg-muted/60')}
                       placeholder="Não informada"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="ed-dest-cargo1">Cargo 1</Label>
+                    <Label htmlFor="ed-dest-cargo1" className="text-[10px] font-bold text-muted-foreground uppercase">Cargo 1</Label>
                     <Input
                       id="ed-dest-cargo1"
                       value={editing.destinatario_cargo_1 ?? ''}
                       onChange={(e) => setEditing({ ...editing, destinatario_cargo_1: e.target.value })}
                       readOnly={lockRecipient}
-                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
+                      className={cn('mt-0.5 h-8 text-sm font-semibold', lockRecipient && 'bg-muted/60')}
                       placeholder="Não informado"
                     />
                   </div>
-                  <div className="md:col-span-2">
+                  <div className="sm:col-span-2">
                     <div className="flex items-center gap-2">
-                      <Label htmlFor="ed-emailpara">E-mail</Label>
+                      <Label htmlFor="ed-emailpara" className="text-[10px] font-bold text-muted-foreground uppercase">E-mail</Label>
                       {autoFillingRecipient && (
-                        <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                          <Loader2 className="h-3 w-3 animate-spin" /> buscando cadastro…
+                        <span className="inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                          <Loader2 className="h-2.5 w-2.5 animate-spin" /> buscando…
                         </span>
                       )}
                     </div>
@@ -1322,26 +1317,21 @@ const AgendamentosManager = () => {
                       value={editing.email_para}
                       onChange={(e) => setEditing({ ...editing, email_para: e.target.value })}
                       readOnly={lockRecipient}
-                      className={cn('mt-1.5', lockRecipient && 'bg-muted/60 cursor-not-allowed')}
+                      className={cn('mt-0.5 h-8 text-sm font-semibold', lockRecipient && 'bg-muted/60')}
                       placeholder="email@exemplo.com"
                     />
                   </div>
                 </div>
-                {lockRecipient && (
-                  <p className="text-[11px] italic text-muted-foreground">
-                    🔒 Campos travados. Desmarque "Não permitir alterar" para editar.
-                  </p>
-                )}
               </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="ed-obs">Observações</Label>
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-obs" className="text-xs font-semibold text-muted-foreground uppercase">Observações</Label>
                 <Textarea
                   id="ed-obs"
                   value={editing.observacoes}
                   onChange={(e) => setEditing({ ...editing, observacoes: e.target.value })}
-                  rows={4}
-                  className="mt-1.5"
+                  rows={3}
+                  className="mt-1 text-sm font-medium"
                 />
               </div>
             </div>
