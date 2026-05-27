@@ -441,9 +441,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Detalhes da Atividade */}
-        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
-          <div className="flex flex-col gap-1.5 min-w-[160px]">
-            <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700 flex items-center gap-1">
+        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-col gap-1.5 w-[140px]">
+            <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700 flex items-center justify-center gap-1 cursor-pointer">
               <CalendarDays className="h-3.5 w-3.5" /> Data
             </Label>
             <input
@@ -451,17 +451,19 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               type="date"
               value={dataSecao}
               onChange={(e) => setDataSecao(e.target.value)}
-              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full", errCls('dataSecao'))}
+              onClick={(e) => e.currentTarget.showPicker()}
+              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-2 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full text-center cursor-pointer hover:border-gray-500 transition-colors", errCls('dataSecao'))}
             />
           </div>
-          <div className="flex flex-col gap-1.5 min-w-[120px]">
-            <Label htmlFor="horario" className="text-xs font-bold text-gray-700">Horário</Label>
+          <div className="flex flex-col gap-1.5 w-[110px]">
+            <Label htmlFor="horario" className="text-xs font-bold text-gray-700 text-center cursor-pointer">Horário</Label>
             <input
               id="horario"
               type="time"
               value={horario}
               onChange={(e) => setHorario(e.target.value)}
-              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full", errCls('horario'))}
+              onClick={(e) => e.currentTarget.showPicker()}
+              className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-2 py-2 focus:ring-2 focus:ring-blue-500 outline-none w-full text-center cursor-pointer hover:border-gray-500 transition-colors", errCls('horario'))}
             />
           </div>
           <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
