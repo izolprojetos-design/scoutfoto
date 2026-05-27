@@ -1004,6 +1004,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                     className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     <button
+                      type="button"
                       onClick={() => setYear(y)}
                       className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
                     >
@@ -1049,6 +1050,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                     className={`relative rounded-lg ${isOver ? 'ring-2 ring-primary ring-offset-2' : ''}`}
                   >
                     <button
+                      type="button"
                       onClick={() => setDateKey(key)}
                       className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left"
                     >
@@ -1090,6 +1092,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                 const isSel = selectedIds.has(p.id);
                 return (
                   <button
+                    type="button"
                     key={p.id}
                     onClick={() => selectMode ? toggleSelect(p.id) : setViewing(p)}
                     className={`group relative aspect-square rounded-lg overflow-hidden border bg-muted ${isSel ? 'ring-2 ring-primary ring-offset-2' : ''}`}
