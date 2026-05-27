@@ -195,12 +195,24 @@ const ScoutCalendar = () => {
 
       {activeTab === 'schedule' && canRequestScheduling && scheduleMounted && (
         <div className="max-w-4xl mx-auto w-full">
+          <div className="mb-4">
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
+              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
+            </Button>
+          </div>
           <SchedulingRequestForm onSuccess={() => setActiveTab('manage')} />
         </div>
       )}
 
       {activeTab === 'manage' && canRequestScheduling && manageMounted && (
-        <AgendamentosManager />
+        <div className="w-full">
+          <div className="mb-4">
+            <Button variant="ghost" size="sm" onClick={() => setActiveTab('calendar')} className="gap-2">
+              <ChevronLeft className="h-4 w-4" /> Voltar ao Calendário
+            </Button>
+          </div>
+          <AgendamentosManager />
+        </div>
       )}
 
       {activeTab === 'calendar' && (
