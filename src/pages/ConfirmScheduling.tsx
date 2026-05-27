@@ -88,7 +88,7 @@ const ConfirmScheduling = () => {
       <Card className="w-full max-w-xl shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl">Confirmação de Agendamento</CardTitle>
-          <CardDescription>ScoutFoto — Grupo Escoteiro Monte Caburaí 12/RR</CardDescription>
+          <CardDescription>ScoutFoto — 12º Grupo Escoteiro Monte Caburaí</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           {status === 'loading' && (
