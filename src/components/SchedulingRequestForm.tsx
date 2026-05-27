@@ -358,52 +358,50 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const errCls = (key: string) => errors[key] ? 'border-destructive focus-visible:ring-destructive' : '';
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-[500px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 my-8 flex flex-col scale-90 sm:scale-100 origin-top animate-in fade-in zoom-in duration-300" noValidate>
+    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200 my-4 sm:my-8 flex flex-col animate-in fade-in zoom-in duration-300" noValidate>
       {/* Cabeçalho estilo Gmail */}
-      <div className="bg-[#f2f6fc] px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-900">Nova mensagem</span>
+      <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+        <span className="text-sm font-semibold text-gray-900">Nova mensagem</span>
       </div>
 
       <div className="flex flex-col">
         {/* Campo De */}
-        <div className="flex items-center px-3 py-1.5 border-b border-gray-100 group bg-gray-50/30">
-          <span className="text-xs text-gray-700 font-medium w-10">De</span>
-          <div className="flex-1 flex items-center gap-2 overflow-hidden">
-            <span className="text-xs font-semibold text-gray-900 truncate">{nomeAssociado}</span>
-            <span className="text-[10px] text-gray-600 truncate">&lt;{emailDe}&gt;</span>
-          </div>
-          <div className="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium border border-blue-200">
-            {secao} • {cargo1}
+        <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 border-b border-gray-100 group bg-gray-50/30 gap-1 sm:gap-2">
+          <span className="text-xs text-gray-500 font-medium w-10 shrink-0">De</span>
+          <div className="flex-1 flex flex-wrap items-center gap-2 overflow-hidden">
+            <span className="text-sm font-semibold text-gray-900 truncate">{nomeAssociado}</span>
+            <span className="text-xs text-gray-500 truncate">&lt;{emailDe}&gt;</span>
+            <div className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium border border-blue-200">
+              {secao} • {cargo1}
+            </div>
           </div>
         </div>
 
         {/* Campo Para */}
-        <div className="flex flex-col px-3 py-1.5 border-b border-gray-100 relative group">
-          <div className="flex items-center">
-            <span className="text-xs text-gray-700 font-medium w-10">Para</span>
-            <div className="flex-1 relative">
-              <input
-                id="destNome"
-                value={destNome}
-                onChange={(e) => handleDestNomeChange(e.target.value)}
-                onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
-                onBlur={() => {
-                  if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
-                  destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
-                }}
-                placeholder="Destinatário"
-                autoComplete="off"
-                className={cn(
-                  "w-full text-xs text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
-                  errCls('destNome')
-                )}
-              />
-            </div>
-            {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
+        <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 border-b border-gray-100 relative group gap-1 sm:gap-2">
+          <span className="text-xs text-gray-500 font-medium w-10 shrink-0">Para</span>
+          <div className="flex-1 relative">
+            <input
+              id="destNome"
+              value={destNome}
+              onChange={(e) => handleDestNomeChange(e.target.value)}
+              onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
+              onBlur={() => {
+                if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
+                destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
+              }}
+              placeholder="Destinatário"
+              autoComplete="off"
+              className={cn(
+                "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                errCls('destNome')
+              )}
+            />
           </div>
+          {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
           
           {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
-            <div className="absolute left-16 right-4 top-full z-50 mt-1 rounded-md border bg-white shadow-xl max-h-60 overflow-y-auto">
+            <div className="absolute left-0 sm:left-12 right-0 sm:right-4 top-full z-50 mt-1 rounded-md border bg-white shadow-xl max-h-60 overflow-y-auto">
               {destSuggestions.length === 0 && !destSearching ? (
                 <div className="px-3 py-2 text-sm text-gray-500">Nenhum usuário encontrado</div>
               ) : (
@@ -413,7 +411,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                     type="button"
                     onMouseDown={(ev) => ev.preventDefault()}
                     onClick={() => handleSelectDestSuggestion(s)}
-                    className="w-full text-left px-3 py-2 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
+                    className="w-full text-left px-4 py-2 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
                   >
                     <div className="text-sm font-medium text-gray-900">{s.name}</div>
                     <div className="text-xs text-gray-500">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
@@ -426,119 +424,124 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Assunto (Nome do Evento) */}
-        <div className="flex items-center px-3 py-2 border-b border-gray-100 bg-white">
+        <div className="flex items-center px-4 py-2 border-b border-gray-100 bg-white">
           <input
             id="nomeEvento"
             value={nomeEvento}
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-sm text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
+              "flex-1 text-base text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
-          <span className="text-xs text-gray-600 ml-2 font-semibold">{nomeEvento.length}/120</span>
+          <span className="text-xs text-gray-400 ml-2 shrink-0">{nomeEvento.length}/120</span>
         </div>
 
-        {/* Detalhes da Atividade */}
-        <div className="bg-white px-3 py-3 border-b border-gray-200 flex flex-wrap gap-2 sm:gap-4">
-          <div className="flex flex-col gap-1.5 min-w-[160px]">
-            <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700">
-              Data
-            </Label>
-            <div className="relative group cursor-pointer" onClick={() => (document.getElementById('dataSecao') as any)?.showPicker()}>
-              <input
-                id="dataSecao"
-                type="date"
-                value={dataSecao}
-                onChange={(e) => setDataSecao(e.target.value)}
-                className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none", errCls('dataSecao'))}
-              />
-              <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5 min-w-[120px]">
-            <Label htmlFor="horario" className="text-xs font-bold text-gray-700">Horário</Label>
-            <div className="relative group cursor-pointer" onClick={() => (document.getElementById('horario') as any)?.showPicker()}>
-              <input
-                id="horario"
-                type="time"
-                value={horario}
-                onChange={(e) => setHorario(e.target.value)}
-                className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none", errCls('horario'))}
-              />
-              <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
-            </div>
-          </div>
-          <div className="flex flex-col gap-1.5 flex-1 min-w-[250px]">
-            <Label htmlFor="localAtividade" className="text-xs font-bold text-gray-700">Local da atividade</Label>
-            <div className="relative group">
-              <Input
-                id="localAtividade"
-                value={local}
-                onChange={(e) => setLocal(e.target.value)}
-                placeholder="Ex: Sede do Grupo Escoteiro"
-                className={cn("h-10 text-sm font-bold text-black bg-white border-gray-400 placeholder:text-gray-500 pr-10", errCls('local'))}
-              />
-              <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
-            </div>
-          </div>
-          <div className="flex items-center gap-3 w-full md:w-auto mt-auto pb-0.5">
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-bold text-gray-700">Ramo</Label>
-              <div className="relative group">
-                <select
-                  value={ramoEscoteiro}
-                  onChange={(e) => setRamoEscoteiro(e.target.value)}
-                  className={cn("text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none h-10 appearance-none min-w-[140px]", errCls('ramoEscoteiro'))}
-                >
-                  <option value="">Ramo...</option>
-                  {branches.map(b => (
-                    <option key={b.id} value={b.id}>{b.display_name}</option>
-                  ))}
-                </select>
-                <Compass className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+        {/* Grid de Detalhes da Atividade */}
+        <div className="bg-white px-4 py-4 border-b border-gray-100">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+            <div className="space-y-1.5">
+              <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-600 uppercase tracking-tight">
+                Data
+              </Label>
+              <div className="relative group cursor-pointer" onClick={() => (document.getElementById('dataSecao') as any)?.showPicker()}>
+                <input
+                  id="dataSecao"
+                  type="date"
+                  value={dataSecao}
+                  onChange={(e) => setDataSecao(e.target.value)}
+                  className={cn("h-9 text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-9 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none transition-all", errCls('dataSecao'))}
+                />
+                <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
               </div>
             </div>
-            <div className="flex flex-col gap-1.5">
-              <Label className="text-xs font-bold text-gray-700">Tipo</Label>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="horario" className="text-xs font-bold text-gray-600 uppercase tracking-tight">Horário</Label>
+              <div className="relative group cursor-pointer" onClick={() => (document.getElementById('horario') as any)?.showPicker()}>
+                <input
+                  id="horario"
+                  type="time"
+                  value={horario}
+                  onChange={(e) => setHorario(e.target.value)}
+                  className={cn("h-9 text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-9 focus:ring-2 focus:ring-blue-500 outline-none w-full appearance-none transition-all", errCls('horario'))}
+                />
+                <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
+              </div>
+            </div>
+
+            <div className="space-y-1.5 sm:col-span-2 lg:col-span-1">
+              <Label htmlFor="localAtividade" className="text-xs font-bold text-gray-600 uppercase tracking-tight">Local</Label>
               <div className="relative group">
-                <select
-                  value={tipoAtividade}
-                  onChange={(e) => setTipoAtividade(e.target.value)}
-                  className="text-sm font-bold text-black bg-white border border-gray-400 rounded-md px-3 py-2 pr-10 focus:ring-2 focus:ring-blue-500 outline-none h-10 appearance-none w-full"
-                >
-                  {SCHEDULING_TYPES.map(t => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
-                  ))}
-                </select>
-                <Tag className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none group-hover:text-blue-600 transition-colors" />
+                <Input
+                  id="localAtividade"
+                  value={local}
+                  onChange={(e) => setLocal(e.target.value)}
+                  placeholder="Ex: Sede do Grupo"
+                  className={cn("h-9 text-sm font-semibold text-black bg-white border-gray-300 placeholder:text-gray-400 pr-9 transition-all", errCls('local'))}
+                />
+                <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-blue-600 transition-colors" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:col-span-2 lg:col-span-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-gray-600 uppercase tracking-tight">Ramo</Label>
+                <div className="relative group">
+                  <select
+                    value={ramoEscoteiro}
+                    onChange={(e) => setRamoEscoteiro(e.target.value)}
+                    className={cn("h-9 w-full text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none appearance-none transition-all", errCls('ramoEscoteiro'))}
+                  >
+                    <option value="">Ramo...</option>
+                    {branches.map(b => (
+                      <option key={b.id} value={b.id}>{b.display_name}</option>
+                    ))}
+                  </select>
+                  <Compass className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-gray-600 uppercase tracking-tight">Tipo</Label>
+                <div className="relative group">
+                  <select
+                    value={tipoAtividade}
+                    onChange={(e) => setTipoAtividade(e.target.value)}
+                    className="h-9 w-full text-sm font-semibold text-black bg-white border border-gray-300 rounded-md px-3 pr-8 focus:ring-2 focus:ring-blue-500 outline-none appearance-none transition-all"
+                  >
+                    {SCHEDULING_TYPES.map(t => (
+                      <option key={t.value} value={t.value}>{t.label}</option>
+                    ))}
+                  </select>
+                  <Tag className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Corpo da Mensagem */}
-        <div className="px-3 py-3 min-h-[200px] flex flex-col bg-white">
+        <div className="px-4 py-3 min-h-[180px] flex flex-col bg-white">
           <textarea
             id="observacoes"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
             placeholder="Escreva sua mensagem aqui..."
             className={cn(
-              "flex-1 w-full text-sm text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-500 leading-relaxed font-semibold",
+              "flex-1 w-full text-sm text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-400 leading-relaxed font-medium",
               errCls('observacoes')
             )}
           />
         </div>
 
         {/* Rodapé de Ações */}
-        <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between bg-white">
-          <div className="flex items-center gap-2">
+        <div className="px-4 py-3 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between bg-white gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <Button 
               type="submit" 
               disabled={submitting} 
-              className="bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full px-6 py-2 h-9 text-sm font-medium transition-shadow hover:shadow-md"
+              className="bg-[#0b57d0] hover:bg-[#0842a0] text-white rounded-full px-8 py-2 h-10 text-sm font-semibold transition-all hover:shadow-lg active:scale-95 flex-1 sm:flex-none"
             >
               {submitting ? (
                 <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Enviando...</>
@@ -552,24 +555,24 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               size="icon" 
               onClick={resetForm} 
               disabled={submitting}
-              className="text-gray-500 hover:bg-gray-100 rounded-full h-9 w-9"
+              className="text-gray-500 hover:bg-gray-100 rounded-full h-10 w-10 shrink-0"
               title="Descartar rascunho"
             >
               <FileText className="h-4 w-4" />
             </Button>
           </div>
           
-          <div className="flex items-center gap-2 text-xs text-gray-600 font-bold italic">
-            <CheckCircle2 className="h-4 w-4" />
-            Salvo automaticamente no sistema
+          <div className="flex items-center gap-2 text-xs text-gray-400 font-medium">
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+            <span>Salvo automaticamente no sistema</span>
           </div>
         </div>
       </div>
       
       {/* Exibição de erros flutuante ou discreta */}
       {Object.keys(errors).length > 0 && (
-        <div className="px-4 py-1 bg-red-50 text-[10px] text-red-500 border-t border-red-100">
-          Por favor, preencha todos os campos obrigatórios marcados em vermelho.
+        <div className="px-4 py-1.5 bg-red-50 text-[10px] text-red-600 border-t border-red-100 font-medium">
+          Verifique os campos obrigatórios marcados em vermelho.
         </div>
       )}
     </form>
