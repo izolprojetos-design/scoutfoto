@@ -1341,13 +1341,16 @@ const Scouts = () => {
 
     return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div className="flex flex-col items-center gap-3" onClick={(e) => { e.stopPropagation(); e.preventDefault(); }}>
+      <div className="flex flex-col items-center gap-3">
         <div className="relative">
           <label
             htmlFor={photoInputId}
             className={`cursor-pointer ${cameraStatus !== 'available' ? 'opacity-80' : ''}`}
             onClick={async (e) => { 
-              e.stopPropagation();
+              // Prevent label trigger if we want custom logic, but here we actually WANT it to trigger the input
+              // However, the previous code had e.stopPropagation() and e.preventDefault() in parent or here
+              // Let's ensure this doesn't trigger the "calendar bug" by making sure no parent catches this and opens a calendar
+
               handlePhotoPickStart();
               
               if (cameraStatus === 'available') {
