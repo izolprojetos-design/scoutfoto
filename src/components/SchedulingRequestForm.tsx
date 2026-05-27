@@ -186,7 +186,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
     if (!horario) {
       e.horario = 'Informe o horário';
-    } else if (!/^\d{2}:\d{2}$/.test(horario)) {
+    } else if (!/^\d{2}:\d{2}(:\d{2})?$/.test(horario)) {
       e.horario = 'Informe um horário válido (HH:MM)';
     }
 
