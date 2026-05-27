@@ -141,9 +141,15 @@ const Admin = () => {
   const [pendingRoles, setPendingRoles] = useState<Record<string, AppRole>>({});
   const [pendingStatus, setPendingStatus] = useState<Record<string, boolean>>({});
   const [pendingSections, setPendingSections] = useState<Record<string, string>>({});
+  const [pendingCargo1, setPendingCargo1] = useState<Record<string, string>>({});
+  const [pendingCargo2, setPendingCargo2] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
-  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || Object.keys(pendingStatus).length > 0 || Object.keys(pendingSections).length > 0;
+  const hasPendingChanges = Object.keys(pendingRoles).length > 0 || 
+    Object.keys(pendingStatus).length > 0 || 
+    Object.keys(pendingSections).length > 0 ||
+    Object.keys(pendingCargo1).length > 0 ||
+    Object.keys(pendingCargo2).length > 0;
 
   // Subgroups state
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
