@@ -358,29 +358,29 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const errCls = (key: string) => errors[key] ? 'border-destructive focus-visible:ring-destructive' : '';
 
   return (
-    <form onSubmit={handleSubmit} className="w-[450px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 my-8" noValidate>
+    <form onSubmit={handleSubmit} className="w-full max-w-[500px] mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 my-8 flex flex-col scale-90 sm:scale-100 origin-top" noValidate>
       {/* Cabeçalho estilo Gmail */}
-      <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-        <span className="text-sm font-semibold text-gray-900">Nova mensagem</span>
+      <div className="bg-[#f2f6fc] px-3 py-1.5 border-b border-gray-200 flex items-center justify-between">
+        <span className="text-xs font-semibold text-gray-900">Nova mensagem</span>
       </div>
 
       <div className="flex flex-col">
         {/* Campo De */}
-        <div className="flex items-center px-4 py-2 border-b border-gray-100 group bg-gray-50/30">
-          <span className="text-sm text-gray-700 font-medium w-12">De</span>
+        <div className="flex items-center px-3 py-1.5 border-b border-gray-100 group bg-gray-50/30">
+          <span className="text-xs text-gray-700 font-medium w-10">De</span>
           <div className="flex-1 flex items-center gap-2 overflow-hidden">
-            <span className="text-sm font-semibold text-gray-900 truncate">{nomeAssociado}</span>
-            <span className="text-sm text-gray-600 truncate">&lt;{emailDe}&gt;</span>
+            <span className="text-xs font-semibold text-gray-900 truncate">{nomeAssociado}</span>
+            <span className="text-[10px] text-gray-600 truncate">&lt;{emailDe}&gt;</span>
           </div>
-          <div className="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium border border-blue-200">
+          <div className="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-medium border border-blue-200">
             {secao} • {cargo1}
           </div>
         </div>
 
         {/* Campo Para */}
-        <div className="flex flex-col px-4 py-2 border-b border-gray-100 relative group">
+        <div className="flex flex-col px-3 py-1.5 border-b border-gray-100 relative group">
           <div className="flex items-center">
-            <span className="text-sm text-gray-700 font-medium w-12">Para</span>
+            <span className="text-xs text-gray-700 font-medium w-10">Para</span>
             <div className="flex-1 relative">
               <input
                 id="destNome"
@@ -394,7 +394,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 placeholder="Destinatário"
                 autoComplete="off"
                 className={cn(
-                  "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                  "w-full text-xs text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
                   errCls('destNome')
                 )}
               />
@@ -426,14 +426,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Assunto (Nome do Evento) */}
-        <div className="flex items-center px-4 py-3 border-b border-gray-100 bg-white">
+        <div className="flex items-center px-3 py-2 border-b border-gray-100 bg-white">
           <input
             id="nomeEvento"
             value={nomeEvento}
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-base text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
+              "w-full text-sm text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
@@ -441,7 +441,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Detalhes da Atividade */}
-        <div className="bg-white px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
+        <div className="bg-white px-3 py-3 border-b border-gray-200 flex flex-wrap gap-2 sm:gap-4">
           <div className="flex flex-col gap-1.5 min-w-[160px]">
             <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-700">
               Data
@@ -519,21 +519,21 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Corpo da Mensagem */}
-        <div className="px-4 py-4 min-h-[300px] flex flex-col bg-white">
+        <div className="px-3 py-3 min-h-[200px] flex flex-col bg-white">
           <textarea
             id="observacoes"
             value={observacoes}
             onChange={(e) => setObservacoes(e.target.value)}
             placeholder="Escreva sua mensagem aqui..."
             className={cn(
-              "flex-1 w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-500 leading-relaxed font-semibold",
+              "flex-1 w-full text-sm text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-500 leading-relaxed font-semibold",
               errCls('observacoes')
             )}
           />
         </div>
 
         {/* Rodapé de Ações */}
-        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-white">
+        <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-2">
             <Button 
               type="submit" 
