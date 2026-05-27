@@ -872,8 +872,6 @@ const Admin = () => {
                             {u.name}
                           </button>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{u.email}</TableCell>
-                        <TableCell>
                           {(() => {
                             const currentSection = pendingSections[u.user_id] !== undefined ? pendingSections[u.user_id] : (u.section || '');
                             const isPending = pendingSections[u.user_id] !== undefined;
