@@ -30,3 +30,24 @@ export function stringToColor(str: string): string {
   
   return `hsl(${h}, ${s}%, ${l}%)`;
 }
+
+/**
+ * Returns a URL for a generated avatar image based on the name.
+ * Uses UI-Avatars for clean, deterministic initials-based images.
+ */
+export function getAvatarUrl(name: string): string {
+  if (!name) return "";
+  const encodedName = encodeURIComponent(name);
+  return `https://ui-avatars.com/api/?name=${encodedName}&background=random&color=fff&size=256`;
+}
+
+/**
+ * Returns a scenic/random image from Unsplash based on keywords in the title.
+ * Useful for events or branches without a specific photo.
+ */
+export function getRandomImageByTitle(title: string): string {
+  if (!title) return "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?q=80&w=1000&auto=format&fit=crop"; // Default camping photo
+  
+  const keywords = title.toLowerCase().split(/\s+/).slice(0, 3).join(',');
+  return `https://source.unsplash.com/featured/?scouting,${encodeURIComponent(keywords)}`;
+}

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw, Lock, FolderTree, Link2, Archive, ImageOff, Cloud } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
@@ -24,7 +24,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
-import { stringToColor } from '@/lib/avatarUtils';
+import { stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
 
 const AppSidebar = () => {
   const { profile, signOut, roles } = useAuth();
@@ -266,6 +266,7 @@ const AppSidebar = () => {
                 onClick={() => isMobile && setOpenMobile(false)}
               >
                 <Avatar className="h-7 w-7 shrink-0">
+                  <AvatarImage src={profile?.avatar_url || getAvatarUrl(profile?.name || '')} alt={profile?.name || ''} />
                   <AvatarFallback 
                     className="text-white text-xs font-bold"
                     style={{ backgroundColor: stringToColor(profile?.name || '') }}

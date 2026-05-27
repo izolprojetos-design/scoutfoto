@@ -21,7 +21,7 @@ import UpdateCheckCard from '@/components/profile/UpdateCheckCard';
 import MFASetup from '@/components/MFASetup';
 import PushNotificationCard from '@/components/profile/PushNotificationCard';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
-import { stringToColor } from '@/lib/avatarUtils';
+import { stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
 
 const Profile = () => {
   const { profile, roles, user, isAdmin, refreshRoles, refreshProfile } = useAuth();
@@ -139,16 +139,11 @@ const Profile = () => {
           <CardContent className="flex flex-col items-center gap-4 p-8">
             <div className="relative">
               <Avatar className="h-28 w-28 border-4 border-primary/20">
-                {displayAvatarUrl ? (
-                  <img
-                    key={displayAvatarUrl}
-                    src={displayAvatarUrl}
-                    alt={profile?.name || ''}
-                    className="aspect-square h-full w-full rounded-full object-cover"
-                    onLoad={() => setAvatarLoaded(true)}
-                    onError={() => setAvatarLoaded(false)}
-                  />
-                ) : null}
+                <AvatarImage 
+                  src={displayAvatarUrl || getAvatarUrl(profile?.name || '')} 
+                  alt={profile?.name || ''} 
+                  onLoadingStatusChange={(status) => setAvatarLoaded(status === 'loaded')}
+                />
                 <AvatarFallback
                   className={cn(
                     "text-white text-2xl font-bold",
