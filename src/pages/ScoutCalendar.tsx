@@ -460,7 +460,8 @@ const ScoutCalendar = () => {
         </div>
       )}
     </div>
-  );
+  </div>
+);
 };
 
 export default ScoutCalendar;
