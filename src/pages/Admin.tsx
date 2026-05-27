@@ -583,8 +583,8 @@ const Admin = () => {
         onValueChange={(val) => {
           setActiveTab(val);
           const newPath = val === 'overview' ? '/admin' : `/admin?tab=${val}`;
-          window.history.pushState(null, '', newPath);
-        }} 
+          navigate(newPath, { replace: true });
+        }}
         className="space-y-4"
       >
 
