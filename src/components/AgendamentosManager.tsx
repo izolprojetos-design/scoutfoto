@@ -1322,8 +1322,16 @@ const AgendamentosManager = () => {
                     />
                   </div>
                 </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-obs" className="text-xs font-semibold text-muted-foreground uppercase">Observações</Label>
+                <Textarea
+                  id="ed-obs"
+                  value={editing.observacoes}
+                  onChange={(e) => setEditing({ ...editing, observacoes: e.target.value })}
+                  rows={3}
+                  className="mt-1 text-sm font-medium"
+                />
               </div>
-
             </div>
           )}
 
