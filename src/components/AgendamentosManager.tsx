@@ -1134,34 +1134,34 @@ const AgendamentosManager = () => {
           </DialogHeader>
 
           {editing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-2">
-              <div className="md:col-span-2">
-                <Label htmlFor="ed-nome">Nome do associado</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-1">
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-nome" className="text-xs font-semibold text-muted-foreground uppercase">Nome do associado</Label>
                 <Input
                   id="ed-nome"
                   value={editing.nome_associado}
                   onChange={(e) => setEditing({ ...editing, nome_associado: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-dir">Dirigente</Label>
+                <Label htmlFor="ed-dir" className="text-xs font-semibold text-muted-foreground uppercase">Dirigente</Label>
                 <Input
                   id="ed-dir"
                   value={editing.dirigente}
                   onChange={(e) => setEditing({ ...editing, dirigente: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-tipo">Tipo de atividade</Label>
+                <Label htmlFor="ed-tipo" className="text-xs font-semibold text-muted-foreground uppercase">Tipo de atividade</Label>
                 <select
                   id="ed-tipo"
                   value={editing.tipo_atividade}
                   onChange={(e) => setEditing({ ...editing, tipo_atividade: e.target.value })}
-                  className="mt-1.5 flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="mt-1 flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {SCHEDULING_TYPES.map(t => (
                     <option key={t.value} value={t.value}>{t.label}</option>
@@ -1170,29 +1170,29 @@ const AgendamentosManager = () => {
               </div>
 
               <div>
-                <Label htmlFor="ed-data">Data</Label>
+                <Label htmlFor="ed-data" className="text-xs font-semibold text-muted-foreground uppercase">Data</Label>
                 <Input
                   id="ed-data"
                   type="date"
                   value={editing.data_secao}
                   onChange={(e) => setEditing({ ...editing, data_secao: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
               <div>
-                <Label htmlFor="ed-hora">Horário</Label>
+                <Label htmlFor="ed-hora" className="text-xs font-semibold text-muted-foreground uppercase">Horário</Label>
                 <Input
                   id="ed-hora"
                   type="time"
                   value={editing.horario.slice(0, 5)}
                   onChange={(e) => setEditing({ ...editing, horario: e.target.value })}
-                  className="mt-1.5"
+                  className="mt-1 h-9 text-sm"
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <Label htmlFor="ed-local">Local</Label>
+              <div className="sm:col-span-2">
+                <Label htmlFor="ed-local" className="text-xs font-semibold text-muted-foreground uppercase">Local</Label>
                 <Input
                   id="ed-local"
                   value={editing.local}
