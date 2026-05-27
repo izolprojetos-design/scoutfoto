@@ -361,18 +361,18 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200" noValidate>
       {/* Cabeçalho estilo Gmail */}
       <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-        <span className="text-sm font-medium text-gray-700">Nova mensagem</span>
+        <span className="text-sm font-semibold text-gray-900">Nova mensagem</span>
       </div>
 
       <div className="flex flex-col">
         {/* Campo De */}
-        <div className="flex items-center px-4 py-2 border-b border-gray-100 group">
-          <span className="text-sm text-gray-500 w-12">De</span>
+        <div className="flex items-center px-4 py-2 border-b border-gray-100 group bg-gray-50/30">
+          <span className="text-sm text-gray-700 font-medium w-12">De</span>
           <div className="flex-1 flex items-center gap-2 overflow-hidden">
-            <span className="text-sm font-medium text-gray-900 truncate">{nomeAssociado}</span>
-            <span className="text-xs text-gray-500 truncate">&lt;{emailDe}&gt;</span>
+            <span className="text-sm font-semibold text-gray-900 truncate">{nomeAssociado}</span>
+            <span className="text-sm text-gray-600 truncate">&lt;{emailDe}&gt;</span>
           </div>
-          <div className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">
+          <div className="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium border border-blue-200">
             {secao} • {cargo1}
           </div>
         </div>
@@ -380,7 +380,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         {/* Campo Para */}
         <div className="flex flex-col px-4 py-2 border-b border-gray-100 relative group">
           <div className="flex items-center">
-            <span className="text-sm text-gray-500 w-12">Para</span>
+            <span className="text-sm text-gray-700 font-medium w-12">Para</span>
             <div className="flex-1 relative">
               <input
                 id="destNome"
@@ -394,12 +394,12 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
                 placeholder="Destinatário"
                 autoComplete="off"
                 className={cn(
-                  "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
+                  "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
                   errCls('destNome')
                 )}
               />
             </div>
-            {destSearching && <Loader2 className="h-3 w-3 animate-spin text-gray-400" />}
+            {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
           </div>
           
           {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
@@ -433,45 +433,45 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400 font-medium",
+              "w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
-          <span className="text-[10px] text-gray-400 ml-2">{nomeEvento.length}/120</span>
+          <span className="text-xs text-gray-600 ml-2 font-semibold">{nomeEvento.length}/120</span>
         </div>
 
-        {/* Detalhes da Atividade (Substituindo os cards por uma barra de configuração compacta) */}
-        <div className="bg-gray-50/50 px-4 py-3 border-b border-gray-100 flex flex-wrap gap-3">
-          <div className="flex items-center gap-1.5 min-w-[140px]">
-            <CalendarDays className="h-3.5 w-3.5 text-gray-500" />
+        {/* Detalhes da Atividade */}
+        <div className="bg-gray-100/50 px-4 py-4 border-b border-gray-200 flex flex-wrap gap-4">
+          <div className="flex items-center gap-2 min-w-[150px]">
+            <CalendarDays className="h-4 w-4 text-gray-700" />
             <input
               type="date"
               value={dataSecao}
               onChange={(e) => setDataSecao(e.target.value)}
-              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('dataSecao'))}
+              className={cn("text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none", errCls('dataSecao'))}
             />
           </div>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <input
               type="time"
               value={horario}
               onChange={(e) => setHorario(e.target.value)}
-              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('horario'))}
+              className={cn("text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none", errCls('horario'))}
             />
           </div>
-          <div className="flex items-center gap-1.5 flex-1 min-w-[200px]">
+          <div className="flex items-center gap-2 flex-1 min-w-[250px]">
             <Input
               value={local}
               onChange={(e) => setLocal(e.target.value)}
               placeholder="Local da atividade"
-              className={cn("h-7 text-xs bg-white border-gray-200", errCls('local'))}
+              className={cn("h-9 text-sm font-bold text-gray-900 bg-white border-gray-300 placeholder:text-gray-500", errCls('local'))}
             />
           </div>
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <select
               value={ramoEscoteiro}
               onChange={(e) => setRamoEscoteiro(e.target.value)}
-              className={cn("text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none", errCls('ramoEscoteiro'))}
+              className={cn("text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none h-9", errCls('ramoEscoteiro'))}
             >
               <option value="">Ramo...</option>
               {branches.map(b => (
@@ -481,7 +481,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             <select
               value={tipoAtividade}
               onChange={(e) => setTipoAtividade(e.target.value)}
-              className="text-xs bg-white border border-gray-200 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 outline-none"
+              className="text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-md px-3 py-1.5 focus:ring-2 focus:ring-blue-500 outline-none h-9"
             >
               {SCHEDULING_TYPES.map(t => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -498,7 +498,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             onChange={(e) => setObservacoes(e.target.value)}
             placeholder="Escreva sua mensagem aqui..."
             className={cn(
-              "flex-1 w-full text-sm bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-400 leading-relaxed",
+              "flex-1 w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-500 leading-relaxed font-semibold",
               errCls('observacoes')
             )}
           />
@@ -531,8 +531,8 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             </Button>
           </div>
           
-          <div className="flex items-center gap-1 text-[11px] text-gray-400 italic">
-            <CheckCircle2 className="h-3 w-3" />
+          <div className="flex items-center gap-2 text-xs text-gray-600 font-bold italic">
+            <CheckCircle2 className="h-4 w-4" />
             Salvo automaticamente no sistema
           </div>
         </div>
