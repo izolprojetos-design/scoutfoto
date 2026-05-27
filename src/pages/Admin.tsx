@@ -928,20 +928,82 @@ const Admin = () => {
                           })()}
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            value={pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '')} 
-                            onChange={e => stageCargo1Change(u.user_id, e.target.value)}
-                            className={`h-8 text-xs ${pendingCargo1[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
-                            placeholder="Cargo 1"
-                          />
+                          {(() => {
+                            const currentCargo1 = pendingCargo1[u.user_id] !== undefined ? pendingCargo1[u.user_id] : (u.cargo_1 || '');
+                            const isPending = pendingCargo1[u.user_id] !== undefined;
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button
+                                    className={`h-8 px-3 rounded-md border text-xs text-left truncate max-w-[200px] hover:bg-accent transition-colors ${isPending ? 'ring-2 ring-primary/50' : ''}`}
+                                  >
+                                    {currentCargo1 || '— Nenhum —'}
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-base">Selecionar Cargo 1 — {u.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
+                                    <button
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                      onClick={() => stageCargo1Change(u.user_id, '')}
+                                    >
+                                      — Nenhum —
+                                    </button>
+                                    {VOLUNTEER_CARGOS.map(c => (
+                                      <button
+                                        key={c}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo1 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo1Change(u.user_id, c)}
+                                      >
+                                        {c}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell>
-                          <Input 
-                            value={pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '')} 
-                            onChange={e => stageCargo2Change(u.user_id, e.target.value)}
-                            className={`h-8 text-xs ${pendingCargo2[u.user_id] !== undefined ? 'ring-2 ring-primary/50' : ''}`}
-                            placeholder="Cargo 2"
-                          />
+                          {(() => {
+                            const currentCargo2 = pendingCargo2[u.user_id] !== undefined ? pendingCargo2[u.user_id] : (u.cargo_2 || '');
+                            const isPending = pendingCargo2[u.user_id] !== undefined;
+                            return (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <button
+                                    className={`h-8 px-3 rounded-md border text-xs text-left truncate max-w-[200px] hover:bg-accent transition-colors ${isPending ? 'ring-2 ring-primary/50' : ''}`}
+                                  >
+                                    {currentCargo2 || '— Nenhum —'}
+                                  </button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-md max-h-[80vh] overflow-hidden flex flex-col">
+                                  <DialogHeader>
+                                    <DialogTitle className="text-base">Selecionar Cargo 2 — {u.name}</DialogTitle>
+                                  </DialogHeader>
+                                  <div className="overflow-y-auto flex-1 -mx-2 px-2 space-y-1 py-2">
+                                    <button
+                                      className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === '' ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                      onClick={() => stageCargo2Change(u.user_id, '')}
+                                    >
+                                      — Nenhum —
+                                    </button>
+                                    {CARGO_2_OPTIONS.map(c => (
+                                      <button
+                                        key={c}
+                                        className={`w-full text-left rounded-lg px-3 py-2.5 text-sm transition-colors ${currentCargo2 === c ? 'bg-primary/10 border border-primary/30 font-medium' : 'hover:bg-muted/50 border border-transparent'}`}
+                                        onClick={() => stageCargo2Change(u.user_id, c)}
+                                      >
+                                        {c}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-muted-foreground text-xs">{u.email}</TableCell>
                         <TableCell>
