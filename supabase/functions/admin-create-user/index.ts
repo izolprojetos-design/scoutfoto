@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "create") {
-      const { email, password, name, role, section } = body;
+      const { email, password, name, role, section, user_number, cargo_1, cargo_2 } = body;
 
       if (!email || !password || !name) {
         return new Response(JSON.stringify({ error: "email, password e name são obrigatórios" }), { status: 400, headers: resHeaders });
@@ -133,6 +133,9 @@ Deno.serve(async (req) => {
         await new Promise(resolve => setTimeout(resolve, 500));
         const updateData: Record<string, unknown> = { must_change_password: true };
         if (section) updateData.section = section;
+        if (user_number) updateData.user_number = user_number;
+        if (cargo_1) updateData.cargo_1 = cargo_1;
+        if (cargo_2) updateData.cargo_2 = cargo_2;
         await serviceClient.from("profiles").update(updateData).eq("user_id", newUser.user.id);
       }
 
