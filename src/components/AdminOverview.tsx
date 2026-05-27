@@ -17,6 +17,7 @@ interface Stats {
   inactiveScouts: number;
   byBranch: { name: string; value: number; color: string }[];
   bySection: { name: string; value: number }[];
+  bySectionDistribution: { name: string; value: number; color: string }[];
   birthdaysThisMonth: number;
   upcomingTransitions: number;
   eventsThisYear: number;
@@ -173,6 +174,7 @@ const AdminOverview = () => {
         inactiveScouts: inactive.length,
         byBranch,
         bySection,
+        bySectionDistribution,
         birthdaysThisMonth,
         upcomingTransitions,
         eventsThisYear,
@@ -270,12 +272,12 @@ const AdminOverview = () => {
             <CardTitle className="text-base">Distribuição por seção</CardTitle>
           </CardHeader>
           <CardContent>
-            {bySectionDistribution.length === 0 ? (
+            {stats.bySectionDistribution.length === 0 ? (
               <p className="text-center text-sm text-muted-foreground py-12">Nenhum integrante ativo</p>
             ) : (
               <>
                 <LazyPieChart
-                  data={bySectionDistribution}
+                  data={stats.bySectionDistribution}
                   dataKey="value"
                   nameKey="name"
                   colors={(entry: any) => entry.color}
@@ -283,7 +285,7 @@ const AdminOverview = () => {
                   height={220}
                 />
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
-                  {bySectionDistribution.map(b => (
+                  {stats.bySectionDistribution.map(b => (
                     <div key={b.name} className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ background: b.color }} />
                       <span className="truncate">{b.name}</span>
