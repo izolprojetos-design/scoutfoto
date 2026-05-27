@@ -498,7 +498,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             onChange={(e) => setObservacoes(e.target.value)}
             placeholder="Escreva sua mensagem aqui..."
             className={cn(
-              "flex-1 w-full text-sm bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-400 leading-relaxed",
+              "flex-1 w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 resize-none placeholder:text-gray-500 leading-relaxed font-semibold",
               errCls('observacoes')
             )}
           />
