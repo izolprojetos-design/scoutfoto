@@ -182,7 +182,7 @@ const ScoutCalendar = () => {
                   key={i}
                   onClick={() => {
                     setSelectedDate(day);
-                    if (dayItems.length > 0) setShowDetails(true);
+                    setShowDetails(true);
                   }}
                   className={cn(
                     "relative flex flex-col border-r border-b group cursor-pointer transition-colors p-1 overflow-hidden",
