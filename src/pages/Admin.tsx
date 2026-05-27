@@ -666,9 +666,6 @@ const Admin = () => {
       >
 
         <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto p-1 gap-1">
-          <TabsTrigger value="archived" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <Archive className="h-4 w-4" /> Arquivadas
-          </TabsTrigger>
           <TabsTrigger value="audit" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             Auditoria
           </TabsTrigger>
@@ -1377,9 +1374,6 @@ const Admin = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="archived">
-          <ArchivedPhotosPanel />
-        </TabsContent>
 
         <TabsContent value="system">
           <div className="space-y-8 pb-12">
