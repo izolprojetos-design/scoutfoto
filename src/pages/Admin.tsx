@@ -620,13 +620,6 @@ const Admin = () => {
           <TabsTrigger value="branding" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <ImageOff className="h-4 w-4" /> Identidade
           </TabsTrigger>
-          <TabsTrigger 
-            value="drive" 
-            className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all"
-            onClick={() => console.log('[Admin] Acessando aba Google Drive')}
-          >
-            <Cloud className="h-4 w-4" /> Google Drive
-          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -637,9 +630,6 @@ const Admin = () => {
           <GroupLogoSettings />
         </TabsContent>
 
-        <TabsContent value="drive">
-          <GoogleDriveSettings />
-        </TabsContent>
 
         <TabsContent value="users">
           <Card className="border-0 shadow-lg">
