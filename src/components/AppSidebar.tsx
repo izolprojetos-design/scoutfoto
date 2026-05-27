@@ -49,8 +49,8 @@ const AppSidebar = () => {
   const adminSubItems = [
     { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
     { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
-    { to: '/admin?tab=roles', label: 'Papéis', icon: Shield, show: canAccessAdmin },
-    { to: '/admin?tab=permissions', label: 'Permissões', icon: Lock, show: canAccessAdmin },
+    { to: '/admin?tab=roles_permissions', label: 'Papéis e Permissões', icon: Shield, show: canAccessAdmin },
+
     { to: '/admin?tab=audit', label: 'Auditoria', icon: ListChecks, show: canAccessAdmin },
     { to: '/admin?tab=subgroups', label: 'Equipes', icon: FolderTree, show: canAccessAdmin },
     { to: '/admin?tab=invites', label: 'Convites', icon: Link2, show: canAccessAdmin },

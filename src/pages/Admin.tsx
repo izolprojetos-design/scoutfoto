@@ -592,8 +592,8 @@ const Admin = () => {
         <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto">
           <TabsTrigger value="overview" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><LayoutDashboard className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
           <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
-          <TabsTrigger value="roles" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Papéis</TabsTrigger>
-          <TabsTrigger value="permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Lock className="h-3.5 w-3.5" />Permissões</TabsTrigger>
+          <TabsTrigger value="roles_permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Papéis e Permissões</TabsTrigger>
+
           
           <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
           <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Equipes</TabsTrigger>
@@ -960,16 +960,16 @@ const Admin = () => {
           </AnimatePresence>
         </TabsContent>
 
-        <TabsContent value="roles">
-          <RolesManager />
-        </TabsContent>
-
-        <TabsContent value="permissions">
-          <Tabs defaultValue="roles_permissions" className="space-y-4">
+        <TabsContent value="roles_permissions">
+          <Tabs defaultValue="roles_list" className="space-y-4">
             <TabsList className="bg-muted/40 p-1">
+              <TabsTrigger value="roles_list" className="text-xs sm:text-sm">Papéis do Sistema</TabsTrigger>
               <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm">Por Papel (Recomendado)</TabsTrigger>
               <TabsTrigger value="user_permissions" className="text-xs sm:text-sm">Por Usuário (Exceções)</TabsTrigger>
             </TabsList>
+            <TabsContent value="roles_list">
+              <RolesManager />
+            </TabsContent>
             <TabsContent value="roles_permissions">
               <RolePermissionsManager />
             </TabsContent>
@@ -978,6 +978,7 @@ const Admin = () => {
             </TabsContent>
           </Tabs>
         </TabsContent>
+
 
 
         <TabsContent value="audit">
