@@ -1,7 +1,7 @@
 
 import React from 'react';
 import ScoutPhoto from './ScoutPhoto';
-import { getInitials, stringToColor } from '@/lib/avatarUtils';
+import { getInitials, stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
 import { cn } from '@/lib/utils';
 
 interface ScoutAvatarProps {
