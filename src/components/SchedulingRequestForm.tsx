@@ -533,7 +533,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Rodapé de Ações */}
-        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-white">
+        <div className="px-3 py-2 border-t border-gray-100 flex items-center justify-between bg-white">
           <div className="flex items-center gap-2">
             <Button 
               type="submit" 
