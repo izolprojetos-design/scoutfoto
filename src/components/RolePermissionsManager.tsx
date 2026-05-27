@@ -127,7 +127,7 @@ const RolePermissionsManager = () => {
       {/* Role selection sidebar */}
       <Card className="border-0 shadow-lg h-fit">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
             <Users className="h-4 w-4" />
             Selecionar Papel
           </CardTitle>
@@ -144,7 +144,7 @@ const RolePermissionsManager = () => {
                     : 'hover:bg-muted/50 border border-transparent'
                 }`}
               >
-                <div className="font-medium flex items-center gap-2">
+                <div className="font-bold flex items-center gap-2">
                   {r.display_name}
                   {r.role === 'admin' && <Badge variant="destructive" className="text-[10px] px-1 py-0">Admin</Badge>}
                 </div>

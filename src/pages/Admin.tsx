@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -589,20 +589,40 @@ const Admin = () => {
         className="space-y-4"
       >
 
-        <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto">
-          <TabsTrigger value="overview" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><LayoutDashboard className="h-3.5 w-3.5" />Visão Geral</TabsTrigger>
-          <TabsTrigger value="users" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Usuários</TabsTrigger>
-          <TabsTrigger value="roles_permissions" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Papéis e Permissões</TabsTrigger>
-
-          
-          <TabsTrigger value="audit" className="text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70">Auditoria</TabsTrigger>
-          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><FolderTree className="h-3.5 w-3.5" />Equipes</TabsTrigger>
-          <TabsTrigger value="invites" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Link2 className="h-3.5 w-3.5" />Convites</TabsTrigger>
-          <TabsTrigger value="archived" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Archive className="h-3.5 w-3.5" />Arquivadas</TabsTrigger>
-          <TabsTrigger value="security" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Shield className="h-3.5 w-3.5" />Segurança</TabsTrigger>
-          <TabsTrigger value="system" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><RefreshCw className="h-3.5 w-3.5" />Sistema</TabsTrigger>
-          <TabsTrigger value="branding" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><ImageOff className="h-3.5 w-3.5" />Identidade</TabsTrigger>
-          <TabsTrigger value="drive" className="gap-1.5 text-sm font-semibold data-[state=active]:text-foreground data-[state=inactive]:text-foreground/70"><Cloud className="h-3.5 w-3.5" />Google Drive</TabsTrigger>
+        <TabsList className="mb-4 bg-muted/60 flex-wrap h-auto p-1 gap-1">
+          <TabsTrigger value="overview" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <LayoutDashboard className="h-4 w-4" /> Visão Geral
+          </TabsTrigger>
+          <TabsTrigger value="users" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            Usuários
+          </TabsTrigger>
+          <TabsTrigger value="roles_permissions" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Shield className="h-4 w-4" /> Papéis e Permissões
+          </TabsTrigger>
+          <TabsTrigger value="audit" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            Auditoria
+          </TabsTrigger>
+          <TabsTrigger value="subgroups" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <FolderTree className="h-4 w-4" /> Equipes
+          </TabsTrigger>
+          <TabsTrigger value="invites" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Link2 className="h-4 w-4" /> Convites
+          </TabsTrigger>
+          <TabsTrigger value="archived" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Archive className="h-4 w-4" /> Arquivadas
+          </TabsTrigger>
+          <TabsTrigger value="security" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Shield className="h-4 w-4" /> Segurança
+          </TabsTrigger>
+          <TabsTrigger value="system" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <RefreshCw className="h-4 w-4" /> Sistema
+          </TabsTrigger>
+          <TabsTrigger value="branding" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <ImageOff className="h-4 w-4" /> Identidade
+          </TabsTrigger>
+          <TabsTrigger value="drive" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Cloud className="h-4 w-4" /> Google Drive
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview">
@@ -961,22 +981,35 @@ const Admin = () => {
         </TabsContent>
 
         <TabsContent value="roles_permissions">
-          <Tabs defaultValue="roles_list" className="space-y-4">
-            <TabsList className="bg-muted/40 p-1">
-              <TabsTrigger value="roles_list" className="text-xs sm:text-sm">Papéis do Sistema</TabsTrigger>
-              <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm">Por Papel (Recomendado)</TabsTrigger>
-              <TabsTrigger value="user_permissions" className="text-xs sm:text-sm">Por Usuário (Exceções)</TabsTrigger>
-            </TabsList>
-            <TabsContent value="roles_list">
-              <RolesManager />
-            </TabsContent>
-            <TabsContent value="roles_permissions">
-              <RolePermissionsManager />
-            </TabsContent>
-            <TabsContent value="user_permissions">
-              <PermissionsManager />
-            </TabsContent>
-          </Tabs>
+          <Card className="border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg font-bold">
+                <Shield className="h-5 w-5 text-primary" />
+                Papéis e Permissões
+              </CardTitle>
+              <CardDescription>
+                Gerencie os níveis de acesso e as permissões de cada função no sistema.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="roles_list" className="space-y-4">
+                <TabsList className="bg-muted/40 p-1 mb-4">
+                  <TabsTrigger value="roles_list" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Papéis do Sistema</TabsTrigger>
+                  <TabsTrigger value="roles_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Papel (Recomendado)</TabsTrigger>
+                  <TabsTrigger value="user_permissions" className="text-xs sm:text-sm font-bold px-4 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm">Por Usuário (Exceções)</TabsTrigger>
+                </TabsList>
+                <TabsContent value="roles_list">
+                  <RolesManager />
+                </TabsContent>
+                <TabsContent value="roles_permissions">
+                  <RolePermissionsManager />
+                </TabsContent>
+                <TabsContent value="user_permissions">
+                  <PermissionsManager />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
         </TabsContent>
 
 

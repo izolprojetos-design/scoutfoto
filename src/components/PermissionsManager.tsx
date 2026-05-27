@@ -145,7 +145,7 @@ const PermissionsManager = () => {
       {/* User list sidebar */}
       <Card className="border-0 shadow-lg">
         <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+          <CardTitle className="text-base font-bold flex items-center gap-2">
             <User className="h-4 w-4" />
             Selecionar Usuário
           </CardTitle>
@@ -184,7 +184,7 @@ const PermissionsManager = () => {
                     : 'hover:bg-muted/50 border border-transparent'
                 }`}
               >
-                <div className="font-medium truncate flex items-center gap-2">
+                <div className="font-bold truncate flex items-center gap-2 text-foreground">
                   {u.user_number != null && (
                     <span className="text-xs text-muted-foreground font-mono">#{String(u.user_number).padStart(7, '0')}</span>
                   )}
