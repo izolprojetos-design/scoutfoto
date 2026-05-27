@@ -57,7 +57,7 @@ const RolePermissionsManager = () => {
     ]);
 
     setPermissions((perms as Permission[]) || []);
-    setRoles((roleDescs as RoleDescription[]) || []);
+    setRoles(((roleDescs as RoleDescription[]) || []).sort((a, b) => a.display_name.localeCompare(b.display_name, 'pt-BR')));
     setRolePermissions((rps as RolePermission[]) || []);
     
     // Count users per role
