@@ -433,11 +433,11 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-sm bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400 font-medium",
+              "w-full text-base text-gray-900 bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
-          <span className="text-[10px] text-gray-400 ml-2">{nomeEvento.length}/120</span>
+          <span className="text-xs text-gray-600 ml-2 font-semibold">{nomeEvento.length}/120</span>
         </div>
 
         {/* Detalhes da Atividade (Substituindo os cards por uma barra de configuração compacta) */}
