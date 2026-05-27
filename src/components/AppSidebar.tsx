@@ -44,7 +44,10 @@ const AppSidebar = () => {
     { to: '/calendar', label: 'Agenda', icon: CalendarDays, show: true },
     { to: '/events', label: 'Eventos', icon: Calendar, show: canViewEvents },
     { to: '/agendamentos', label: 'Mensagem', icon: ListChecks, show: true },
-  ].filter(i => i.show);
+  ].filter(i => i.show).sort((a, b) => {
+    const order = ['Agenda', 'Eventos', 'Mensagem'];
+    return order.indexOf(a.label) - order.indexOf(b.label);
+  });
 
   const adminSubItems = [
     { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
