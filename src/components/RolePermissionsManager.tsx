@@ -144,7 +144,7 @@ const RolePermissionsManager = () => {
                     : 'hover:bg-muted/50 border border-transparent'
                 }`}
               >
-                <div className="font-medium flex items-center gap-2">
+                <div className="font-bold flex items-center gap-2">
                   {r.display_name}
                   {r.role === 'admin' && <Badge variant="destructive" className="text-[10px] px-1 py-0">Admin</Badge>}
                 </div>
