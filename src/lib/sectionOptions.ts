@@ -9,7 +9,6 @@ export const VOLUNTEER_CARGOS = [
   'Assistente - Diretoria Administrativa',
   'Assistente - Diretoria Administrativa - Condecorações - Loja',
   'Assistente - Diretoria de Comunicação',
-  'Assistente - Diretoria de Comunciação',
   'Assistente de Seção - Alcateia',
   'Assistente de Seção - Clã Pioneiro',
   'Assistente de Seção - Tropa Escoteira',
