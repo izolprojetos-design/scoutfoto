@@ -366,13 +366,13 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
       <div className="flex flex-col">
         {/* Campo De */}
-        <div className="flex items-center px-4 py-2 border-b border-gray-100 group">
-          <span className="text-sm text-gray-500 w-12">De</span>
+        <div className="flex items-center px-4 py-2 border-b border-gray-100 group bg-gray-50/30">
+          <span className="text-sm text-gray-700 font-medium w-12">De</span>
           <div className="flex-1 flex items-center gap-2 overflow-hidden">
-            <span className="text-sm font-medium text-gray-900 truncate">{nomeAssociado}</span>
-            <span className="text-xs text-gray-500 truncate">&lt;{emailDe}&gt;</span>
+            <span className="text-sm font-semibold text-gray-900 truncate">{nomeAssociado}</span>
+            <span className="text-sm text-gray-600 truncate">&lt;{emailDe}&gt;</span>
           </div>
-          <div className="text-[10px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded border border-blue-100">
+          <div className="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-medium border border-blue-200">
             {secao} • {cargo1}
           </div>
         </div>
