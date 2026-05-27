@@ -433,7 +433,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
             onChange={(e) => setNomeEvento(e.target.value.slice(0, 120))}
             placeholder="Assunto"
             className={cn(
-              "w-full text-base text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
+              "w-full text-sm text-black bg-white border-none focus:ring-0 p-0 placeholder:text-gray-500 font-bold",
               errCls('nomeEvento')
             )}
           />
