@@ -784,7 +784,7 @@ const Admin = () => {
                           <Label>Seção</Label>
                           <Select value={newSection || 'none'} onValueChange={(v) => setNewSection(v === 'none' ? '' : v)}>
                             <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-h-[300px]">
                               <SelectItem value="none">Nenhuma</SelectItem>
                               {SECTION_OPTIONS.map(s => (
                                 <SelectItem key={s} value={s}>{s}</SelectItem>
@@ -794,11 +794,27 @@ const Admin = () => {
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo 1</Label>
-                          <Input value={newCargo1} onChange={e => setNewCargo1(e.target.value)} placeholder="Ex: Chefe de Seção" />
+                          <Select value={newCargo1 || 'none'} onValueChange={(v) => setNewCargo1(v === 'none' ? '' : v)}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {VOLUNTEER_CARGOS.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label>Cargo 2 (opcional)</Label>
-                          <Input value={newCargo2} onChange={e => setNewCargo2(e.target.value)} placeholder="Ex: Diretor" />
+                          <Select value={newCargo2 || 'none'} onValueChange={(v) => setNewCargo2(v === 'none' ? '' : v)}>
+                            <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent className="max-h-[300px]">
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {CARGO_2_OPTIONS.map(c => (
+                                <SelectItem key={c} value={c}>{c}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="space-y-2">
                           <Label>Papel no Sistema</Label>
