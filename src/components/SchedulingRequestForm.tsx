@@ -358,7 +358,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const errCls = (key: string) => errors[key] ? 'border-destructive focus-visible:ring-destructive' : '';
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200" noValidate>
+    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200 my-8" noValidate>
       {/* Cabeçalho estilo Gmail */}
       <div className="bg-[#f2f6fc] px-4 py-2 border-b border-gray-200 flex items-center justify-between">
         <span className="text-sm font-semibold text-gray-900">Nova mensagem</span>
