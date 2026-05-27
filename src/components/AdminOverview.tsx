@@ -121,6 +121,23 @@ const AdminOverview = () => {
         .map(([name, value]) => ({ name, value }))
         .sort((a, b) => b.value - a.value);
 
+      // Distribution for the first chart (now using section data but with branch logic if needed, 
+      // but user asked to pull information from "Ocupação por seção")
+      // Let's create a specialized distribution for the first chart based on sections
+      const SECTION_COLORS: Record<string, string> = {
+        'Alcatéia': 'hsl(38 92% 50%)', // Amber
+        'Tropa Escoteira': 'hsl(142 71% 45%)', // Emerald
+        'Tropa Sênior': 'hsl(0 72% 51%)', // Red
+        'Clã Pioneiro': 'hsl(270 70% 55%)', // Purple
+        'Chefia': 'hsl(25 95% 53%)', // Orange
+      };
+
+      const bySectionDistribution = bySection.map(s => ({
+        name: s.name,
+        value: s.value,
+        color: SECTION_COLORS[s.name] || `hsl(${Math.abs(s.name.split('').reduce((a, b) => a + b.charCodeAt(0), 0)) % 360} 70% 50%)`
+      }));
+
       // Birthdays this month
       const birthdaysThisMonth = active.filter(s => {
         if (!s.birth_date) return false;
@@ -250,15 +267,15 @@ const AdminOverview = () => {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="border shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base">Distribuição por ramo</CardTitle>
+            <CardTitle className="text-base">Distribuição por seção</CardTitle>
           </CardHeader>
           <CardContent>
-            {stats.byBranch.length === 0 ? (
+            {bySectionDistribution.length === 0 ? (
               <p className="text-center text-sm text-muted-foreground py-12">Nenhum integrante ativo</p>
             ) : (
               <>
                 <LazyPieChart
-                  data={stats.byBranch}
+                  data={bySectionDistribution}
                   dataKey="value"
                   nameKey="name"
                   colors={(entry: any) => entry.color}
@@ -266,7 +283,7 @@ const AdminOverview = () => {
                   height={220}
                 />
                 <div className="mt-3 grid grid-cols-2 gap-2 text-xs sm:grid-cols-3">
-                  {stats.byBranch.map(b => (
+                  {bySectionDistribution.map(b => (
                     <div key={b.name} className="flex items-center gap-2">
                       <span className="h-2.5 w-2.5 rounded-full" style={{ background: b.color }} />
                       <span className="truncate">{b.name}</span>
