@@ -235,6 +235,8 @@ const Admin = () => {
           role: userRole?.role || 'viewer',
           section: (p as any).section || '',
           user_number: (p as any).user_number || null,
+          cargo_1: (p as any).cargo_1 || '',
+          cargo_2: (p as any).cargo_2 || '',
         };
       });
       merged.sort((a, b) => {
