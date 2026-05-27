@@ -454,6 +454,17 @@ const Events = () => {
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  {/* Debug indication of selected image */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 py-0.5 px-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                    <p className="text-[8px] text-white truncate text-center font-mono">
+                      {event.name.toLowerCase().includes('acampamento') || 
+                       event.name.toLowerCase().includes('trilha') ||
+                       event.name.toLowerCase().includes('celebração') ||
+                       event.name.toLowerCase().includes('reunião') ||
+                       event.name.toLowerCase().includes('atividade') 
+                       ? 'Keyword' : 'Random'}: {getEventCoverImage(event.name).split('/').pop()?.split('.')[0] || 'img'}
+                    </p>
+                  </div>
                 </div>
 
                 <div className="flex-1 min-w-0">
