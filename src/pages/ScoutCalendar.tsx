@@ -164,19 +164,10 @@ const ScoutCalendar = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
-          <p className="text-muted-foreground">Eventos e agendamentos unificados</p>
+          <p className="text-muted-foreground">Visualize eventos e agendamentos no calendário</p>
         </div>
         
         <div className="flex items-center gap-2">
-          <Button 
-            variant={activeTab === 'calendar' ? 'default' : 'outline'} 
-            size="sm"
-            onClick={() => setActiveTab('calendar')}
-            className="rounded-full"
-          >
-            <CalIcon className="mr-2 h-4 w-4" />
-            Calendário
-          </Button>
           {canRequestScheduling && (
             <>
               <Button 
