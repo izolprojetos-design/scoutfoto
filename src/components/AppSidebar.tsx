@@ -58,7 +58,6 @@ const AppSidebar = () => {
     { to: '/admin?tab=security', label: 'Segurança', icon: Shield, show: canAccessAdmin },
     { to: '/admin?tab=system', label: 'Sistema & Status', icon: RefreshCw, show: canAccessAdmin },
     { to: '/admin?tab=branding', label: 'Identidade', icon: ImageOff, show: canAccessAdmin },
-    { to: '/admin?tab=drive', label: 'Google Drive', icon: Cloud, show: canAccessAdmin },
   ].filter(i => i.show);
 
 
