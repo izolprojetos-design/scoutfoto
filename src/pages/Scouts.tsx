@@ -3374,16 +3374,16 @@ const Scouts = () => {
 
       {/* Photo viewer dialog */}
       <Dialog open={!!viewingPhoto} onOpenChange={() => setViewingPhoto(null)}>
-        <DialogContent className="max-w-lg p-2 bg-background/95 backdrop-blur">
+        <DialogContent className="max-w-lg p-0 overflow-hidden border-none bg-transparent shadow-none">
           <DialogHeader className="sr-only">
-            <DialogTitle>Foto do jovem</DialogTitle>
+            <DialogTitle>Foto do integrante</DialogTitle>
           </DialogHeader>
           {viewingPhoto && (
             <div className="relative">
               <img
                 src={viewingPhoto}
                 alt="Foto do integrante"
-                className="w-full h-auto rounded-lg object-contain max-h-[75vh]"
+                className="w-full h-auto rounded-2xl object-contain max-h-[85vh] shadow-2xl"
                 onError={(e) => {
                   const target = e.currentTarget;
                   target.style.display = 'none';
@@ -3391,15 +3391,16 @@ const Scouts = () => {
                   if (fallback) fallback.style.display = 'flex';
                 }}
               />
-              <div className="hidden flex-col items-center justify-center py-16 text-muted-foreground">
+              <div className="hidden flex-col items-center justify-center py-16 text-muted-foreground bg-background/95 rounded-2xl">
                 <ImageIcon className="h-16 w-16 mb-3 opacity-40" />
                 <p className="text-sm font-medium">Foto não disponível</p>
                 <p className="text-xs mt-1">A imagem foi removida do armazenamento</p>
               </div>
-              <div className="flex justify-center mt-3 pb-2">
+              <div className="flex justify-center mt-4 pb-4">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
+                  className="rounded-full shadow-lg"
                   onClick={async () => {
                     try {
                       const response = await fetch(viewingPhoto);
