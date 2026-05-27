@@ -73,7 +73,7 @@ const SchedulingAdminNotificationEmail = ({
 
         <Text style={footer}>
           Atenciosamente,<br />
-          Equipe {SITE_NAME} — Grupo Escoteiro Monte Caburaí 12/RR
+          Equipe {SITE_NAME} — 12º Grupo Escoteiro Monte Caburaí
         </Text>
       </Container>
     </Body>
