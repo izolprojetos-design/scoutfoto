@@ -114,7 +114,7 @@ const ScoutCalendar = () => {
     <div className="flex flex-col h-full bg-background animate-in fade-in duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda do Grupo</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Agenda</h1>
           <p className="text-muted-foreground">Visualize os eventos no calendário</p>
         </div>
       </div>
