@@ -125,14 +125,14 @@ export const usePermissions = () => {
     loading,
     hasPermission,
     // Fotos
-    canViewPhotos: hasPermission('view_photos'),
+    canViewPhotos: hasPermission('view_photos') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor'),
     canUploadPhotos: hasPermission('upload_photos'),
     canDownloadPhotos: hasPermission('download_photos'),
     canEditPhotos: hasPermission('edit_photos'),
     canDeletePhotos: hasPermission('delete_photos'),
     canManagePhotos: hasPermission('manage_photos'),
     // Eventos
-    canViewEvents: hasPermission('view_events'),
+    canViewEvents: hasPermission('view_events') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor'),
     canEditEvents: hasPermission('edit_events'),
     canManageEvents: hasPermission('manage_events'),
     canViewEventPhotos: hasPermission('view_event_photos'),
@@ -141,7 +141,7 @@ export const usePermissions = () => {
     canUploadEventPhotos: hasPermission('upload_event_photos'),
     canDeleteEventPhotos: hasPermission('delete_event_photos'),
     // Integrantes
-    canViewScouts: hasPermission('view_scouts'),
+    canViewScouts: hasPermission('view_scouts') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('parent'),
     canEditScouts: hasPermission('edit_scouts'),
     canManageScouts: hasPermission('manage_scouts'),
     canViewGuardians: hasPermission('view_guardians'),
