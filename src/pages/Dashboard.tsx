@@ -167,117 +167,111 @@ const Dashboard = () => {
     if (permLoading) return;
     setLoading(true);
 
+    try {
+      // Parallel fetch for initial high-level data
+      const [branchRes, evtRes, scoutRes] = await Promise.all([
+        supabase.from('branches').select('*').order('sort_order'),
+        supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
+        supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
+      ]);
 
-    // Core queries for all users; admin-only queries run conditionally
-    const corePromises = [
-      supabase.from('branches').select('*').order('sort_order'),
-      supabase.from('events').select('id, name, event_date, created_at, branch_id, scout_group, location').order('event_date', { ascending: false }).limit(20),
-      supabase.from('scouts').select('id, name, birth_date, photo_url, section, is_active, manual_branch').eq('is_active', true).order('name'),
-    ] as const;
+      const branchesData = branchRes.data || [];
+      const eventsData = evtRes.data || [];
+      const scoutsData = scoutRes.data || [];
 
-    const adminPromises = isAdmin
-      ? [
-        supabase.from('profiles').select('user_id, name, is_active, section'),
-        supabase.from('user_roles').select('user_id, role'),
-      ] as const
-      : null;
+      setScouts(scoutsData as any[]);
 
-    const [branchRes, evtRes, scoutRes, ...adminResults] = await Promise.all([
-      ...corePromises,
-      ...(adminPromises ?? []),
-    ]);
+      // Parallel fetch for sub-metrics
+      const eventIds = eventsData.map(e => e.id);
+      const promises: Promise<any>[] = [
+        eventIds.length > 0
+          ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
+          : Promise.resolve({ data: [] }),
+        supabase.from('images').select('branch_id').is('event_id', null)
+      ];
 
-    const branchesData = branchRes.data || [];
-    const eventsData = evtRes.data || [];
-
-    // Otimização: Buscar apenas as imagens dos 20 eventos retornados
-    const eventIds = eventsData.map(e => e.id);
-    const [eventImagesRes, memberImagesRes] = await Promise.all([
-      eventIds.length > 0
-        ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
-        : Promise.resolve({ data: [] }),
-      // Buscar apenas os metadados necessários para ramos
-      supabase.from('images').select('branch_id').is('event_id', null)
-    ]);
-
-    const eventImages = eventImagesRes.data || [];
-    const memberImages = memberImagesRes.data || [];
-
-    if (branchesData) {
-      const withCounts = branchesData.map(branch => ({
-        ...branch,
-        imageCount: memberImages.filter((img: any) => img.branch_id === branch.id).length,
-      }));
-      setBranches(withCounts);
-      setTotalImages(memberImages.length);
-    }
-
-    if (eventsData) {
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-      const recentEvents = eventsData.filter(evt => {
-        if (!evt.event_date) return false;
-        return parseLocalDate(evt.event_date) >= thirtyDaysAgo;
-      });
-      const evtsWithCounts = recentEvents.map(evt => {
-        const evtImgs = eventImages.filter((img: any) => img.event_id === evt.id);
-        const photoCount = evtImgs.filter((img: any) => img.media_type !== 'video').length;
-        const videoCount = evtImgs.filter((img: any) => img.media_type === 'video').length;
-        return { ...evt, imageCount: evtImgs.length, photoCount, videoCount };
-      });
-      setEventsWithPhotos(evtsWithCounts);
-      setTotalEvents(eventsData.length);
-    }
-
-    setScouts((scoutRes.data as any) || []);
-
-    if (isAdmin && adminResults.length === 2) {
-      setAllProfiles((adminResults[0] as any).data || []);
-      setAllRoles(((adminResults[1] as any).data as UserRole[]) || []);
-
-      // Fetch recent logins in parallel with admin data
-      const { data: loginLogs } = await supabase
-        .from('audit_logs')
-        .select('user_id, created_at')
-        .eq('action', 'login')
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      if (loginLogs) {
-        const profilesData = (adminResults[0] as any).data || [];
-        const profileMap = new Map<string, string>();
-        profilesData.forEach((p: UserProfile) => profileMap.set(p.user_id, p.name));
-
-        const seen = new Set<string>();
-        const logins: RecentLogin[] = [];
-        for (const log of loginLogs) {
-          if (!seen.has(log.user_id)) {
-            seen.add(log.user_id);
-            logins.push({
-              user_id: log.user_id,
-              name: profileMap.get(log.user_id) || 'Desconhecido',
-              last_login: log.created_at,
-            });
-          }
-        }
-        setRecentLogins(logins);
+      // Admin-only metrics fetched only if needed
+      if (isAdmin) {
+        promises.push(supabase.from('profiles').select('user_id, name, is_active, section'));
+        promises.push(supabase.from('user_roles').select('user_id, role'));
+        promises.push(supabase.from('audit_logs').select('user_id, created_at').eq('action', 'login').order('created_at', { ascending: false }).limit(50));
+        promises.push(supabase.rpc('admin_list_online_users'));
       }
 
-      // Fetch real online users (active sessions in the last 30 minutes)
-      const { data: onlineData } = await supabase.rpc('admin_list_online_users');
-      if (onlineData) {
-        setOnlineUsers(
-          onlineData.map((u: any) => ({
+      const results = await Promise.all(promises);
+      const eventImages = results[0]?.data || [];
+      const memberImages = results[1]?.data || [];
+
+      if (branchesData.length > 0) {
+        // Optimizing count calculation
+        const branchCounts = memberImages.reduce((acc: Record<string, number>, img: any) => {
+          acc[img.branch_id] = (acc[img.branch_id] || 0) + 1;
+          return acc;
+        }, {});
+
+        setBranches(branchesData.map(branch => ({
+          ...branch,
+          imageCount: branchCounts[branch.id] || 0,
+        })));
+        setTotalImages(memberImages.length);
+      }
+
+      if (eventsData.length > 0) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        
+        const evtsWithCounts = eventsData
+          .filter(evt => evt.event_date && parseLocalDate(evt.event_date) >= thirtyDaysAgo)
+          .map(evt => {
+            const evtImgs = eventImages.filter((img: any) => img.event_id === evt.id);
+            return {
+              ...evt,
+              imageCount: evtImgs.length,
+              photoCount: evtImgs.filter((img: any) => img.media_type !== 'video').length,
+              videoCount: evtImgs.filter((img: any) => img.media_type === 'video').length
+            };
+          });
+        setEventsWithPhotos(evtsWithCounts);
+        setTotalEvents(eventsData.length);
+      }
+
+      if (isAdmin && results.length >= 6) {
+        const profilesData = results[2]?.data || [];
+        setAllProfiles(profilesData);
+        setAllRoles(results[3]?.data || []);
+        
+        const loginLogs = results[4]?.data || [];
+        if (loginLogs.length > 0) {
+          const profileMap = new Map(profilesData.map((p: any) => [p.user_id, p.name]));
+          const seen = new Set<string>();
+          const logins: RecentLogin[] = [];
+          for (const log of loginLogs) {
+            if (!seen.has(log.user_id)) {
+              seen.add(log.user_id);
+              logins.push({
+                user_id: log.user_id,
+                name: profileMap.get(log.user_id) || 'Desconhecido',
+                last_login: log.created_at,
+              });
+            }
+          }
+          setRecentLogins(logins);
+        }
+
+        if (results[5]?.data) {
+          setOnlineUsers(results[5].data.map((u: any) => ({
             user_id: u.user_id,
             name: u.name,
             last_login: u.last_active,
-          }))
-        );
+          })));
+        }
       }
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
-  }, [isAdmin]);
+  }, [isAdmin, permLoading]);
 
   useEffect(() => { fetchData(); }, [fetchData, canViewPhotos, canViewScouts]);
 
