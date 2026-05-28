@@ -198,6 +198,7 @@ const Dashboard = () => {
         promises.push(supabase.rpc('admin_list_online_users'));
       }
 
+
       const results = await Promise.all(promises);
       const eventImages = results[0]?.data || [];
       const memberImages = results[1]?.data || [];
