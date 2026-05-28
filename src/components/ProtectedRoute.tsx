@@ -32,7 +32,10 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
     if (currentPath !== '/profile') {
-      console.warn(`[ProtectedRoute] Access denied to "${currentPath}": missing role "${requiredRole}". Roles: [${roles.join(', ')}]. Redirecting to /profile.`);
+      const msg = `[ProtectedRoute] Access denied to "${currentPath}": missing role "${requiredRole}". Roles: [${roles.join(', ')}]. Redirecting to /profile.`;
+      console.warn(msg);
+      // Trigger a custom event for the debug panel if it exists
+      window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
       return <Navigate to="/profile" replace />;
     }
   }
@@ -45,7 +48,9 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     const currentPath = window.location.pathname;
 
     if (currentPath !== '/profile') {
-      console.warn(`[ProtectedRoute] Access denied to "${currentPath}": missing permission "${requiredPermission}". Redirecting to /profile.`);
+      const msg = `[ProtectedRoute] Access denied to "${currentPath}": missing permission "${requiredPermission}". Redirecting to /profile.`;
+      console.warn(msg);
+      window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
       return <Navigate to="/profile" replace />;
     }
   }

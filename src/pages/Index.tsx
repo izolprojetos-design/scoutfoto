@@ -13,15 +13,22 @@ const Index = () => {
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirect based on capabilities
+        // Redirect based on capabilities with logging
+        let destination = '/profile';
+        let reason = 'Default fallback (no view permissions)';
+
         if (canViewPhotos) {
-          navigate('/dashboard', { replace: true });
+          destination = '/dashboard';
+          reason = 'User has canViewPhotos permission';
         } else if (canViewScouts) {
-          navigate('/scouts', { replace: true });
-        } else {
-          // If the user has no specific view permissions, they stay on profile
-          navigate('/profile', { replace: true });
+          destination = '/scouts';
+          reason = 'User has canViewScouts permission';
         }
+        
+        const msg = `[Index] Redirecting to ${destination} - Reason: ${reason}`;
+        console.log(msg);
+        window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'info' } }));
+        navigate(destination, { replace: true });
       } else {
         navigate('/login', { replace: true });
       }
