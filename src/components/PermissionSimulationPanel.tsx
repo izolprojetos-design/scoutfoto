@@ -15,11 +15,19 @@ export const PermissionSimulationPanel = () => {
   const [logs, setLogs] = useState<{ id: string; timestamp: string; message: string; type: 'info' | 'warn' | 'error' }[]>([]);
   const [showLogs, setShowLogs] = useState(false);
 
-  // Auto-log changes
+  // Auto-log changes and listen for redirect events
   useEffect(() => {
+    const handleRedirect = (e: any) => {
+      addLog(e.detail.message, e.detail.type);
+    };
+
+    window.addEventListener('route-redirect', handleRedirect);
+    
     const timestamp = new Date().toLocaleTimeString();
-    const message = `Permissions updated: ViewPhotos=${canViewPhotos}, ViewScouts=${canViewScouts}, Admin=${canAccessAdmin}`;
+    const message = `Status das Permissões: Início=${canViewPhotos ? 'OK' : 'Bloqueado'}, Integrantes=${canViewScouts ? 'OK' : 'Bloqueado'}, Admin=${canAccessAdmin ? 'Sim' : 'Não'}`;
     addLog(message, 'info');
+
+    return () => window.removeEventListener('route-redirect', handleRedirect);
   }, [canViewPhotos, canViewScouts, canAccessAdmin]);
 
   const addLog = (message: string, type: 'info' | 'warn' | 'error' = 'info') => {
