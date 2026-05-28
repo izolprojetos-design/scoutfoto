@@ -19,6 +19,7 @@ const Index = () => {
         } else if (canViewScouts) {
           navigate('/scouts', { replace: true });
         } else {
+          // If the user has no specific view permissions, they stay on profile
           navigate('/profile', { replace: true });
         }
       } else {
