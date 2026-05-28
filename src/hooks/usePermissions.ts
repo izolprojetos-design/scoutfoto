@@ -62,12 +62,17 @@ export const usePermissions = () => {
       return;
     }
 
-    // Check cache first
+    // Check cache first (disabled if fetchedRef is same to avoid stale state issues during role simulation)
     const cached = permissionsCache.get(user.id);
     if (cached && Date.now() - cached.timestamp < CACHE_TTL && fetchedRef.current === user.id) {
-      setPermissions(cached.permissions);
-      setLoading(false);
-      return;
+      // Re-fetch only if roles changed or forced
+      const rolesKey = roles.sort().join(',');
+      const lastRolesKey = (cached as any).rolesKey;
+      if (rolesKey === lastRolesKey) {
+        setPermissions(cached.permissions);
+        setLoading(false);
+        return;
+      }
     }
 
     const fetchPermissions = async () => {
@@ -79,7 +84,7 @@ export const usePermissions = () => {
       if (allPerms) {
           const keys = allPerms.map((p: any) => p.key);
           setPermissions(keys);
-          permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now() });
+          permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
         }
         setLoading(false);
         return;
@@ -107,7 +112,7 @@ export const usePermissions = () => {
 
       const combinedKeys = [...new Set([...userPermKeys, ...rolePermKeys])];
       setPermissions(combinedKeys);
-      permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now() });
+      permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
       setLoading(false);
     };
 

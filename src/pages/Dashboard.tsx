@@ -128,8 +128,9 @@ interface RecentLogin {
 
 const Dashboard = () => {
   const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
-  const { hasPermission } = usePermissions();
+  const { canViewPhotos, canViewScouts, hasPermission, loading: permLoading } = usePermissions();
   const { section: userSection, isRestricted } = useUserSection();
+
   const canTransfer = isAdmin || hasPermission('transfer_branch');
   const [branches, setBranches] = useState<BranchWithCount[]>([]);
   const [scouts, setScouts] = useState<Scout[]>([]);
@@ -163,7 +164,9 @@ const Dashboard = () => {
   const [eventsWithPhotos, setEventsWithPhotos] = useState<EventWithCount[]>([]);
 
   const fetchData = useCallback(async () => {
+    if (permLoading) return;
     setLoading(true);
+
 
     // Core queries for all users; admin-only queries run conditionally
     const corePromises = [
@@ -276,7 +279,7 @@ const Dashboard = () => {
     setLoading(false);
   }, [isAdmin]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData, canViewPhotos, canViewScouts]);
 
   // Auto-refresh "Online Agora" every 10 seconds (admin only)
   useEffect(() => {
