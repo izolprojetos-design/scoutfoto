@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  const { canViewPhotos, loading: permLoading } = usePermissions();
+  const { canViewPhotos, canViewScouts, loading: permLoading } = usePermissions();
   const navigate = useNavigate();
 
   useEffect(() => {
