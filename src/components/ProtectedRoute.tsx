@@ -38,7 +38,12 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   }
 
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
+    // Basic fallback logic: if they fail a specific permission check, 
+    // we should only redirect if it's a critical mismatch.
+    // However, if the user manually navigates to a module they should see (e.g. via sidebar), 
+    // the sidebar already handles the 'show' logic.
     const currentPath = window.location.pathname;
+
     if (currentPath !== '/profile') {
       console.warn(`[ProtectedRoute] Access denied to "${currentPath}": missing permission "${requiredPermission}". Redirecting to /profile.`);
       return <Navigate to="/profile" replace />;
