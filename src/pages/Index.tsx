@@ -7,14 +7,20 @@ import { Loader2 } from 'lucide-react';
 
 const Index = () => {
   const { user, loading: authLoading } = useAuth();
-  const { canViewPhotos, loading: permLoading } = usePermissions();
+  const { canViewPhotos, canViewScouts, loading: permLoading } = usePermissions();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirect to dashboard if they can view photos, otherwise to profile
-        navigate(canViewPhotos ? '/dashboard' : '/profile', { replace: true });
+        // Redirect based on capabilities
+        if (canViewPhotos) {
+          navigate('/dashboard', { replace: true });
+        } else if (canViewScouts) {
+          navigate('/scouts', { replace: true });
+        } else {
+          navigate('/profile', { replace: true });
+        }
       } else {
         navigate('/login', { replace: true });
       }
