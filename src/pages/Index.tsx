@@ -13,8 +13,14 @@ const Index = () => {
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirect to dashboard if they can view photos, otherwise to profile
-        navigate(canViewPhotos ? '/dashboard' : '/profile', { replace: true });
+        // Redirect based on capabilities
+        if (canViewPhotos) {
+          navigate('/dashboard', { replace: true });
+        } else if (canViewScouts) {
+          navigate('/scouts', { replace: true });
+        } else {
+          navigate('/profile', { replace: true });
+        }
       } else {
         navigate('/login', { replace: true });
       }
