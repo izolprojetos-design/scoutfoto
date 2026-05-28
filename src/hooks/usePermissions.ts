@@ -125,14 +125,14 @@ export const usePermissions = () => {
     loading,
     hasPermission,
     // Fotos
-    canViewPhotos: hasPermission('view_photos') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor'),
+    canViewPhotos: hasPermission('view_photos') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('chefe') || roles.includes('dirigente'),
     canUploadPhotos: hasPermission('upload_photos'),
     canDownloadPhotos: hasPermission('download_photos'),
     canEditPhotos: hasPermission('edit_photos'),
     canDeletePhotos: hasPermission('delete_photos'),
     canManagePhotos: hasPermission('manage_photos'),
     // Eventos
-    canViewEvents: hasPermission('view_events') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor'),
+    canViewEvents: hasPermission('view_events') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('chefe') || roles.includes('dirigente'),
     canEditEvents: hasPermission('edit_events'),
     canManageEvents: hasPermission('manage_events'),
     canViewEventPhotos: hasPermission('view_event_photos'),
@@ -141,7 +141,7 @@ export const usePermissions = () => {
     canUploadEventPhotos: hasPermission('upload_event_photos'),
     canDeleteEventPhotos: hasPermission('delete_event_photos'),
     // Integrantes
-    canViewScouts: hasPermission('view_scouts') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('parent'),
+    canViewScouts: hasPermission('view_scouts') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('chefe') || roles.includes('dirigente') || roles.includes('parent'),
     canEditScouts: hasPermission('edit_scouts'),
     canManageScouts: hasPermission('manage_scouts'),
     canViewGuardians: hasPermission('view_guardians'),
