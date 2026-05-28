@@ -184,9 +184,10 @@ const Dashboard = () => {
       // Parallel fetch for sub-metrics
       const eventIds = eventsData.map(e => e.id);
       const promises: Promise<any>[] = [
-        eventIds.length > 0
-          ? supabase.from('images').select('event_id, media_type').in('event_id', eventIds)
-          : Promise.resolve({ data: [] }),
+        (async () => {
+          if (eventIds.length === 0) return { data: [] };
+          return supabase.from('images').select('event_id, media_type').in('event_id', eventIds);
+        })(),
         supabase.from('images').select('branch_id').is('event_id', null)
       ];
 
@@ -197,6 +198,7 @@ const Dashboard = () => {
         promises.push(supabase.from('audit_logs').select('user_id, created_at').eq('action', 'login').order('created_at', { ascending: false }).limit(50));
         promises.push(supabase.rpc('admin_list_online_users'));
       }
+
 
 
       const results = await Promise.all(promises);
