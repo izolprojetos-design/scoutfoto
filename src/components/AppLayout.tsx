@@ -7,6 +7,7 @@ import DataFreshnessIndicator from '@/components/DataFreshnessIndicator';
 import { Loader2 } from 'lucide-react';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import RenderDiagnosticsToolbar from '@/components/RenderDiagnosticsToolbar';
+import { PermissionSimulationPanel } from '@/components/PermissionSimulationPanel';
 import { Suspense } from 'react';
 
 const PageLoader = () => (
@@ -44,6 +45,7 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
         </div>
       </div>
       <RenderDiagnosticsToolbar />
+      <PermissionSimulationPanel />
     </SidebarProvider>
   );
 };
