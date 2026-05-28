@@ -274,7 +274,7 @@ const Dashboard = () => {
               seen.add(log.user_id);
               logins.push({
                 user_id: log.user_id,
-                name: profileMap.get(log.user_id) || 'Desconhecido',
+                name: (profileMap.get(log.user_id) as string) || 'Desconhecido',
                 last_login: log.created_at,
               });
             }
