@@ -186,22 +186,43 @@ const Dashboard = () => {
       const promises: Promise<any>[] = [
         (async () => {
           if (eventIds.length === 0) return { data: [] };
-          return supabase.from('images').select('event_id, media_type').in('event_id', eventIds);
+          const { data, error } = await supabase.from('images').select('event_id, media_type').in('event_id', eventIds);
+          if (error) throw error;
+          return { data };
         })(),
-        supabase.from('images').select('branch_id').is('event_id', null)
+        (async () => {
+          const { data, error } = await supabase.from('images').select('branch_id').is('event_id', null);
+          if (error) throw error;
+          return { data };
+        })()
       ];
 
       // Admin-only metrics fetched only if needed
       if (isAdmin) {
-        promises.push(supabase.from('profiles').select('user_id, name, is_active, section'));
-        promises.push(supabase.from('user_roles').select('user_id, role'));
-        promises.push(supabase.from('audit_logs').select('user_id, created_at').eq('action', 'login').order('created_at', { ascending: false }).limit(50));
-        promises.push(supabase.rpc('admin_list_online_users'));
+        promises.push((async () => {
+          const { data, error } = await supabase.from('profiles').select('user_id, name, is_active, section');
+          if (error) throw error;
+          return { data };
+        })());
+        promises.push((async () => {
+          const { data, error } = await supabase.from('user_roles').select('user_id, role');
+          if (error) throw error;
+          return { data };
+        })());
+        promises.push((async () => {
+          const { data, error } = await supabase.from('audit_logs').select('user_id, created_at').eq('action', 'login').order('created_at', { ascending: false }).limit(50);
+          if (error) throw error;
+          return { data };
+        })());
+        promises.push((async () => {
+          const { data, error } = await supabase.rpc('admin_list_online_users');
+          if (error) throw error;
+          return { data };
+        })());
       }
 
-
-
       const results = await Promise.all(promises);
+
       const eventImages = results[0]?.data || [];
       const memberImages = results[1]?.data || [];
 
