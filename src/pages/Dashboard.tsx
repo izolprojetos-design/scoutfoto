@@ -128,7 +128,7 @@ interface RecentLogin {
 
 const Dashboard = () => {
   const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
-  const { canViewPhotos, canViewScouts, loading: permLoading } = usePermissions();
+  const { canViewPhotos, canViewScouts, hasPermission, loading: permLoading } = usePermissions();
   const { section: userSection, isRestricted } = useUserSection();
 
   const canTransfer = isAdmin || hasPermission('transfer_branch');
