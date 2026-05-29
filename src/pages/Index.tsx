@@ -13,17 +13,9 @@ const Index = () => {
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Forçamos o redirecionamento para o Dashboard como tela principal
-        // Se o usuário não tiver permissão de ver fotos, o ProtectedRoute no Dashboard 
-        // cuidará de redirecioná-lo para um lugar seguro (como o perfil).
-        // Isso quebra o loop de redirecionamento logo na entrada.
-        
-        const destination = '/dashboard';
-        const msg = `[Index] Redirecionamento inicial forçado para ${destination}`;
-        
-        console.log(msg);
-        window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'info' } }));
-        navigate(destination, { replace: true });
+        // Redirecionamento para o Dashboard como tela principal definitiva
+        // O Dashboard agora é acessível por todos os usuários autenticados
+        navigate('/dashboard', { replace: true });
       } else {
         navigate('/login', { replace: true });
       }

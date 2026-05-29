@@ -97,7 +97,7 @@ const AppSidebar = () => {
   const primaryRole = getPrimaryRole(roles);
 
   const navItems = [
-    { to: '/dashboard', label: 'Início', icon: Home, show: canViewPhotos },
+    { to: '/dashboard', label: 'Início', icon: Home, show: true },
     { 
       to: '/scouts', 
       label: primaryRole === 'parent' ? 'Meus Jovens' : 'Integrantes', 

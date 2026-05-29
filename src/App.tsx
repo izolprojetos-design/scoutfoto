@@ -178,7 +178,7 @@ const App = () => {
                     
                     {/* All app routes share persistent sidebar layout */}
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-                      <Route path="/dashboard" element={<ProtectedRoute requiredPermission="view_photos"><Dashboard /></ProtectedRoute>} />
+                      <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
                       <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
