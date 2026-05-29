@@ -9,6 +9,7 @@ import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import RenderDiagnosticsToolbar from '@/components/RenderDiagnosticsToolbar';
 import { PermissionSimulationPanel } from '@/components/PermissionSimulationPanel';
 import { Suspense, useEffect } from 'react';
+import { useNavigationGuard } from '@/hooks/useNavigationGuard';
 
 const PageLoader = () => (
   <div className="flex flex-1 items-center justify-center py-12">
