@@ -35,15 +35,13 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname, search]);
 
   return (
-    <SidebarProvider defaultOpen={false}>
-      <div className="min-h-screen flex w-full bg-background">
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen flex w-full bg-background overflow-x-hidden">
         <AppSidebar />
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
+        <div className="flex-1 flex flex-col min-w-0 bg-background relative">
           <header className="sticky top-0 z-50 h-12 flex items-center justify-between border-b bg-background px-4">
             <div className="flex items-center gap-3">
-              <SidebarTrigger className="lg:hidden">
-                <Menu className="h-5 w-5" />
-              </SidebarTrigger>
+              <SidebarTrigger className="h-8 w-8 text-muted-foreground hover:text-foreground" />
               <SectionIndicator />
             </div>
             <div className="flex items-center gap-3">

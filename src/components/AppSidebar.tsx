@@ -22,6 +22,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
+  SidebarRail,
 } from '@/components/ui/sidebar';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 import { stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
@@ -114,7 +115,7 @@ const AppSidebar = () => {
     .toUpperCase() || '??';
 
   return (
-    <Sidebar collapsible="none" className="hidden lg:flex border-r">
+    <Sidebar collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -123,7 +124,7 @@ const AppSidebar = () => {
               asChild
               className="hover:bg-sidebar-accent"
             >
-              <NavLink to="/" className="flex items-center gap-2.5" onClick={() => isMobile && setOpenMobile(false)}>
+              <NavLink to="/dashboard" className="flex items-center gap-2.5" onClick={() => isMobile && setOpenMobile(false)}>
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full overflow-hidden shadow-sm">
                   <img src="/logo.png" alt="ScoutFoto" className="w-full h-full object-contain" />
                 </div>
@@ -299,6 +300,7 @@ const AppSidebar = () => {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 };
