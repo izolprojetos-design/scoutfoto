@@ -165,7 +165,16 @@ Deno.serve(async (req) => {
         if (user_number) updateData.user_number = user_number;
         if (cargo_1) updateData.cargo_1 = cargo_1;
         if (cargo_2) updateData.cargo_2 = cargo_2;
-        await serviceClient.from("profiles").update(updateData).eq("user_id", newUser.user.id);
+
+        const { error: updateProfileError } = await serviceClient.from("profiles").update(updateData).eq("user_id", newUser.user.id);
+        
+        if (updateProfileError) {
+          // If unique constraint violation
+          if (updateProfileError.code === '23505') {
+             return new Response(JSON.stringify({ error: "Este ID já está em uso. Por favor, tente outro." }), { status: 400, headers: resHeaders });
+          }
+          return new Response(JSON.stringify({ error: `Erro ao atualizar perfil: ${updateProfileError.message}` }), { status: 400, headers: resHeaders });
+        }
       }
 
       if (role && newUser.user) {
