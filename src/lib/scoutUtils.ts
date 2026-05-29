@@ -79,7 +79,22 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
     return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
   }
 
-  if (currentIdx === -1) return null;
+  // Se não foi encontrado em nenhum ramo mas tem < 252 meses, provavelmente está entre Pioneiro e Voluntário
+  if (currentIdx === -1) {
+    const lastScoutBranch = SCOUT_BRANCHES[SCOUT_BRANCHES.length - 1];
+    if (ageMonths >= lastScoutBranch.maxAge) {
+      const adultBranch = ADULT_CATEGORIES.find(b => b.key === 'voluntario');
+      if (!adultBranch) return null;
+      
+      const changeDate = startOfDay(addMonths(birthDate, 252)); // 21 anos
+      const now = startOfDay(new Date());
+      const monthsLeft = differenceInMonths(changeDate, now);
+      const afterMonths = addMonths(now, monthsLeft);
+      const daysLeft = differenceInDays(changeDate, afterMonths);
+      return { branch: adultBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
+    }
+    return null;
+  }
 
   const currentBranch = SCOUT_BRANCHES[currentIdx];
   let nextBranch: BranchInfo | undefined = SCOUT_BRANCHES[currentIdx + 1];
