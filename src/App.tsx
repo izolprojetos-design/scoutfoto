@@ -58,7 +58,6 @@ const isAuthError = (error: unknown): boolean => {
   return (
     msg.includes("JWT") ||
     msg.includes("401") ||
-    msg.includes("403") ||
     msg.includes("token is expired") ||
     msg.includes("invalid claim") ||
     msg.includes("not authenticated")
