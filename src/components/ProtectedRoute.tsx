@@ -31,34 +31,40 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
 
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
-    const isMainRoute = currentPath === '/' || currentPath === '/dashboard';
     
-    // Se for rota principal e falhar, tentamos o próximo lugar seguro antes do perfil
-    if (currentPath !== '/profile') {
-      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta o papel "${requiredRole}". Papéis: [${roles.join(', ')}].`;
+    // Se não for o perfil, redirecionamos para um lugar seguro
+    if (currentPath !== '/profile' && currentPath !== '/dashboard') {
+      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta o papel "${requiredRole}".`;
       console.warn(msg);
       window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
       
-      if (isMainRoute && hasPermission('view_scouts')) {
+      // Se tiver permissão de ver fotos, o Dashboard é o melhor lugar
+      if (hasPermission('view_photos')) {
+        return <Navigate to="/dashboard" replace />;
+      }
+      // Se tiver permissão de ver scouts, vai para lá
+      if (hasPermission('view_scouts')) {
         return <Navigate to="/scouts" replace />;
       }
-      return <Navigate to="/profile" replace />;
+      return <Navigate to="/dashboard" replace />; // Dashboard agora é a "Home" segura
     }
   }
 
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
-    const isMainRoute = currentPath === '/' || currentPath === '/dashboard';
 
-    if (currentPath !== '/profile') {
+    if (currentPath !== '/profile' && currentPath !== '/dashboard') {
       const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta a permissão "${requiredPermission}".`;
       console.warn(msg);
       window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
       
-      if (isMainRoute && hasPermission('view_scouts')) {
+      if (hasPermission('view_photos')) {
+        return <Navigate to="/dashboard" replace />;
+      }
+      if (hasPermission('view_scouts')) {
         return <Navigate to="/scouts" replace />;
       }
-      return <Navigate to="/profile" replace />;
+      return <Navigate to="/dashboard" replace />;
     }
   }
 
