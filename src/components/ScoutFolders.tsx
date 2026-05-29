@@ -838,15 +838,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : !visiblePhotos.length ? (
-        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
-          <Folder className="h-12 w-12 mb-2 opacity-40" />
-          <p className="text-sm">Nenhuma foto cadastrada para gerar pastas</p>
-          {canManage && (
-            <p className="text-xs mt-1">Clique em <strong>Enviar fotos</strong> ou <strong>arraste imagens</strong> aqui para começar.</p>
-          )}
-        </div>
-      ) : (
+      ) : !visiblePhotos.length ? null : (
         <>
           {/* Breadcrumb */}
           <div className="flex items-center justify-between gap-4 flex-wrap">
