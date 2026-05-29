@@ -37,13 +37,15 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
 
   // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro" e não deve ser redirecionado por falta de papel/permissão
   // Isso evita loops se o Dashboard for a Home para todos.
-  const isSafePath = pathname === '/dashboard' || pathname === '/profile';
+  const isSafePath = pathname === '/dashboard' || pathname === '/profile' || pathname === '/';
 
   if (!isSafePath && requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta o papel "${requiredRole}".`;
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
+    // Se o acesso for negado, limpa a última rota inválida e volta para o Dashboard
+    localStorage.removeItem('last_accessed_route');
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -52,6 +54,7 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
+    localStorage.removeItem('last_accessed_route');
     return <Navigate to="/dashboard" replace />;
   }
 

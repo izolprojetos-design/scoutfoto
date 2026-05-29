@@ -65,7 +65,9 @@ export const PermissionSimulationPanel = () => {
   };
 
   const quickNav = (path: string) => {
-    addLog(`Navegando para ${path}...`, 'info');
+    addLog(`Navegação forçada para ${path}...`, 'info');
+    // Forçamos a limpeza da última rota para o teste de navegação manual
+    localStorage.removeItem('last_accessed_route');
     navigate(path);
   };
 
