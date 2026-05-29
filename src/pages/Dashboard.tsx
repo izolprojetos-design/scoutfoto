@@ -113,7 +113,7 @@ interface RecentLogin {
 }
 
 const Dashboard = () => {
-  const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
+  const { profile, canUpload, isVoluntario, isAdmin, hasRole } = useAuth();
   const { canViewPhotos, canViewScouts, hasPermission, loading: permLoading } = usePermissions();
   const { section: userSection, isRestricted } = useUserSection();
 
