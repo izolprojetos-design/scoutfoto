@@ -1040,7 +1040,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           {/* Level 2: Dates within year */}
           {year !== null && !dateKey && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {dates.map(([key, items]) => {
+              {dates
+                .filter(([_, items]) => items.length > 0)
+                .map(([key, items]) => {
                 const cover = items[0];
                 const url = cover ? signedUrls[cover.storage_path] : null;
                 const dropKey = `d:${key}`;
