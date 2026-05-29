@@ -472,6 +472,25 @@ const Scouts = () => {
 
   // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
 
+  // Update hasPhotos state when viewingScout or editDialogOpen changes
+  useEffect(() => {
+    const checkPhotos = async (scoutId: string) => {
+      const { count } = await supabase
+        .from('scout_photos' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('scout_id', scoutId);
+      setHasPhotos((count || 0) > 0);
+    };
+
+    if (viewingScout) {
+      checkPhotos(viewingScout.id);
+    } else if (editingScout) {
+      checkPhotos(editingScout.id);
+    } else {
+      setHasPhotos(false);
+    }
+  }, [viewingScout, editingScout]);
+
   // Auto-open edit dialog when navigated with ?edit=scoutId
   useEffect(() => {
     const editId = searchParams.get('edit');
