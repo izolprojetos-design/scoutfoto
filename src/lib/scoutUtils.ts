@@ -44,7 +44,17 @@ export function calculateAgeInMonths(birthDate: Date): number {
 
 export function getCurrentBranch(birthDate: Date): BranchInfo | null {
   const ageMonths = calculateAgeInMonths(birthDate);
-  return SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge) || null;
+  // Encontrar o ramo baseado na idade
+  const ageBranch = SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge);
+  if (ageBranch) return ageBranch;
+
+  // Se for maior que o máximo do último ramo (Pioneiro), considerar Voluntário
+  const lastScoutBranch = SCOUT_BRANCHES[SCOUT_BRANCHES.length - 1];
+  if (ageMonths >= lastScoutBranch.maxAge) {
+    return ADULT_CATEGORIES.find(b => b.key === 'voluntario') || null;
+  }
+
+  return null;
 }
 
 export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number; daysLeft: number } | null {
