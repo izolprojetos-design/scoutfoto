@@ -14,8 +14,10 @@ const Index = () => {
     // Só agimos quando o carregamento inicial de auth e permissões terminar
     if (!authLoading && !permLoading) {
       if (user) {
-        // Tenta recuperar a última rota acessada, senão vai para o dashboard
+        // Tenta recuperar a última rota acessada
         const lastRoute = localStorage.getItem('last_accessed_route');
+        
+        // Validação extra: se a última rota for a própria Index, evitamos o loop
         const targetRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard';
         
         console.log(`[Index] Usuário autenticado, indo para ${targetRoute}`);
