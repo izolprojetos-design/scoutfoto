@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera, Calendar, Clock, ArrowRightLeft, Cake, Trophy } from 'lucide-react';
 import { differenceInYears, differenceInMonths } from 'date-fns';
-import { parseLocalDate, getNextBranchChange, formatTimeLeft, formatAge } from '@/lib/scoutUtils';
+import { parseLocalDate, getNextBranchChange, formatTimeLeft, formatAge, getCurrentBranch, calculateAgeInMonths } from '@/lib/scoutUtils';
 
 interface Props {
   scoutId: string;
