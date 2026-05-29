@@ -992,7 +992,9 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
           {/* Level 1: Years */}
           {year === null && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {years.map(([y, items]) => {
+              {years
+                .filter(([_, items]) => items.length > 0)
+                .map(([y, items]) => {
                 const cover = items[0];
                 const url = cover ? signedUrls[cover.storage_path] : null;
                 const key = `y:${y}`;
