@@ -114,7 +114,7 @@ const AppSidebar = () => {
     .toUpperCase() || '??';
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="none" className="hidden lg:flex border-r">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
