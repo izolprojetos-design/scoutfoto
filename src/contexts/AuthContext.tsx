@@ -41,6 +41,8 @@ interface AuthContextType {
   canUpload: boolean;
   canViewMinors: boolean;
   refreshRoles: () => Promise<void>;
+  simulateRoles: (roles: AppRole[] | null) => void;
+  isSimulating: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,6 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [simulatedRoles, setSimulatedRoles] = useState<AppRole[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [mfaRequired, setMfaRequired] = useState(false);
   const [mfaVerified, setMfaVerified] = useState(false);
@@ -343,7 +346,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   };
 
-  const hasRole = (role: AppRole) => roles.includes(role);
+  const currentRoles = simulatedRoles || roles;
+  const hasRole = (role: AppRole) => currentRoles.includes(role);
   const isAdmin = hasRole('admin');
   const isVoluntario = hasRole('voluntario');
   const canUpload = isAdmin || isVoluntario;
@@ -351,13 +355,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <AuthContext.Provider value={{
-      user, session, profile, roles, loading,
+      user, session, profile, roles: currentRoles, loading,
       mfaRequired, mfaVerified, setMfaVerified,
       signIn, signUp, signOut, hasRole,
       isAdmin, isVoluntario, canUpload, canViewMinors,
       refreshProfile: () => user ? fetchProfile(user.id) : Promise.resolve(),
       refreshRoles: () => user ? fetchRoles(user.id) : Promise.resolve(),
-
+      simulateRoles: setSimulatedRoles,
+      isSimulating: simulatedRoles !== null,
     }}>
       {children}
     </AuthContext.Provider>
