@@ -44,15 +44,15 @@ export function calculateAgeInMonths(birthDate: Date): number {
 
 export function getCurrentBranch(birthDate: Date): BranchInfo | null {
   const ageMonths = calculateAgeInMonths(birthDate);
-  // Encontrar o ramo baseado na idade
-  const ageBranch = SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge);
-  if (ageBranch) return ageBranch;
-
-  // Se for maior que o máximo do último ramo (Pioneiro), considerar Voluntário
-  const lastScoutBranch = SCOUT_BRANCHES[SCOUT_BRANCHES.length - 1];
-  if (ageMonths >= lastScoutBranch.maxAge) {
+  
+  // Se for maior que 21 anos (252 meses), é Voluntário/Adulto
+  if (ageMonths >= 252) {
     return ADULT_CATEGORIES.find(b => b.key === 'voluntario') || null;
   }
+
+  // Encontrar o ramo baseado na idade para jovens
+  const ageBranch = SCOUT_BRANCHES.find(b => ageMonths >= b.minAge && ageMonths < b.maxAge);
+  if (ageBranch) return ageBranch;
 
   return null;
 }
