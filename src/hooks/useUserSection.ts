@@ -16,11 +16,15 @@ export const useUserSection = () => {
   const section = profile?.section || null;
   const sectionLabel = section ? SECTION_LABELS[section] || section : null;
 
+  // Seções que não devem restringir a visualização de integrantes
+  const globalSections = ['Dirigente', 'Escotista', 'Voluntário'];
+  const isGlobalSection = section ? globalSections.includes(section) : false;
+
   return {
     section,
     sectionLabel,
     isAdmin,
-    /** Non-admin users with a section set are restricted */
-    isRestricted: !isAdmin && !!section && section !== '',
+    /** Non-admin users with a specific branch section set are restricted */
+    isRestricted: !isAdmin && !!section && section !== '' && !isGlobalSection,
   };
 };
