@@ -2503,6 +2503,20 @@ const Scouts = () => {
                                   Editar
                                 </Button>
                               )}
+                              {canUpload && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-1.5 flex-1"
+                                  onClick={() => {
+                                    setPhotosHubScoutId(scout.id);
+                                    setPhotosHubOpen(true);
+                                  }}
+                                >
+                                  <Camera className="h-3.5 w-3.5" />
+                                  Fotos
+                                </Button>
+                              )}
                               {canManageScouts && (
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
