@@ -118,16 +118,40 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: "email, password e name são obrigatórios" }), { status: 400, headers: resHeaders });
       }
 
-      const { data: newUser, error: createError } = await serviceClient.auth.admin.createUser({
+      let { data: newUser, error: createError } = await serviceClient.auth.admin.createUser({
         email,
         password,
         email_confirm: true,
         user_metadata: { name },
       });
 
+      // Recover from orphan auth.users (profile was deleted but auth user remains)
+      if (createError && /already been registered|already exists/i.test(createError.message)) {
+        const { data: list } = await serviceClient.auth.admin.listUsers();
+        const existing = list?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+        if (existing) {
+          const { count } = await serviceClient
+            .from("profiles")
+            .select("user_id", { count: "exact", head: true })
+            .eq("user_id", existing.id);
+          if (!count || count === 0) {
+            await serviceClient.auth.admin.deleteUser(existing.id);
+            const recreated = await serviceClient.auth.admin.createUser({
+              email,
+              password,
+              email_confirm: true,
+              user_metadata: { name },
+            });
+            newUser = recreated.data;
+            createError = recreated.error;
+          }
+        }
+      }
+
       if (createError) {
         return new Response(JSON.stringify({ error: createError.message }), { status: 400, headers: resHeaders });
       }
+
 
       if (newUser.user) {
         await new Promise(resolve => setTimeout(resolve, 500));
