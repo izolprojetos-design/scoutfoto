@@ -76,44 +76,48 @@ export const usePermissions = () => {
     }
 
     const fetchPermissions = async () => {
-      // Admins have all permissions
-      if (roles.includes('admin')) {
-        const { data: allPerms } = await supabase
-          .from('permissions')
-          .select('key');
-      if (allPerms) {
-          const keys = allPerms.map((p: any) => p.key);
-          setPermissions(keys);
-          permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
+      try {
+        // Admins have all permissions
+        if (roles.includes('admin')) {
+          const { data: allPerms } = await supabase
+            .from('permissions')
+            .select('key');
+          if (allPerms) {
+            const keys = allPerms.map((p: any) => p.key);
+            setPermissions(keys);
+            permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
+          }
+          return;
         }
+
+        // Fetch permissions from both individual user_permissions AND role_permissions
+        const [userPermsRes, rolePermsRes] = await Promise.all([
+          supabase
+            .from('user_permissions')
+            .select('permission_id, permissions(key)')
+            .eq('user_id', user.id),
+          supabase
+            .from('role_permissions')
+            .select('permission_id, permissions(key)')
+            .in('role', roles)
+        ]);
+
+        const userPermKeys = (userPermsRes.data || [])
+          .map((up: any) => up.permissions?.key)
+          .filter(Boolean) as string[];
+
+        const rolePermKeys = (rolePermsRes.data || [])
+          .map((rp: any) => rp.permissions?.key)
+          .filter(Boolean) as string[];
+
+        const combinedKeys = [...new Set([...userPermKeys, ...rolePermKeys])];
+        setPermissions(combinedKeys);
+        permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
+      } catch (err) {
+        console.error('Error fetching permissions:', err);
+      } finally {
         setLoading(false);
-        return;
       }
-
-      // Fetch permissions from both individual user_permissions AND role_permissions
-      const [userPermsRes, rolePermsRes] = await Promise.all([
-        supabase
-          .from('user_permissions')
-          .select('permission_id, permissions(key)')
-          .eq('user_id', user.id),
-        supabase
-          .from('role_permissions')
-          .select('permission_id, permissions(key)')
-          .in('role', roles)
-      ]);
-
-      const userPermKeys = (userPermsRes.data || [])
-        .map((up: any) => up.permissions?.key)
-        .filter(Boolean) as string[];
-
-      const rolePermKeys = (rolePermsRes.data || [])
-        .map((rp: any) => rp.permissions?.key)
-        .filter(Boolean) as string[];
-
-      const combinedKeys = [...new Set([...userPermKeys, ...rolePermKeys])];
-      setPermissions(combinedKeys);
-      permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
-      setLoading(false);
     };
 
     fetchedRef.current = user.id;
