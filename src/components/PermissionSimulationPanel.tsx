@@ -163,6 +163,9 @@ export const PermissionSimulationPanel = () => {
                   <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/profile')}>
                     <User className="h-3 w-3" /> Perfil
                   </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/admin')}>
+                    <Shield className="h-3 w-3" /> Admin
+                  </Button>
                 </div>
               </div>
 
