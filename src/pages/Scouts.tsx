@@ -3241,8 +3241,10 @@ const Scouts = () => {
             </DialogTitle>
           </DialogHeader>
           {viewingScout && (() => {
-            const branch = getCurrentBranch(parseLocalDate(viewingScout.birth_date));
-            const nextChange = getNextBranchChange(parseLocalDate(viewingScout.birth_date));
+            const birthDateObj = parseLocalDate(viewingScout.birth_date);
+            const branch = getCurrentBranch(birthDateObj);
+            const isAdult = branch?.key === 'voluntario' || calculateAgeInMonths(birthDateObj) >= 252;
+            const nextChange = !isAdult ? getNextBranchChange(birthDateObj) : null;
             const scoutGuardians = getGuardiansForScout(viewingScout.id);
             const ageInYears = calculateAge(parseLocalDate(viewingScout.birth_date)).years;
             return (
