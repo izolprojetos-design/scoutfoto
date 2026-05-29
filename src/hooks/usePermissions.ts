@@ -49,35 +49,38 @@ export const usePermissions = () => {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const fetchedRef = useRef<string | null>(null);
+  const rolesRef = useRef<string>("");
 
   useEffect(() => {
+    // Se o Auth ainda está carregando, mantemos o loading de permissões
     if (authLoading) {
       setLoading(true);
       return;
     }
 
-    if (!user || roles.length === 0) {
+    // Se não há usuário logado, não há o que carregar
+    if (!user) {
       setPermissions([]);
+      setLoading(false);
+      fetchedRef.current = null;
+      rolesRef.current = "";
+      return;
+    }
+
+    const currentRolesKey = [...roles].sort().join(',');
+
+    // Evita re-fetch se já carregamos para este usuário com estes mesmos papéis
+    if (fetchedRef.current === user.id && rolesRef.current === currentRolesKey) {
       setLoading(false);
       return;
     }
 
-    // Check cache first (disabled if fetchedRef is same to avoid stale state issues during role simulation)
-    const cached = permissionsCache.get(user.id);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL && fetchedRef.current === user.id) {
-      // Re-fetch only if roles changed or forced
-      const rolesKey = roles.sort().join(',');
-      const lastRolesKey = (cached as any).rolesKey;
-      if (rolesKey === lastRolesKey) {
-        setPermissions(cached.permissions);
-        setLoading(false);
-        return;
-      }
-    }
-
     const fetchPermissions = async () => {
+      setLoading(true);
       try {
-        // Admins have all permissions
+        console.log(`[usePermissions] Carregando permissões para ${user.id} (${currentRolesKey})`);
+        
+        // Admins têm todas as permissões
         if (roles.includes('admin')) {
           const { data: allPerms } = await supabase
             .from('permissions')
@@ -85,44 +88,42 @@ export const usePermissions = () => {
           if (allPerms) {
             const keys = allPerms.map((p: any) => p.key);
             setPermissions(keys);
-            permissionsCache.set(user.id, { permissions: keys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
           }
-          return;
+        } else {
+          // Busca permissões individuais e por papel
+          const [userPermsRes, rolePermsRes] = await Promise.all([
+            supabase
+              .from('user_permissions')
+              .select('permission_id, permissions(key)')
+              .eq('user_id', user.id),
+            supabase
+              .from('role_permissions')
+              .select('permission_id, permissions(key)')
+              .in('role', roles)
+          ]);
+
+          const userPermKeys = (userPermsRes.data || [])
+            .map((up: any) => up.permissions?.key)
+            .filter(Boolean) as string[];
+
+          const rolePermKeys = (rolePermsRes.data || [])
+            .map((rp: any) => rp.permissions?.key)
+            .filter(Boolean) as string[];
+
+          setPermissions([...new Set([...userPermKeys, ...rolePermKeys])]);
         }
-
-        // Fetch permissions from both individual user_permissions AND role_permissions
-        const [userPermsRes, rolePermsRes] = await Promise.all([
-          supabase
-            .from('user_permissions')
-            .select('permission_id, permissions(key)')
-            .eq('user_id', user.id),
-          supabase
-            .from('role_permissions')
-            .select('permission_id, permissions(key)')
-            .in('role', roles)
-        ]);
-
-        const userPermKeys = (userPermsRes.data || [])
-          .map((up: any) => up.permissions?.key)
-          .filter(Boolean) as string[];
-
-        const rolePermKeys = (rolePermsRes.data || [])
-          .map((rp: any) => rp.permissions?.key)
-          .filter(Boolean) as string[];
-
-        const combinedKeys = [...new Set([...userPermKeys, ...rolePermKeys])];
-        setPermissions(combinedKeys);
-        permissionsCache.set(user.id, { permissions: combinedKeys, timestamp: Date.now(), rolesKey: roles.sort().join(',') } as any);
+        
+        fetchedRef.current = user.id;
+        rolesRef.current = currentRolesKey;
       } catch (err) {
-        console.error('Error fetching permissions:', err);
+        console.error('[usePermissions] Erro ao carregar:', err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchedRef.current = user.id;
     fetchPermissions();
-  }, [user, roles, authLoading]);
+  }, [user?.id, currentRolesKey, authLoading]);
 
   const hasPermission = (key: PermissionKey) => {
     if (roles.includes('admin')) return true;
