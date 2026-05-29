@@ -14,6 +14,7 @@ import { getCurrentBranch, formatAge, parseLocalDate, ALL_CATEGORIES } from '@/l
 import ScoutPhoto from '@/components/ScoutPhoto';
 import ScoutAvatar from '@/components/ScoutAvatar';
 import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
+import { useUserSection } from '@/hooks/useUserSection';
 
 interface Scout {
   id: string;
@@ -44,6 +45,7 @@ interface Subgroup {
 const BranchScouts = () => {
   const { branchKey } = useParams<{ branchKey: string }>();
   const navigate = useNavigate();
+  const { section: userSection, isRestricted } = useUserSection();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
   const [branchData, setBranchData] = useState<BranchData | null>(null);
@@ -55,6 +57,13 @@ const BranchScouts = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Se for um usuário restrito e tentar acessar um ramo que não é o dele, redireciona
+      if (isRestricted && userSection && branchKey && branchKey.toLowerCase() !== userSection.toLowerCase()) {
+        console.warn(`[BranchScouts] Usuário restrito à seção ${userSection} tentou acessar ${branchKey}`);
+        navigate('/dashboard');
+        return;
+      }
+
       const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
         supabase.from('scouts').select('*').eq('is_active', true).order('name'),
@@ -70,9 +79,15 @@ const BranchScouts = () => {
 
       if (scoutRes) {
         const filtered = scoutRes.filter(s => {
-          if (s.manual_branch) return s.manual_branch === branchKey;
-          const branch = getCurrentBranch(parseLocalDate(s.birth_date));
-          return branch?.key === branchKey;
+          let matchesBranch = false;
+          if (s.manual_branch) {
+            matchesBranch = s.manual_branch === branchKey;
+          } else {
+            const branch = getCurrentBranch(parseLocalDate(s.birth_date));
+            matchesBranch = branch?.key === branchKey;
+          }
+          
+          return matchesBranch;
         });
         setScouts(filtered);
       }
@@ -80,7 +95,7 @@ const BranchScouts = () => {
       setLoading(false);
     };
     fetchData();
-  }, [branchKey]);
+  }, [branchKey, isRestricted, userSection, navigate]);
 
   // Get unique sections from scouts for filter options
   const availableSections = useMemo(() => {

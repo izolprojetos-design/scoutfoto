@@ -177,7 +177,15 @@ const Dashboard = () => {
 
       const branchesData = branchRes.data || [];
       const eventsData = evtRes.data || [];
-      const scoutsData = scoutRes.data || [];
+      let scoutsData = scoutRes.data || [];
+
+      // Aplicar filtro de seção se o usuário for restrito
+      if (isRestricted && userSection) {
+        scoutsData = scoutsData.filter((s: any) => {
+          const branch = getEffectiveBranchKey(s as any);
+          return branch?.key?.toLowerCase() === userSection.toLowerCase();
+        });
+      }
 
       setScouts(scoutsData as any[]);
 
