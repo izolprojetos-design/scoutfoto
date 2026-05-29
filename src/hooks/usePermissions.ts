@@ -51,6 +51,8 @@ export const usePermissions = () => {
   const fetchedRef = useRef<string | null>(null);
   const rolesRef = useRef<string>("");
 
+  const currentRolesKey = useMemo(() => [...roles].sort().join(','), [roles]);
+
   useEffect(() => {
     // Se o Auth ainda está carregando, mantemos o loading de permissões
     if (authLoading) {
@@ -66,8 +68,6 @@ export const usePermissions = () => {
       rolesRef.current = "";
       return;
     }
-
-    const currentRolesKey = [...roles].sort().join(',');
 
     // Evita re-fetch se já carregamos para este usuário com estes mesmos papéis
     if (fetchedRef.current === user.id && rolesRef.current === currentRolesKey) {
@@ -123,7 +123,7 @@ export const usePermissions = () => {
     };
 
     fetchPermissions();
-  }, [user?.id, currentRolesKey, authLoading]);
+  }, [user?.id, currentRolesKey, authLoading, roles]);
 
   const hasPermission = (key: PermissionKey) => {
     if (roles.includes('admin')) return true;
