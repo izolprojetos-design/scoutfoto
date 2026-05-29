@@ -44,9 +44,9 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
-    // Se o acesso for negado em uma rota específica, volta para a última rota segura salva ou dashboard
-    const lastRoute = localStorage.getItem('last_accessed_route') || '/dashboard';
-    return <Navigate to={lastRoute === pathname ? '/dashboard' : lastRoute} replace />;
+    // Se o acesso for negado, limpa a última rota inválida e volta para o Dashboard
+    localStorage.removeItem('last_accessed_route');
+    return <Navigate to="/dashboard" replace />;
   }
 
   if (!isSafePath && requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
@@ -54,8 +54,8 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
-    const lastRoute = localStorage.getItem('last_accessed_route') || '/dashboard';
-    return <Navigate to={lastRoute === pathname ? '/dashboard' : lastRoute} replace />;
+    localStorage.removeItem('last_accessed_route');
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children ?? <Outlet />}</>;
