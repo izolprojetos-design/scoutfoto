@@ -281,12 +281,19 @@ const Admin = () => {
     updateTabFromUrl(window.location.search);
   }, [location.search]);
 
-
-
+  // Fetch next number when create dialog opens
+  useEffect(() => {
+    if (createOpen && !newNumber) {
+      const getNext = async () => {
+        const { data: nextNum } = await supabase.rpc('get_next_user_number');
+        if (nextNum) setNewNumber(nextNum.toString());
+      };
+      getNext();
+    }
+  }, [createOpen, newNumber]);
 
   useEffect(() => {
     fetchUsers();
-    
     fetchAuditLogs();
     fetchSubgroups();
   }, []);
