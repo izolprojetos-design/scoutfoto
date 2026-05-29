@@ -26,8 +26,11 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   // Persiste a última rota acessada (pathname + query params se houver)
   useEffect(() => {
     const fullPath = pathname + search;
-    if (pathname !== '/' && pathname !== '/login' && !pathname.includes('reset-password')) {
+    const isPublicRoute = pathname === '/' || pathname === '/login' || pathname.includes('reset-password');
+    
+    if (!isPublicRoute) {
       localStorage.setItem('last_accessed_route', fullPath);
+      console.log(`[AppLayout] Rota salva: ${fullPath}`);
     }
   }, [pathname, search]);
 
