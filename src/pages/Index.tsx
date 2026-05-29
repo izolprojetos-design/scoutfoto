@@ -6,17 +6,18 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
-  const { user, loading: authLoading, isAdmin } = useAuth();
-  const { canViewPhotos, canViewScouts, loading: permLoading } = usePermissions();
+  const { user, loading: authLoading } = useAuth();
+  const { loading: permLoading } = usePermissions();
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Só agimos quando o carregamento inicial terminar
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirecionamento para o Dashboard como tela principal definitiva
-        // O Dashboard agora é acessível por todos os usuários autenticados
+        console.log("[Index] Usuário autenticado, indo para /dashboard");
         navigate('/dashboard', { replace: true });
       } else {
+        console.log("[Index] Usuário não autenticado, indo para /login");
         navigate('/login', { replace: true });
       }
     }
@@ -28,12 +29,12 @@ const Index = () => {
         <title>ScoutFoto — Banco de Imagens Escoteiro</title>
         <meta name="description" content="Plataforma do Grupo Escoteiro Monte Caburaí (12º GEMC) para organizar fotos, eventos e integrantes em um só lugar." />
         <link rel="canonical" href="https://scoutfoto.app/" />
-        <meta property="og:title" content="ScoutFoto — Banco de Imagens Escoteiro" />
-        <meta property="og:description" content="Plataforma do Grupo Escoteiro Monte Caburaí (12º GEMC) para organizar fotos, eventos e integrantes em um só lugar." />
-        <meta property="og:url" content="https://scoutfoto.app/" />
       </Helmet>
       <main className="flex min-h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground animate-pulse">Carregando ScoutFoto...</p>
+        </div>
       </main>
     </>
   );
