@@ -594,18 +594,7 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
           <div className="flex justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
-        ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-lg">
-            <ImageIcon className="h-12 w-12 mb-2 opacity-40" />
-            <p className="text-sm">
-              {showFavoritesOnly
-                ? 'Nenhuma foto favorita ainda'
-                : canManage
-                  ? 'Arraste fotos aqui ou clique em "Adicionar Fotos"'
-                  : 'Nenhuma foto disponível'}
-            </p>
-          </div>
-        ) : (
+        ) : filtered.length === 0 ? null : (
           <div className="space-y-6">
             {grouped.map(([label, items]) => (
               <section key={label}>
