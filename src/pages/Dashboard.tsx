@@ -113,7 +113,7 @@ interface RecentLogin {
 }
 
 const Dashboard = () => {
-  const { profile, canUpload, isVoluntario, isAdmin } = useAuth();
+  const { profile, canUpload, isVoluntario, isAdmin, hasRole } = useAuth();
   const { canViewPhotos, canViewScouts, hasPermission, loading: permLoading } = usePermissions();
   const { section: userSection, isRestricted } = useUserSection();
 
@@ -165,8 +165,11 @@ const Dashboard = () => {
       const eventsData = evtRes.data || [];
       let scoutsData = scoutRes.data || [];
 
-      // Aplicar filtro de seção se o usuário for restrito
-      if (isRestricted && userSection) {
+      // Aplicar filtro de seção apenas para pais (parent) ou se for explicitamente restrito e não for admin/voluntário/visitante
+      const isViewer = hasRole('viewer');
+      const shouldRestrictSection = isRestricted && userSection && !isAdmin && !isVoluntario && !isViewer;
+
+      if (shouldRestrictSection) {
         scoutsData = scoutsData.filter((s: any) => {
           const branch = getEffectiveBranchKey(s as any);
           return branch?.key?.toLowerCase() === userSection.toLowerCase();
@@ -476,8 +479,8 @@ const Dashboard = () => {
       )}
 
 
-      {/* Charts Row: Role Pie + Section Bar + Branch Pie — admin only */}
-      {isAdmin && (
+      {/* Charts Row: Role Pie + Section Bar + Branch Pie */}
+      {(isAdmin || isVoluntario || hasRole('viewer')) && (
         loading ? (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mb-6">
             <PieChartSkeleton />
@@ -519,7 +522,8 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            {/* Online Agora Section */}
+            {/* Online Agora Section — only for admin */}
+            {isAdmin && (
             <Card className="border shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -547,7 +551,8 @@ const Dashboard = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+              </Card>
+            )}
           </div>
         )
       )}
