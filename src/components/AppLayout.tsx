@@ -1,15 +1,15 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import AppSidebar from '@/components/AppSidebar';
 import NotificationBell from '@/components/NotificationBell';
 import SectionIndicator from '@/components/SectionIndicator';
 import DataFreshnessIndicator from '@/components/DataFreshnessIndicator';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Menu } from 'lucide-react';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import RenderDiagnosticsToolbar from '@/components/RenderDiagnosticsToolbar';
 import { PermissionSimulationPanel } from '@/components/PermissionSimulationPanel';
 import { Suspense, useEffect } from 'react';
 import { useNavigationGuard } from '@/hooks/useNavigationGuard';
+import AppSidebar from '@/components/AppSidebar';
+import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 
 const PageLoader = () => (
   <div className="flex flex-1 items-center justify-center py-12">
@@ -35,13 +35,15 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   }, [pathname, search]);
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0 bg-background">
           <header className="sticky top-0 z-50 h-12 flex items-center justify-between border-b bg-background px-4">
             <div className="flex items-center gap-3">
-              <SidebarTrigger />
+              <SidebarTrigger>
+                <Menu className="h-5 w-5" />
+              </SidebarTrigger>
               <SectionIndicator />
             </div>
             <div className="flex items-center gap-3">
