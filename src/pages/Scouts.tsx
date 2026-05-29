@@ -139,6 +139,7 @@ const Scouts = () => {
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
+  const [hasPhotos, setHasPhotos] = useState<boolean>(false);
   const [renumbering, setRenumbering] = useState(false);
   
   const [pendingResend, setPendingResend] = useState<{ scoutId: string; scoutName: string; photo: File } | null>(null);
