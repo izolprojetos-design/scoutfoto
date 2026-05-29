@@ -9,10 +9,7 @@ export const useNavigationGuard = () => {
   const location = useLocation();
 
   useEffect(() => {
-    // Debug de navegação para identificar loops
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[NavigationGuard] Navegou para: ${location.pathname}${location.search}`);
-    }
+    // Silently guards against navigation loops
   }, [location]);
 
   return null;
