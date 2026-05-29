@@ -6,26 +6,26 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { Loader2 } from 'lucide-react';
 
 const Index = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const { canViewPhotos, canViewScouts, loading: permLoading } = usePermissions();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirect based on capabilities with logging
+        // Redirecionamento baseado em permissões com log detalhado
         let destination = '/profile';
-        let reason = 'Default fallback (no view permissions)';
+        let reason = 'Fallback padrão (sem permissões de visualização)';
 
-        if (canViewPhotos) {
+        if (isAdmin || canViewPhotos) {
           destination = '/dashboard';
-          reason = 'User has canViewPhotos permission';
+          reason = isAdmin ? 'Usuário é Administrador' : 'Usuário possui permissão canViewPhotos';
         } else if (canViewScouts) {
           destination = '/scouts';
-          reason = 'User has canViewScouts permission';
+          reason = 'Usuário possui permissão canViewScouts';
         }
         
-        const msg = `[Index] Redirecting to ${destination} - Reason: ${reason}`;
+        const msg = `[Index] Redirecionando para ${destination} - Motivo: ${reason}`;
         console.log(msg);
         window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'info' } }));
         navigate(destination, { replace: true });
@@ -33,7 +33,7 @@ const Index = () => {
         navigate('/login', { replace: true });
       }
     }
-  }, [user, authLoading, permLoading, canViewPhotos, navigate]);
+  }, [user, authLoading, permLoading, canViewPhotos, canViewScouts, isAdmin, navigate]);
 
   return (
     <>
