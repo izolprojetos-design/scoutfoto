@@ -58,28 +58,38 @@ export function getCurrentBranch(birthDate: Date): BranchInfo | null {
 }
 
 export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date: Date; monthsLeft: number; daysLeft: number } | null {
-  const currentBranch = getCurrentBranch(birthDate);
-  if (!currentBranch) return null;
-
-  // Se já for Voluntário, não há "Próximo ramo" a ser atingido por idade
-  if (currentBranch.key === 'voluntario') return null;
-
-  const idx = SCOUT_BRANCHES.indexOf(currentBranch);
-  const nextBranch = SCOUT_BRANCHES[idx + 1];
+  const ageMonths = calculateAgeInMonths(birthDate);
   
-  // Se estiver no último ramo de jovens (Pioneiro), o próximo é Voluntário
-  if (!nextBranch) {
-    const adultBranch = ADULT_CATEGORIES.find(b => b.key === 'voluntario');
-    if (!adultBranch) return null;
-    
-    const changeDate = startOfDay(addMonths(birthDate, currentBranch.maxAge));
+  // Se já for adulto (21+ anos), não há próximo ramo por idade
+  if (ageMonths >= 252) {
+    return null;
+  }
+
+  // Encontrar em qual ramo o jovem está agora
+  const currentIdx = SCOUT_BRANCHES.findIndex(b => ageMonths >= b.minAge && ageMonths < b.maxAge);
+  
+  // Se ainda não atingiu a idade do primeiro ramo (Lobinho)
+  if (ageMonths < SCOUT_BRANCHES[0].minAge) {
+    const nextBranch = SCOUT_BRANCHES[0];
+    const changeDate = startOfDay(addMonths(birthDate, nextBranch.minAge));
     const now = startOfDay(new Date());
     const monthsLeft = differenceInMonths(changeDate, now);
     const afterMonths = addMonths(now, monthsLeft);
     const daysLeft = differenceInDays(changeDate, afterMonths);
-    
-    return { branch: adultBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
+    return { branch: nextBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
   }
+
+  if (currentIdx === -1) return null;
+
+  const currentBranch = SCOUT_BRANCHES[currentIdx];
+  let nextBranch: BranchInfo | undefined = SCOUT_BRANCHES[currentIdx + 1];
+  
+  // Se estiver no último ramo de jovens (Pioneiro), o próximo é Voluntário
+  if (!nextBranch) {
+    nextBranch = ADULT_CATEGORIES.find(b => b.key === 'voluntario');
+  }
+
+  if (!nextBranch) return null;
 
   const changeDate = startOfDay(addMonths(birthDate, currentBranch.maxAge));
   const now = startOfDay(new Date());

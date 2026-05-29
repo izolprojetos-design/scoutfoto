@@ -33,6 +33,7 @@ import {
   formatAge,
   formatTimeLeft,
   calculateAge,
+  calculateAgeInMonths,
   parseLocalDate,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
@@ -2305,7 +2306,9 @@ const Scouts = () => {
         <div className="flex flex-col gap-3 min-h-[200px]">
           {filteredScouts.map((scout, index) => {
             const branch = getEffectiveBranch(scout);
-            const nextChange = getNextBranchChange(parseLocalDate(scout.birth_date));
+            const birthDateObj = parseLocalDate(scout.birth_date);
+            const isAdult = branch?.key === 'voluntario' || calculateAgeInMonths(birthDateObj) >= 252;
+            const nextChange = !isAdult ? getNextBranchChange(birthDateObj) : null;
             const scoutGuardians = getGuardiansForScout(scout.id);
             const isExpanded = expandedScouts.has(scout.id);
 
@@ -3241,8 +3244,10 @@ const Scouts = () => {
             </DialogTitle>
           </DialogHeader>
           {viewingScout && (() => {
-            const branch = getCurrentBranch(parseLocalDate(viewingScout.birth_date));
-            const nextChange = getNextBranchChange(parseLocalDate(viewingScout.birth_date));
+            const birthDateObj = parseLocalDate(viewingScout.birth_date);
+            const branch = getCurrentBranch(birthDateObj);
+            const isAdult = branch?.key === 'voluntario' || calculateAgeInMonths(birthDateObj) >= 252;
+            const nextChange = !isAdult ? getNextBranchChange(birthDateObj) : null;
             const scoutGuardians = getGuardiansForScout(viewingScout.id);
             const ageInYears = calculateAge(parseLocalDate(viewingScout.birth_date)).years;
             return (

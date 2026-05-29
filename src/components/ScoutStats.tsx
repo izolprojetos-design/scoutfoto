@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Camera, Calendar, Clock, ArrowRightLeft, Cake, Trophy } from 'lucide-react';
 import { differenceInYears, differenceInMonths } from 'date-fns';
-import { parseLocalDate, getNextBranchChange, formatTimeLeft, formatAge } from '@/lib/scoutUtils';
+import { parseLocalDate, getNextBranchChange, formatTimeLeft, formatAge, getCurrentBranch, calculateAgeInMonths } from '@/lib/scoutUtils';
 
 interface Props {
   scoutId: string;
@@ -40,6 +40,8 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
   const monthsInGroup = differenceInMonths(new Date(), created);
   const next = getNextBranchChange(birth);
   const age = formatAge(birth);
+  const branch = getCurrentBranch(birth);
+  const isAdult = branch?.key === 'voluntario' || calculateAgeInMonths(birth) >= 252;
 
   const items = [
     { icon: Cake, label: 'Idade', value: age, color: 'text-rose-600 bg-rose-500/10' },
@@ -47,7 +49,7 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
     { icon: Camera, label: 'Fotos', value: String(stats.photos), color: 'text-emerald-600 bg-emerald-500/10' },
     { icon: Calendar, label: 'Eventos', value: String(stats.events), color: 'text-indigo-600 bg-indigo-500/10' },
     { icon: Trophy, label: 'Conquistas', value: String(stats.achievements), color: 'text-fuchsia-600 bg-fuchsia-500/10' },
-    ...(next ? [{ icon: ArrowRightLeft, label: 'Próximo ramo', value: `${next.branch.icon} ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`, color: 'text-amber-600 bg-amber-500/10' }] : []),
+    ...(!isAdult && next ? [{ icon: ArrowRightLeft, label: 'Próximo ramo', value: `${next.branch.icon} ${formatTimeLeft(next.monthsLeft, next.daysLeft)}`, color: 'text-amber-600 bg-amber-500/10' }] : []),
   ];
 
   return (
