@@ -61,9 +61,25 @@ export function getNextBranchChange(birthDate: Date): { branch: BranchInfo; date
   const currentBranch = getCurrentBranch(birthDate);
   if (!currentBranch) return null;
 
+  // Se já for Voluntário, não há "Próximo ramo" a ser atingido por idade
+  if (currentBranch.key === 'voluntario') return null;
+
   const idx = SCOUT_BRANCHES.indexOf(currentBranch);
   const nextBranch = SCOUT_BRANCHES[idx + 1];
-  if (!nextBranch) return null;
+  
+  // Se estiver no último ramo de jovens (Pioneiro), o próximo é Voluntário
+  if (!nextBranch) {
+    const adultBranch = ADULT_CATEGORIES.find(b => b.key === 'voluntario');
+    if (!adultBranch) return null;
+    
+    const changeDate = startOfDay(addMonths(birthDate, currentBranch.maxAge));
+    const now = startOfDay(new Date());
+    const monthsLeft = differenceInMonths(changeDate, now);
+    const afterMonths = addMonths(now, monthsLeft);
+    const daysLeft = differenceInDays(changeDate, afterMonths);
+    
+    return { branch: adultBranch, date: changeDate, monthsLeft: Math.max(0, monthsLeft), daysLeft };
+  }
 
   const changeDate = startOfDay(addMonths(birthDate, currentBranch.maxAge));
   const now = startOfDay(new Date());
