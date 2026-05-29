@@ -781,12 +781,12 @@ const Admin = () => {
                       <DialogHeader>
                         <DialogTitle>Criar novo usuário</DialogTitle>
                       </DialogHeader>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                        <div className="space-y-2">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                        <div className="space-y-2 md:col-span-1">
                           <Label>Id</Label>
-                          <Input value={newNumber} readOnly className="bg-muted font-mono" placeholder="Calculando..." />
+                          <Input value={newNumber} readOnly className="bg-muted font-mono" placeholder="..." />
                         </div>
-                        <div className="space-y-2">
+                        <div className="space-y-2 md:col-span-3">
                           <Label>Nome do associado</Label>
                           <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome completo" />
                         </div>
