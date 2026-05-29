@@ -286,7 +286,7 @@ const Admin = () => {
     if (createOpen && !newNumber) {
       const getNext = async () => {
         const { data: nextNum } = await supabase.rpc('get_next_user_number');
-        if (nextNum) setNewNumber(nextNum.toString());
+        if (nextNum) setNewNumber(nextNum.toString().padStart(4, '0'));
       };
       getNext();
     }
