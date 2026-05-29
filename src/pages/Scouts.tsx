@@ -33,6 +33,7 @@ import {
   formatAge,
   formatTimeLeft,
   calculateAge,
+  calculateAgeInMonths,
   parseLocalDate,
   SCOUT_BRANCHES,
   ALL_CATEGORIES,
