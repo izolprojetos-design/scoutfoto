@@ -5,17 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Shield, Bug, X, Info, AlertTriangle, RefreshCw, LogIn } from 'lucide-react';
+import { Shield, Bug, X, Info, AlertTriangle, Home, LayoutDashboard, Users, User, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export const PermissionSimulationPanel = () => {
   const { canViewPhotos, canViewScouts, canAccessAdmin } = usePermissions();
-  const { roles, user, profile, refreshRoles } = useAuth();
+  const { roles, user, simulateRoles, isSimulating: isSimulationActive } = useAuth();
   const [logs, setLogs] = useState<{ id: string; timestamp: string; message: string; type: 'info' | 'warn' | 'error' }[]>([]);
   const [showLogs, setShowLogs] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
+  const [internalIsSimulating, setInternalIsSimulating] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const addLog = useCallback((message: string, type: 'info' | 'warn' | 'error' = 'info') => {
     setLogs(prev => [
@@ -36,115 +38,138 @@ export const PermissionSimulationPanel = () => {
 
   useEffect(() => {
     const timestamp = new Date().toLocaleTimeString();
-    const message = `Status das Permissões: Início=${canViewPhotos ? 'OK' : 'Bloqueado'}, Integrantes=${canViewScouts ? 'OK' : 'Bloqueado'}, Admin=${canAccessAdmin ? 'Sim' : 'Não'}`;
+    const message = `Página Atual: ${location.pathname} | Permissões: Fotos=${canViewPhotos ? 'OK' : 'Bloqueado'}, Integrantes=${canViewScouts ? 'OK' : 'Bloqueado'}, Admin=${canAccessAdmin ? 'Sim' : 'Não'}`;
     addLog(message, 'info');
-  }, [canViewPhotos, canViewScouts, canAccessAdmin, addLog]);
+  }, [canViewPhotos, canViewScouts, canAccessAdmin, addLog, location.pathname]);
 
-  const simulateRole = async (targetRole: 'parent' | 'viewer' | 'voluntario') => {
-    if (!user) return;
-    setIsSimulating(true);
-    addLog(`Simulando papel: ${targetRole}...`, 'info');
+  const simulateRole = async (targetRole: any) => {
+    setInternalIsSimulating(true);
+    addLog(`Ativando modo de simulação: ${targetRole}...`, 'info');
     
     try {
-      // Temporarily change user role for testing
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: targetRole })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      await refreshRoles();
-      addLog(`Papel alterado para ${targetRole}. Teste a navegação agora.`, 'info');
-      toast.success(`Modo de teste: Agora você é ${targetRole}`);
+      simulateRoles(targetRole === 'admin' ? ['admin'] : [targetRole]);
+      addLog(`Modo simulação ativo: ${targetRole}. Navegue para testar as rotas.`, 'info');
+      toast.success(`Simulação: Agora você é ${targetRole}`);
     } catch (err: any) {
       addLog(`Erro na simulação: ${err.message}`, 'error');
       toast.error('Falha na simulação');
     } finally {
-      setIsSimulating(false);
+      setInternalIsSimulating(false);
     }
   };
 
-  const restoreAdmin = async () => {
-    if (!user) return;
-    setIsSimulating(true);
-    addLog('Restaurando acesso de administrador...', 'info');
-    
-    try {
-      const { error } = await supabase
-        .from('user_roles')
-        .update({ role: 'admin' })
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      
-      await refreshRoles();
-      addLog('Acesso de administrador restaurado.', 'info');
-      toast.success('Admin restaurado');
-    } catch (err: any) {
-      addLog(`Erro ao restaurar: ${err.message}`, 'error');
-      toast.error('Falha ao restaurar admin');
-    } finally {
-      setIsSimulating(false);
-    }
+  const restoreOriginal = () => {
+    simulateRoles(null);
+    addLog('Restaurando permissões originais...', 'info');
+    toast.success('Permissões originais restauradas');
   };
 
-  if (process.env.NODE_ENV === 'production' && !roles.includes('admin')) {
+  const quickNav = (path: string) => {
+    addLog(`Navegando para ${path}...`, 'info');
+    navigate(path);
+  };
+
+  // Only show for admins or if already simulating
+  if (!roles.includes('admin') && !isSimulationActive) {
     return null;
   }
 
   return (
     <div className="fixed bottom-4 right-4 z-[9999] flex flex-col items-end gap-2">
       {showLogs && (
-        <Card className="w-80 shadow-2xl border-primary/20 bg-background/95 backdrop-blur flex flex-col max-h-[80vh]">
+        <Card className="w-80 shadow-2xl border-primary/20 bg-background/95 backdrop-blur flex flex-col max-h-[85vh]">
           <CardHeader className="py-3 flex flex-row items-center justify-between shrink-0">
             <div className="flex flex-col">
               <CardTitle className="text-sm font-bold flex items-center gap-2">
                 <Bug className="h-4 w-4 text-primary" />
-                Diagnóstico de Rotas
+                Simulador de Navegação
               </CardTitle>
-              <span className="text-[10px] text-muted-foreground">Log de Redirecionamento e Acessos</span>
+              <span className="text-[10px] text-muted-foreground">Valide permissões e redirecionamentos</span>
             </div>
             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowLogs(false)}>
               <X className="h-4 w-4" />
             </Button>
           </CardHeader>
           <CardContent className="p-0 flex-1 overflow-hidden flex flex-col">
-            <div className="p-3 bg-muted/50 border-b space-y-2 shrink-0">
-              <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1">Simular Permissões (Modo Teste)</p>
-              <div className="flex flex-wrap gap-1">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 text-[10px] px-2"
-                  onClick={() => simulateRole('parent')}
-                  disabled={isSimulating || !roles.includes('admin')}
-                >
-                  Pai/Mãe
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="h-7 text-[10px] px-2"
-                  onClick={() => simulateRole('viewer')}
-                  disabled={isSimulating || !roles.includes('admin')}
-                >
-                  Visitante
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  className="h-7 text-[10px] px-2"
-                  onClick={restoreAdmin}
-                  disabled={isSimulating || roles.includes('admin')}
-                >
-                  Restaurar Admin
-                </Button>
+            <div className="p-3 bg-muted/50 border-b space-y-3 shrink-0">
+              <div>
+                <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <Shield className="h-3 w-3" /> Alterar Papel (Simulação)
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button 
+                    variant={roles.includes('admin') && !isSimulationActive ? "default" : "outline"}
+                    size="sm" 
+                    className="h-7 text-[10px] px-1 justify-start"
+                    onClick={() => simulateRole('admin')}
+                    disabled={internalIsSimulating}
+                  >
+                    Administrador
+                  </Button>
+                  <Button 
+                    variant={roles.includes('chefe') ? "secondary" : "outline"}
+                    size="sm" 
+                    className="h-7 text-[10px] px-1 justify-start"
+                    onClick={() => simulateRole('chefe')}
+                    disabled={internalIsSimulating}
+                  >
+                    Chefe/Escotista
+                  </Button>
+                  <Button 
+                    variant={roles.includes('parent') ? "secondary" : "outline"}
+                    size="sm" 
+                    className="h-7 text-[10px] px-1 justify-start"
+                    onClick={() => simulateRole('parent')}
+                    disabled={internalIsSimulating}
+                  >
+                    Pai/Mãe
+                  </Button>
+                  <Button 
+                    variant={roles.includes('viewer') ? "secondary" : "outline"}
+                    size="sm" 
+                    className="h-7 text-[10px] px-1 justify-start"
+                    onClick={() => simulateRole('viewer')}
+                    disabled={internalIsSimulating}
+                  >
+                    Visitante
+                  </Button>
+                </div>
+                {isSimulationActive && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="w-full mt-2 h-7 text-[10px] text-destructive hover:text-destructive hover:bg-destructive/10"
+                    onClick={restoreOriginal}
+                  >
+                    Sair do Modo Simulação
+                  </Button>
+                )}
               </div>
-              {!roles.includes('admin') && (
+
+              <div>
+                <p className="text-[10px] font-bold uppercase text-muted-foreground mb-1.5 flex items-center gap-1">
+                  <ArrowRight className="h-3 w-3" /> Testar Navegação
+                </p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/')}>
+                    <Home className="h-3 w-3" /> Início
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/dashboard')}>
+                    <LayoutDashboard className="h-3 w-3" /> Dashboard
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/scouts')}>
+                    <Users className="h-3 w-3" /> Integrantes
+                  </Button>
+                  <Button variant="outline" size="sm" className="h-7 text-[10px] gap-1" onClick={() => quickNav('/profile')}>
+                    <User className="h-3 w-3" /> Perfil
+                  </Button>
+                </div>
+              </div>
+
+              {isSimulationActive && (
                 <div className="flex items-center gap-1.5 text-[10px] text-amber-600 bg-amber-50 p-1.5 rounded border border-amber-200">
                   <AlertTriangle className="h-3 w-3" />
-                  <span>Você está operando com permissões reduzidas.</span>
+                  <span>Modo Simulação Ativo: As permissões acima são temporárias.</span>
                 </div>
               )}
             </div>
@@ -181,22 +206,6 @@ export const PermissionSimulationPanel = () => {
                 )}
               </div>
             </ScrollArea>
-            
-            <div className="p-3 bg-primary/5 text-[10px] border-t shrink-0">
-              <div className="flex items-center justify-between">
-                <span className="font-bold">Capacidades Ativas:</span>
-                <div className="flex gap-2">
-                  <div className="flex items-center gap-1">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", canViewPhotos ? "bg-green-500" : "bg-red-500")} />
-                    Fotos
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <div className={cn("w-1.5 h-1.5 rounded-full", canViewScouts ? "bg-green-500" : "bg-red-500")} />
-                    Integrantes
-                  </div>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
       )}
@@ -205,11 +214,11 @@ export const PermissionSimulationPanel = () => {
         onClick={() => setShowLogs(!showLogs)}
         className={cn(
           "h-12 w-12 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all duration-300",
-          !roles.includes('admin') ? "bg-amber-500 animate-pulse" : "bg-primary"
+          isSimulationActive ? "bg-amber-500 animate-pulse shadow-amber-500/50" : "bg-primary shadow-primary/50"
         )}
-        title="Painel de Simulação e Diagnóstico"
+        title="Simulador de Navegação e Diagnóstico"
       >
-        {!roles.includes('admin') ? <AlertTriangle className="h-6 w-6 text-white" /> : <Bug className="h-6 w-6 text-primary-foreground" />}
+        {isSimulationActive ? <AlertTriangle className="h-6 w-6 text-white" /> : <Bug className="h-6 w-6 text-primary-foreground" />}
       </button>
     </div>
   );
