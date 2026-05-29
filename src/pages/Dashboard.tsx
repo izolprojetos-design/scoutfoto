@@ -70,21 +70,7 @@ const getEffectiveBranchKey = (scout: Scout) => {
   if (scout.manual_branch) {
     return ALL_CATEGORIES.find(b => b.key === scout.manual_branch) || getCurrentBranch(parseLocalDate(scout.birth_date));
   }
-  const current = getCurrentBranch(parseLocalDate(scout.birth_date));
-  if (current) return current;
-
-  // Fallback para adultos sem ramo manual (>= 21 anos)
-  const birthDate = parseLocalDate(scout.birth_date);
-  const now = new Date();
-  let ageYears = now.getFullYear() - birthDate.getFullYear();
-  if (now.getMonth() < birthDate.getMonth() || (now.getMonth() === birthDate.getMonth() && now.getDate() < birthDate.getDate())) {
-    ageYears--;
-  }
-  if (ageYears >= 21) {
-    return ALL_CATEGORIES.find(b => b.key === 'voluntario') || null;
-  }
-
-  return null;
+  return getCurrentBranch(parseLocalDate(scout.birth_date));
 };
 
 const branchColors: Record<string, string> = {
