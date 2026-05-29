@@ -72,7 +72,8 @@ export async function exportScoutProfilePdf(
   const birth = parseLocalDate(scout.birth_date);
   const created = new Date(scout.created_at);
   const branch = getCurrentBranch(birth);
-  const next = getNextBranchChange(birth);
+  const isAdult = branch?.key === 'voluntario' || differenceInMonths(new Date(), birth) >= 252;
+  const next = !isAdult ? getNextBranchChange(birth) : null;
   const ageStr = formatAge(birth);
   const yearsInGroup = differenceInYears(new Date(), created);
   const monthsInGroup = differenceInMonths(new Date(), created);
