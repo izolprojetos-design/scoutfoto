@@ -11,11 +11,15 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Só agimos quando o carregamento inicial terminar
+    // Só agimos quando o carregamento inicial de auth e permissões terminar
     if (!authLoading && !permLoading) {
       if (user) {
-        console.log("[Index] Usuário autenticado, indo para /dashboard");
-        navigate('/dashboard', { replace: true });
+        // Tenta recuperar a última rota acessada, senão vai para o dashboard
+        const lastRoute = localStorage.getItem('last_accessed_route');
+        const targetRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard';
+        
+        console.log(`[Index] Usuário autenticado, indo para ${targetRoute}`);
+        navigate(targetRoute, { replace: true });
       } else {
         console.log("[Index] Usuário não autenticado, indo para /login");
         navigate('/login', { replace: true });
