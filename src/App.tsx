@@ -15,7 +15,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-const ProtectedRoute = lazyWithRetry(() => import("@/components/ProtectedRoute"));
+import ProtectedRoute from "@/components/ProtectedRoute";
 import ForceChangePassword from "@/components/ForceChangePassword";
 const SplashScreen = lazyWithRetry(() => import("@/components/SplashScreen"));
 const InstallPrompt = lazyWithRetry(() => import("@/components/InstallPrompt"));
@@ -58,7 +58,6 @@ const isAuthError = (error: unknown): boolean => {
   return (
     msg.includes("JWT") ||
     msg.includes("401") ||
-    msg.includes("403") ||
     msg.includes("token is expired") ||
     msg.includes("invalid claim") ||
     msg.includes("not authenticated")

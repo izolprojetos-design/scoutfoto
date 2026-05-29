@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions, PermissionKey } from '@/hooks/usePermissions';
 import { Loader2 } from 'lucide-react';
@@ -11,10 +11,13 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute = ({ children, requiredRole, requiredPermission }: ProtectedRouteProps) => {
-  const { user, loading, roles, hasRole, mfaRequired, mfaVerified, setMfaVerified } = useAuth();
+  const { user, loading: authLoading, roles, hasRole, mfaRequired, mfaVerified, setMfaVerified } = useAuth();
   const { hasPermission, loading: permLoading } = usePermissions();
+  const { pathname } = useLocation();
 
-  if (loading || permLoading) {
+  const loading = authLoading || permLoading;
+
+  if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -22,50 +25,34 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) {
+    if (pathname === '/login') return <>{children ?? <Outlet />}</>;
+    return <Navigate to="/login" replace />;
+  }
 
   // MFA challenge required
   if (mfaRequired && !mfaVerified) {
     return <MFAVerify onVerified={() => setMfaVerified(true)} />;
   }
 
-  if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
-    const currentPath = window.location.pathname;
+  // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro" e não deve ser redirecionado por falta de papel/permissão
+  // Isso evita loops se o Dashboard for a Home para todos.
+  const isSafePath = pathname === '/dashboard' || pathname === '/profile';
+
+  if (!isSafePath && requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
+    const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta o papel "${requiredRole}".`;
+    console.warn(msg);
+    window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
-    // Se não for o perfil, redirecionamos para um lugar seguro
-    if (currentPath !== '/profile' && currentPath !== '/dashboard') {
-      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta o papel "${requiredRole}".`;
-      console.warn(msg);
-      window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
-      
-      // Se tiver permissão de ver fotos, o Dashboard é o melhor lugar
-      if (hasPermission('view_photos')) {
-        return <Navigate to="/dashboard" replace />;
-      }
-      // Se tiver permissão de ver scouts, vai para lá
-      if (hasPermission('view_scouts')) {
-        return <Navigate to="/scouts" replace />;
-      }
-      return <Navigate to="/dashboard" replace />; // Dashboard agora é a "Home" segura
-    }
+    return <Navigate to="/dashboard" replace />;
   }
 
-  if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
-    const currentPath = window.location.pathname;
-
-    if (currentPath !== '/profile' && currentPath !== '/dashboard') {
-      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta a permissão "${requiredPermission}".`;
-      console.warn(msg);
-      window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
-      
-      if (hasPermission('view_photos')) {
-        return <Navigate to="/dashboard" replace />;
-      }
-      if (hasPermission('view_scouts')) {
-        return <Navigate to="/scouts" replace />;
-      }
-      return <Navigate to="/dashboard" replace />;
-    }
+  if (!isSafePath && requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
+    const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta a permissão "${requiredPermission}".`;
+    console.warn(msg);
+    window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
+    
+    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children ?? <Outlet />}</>;
