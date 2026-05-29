@@ -22,6 +22,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
+  SidebarRail,
 } from '@/components/ui/sidebar';
 import { getPrimaryRole, ROLE_LABELS } from '@/lib/userRoles';
 import { stringToColor, getAvatarUrl } from '@/lib/avatarUtils';
@@ -114,7 +115,7 @@ const AppSidebar = () => {
     .toUpperCase() || '??';
 
   return (
-    <Sidebar collapsible="none" className="border-r">
+    <Sidebar collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -299,6 +300,7 @@ const AppSidebar = () => {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   );
 };
