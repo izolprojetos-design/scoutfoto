@@ -139,6 +139,7 @@ const Scouts = () => {
   const [expandedScouts, setExpandedScouts] = useState<Set<string>>(new Set());
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   const [viewingScout, setViewingScout] = useState<Scout | null>(null);
+  const [hasPhotos, setHasPhotos] = useState<boolean>(false);
   const [renumbering, setRenumbering] = useState(false);
   
   const [pendingResend, setPendingResend] = useState<{ scoutId: string; scoutName: string; photo: File } | null>(null);
@@ -470,6 +471,25 @@ const Scouts = () => {
 
 
   // Branch picker (DropdownMenu) handles click-outside and item-select auto-close natively via Radix.
+
+  // Update hasPhotos state when viewingScout or editDialogOpen changes
+  useEffect(() => {
+    const checkPhotos = async (scoutId: string) => {
+      const { count } = await supabase
+        .from('scout_photos' as any)
+        .select('*', { count: 'exact', head: true })
+        .eq('scout_id', scoutId);
+      setHasPhotos((count || 0) > 0);
+    };
+
+    if (viewingScout) {
+      checkPhotos(viewingScout.id);
+    } else if (editingScout) {
+      checkPhotos(editingScout.id);
+    } else {
+      setHasPhotos(false);
+    }
+  }, [viewingScout, editingScout]);
 
   // Auto-open edit dialog when navigated with ?edit=scoutId
   useEffect(() => {
@@ -2592,21 +2612,31 @@ const Scouts = () => {
 
           {editingScout && (
             <div className="mt-6 border-t pt-4">
-              <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide text-muted-foreground">
-                Fotos do integrante
-              </h4>
-              <Tabs defaultValue="galeria" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="galeria">Galeria</TabsTrigger>
-                  <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
-                </TabsList>
-                <TabsContent value="galeria" className="mt-4">
-                  <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
-                </TabsContent>
-                <TabsContent value="pastas" className="mt-4">
-                  <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
-                </TabsContent>
-              </Tabs>
+              {hasPhotos ? (
+                <>
+                  <h4 className="text-sm font-semibold mb-3 uppercase tracking-wide text-muted-foreground">
+                    Fotos do integrante
+                  </h4>
+                  <Tabs defaultValue="galeria" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                      <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="galeria" className="mt-4">
+                      <ScoutGallery scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
+                    </TabsContent>
+                    <TabsContent value="pastas" className="mt-4">
+                      <ScoutFolders scoutId={editingScout.id} scoutName={editingScout.name} onPickStart={handlePhotoPickStart} />
+                    </TabsContent>
+                  </Tabs>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/30 rounded-lg border-2 border-dashed">
+                  <ImageIcon className="h-10 w-10 text-muted-foreground/40 mb-2" />
+                  <p className="text-sm font-medium text-muted-foreground">Nenhuma foto na galeria ou pastas</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">As abas de fotos aparecerão quando o integrante possuir imagens.</p>
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
@@ -3336,18 +3366,26 @@ const Scouts = () => {
                   </TabsContent>
 
                   <TabsContent value="fotos" className="mt-4">
-                    <Tabs defaultValue="galeria" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="galeria">Galeria</TabsTrigger>
-                        <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="galeria" className="mt-4">
-                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
-                      </TabsContent>
-                      <TabsContent value="pastas" className="mt-4">
-                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
-                      </TabsContent>
-                    </Tabs>
+                    {hasPhotos ? (
+                      <Tabs defaultValue="galeria" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                          <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="galeria" className="mt-4">
+                          <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
+                        </TabsContent>
+                        <TabsContent value="pastas" className="mt-4">
+                          <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
+                        </TabsContent>
+                      </Tabs>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/20 rounded-xl border-2 border-dashed">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                        <p className="text-base font-medium text-muted-foreground">Este integrante ainda não possui fotos</p>
+                        <p className="text-sm text-muted-foreground/60 mt-1 max-w-xs">As fotos e pastas aparecerão automaticamente aqui assim que forem enviadas.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="eventos" className="mt-4">
