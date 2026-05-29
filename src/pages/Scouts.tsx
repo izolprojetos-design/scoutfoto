@@ -3366,18 +3366,26 @@ const Scouts = () => {
                   </TabsContent>
 
                   <TabsContent value="fotos" className="mt-4">
-                    <Tabs defaultValue="galeria" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="galeria">Galeria</TabsTrigger>
-                        <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="galeria" className="mt-4">
-                        <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
-                      </TabsContent>
-                      <TabsContent value="pastas" className="mt-4">
-                        <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
-                      </TabsContent>
-                    </Tabs>
+                    {hasPhotos ? (
+                      <Tabs defaultValue="galeria" className="w-full">
+                        <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="galeria">Galeria</TabsTrigger>
+                          <TabsTrigger value="pastas">Pastas (Ano › Data)</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="galeria" className="mt-4">
+                          <ScoutGallery scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
+                        </TabsContent>
+                        <TabsContent value="pastas" className="mt-4">
+                          <ScoutFolders scoutId={viewingScout.id} scoutName={viewingScout.name} onPickStart={handlePhotoPickStart} />
+                        </TabsContent>
+                      </Tabs>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-12 text-center bg-muted/20 rounded-xl border-2 border-dashed">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground/30 mb-3" />
+                        <p className="text-base font-medium text-muted-foreground">Este integrante ainda não possui fotos</p>
+                        <p className="text-sm text-muted-foreground/60 mt-1 max-w-xs">As fotos e pastas aparecerão automaticamente aqui assim que forem enviadas.</p>
+                      </div>
+                    )}
                   </TabsContent>
 
                   <TabsContent value="eventos" className="mt-4">
