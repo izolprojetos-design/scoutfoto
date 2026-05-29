@@ -1,4 +1,4 @@
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import NotificationBell from '@/components/NotificationBell';
@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import RenderDiagnosticsToolbar from '@/components/RenderDiagnosticsToolbar';
 import { PermissionSimulationPanel } from '@/components/PermissionSimulationPanel';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 
 const PageLoader = () => (
   <div className="flex flex-1 items-center justify-center py-12">
@@ -19,6 +19,15 @@ const PageLoader = () => (
 /** Persistent layout – sidebar stays mounted across route changes. */
 const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   useRenderDiagnostics('AppLayout', { children });
+  const { pathname, search } = useLocation();
+
+  // Persiste a última rota acessada (pathname + query params se houver)
+  useEffect(() => {
+    const fullPath = pathname + search;
+    if (pathname !== '/' && pathname !== '/login' && !pathname.includes('reset-password')) {
+      localStorage.setItem('last_accessed_route', fullPath);
+    }
+  }, [pathname, search]);
 
   return (
     <SidebarProvider>
