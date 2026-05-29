@@ -20,6 +20,7 @@ const PageLoader = () => (
 /** Persistent layout – sidebar stays mounted across route changes. */
 const AppLayout = ({ children }: { children?: React.ReactNode }) => {
   useRenderDiagnostics('AppLayout', { children });
+  useNavigationGuard();
   const { pathname, search } = useLocation();
 
   // Persiste a última rota acessada (pathname + query params se houver)
