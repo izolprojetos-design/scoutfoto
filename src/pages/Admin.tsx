@@ -784,7 +784,7 @@ const Admin = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         <div className="space-y-2">
                           <Label>Id</Label>
-                          <Input value={newNumber} onChange={e => setNewNumber(e.target.value)} placeholder="Número de registro" />
+                          <Input value={newNumber} readOnly className="bg-muted font-mono" placeholder="Calculando..." />
                         </div>
                         <div className="space-y-2">
                           <Label>Nome do associado</Label>
