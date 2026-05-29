@@ -112,7 +112,12 @@ Deno.serve(async (req) => {
     }
 
     if (action === "create") {
-      const { email, password, name, role, section, user_number, cargo_1, cargo_2 } = body;
+      let { email, password, name, role, section, user_number, cargo_1, cargo_2 } = body;
+
+      if (!user_number) {
+        const { data: nextNum } = await serviceClient.rpc("get_next_user_number");
+        if (nextNum) user_number = nextNum;
+      }
 
       if (!email || !password || !name) {
         return new Response(JSON.stringify({ error: "email, password e name são obrigatórios" }), { status: 400, headers: resHeaders });

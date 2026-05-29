@@ -1687,6 +1687,7 @@ export type Database = {
           used_by: string
         }[]
       }
+      get_next_user_number: { Args: never; Returns: number }
       get_share_link_by_token: {
         Args: { p_token: string }
         Returns: {

@@ -461,6 +461,12 @@ const Admin = () => {
     }
     setCreating(true);
 
+    let finalNumber = newNumber ? parseInt(newNumber) : null;
+    if (!finalNumber) {
+      const { data: nextNum } = await supabase.rpc('get_next_user_number');
+      if (nextNum) finalNumber = nextNum;
+    }
+
     const { data, error } = await supabase.functions.invoke('admin-create-user', {
       body: { 
         action: 'create', 
@@ -469,7 +475,7 @@ const Admin = () => {
         name: newName, 
         role: newRole, 
         section: newSection,
-        user_number: newNumber ? parseInt(newNumber) : null,
+        user_number: finalNumber,
         cargo_1: newCargo1,
         cargo_2: newCargo2
       },
