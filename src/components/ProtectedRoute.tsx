@@ -35,8 +35,10 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     return <MFAVerify onVerified={() => setMfaVerified(true)} />;
   }
 
-  // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro" e não deve ser redirecionado por falta de papel/permissão
-  // Isso evita loops se o Dashboard for a Home para todos.
+  // Destino padrão seguro
+  const defaultSafeRoute = '/dashboard';
+
+  // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro"
   const isSafePath = pathname === '/dashboard' || pathname === '/profile' || pathname === '/';
 
   if (!isSafePath && requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
@@ -44,9 +46,11 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
-    // Se o acesso for negado, limpa a última rota inválida e volta para o Dashboard
+    // Evita loop: se a rota que falhou já era o destino padrão, para tudo
+    if (pathname === defaultSafeRoute) return <>{children ?? <Outlet />}</>;
+
     localStorage.removeItem('last_accessed_route');
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={defaultSafeRoute} replace />;
   }
 
   if (!isSafePath && requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
@@ -54,8 +58,10 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
     console.warn(msg);
     window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
+    if (pathname === defaultSafeRoute) return <>{children ?? <Outlet />}</>;
+
     localStorage.removeItem('last_accessed_route');
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={defaultSafeRoute} replace />;
   }
 
   return <>{children ?? <Outlet />}</>;
