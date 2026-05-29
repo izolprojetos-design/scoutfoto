@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
 
   // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro" e não deve ser redirecionado por falta de papel/permissão
   // Isso evita loops se o Dashboard for a Home para todos.
-  const isSafePath = pathname === '/dashboard' || pathname === '/profile';
+  const isSafePath = pathname === '/dashboard' || pathname === '/profile' || pathname === '/';
 
   if (!isSafePath && requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta o papel "${requiredRole}".`;
