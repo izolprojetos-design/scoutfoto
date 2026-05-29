@@ -13,19 +13,14 @@ const Index = () => {
   useEffect(() => {
     if (!authLoading && !permLoading) {
       if (user) {
-        // Redirecionamento baseado em permissões com log detalhado
-        let destination = '/profile';
-        let reason = 'Fallback padrão (sem permissões de visualização)';
-
-        if (isAdmin || canViewPhotos) {
-          destination = '/dashboard';
-          reason = isAdmin ? 'Usuário é Administrador' : 'Usuário possui permissão canViewPhotos';
-        } else if (canViewScouts) {
-          destination = '/scouts';
-          reason = 'Usuário possui permissão canViewScouts';
-        }
+        // Forçamos o redirecionamento para o Dashboard como tela principal
+        // Se o usuário não tiver permissão de ver fotos, o ProtectedRoute no Dashboard 
+        // cuidará de redirecioná-lo para um lugar seguro (como o perfil).
+        // Isso quebra o loop de redirecionamento logo na entrada.
         
-        const msg = `[Index] Redirecionando para ${destination} - Motivo: ${reason}`;
+        const destination = '/dashboard';
+        const msg = `[Index] Redirecionamento inicial forçado para ${destination}`;
+        
         console.log(msg);
         window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'info' } }));
         navigate(destination, { replace: true });
@@ -33,7 +28,7 @@ const Index = () => {
         navigate('/login', { replace: true });
       }
     }
-  }, [user, authLoading, permLoading, canViewPhotos, canViewScouts, isAdmin, navigate]);
+  }, [user, authLoading, permLoading, navigate]);
 
   return (
     <>

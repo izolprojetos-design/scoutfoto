@@ -31,25 +31,33 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
 
   if (requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const currentPath = window.location.pathname;
+    const isMainRoute = currentPath === '/' || currentPath === '/dashboard';
+    
+    // Se for rota principal e falhar, tentamos o próximo lugar seguro antes do perfil
     if (currentPath !== '/profile') {
-      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta o papel "${requiredRole}". Papéis: [${roles.join(', ')}]. Redirecionando para /profile.`;
+      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta o papel "${requiredRole}". Papéis: [${roles.join(', ')}].`;
       console.warn(msg);
       window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
+      
+      if (isMainRoute && hasPermission('view_scouts')) {
+        return <Navigate to="/scouts" replace />;
+      }
       return <Navigate to="/profile" replace />;
     }
   }
 
   if (requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
-    // Basic fallback logic: if they fail a specific permission check, 
-    // we should only redirect if it's a critical mismatch.
-    // However, if the user manually navigates to a module they should see (e.g. via sidebar), 
-    // the sidebar already handles the 'show' logic.
     const currentPath = window.location.pathname;
+    const isMainRoute = currentPath === '/' || currentPath === '/dashboard';
 
     if (currentPath !== '/profile') {
-      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta a permissão "${requiredPermission}". Redirecionando para /profile.`;
+      const msg = `[ProtectedRoute] Acesso negado a "${currentPath}": falta a permissão "${requiredPermission}".`;
       console.warn(msg);
       window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
+      
+      if (isMainRoute && hasPermission('view_scouts')) {
+        return <Navigate to="/scouts" replace />;
+      }
       return <Navigate to="/profile" replace />;
     }
   }
