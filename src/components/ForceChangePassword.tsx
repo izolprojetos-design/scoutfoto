@@ -32,15 +32,26 @@ const ForceChangePassword = () => {
     }
     setSaving(true);
 
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) {
-      toast.error('Erro ao alterar senha: ' + error.message);
-    } else {
-      await supabase.from('profiles').update({ must_change_password: false }).eq('user_id', user!.id);
-      toast.success('Senha alterada com sucesso!');
-      window.location.reload();
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      
+      if (error) {
+        if (error.message.includes('New password should be different from the old one')) {
+          toast.error('A nova senha deve ser diferente da senha temporária atual.');
+        } else {
+          toast.error('Erro ao alterar senha: ' + error.message);
+        }
+      } else {
+        await supabase.from('profiles').update({ must_change_password: false }).eq('user_id', user!.id);
+        toast.success('Senha alterada com sucesso!');
+        window.location.reload();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Ocorreu um erro inesperado ao alterar a senha.');
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   if (!mustChange) return null;
