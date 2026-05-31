@@ -895,69 +895,136 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             )}
           </div>
 
-          {(year !== null || dateKey) && (
-            <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+            <div className="flex items-center gap-2">
+              {(year !== null || dateKey) && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (dateKey) { setDateKey(null); setSelectMode(false); clearSelection(); }
+                    else setYear(null);
+                  }}
+                  className="gap-1 h-8"
+                >
+                  <ArrowLeft className="h-4 w-4" /> Voltar
+                </Button>
+              )}
+              <div className="text-sm text-muted-foreground">
+                {visiblePhotos.length} foto(s) organizada(s)
+              </div>
+            </div>
+
+            {canManage && (
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => openUploadDialog(e.target.files)}
+                />
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => openUploadDialog(e.target.files)}
+                />
+                <input
+                  id="folder-input-folders"
+                  type="file"
+                  // @ts-expect-error webkitdirectory is a valid attribute
+                  webkitdirectory=""
+                  directory=""
+                  multiple
+                  className="hidden"
+                  onChange={(e) => openUploadDialog(e.target.files)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    onPickStart?.();
+                    cameraInputRef.current?.click();
+                  }}
+                  disabled={uploading}
+                  className="gap-2"
+                >
+                  <Camera className="h-4 w-4" />
+                  Câmera
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button disabled={uploading} className="gap-2 flex-1 sm:flex-none">
+                      <Upload className="h-4 w-4" />
+                      Adicionar
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Origem das fotos</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => { onPickStart?.(); fileInputRef.current?.click(); }}>
+                      <ImageIcon className="mr-2 h-4 w-4" /> Selecionar arquivos
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { onPickStart?.(); document.getElementById('folder-input-folders')?.click(); }}>
+                      <Folder className="mr-2 h-4 w-4" /> Selecionar pasta inteira
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+
+          {dateKey && photosOfDate.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => {
-                  if (dateKey) { setDateKey(null); setSelectMode(false); clearSelection(); }
-                  else setYear(null);
-                }}
+                onClick={exportZip}
+                disabled={!!exporting}
                 className="gap-1 h-8"
               >
-                <ArrowLeft className="h-4 w-4" /> Voltar
+                {exporting === 'zip'
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <FileArchive className="h-4 w-4" />}
+                ZIP
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={exportPdf}
+                disabled={!!exporting}
+                className="gap-1 h-8"
+              >
+                {exporting === 'pdf'
+                  ? <Loader2 className="h-4 w-4 animate-spin" />
+                  : <FileText className="h-4 w-4" />}
+                PDF
               </Button>
 
-              {dateKey && photosOfDate.length > 0 && (
-                <div className="flex items-center gap-2 flex-wrap">
+              {canManage && (
+                <>
                   <Button
-                    variant="outline"
+                    variant={selectMode ? 'secondary' : 'outline'}
                     size="sm"
-                    onClick={exportZip}
-                    disabled={!!exporting}
+                    onClick={() => { setSelectMode(s => !s); clearSelection(); }}
                     className="gap-1 h-8"
                   >
-                    {exporting === 'zip'
-                      ? <Loader2 className="h-4 w-4 animate-spin" />
-                      : <FileArchive className="h-4 w-4" />}
-                    ZIP
+                    {selectMode ? <X className="h-4 w-4" /> : <CheckSquare className="h-4 w-4" />}
+                    {selectMode ? 'Sair' : 'Selecionar'}
                   </Button>
                   <Button
-                    variant="outline"
+                    variant="destructive"
                     size="sm"
-                    onClick={exportPdf}
-                    disabled={!!exporting}
+                    onClick={() => setDeleteFolderOpen(true)}
                     className="gap-1 h-8"
                   >
-                    {exporting === 'pdf'
-                      ? <Loader2 className="h-4 w-4 animate-spin" />
-                      : <FileText className="h-4 w-4" />}
-                    PDF
+                    <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
                   </Button>
-
-                  {canManage && (
-                    <>
-                      <Button
-                        variant={selectMode ? 'secondary' : 'outline'}
-                        size="sm"
-                        onClick={() => { setSelectMode(s => !s); clearSelection(); }}
-                        className="gap-1 h-8"
-                      >
-                        {selectMode ? <X className="h-4 w-4" /> : <CheckSquare className="h-4 w-4" />}
-                        {selectMode ? 'Sair' : 'Selecionar'}
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => setDeleteFolderOpen(true)}
-                        className="gap-1 h-8"
-                      >
-                        <Trash2 className="h-4 w-4" /> Excluir pasta ({photosOfDate.length})
-                      </Button>
-                    </>
-                  )}
-                </div>
+                </>
               )}
             </div>
           )}
