@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import {
   Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
   UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
-  CheckSquare, Square, RotateCcw, Play, Camera, ImageIcon,
+  CheckSquare, Square, RotateCcw, Play, Camera,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
