@@ -7,7 +7,7 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import {
   Loader2, Upload, Trash2, Download, ImageIcon, Star, ChevronLeft, ChevronRight, Pencil, Check, X,
-  RotateCw, Crop as CropIcon, UserCircle, Camera,
+  RotateCw, Crop as CropIcon, UserCircle, Camera, Folder,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import ImageCropper from '@/components/ImageCropper';
@@ -16,6 +16,9 @@ import { toast } from 'sonner';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -541,6 +544,20 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
                 if (cameraInputRef.current) cameraInputRef.current.value = '';
               }}
             />
+            {/* Folder selection input */}
+            <input
+              id="folder-input-gallery"
+              type="file"
+              // @ts-expect-error webkitdirectory is a valid attribute
+              webkitdirectory=""
+              directory=""
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                requestUpload(e.target.files);
+                if (e.target) e.target.value = '';
+              }}
+            />
             <Button
               type="button"
               variant="outline"
@@ -555,20 +572,27 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
               <Camera className="h-4 w-4" />
               Câmera
             </Button>
-            <Button
-              onClick={() => {
-                onPickStart?.();
-                fileInputRef.current?.click();
-              }}
-              disabled={uploading}
-              className="gap-2 flex-1 sm:flex-none"
-            >
-              {uploading ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Enviando {progress.current}/{progress.total}</>
-              ) : (
-                <><Upload className="h-4 w-4" /> Adicionar Fotos</>
-              )}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={uploading} className="gap-2 flex-1 sm:flex-none">
+                  {uploading ? (
+                    <><Loader2 className="h-4 w-4 animate-spin" /> Enviando {progress.current}/{progress.total}</>
+                  ) : (
+                    <><Upload className="h-4 w-4" /> Adicionar</>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Origem das fotos</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => { onPickStart?.(); fileInputRef.current?.click(); }}>
+                  <ImageIcon className="mr-2 h-4 w-4" /> Selecionar arquivos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { onPickStart?.(); document.getElementById('folder-input-gallery')?.click(); }}>
+                  <Folder className="mr-2 h-4 w-4" /> Selecionar pasta inteira
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         )}
       </div>
