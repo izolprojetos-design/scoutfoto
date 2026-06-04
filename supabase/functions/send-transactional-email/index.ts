@@ -30,11 +30,10 @@ function generateToken(): string {
     .join('')
 }
 
-// In-code auth: verify the caller has a valid JWT (anon or service_role).
-// verify_jwt is false in config so fire-and-forget calls during signup/login work.
-async function verifyAuth(req: Request): Promise<boolean> {
+// In-code auth: verify the caller has a real user session.
+async function verifyAuth(req: Request): Promise<{ userId: string; email: string | null } | null> {
   const authHeader = req.headers.get('Authorization')
-  if (!authHeader?.startsWith('Bearer ')) return false
+  if (!authHeader?.startsWith('Bearer ')) return null
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
@@ -43,10 +42,11 @@ async function verifyAuth(req: Request): Promise<boolean> {
   })
 
   const { data, error } = await client.auth.getClaims(authHeader.replace('Bearer ', ''))
-  // Require a real user session (sub claim), not just any valid JWT (e.g. anon key).
-  // This blocks abuse where an attacker uses the publicly visible anon key to
-  // trigger emails to arbitrary recipients via the app's verified domain.
-  return !error && !!data?.claims?.sub
+  if (error || !data?.claims?.sub) return null
+  return {
+    userId: data.claims.sub as string,
+    email: (data.claims.email as string) ?? null,
+  }
 }
 
 Deno.serve(async (req) => {
@@ -55,14 +55,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Verify caller has a valid JWT (anon key or service role)
-  const isAuthed = await verifyAuth(req)
-  if (!isAuthed) {
+  // Verify caller has a real user session
+  const caller = await verifyAuth(req)
+  if (!caller) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
+
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
