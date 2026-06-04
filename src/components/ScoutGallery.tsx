@@ -7,7 +7,7 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import {
   Loader2, Upload, Trash2, Download, ImageIcon, Star, ChevronLeft, ChevronRight, Pencil, Check, X,
-  RotateCw, Crop as CropIcon, UserCircle, Camera, Folder,
+  RotateCw, Crop as CropIcon, UserCircle, Camera, Folder, Plus,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import ImageCropper from '@/components/ImageCropper';
@@ -558,33 +558,22 @@ export default function ScoutGallery({ scoutId, scoutName, onPickStart }: Props)
                 if (e.target) e.target.value = '';
               }}
             />
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                onPickStart?.();
-                cameraInputRef.current?.click();
-              }}
-              disabled={uploading}
-              className="gap-2"
-              title="Tirar foto com a câmera"
-            >
-              <Camera className="h-4 w-4" />
-              Câmera
-            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button disabled={uploading} className="gap-2 flex-1 sm:flex-none">
                   {uploading ? (
                     <><Loader2 className="h-4 w-4 animate-spin" /> Enviando {progress.current}/{progress.total}</>
                   ) : (
-                    <><Upload className="h-4 w-4" /> Adicionar</>
+                    <><Plus className="h-4 w-4" /> Adicionar</>
                   )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Origem das fotos</DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => { onPickStart?.(); cameraInputRef.current?.click(); }}>
+                  <Camera className="mr-2 h-4 w-4" /> Câmera
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => { onPickStart?.(); fileInputRef.current?.click(); }}>
                   <ImageIcon className="mr-2 h-4 w-4" /> Selecionar arquivos
                 </DropdownMenuItem>

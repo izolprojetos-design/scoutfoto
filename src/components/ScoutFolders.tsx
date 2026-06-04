@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import {
   Loader2, Folder, ChevronRight, ImageIcon, ArrowLeft, Download, Upload,
   UploadCloud, Trash2, X, CheckCircle2, AlertCircle, FileArchive, FileText,
-  CheckSquare, Square, RotateCcw, Play, Camera,
+  CheckSquare, Square, RotateCcw, Play, Camera, Plus,
 } from 'lucide-react';
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger
@@ -791,33 +791,39 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
             JPG, PNG ou HEIC — até <strong>{MAX_SIZE_MB}MB</strong> por arquivo. Arraste sobre uma pasta para enviar direto.
           </p>
           <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                onPickStart?.();
-                cameraInputRef.current?.click();
-              }}
-              disabled={uploading}
-              className="gap-2"
-              title="Tirar foto com a câmera"
-            >
-              <Camera className="h-4 w-4" />
-              Câmera
-            </Button>
-            <Button
-              size="sm"
-              onClick={() => {
-                onPickStart?.();
-                fileInputRef.current?.click();
-              }}
-              disabled={uploading}
-              className="gap-2"
-            >
-              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-              Enviar fotos
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button size="sm" disabled={uploading} className="gap-2">
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                  Adicionar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Origem das fotos</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => { onPickStart?.(); cameraInputRef.current?.click(); }}>
+                  <Camera className="mr-2 h-4 w-4" /> Câmera
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { onPickStart?.(); fileInputRef.current?.click(); }}>
+                  <ImageIcon className="mr-2 h-4 w-4" /> Selecionar arquivos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => { onPickStart?.(); document.getElementById('folder-input-folders')?.click(); }}>
+                  <Folder className="mr-2 h-4 w-4" /> Selecionar pasta inteira
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+          {/* Invisible folder input for Pastas tab */}
+          <input
+            id="folder-input-folders"
+            type="file"
+            // @ts-expect-error webkitdirectory is a valid attribute
+            webkitdirectory=""
+            directory=""
+            multiple
+            className="hidden"
+            onChange={(e) => openUploadDialog(e.target.files)}
+          />
           <input
             ref={fileInputRef}
             type="file"
