@@ -30,11 +30,10 @@ function generateToken(): string {
     .join('')
 }
 
-// In-code auth: verify the caller has a valid JWT (anon or service_role).
-// verify_jwt is false in config so fire-and-forget calls during signup/login work.
-async function verifyAuth(req: Request): Promise<boolean> {
+// In-code auth: verify the caller has a real user session.
+async function verifyAuth(req: Request): Promise<{ userId: string; email: string | null } | null> {
   const authHeader = req.headers.get('Authorization')
-  if (!authHeader?.startsWith('Bearer ')) return false
+  if (!authHeader?.startsWith('Bearer ')) return null
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!
   const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
@@ -43,10 +42,11 @@ async function verifyAuth(req: Request): Promise<boolean> {
   })
 
   const { data, error } = await client.auth.getClaims(authHeader.replace('Bearer ', ''))
-  // Require a real user session (sub claim), not just any valid JWT (e.g. anon key).
-  // This blocks abuse where an attacker uses the publicly visible anon key to
-  // trigger emails to arbitrary recipients via the app's verified domain.
-  return !error && !!data?.claims?.sub
+  if (error || !data?.claims?.sub) return null
+  return {
+    userId: data.claims.sub as string,
+    email: (data.claims.email as string) ?? null,
+  }
 }
 
 Deno.serve(async (req) => {
@@ -55,14 +55,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
-  // Verify caller has a valid JWT (anon key or service role)
-  const isAuthed = await verifyAuth(req)
-  if (!isAuthed) {
+  // Verify caller has a real user session
+  const caller = await verifyAuth(req)
+  if (!caller) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
+
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
@@ -119,9 +120,7 @@ Deno.serve(async (req) => {
   if (!template) {
     console.error('Template not found in registry', { templateName })
     return new Response(
-      JSON.stringify({
-        error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-      }),
+      JSON.stringify({ error: 'Template not found' }),
       {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -148,6 +147,26 @@ Deno.serve(async (req) => {
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Authorization: restrict who can send to whom.
+  // - Templates with a fixed `to` (e.g., admin notifications) are allowed for any authenticated user.
+  // - Otherwise, the caller may only send to their own email, unless they are admin/voluntario.
+  if (!template.to) {
+    const callerEmail = (caller.email ?? '').toLowerCase()
+    const targetEmail = effectiveRecipient.toLowerCase()
+    if (callerEmail !== targetEmail) {
+      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: caller.userId, _role: 'admin' })
+      const { data: isVol } = await supabase.rpc('has_role', { _user_id: caller.userId, _role: 'voluntario' })
+      if (!isAdmin && !isVol) {
+        console.warn('Forbidden cross-recipient send attempt', { caller: caller.userId, targetEmail })
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+  }
+
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
