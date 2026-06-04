@@ -2645,13 +2645,6 @@ const Scouts = () => {
                 </TabsContent>
               </Tabs>
             </div>
-                <div className="flex flex-col items-center justify-center py-8 text-center bg-muted/30 rounded-lg border-2 border-dashed">
-                  <ImageIcon className="h-10 w-10 text-muted-foreground/40 mb-2" />
-                  <p className="text-sm font-medium text-muted-foreground">Nenhuma foto na galeria ou pastas</p>
-                  <p className="text-xs text-muted-foreground/70 mt-1">As abas de fotos aparecerão quando o integrante possuir imagens.</p>
-                </div>
-              )}
-            </div>
           )}
         </DialogContent>
       </Dialog>
