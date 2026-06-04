@@ -120,9 +120,7 @@ Deno.serve(async (req) => {
   if (!template) {
     console.error('Template not found in registry', { templateName })
     return new Response(
-      JSON.stringify({
-        error: `Template '${templateName}' not found. Available: ${Object.keys(TEMPLATES).join(', ')}`,
-      }),
+      JSON.stringify({ error: 'Template not found' }),
       {
         status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -149,6 +147,26 @@ Deno.serve(async (req) => {
 
   // Create Supabase client with service role (bypasses RLS)
   const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  // Authorization: restrict who can send to whom.
+  // - Templates with a fixed `to` (e.g., admin notifications) are allowed for any authenticated user.
+  // - Otherwise, the caller may only send to their own email, unless they are admin/voluntario.
+  if (!template.to) {
+    const callerEmail = (caller.email ?? '').toLowerCase()
+    const targetEmail = effectiveRecipient.toLowerCase()
+    if (callerEmail !== targetEmail) {
+      const { data: isAdmin } = await supabase.rpc('has_role', { _user_id: caller.userId, _role: 'admin' })
+      const { data: isVol } = await supabase.rpc('has_role', { _user_id: caller.userId, _role: 'voluntario' })
+      if (!isAdmin && !isVol) {
+        console.warn('Forbidden cross-recipient send attempt', { caller: caller.userId, targetEmail })
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+    }
+  }
+
 
   // 2. Check suppression list (fail-closed: if we can't verify, don't send)
   const { data: suppressed, error: suppressionError } = await supabase
