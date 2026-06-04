@@ -7,7 +7,7 @@ import { compressImage } from '@/lib/imageCompression';
 import { Button } from '@/components/ui/button';
 import {
   Loader2, Upload, Trash2, Download, ImageIcon, Star, ChevronLeft, ChevronRight, Pencil, Check, X,
-  RotateCw, Crop as CropIcon, UserCircle, Camera, Folder,
+  RotateCw, Crop as CropIcon, UserCircle, Camera, Folder, Plus,
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import ImageCropper from '@/components/ImageCropper';
