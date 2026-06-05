@@ -39,12 +39,12 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   const defaultSafeRoute = '/dashboard';
 
   // Se o usuário está no Dashboard ou Perfil, ele está em um lugar "seguro"
+  // Adicionada "/" como safe path para que a Index possa gerenciar o redirecionamento sem bloqueios de RLS aqui
   const isSafePath = pathname === '/dashboard' || pathname === '/profile' || pathname === '/';
 
   if (!isSafePath && requiredRole && !hasRole(requiredRole) && !hasRole('admin')) {
     const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta o papel "${requiredRole}".`;
     console.warn(msg);
-    window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
     // Evita loop: se a rota que falhou já era o destino padrão, para tudo
     if (pathname === defaultSafeRoute) return <>{children ?? <Outlet />}</>;
@@ -56,7 +56,6 @@ const ProtectedRoute = ({ children, requiredRole, requiredPermission }: Protecte
   if (!isSafePath && requiredPermission && !hasPermission(requiredPermission) && !hasRole('admin')) {
     const msg = `[ProtectedRoute] Acesso negado a "${pathname}": falta a permissão "${requiredPermission}".`;
     console.warn(msg);
-    window.dispatchEvent(new CustomEvent('route-redirect', { detail: { message: msg, type: 'warn' } }));
     
     if (pathname === defaultSafeRoute) return <>{children ?? <Outlet />}</>;
 
