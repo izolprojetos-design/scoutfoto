@@ -445,7 +445,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
               <Label htmlFor="dataSecao" className="text-xs font-bold text-gray-600 uppercase tracking-tight">
                 Data
               </Label>
-              <div className="relative group cursor-default">
+              <div className="relative group">
                 <input
                   id="dataSecao"
                   type="date"
@@ -459,7 +459,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
 
             <div className="space-y-1.5">
               <Label htmlFor="horario" className="text-xs font-bold text-gray-600 uppercase tracking-tight">Horário</Label>
-              <div className="relative group cursor-default">
+              <div className="relative group">
                 <input
                   id="horario"
                   type="time"

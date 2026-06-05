@@ -1171,7 +1171,7 @@ const AgendamentosManager = () => {
 
               <div>
                 <Label htmlFor="ed-data" className="text-xs font-semibold text-muted-foreground uppercase">Data</Label>
-                <div className="relative group cursor-pointer mt-1" onClick={() => (document.getElementById('ed-data') as any)?.showPicker()}>
+                <div className="relative group mt-1">
                   <Input
                     id="ed-data"
                     type="date"
@@ -1179,13 +1179,16 @@ const AgendamentosManager = () => {
                     onChange={(e) => setEditing({ ...editing, data_secao: e.target.value })}
                     className="h-9 text-sm pr-9 cursor-pointer"
                   />
-                  <CalendarDays className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
+                  <CalendarDays 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-auto cursor-pointer hover:text-primary transition-colors" 
+                    onClick={() => (document.getElementById('ed-data') as any)?.showPicker()}
+                  />
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="ed-hora" className="text-xs font-semibold text-muted-foreground uppercase">Horário</Label>
-                <div className="relative group cursor-pointer mt-1" onClick={() => (document.getElementById('ed-hora') as any)?.showPicker()}>
+                <div className="relative group mt-1">
                   <Input
                     id="ed-hora"
                     type="time"
@@ -1193,7 +1196,10 @@ const AgendamentosManager = () => {
                     onChange={(e) => setEditing({ ...editing, horario: e.target.value })}
                     className="h-9 text-sm pr-9 cursor-pointer"
                   />
-                  <Clock className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none group-hover:text-primary transition-colors" />
+                  <Clock 
+                    className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-auto cursor-pointer hover:text-primary transition-colors" 
+                    onClick={() => (document.getElementById('ed-hora') as any)?.showPicker()}
+                  />
                 </div>
               </div>
 
