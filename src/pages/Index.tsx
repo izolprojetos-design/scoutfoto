@@ -17,11 +17,16 @@ const Index = () => {
         // Tenta recuperar a última rota acessada
         const lastRoute = localStorage.getItem('last_accessed_route');
         
-        // Validação extra: se a última rota for a própria Index, evitamos o loop
+        // Validação extra: se a última rota for a própria Index ou login, evitamos o loop
         const targetRoute = lastRoute && lastRoute !== '/' && lastRoute !== '/login' ? lastRoute : '/dashboard';
         
         console.log(`[Index] Usuário autenticado, indo para ${targetRoute}`);
-        navigate(targetRoute, { replace: true });
+        
+        // Use timeout to ensure any pending state updates are processed
+        const timer = setTimeout(() => {
+          navigate(targetRoute, { replace: true });
+        }, 0);
+        return () => clearTimeout(timer);
       } else {
         console.log("[Index] Usuário não autenticado, indo para /login");
         navigate('/login', { replace: true });
