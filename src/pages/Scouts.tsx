@@ -1010,7 +1010,7 @@ const Scouts = () => {
     }
 
     const drawHeader = (pageDoc: any) => {
-      pageDoc.setFillColor(25, 80, 140);
+      pageDoc.setFillColor(34, 139, 34);
       pageDoc.rect(0, 0, pageWidth, 30, 'F');
       
       if (logoBase64) {
@@ -1080,7 +1080,7 @@ const Scouts = () => {
       body: rows,
       startY: 35,
       styles: { fontSize: 8, cellPadding: 2, textColor: [20, 20, 20] },
-      headStyles: { fillColor: [25, 80, 140], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      headStyles: { fillColor: [34, 139, 34], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       alternateRowStyles: { fillColor: [245, 245, 240] },
       margin: { top: 35 },
       didDrawPage: (data: any) => {
