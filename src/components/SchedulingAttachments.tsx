@@ -187,7 +187,9 @@ const SchedulingAttachments = ({ requestId, editable, attachments, onAttachments
       {/* File list */}
       {attachments.length > 0 && (
         <div className="space-y-2">
-          {attachments.map(att => (
+          {[...attachments]
+            .sort((a, b) => a.file_name.localeCompare(b.file_name, undefined, { numeric: true, sensitivity: 'base' }))
+            .map(att => (
             <div key={att.id} className="flex items-center gap-3 rounded-md border bg-muted/30 p-3">
               <FileIcon type={att.content_type} />
               <div className="flex-1 min-w-0">
