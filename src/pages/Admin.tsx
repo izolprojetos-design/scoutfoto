@@ -54,6 +54,7 @@ interface UserWithRole {
   user_number: number | null;
   cargo_1: string | null;
   cargo_2: string | null;
+  avatar_url: string | null;
 }
 
 interface AuditLog {
@@ -227,7 +228,7 @@ const Admin = () => {
   };
 
   const fetchUsers = async () => {
-    const { data: profiles } = await supabase.from('profiles').select('*');
+    const { data: profiles } = await supabase.from('profiles').select('*, avatar_url');
     const { data: roles } = await supabase.from('user_roles').select('*');
 
     if (profiles && roles) {
@@ -244,6 +245,7 @@ const Admin = () => {
           user_number: (p as any).user_number || null,
           cargo_1: (p as any).cargo_1 || '',
           cargo_2: (p as any).cargo_2 || '',
+          avatar_url: p.avatar_url,
         };
       });
       merged.sort((a, b) => {
@@ -891,7 +893,7 @@ const Admin = () => {
                         <TableCell className="text-center py-1">
                           <ScoutAvatar 
                             name={u.name} 
-                            photoUrl={null} 
+                            photoUrl={u.avatar_url} 
                             className="h-9 w-9 mx-auto ring-1 ring-muted" 
                           />
                         </TableCell>
