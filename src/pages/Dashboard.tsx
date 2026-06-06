@@ -763,7 +763,7 @@ const Dashboard = () => {
 
       {/* Branch Cards */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Galerias de Integrantes por Ramo</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Galeria de Integrantes por Ramo</h2>
       </div>
 
       {loading ? (
