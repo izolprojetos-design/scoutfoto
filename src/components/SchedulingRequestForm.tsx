@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail, Clock, MapPin, Tag, Compass } from 'lucide-react';
+import { Loader2, Send, CheckCircle2, User, CalendarDays, FileText, Mail, Clock, MapPin, Tag, Compass, X } from 'lucide-react';
 
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,12 +39,9 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   const [cargo2, setCargo2] = useState('');
   const [emailDe, setEmailDe] = useState('');
 
-  // Dados do destinatário (editáveis)
-  const [destNome, setDestNome] = useState('');
-  const [destSecao, setDestSecao] = useState('');
-  const [destCargo1, setDestCargo1] = useState('');
-  const [destCargo2, setDestCargo2] = useState('');
-  const [emailPara, setEmailPara] = useState('');
+  // Lista de destinatários selecionados
+  const [destinatarios, setDestinatarios] = useState<DestSuggestion[]>([]);
+  const [destNomeInput, setDestNomeInput] = useState('');
 
   // Evento
   const [nomeEvento, setNomeEvento] = useState('');
@@ -106,14 +103,15 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     setNomeEvento('');
     setDataSecao(''); setHorario(''); setLocal(''); setRamoEscoteiro('');
     setTipoAtividade('reuniao'); setObservacoes('');
-    setDestNome(''); setDestSecao(''); setDestCargo1(''); setDestCargo2(''); setEmailPara('');
+    setDestinatarios([]);
+    setDestNomeInput('');
     setDestSuggestions([]); setDestDropdownOpen(false);
     setErrors({});
   };
 
   // Busca usuários no banco para sugerir destinatário (com debounce)
   const handleDestNomeChange = (value: string) => {
-    setDestNome(value);
+    setDestNomeInput(value);
     setDestDropdownOpen(true);
 
     if (destSearchTimeout.current) window.clearTimeout(destSearchTimeout.current);
@@ -129,7 +127,11 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     destSearchTimeout.current = window.setTimeout(async () => {
       const { data, error } = await supabase.rpc('search_users_for_scheduling', { p_query: q });
       if (!error && Array.isArray(data)) {
-        setDestSuggestions(data as DestSuggestion[]);
+        // Filtra os que já estão na lista
+        const filtered = (data as DestSuggestion[]).filter(
+          s => !destinatarios.some(d => d.user_id === s.user_id)
+        );
+        setDestSuggestions(filtered);
       } else {
         setDestSuggestions([]);
       }
@@ -138,16 +140,14 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
   };
 
   const handleSelectDestSuggestion = (s: DestSuggestion) => {
-    setDestNome(s.name ?? '');
-    setEmailPara(s.email ?? '');
-    if (s.section) {
-      const parsed = parseVolunteerSection(s.section);
-      if (parsed.secao) setDestSecao(parsed.secao);
-      if (parsed.cargo1) setDestCargo1(parsed.cargo1);
-      if (parsed.cargo2) setDestCargo2(parsed.cargo2);
-    }
+    setDestinatarios(prev => [...prev, s]);
+    setDestNomeInput('');
     setDestSuggestions([]);
     setDestDropdownOpen(false);
+  };
+
+  const removeDestinatario = (userId: string) => {
+    setDestinatarios(prev => prev.filter(d => d.user_id !== userId));
   };
 
 
@@ -161,10 +161,7 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     if (!emailRegex.test(emailDe.trim())) e.emailDe = 'Seu e-mail é inválido';
 
     // Destinatário
-    if (destNome.trim().length < 2) e.destNome = 'Informe o nome do destinatário';
-    if (!destSecao) e.destSecao = 'Selecione a seção do destinatário';
-    if (!destCargo1) e.destCargo1 = 'Selecione o cargo do destinatário';
-    if (!emailRegex.test(emailPara.trim())) e.emailPara = 'E-mail do destinatário inválido';
+    if (destinatarios.length === 0) e.destinatarios = 'Selecione pelo menos um destinatário';
 
     const nomeEventoTrim = nomeEvento.trim();
     if (!nomeEventoTrim) {
@@ -226,36 +223,43 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     }
 
     setSubmitting(true);
-    const { data: inserted, error } = await supabase
-      .from('agendamentos')
-      .insert({
-        user_id: user.id,
-        nome_associado: nomeAssociado.trim(),
-        secao,
-        dirigente: nomeAssociado.trim(),
-        cargo_1: cargo1,
-        cargo_2: cargo2 || '',
-        email_de: emailDe.trim(),
-        email_para: emailPara.trim(),
-        destinatario_nome: destNome.trim(),
-        destinatario_secao: destSecao,
-        destinatario_cargo_1: destCargo1,
-        destinatario_cargo_2: destCargo2,
-        data_secao: dataSecao,
-        horario,
-        local: local.trim(),
-        ramo_escoteiro: ramoEscoteiro,
-        tipo_atividade: tipoAtividade,
-        nome_evento: nomeEvento.trim(),
-        observacoes: observacoes.trim(),
-        status: 'confirmado',
-      })
-      .select('id')
-      .single();
+    
+    const insertPromises = destinatarios.map(dest => {
+      const parsed = dest.section ? parseVolunteerSection(dest.section) : { secao: '', cargo1: '', cargo2: '' };
+      return supabase
+        .from('agendamentos')
+        .insert({
+          user_id: user.id,
+          nome_associado: nomeAssociado.trim(),
+          secao,
+          dirigente: nomeAssociado.trim(),
+          cargo_1: cargo1,
+          cargo_2: cargo2 || '',
+          email_de: emailDe.trim(),
+          email_para: dest.email.trim(),
+          destinatario_nome: dest.name.trim(),
+          destinatario_secao: parsed.secao,
+          destinatario_cargo_1: parsed.cargo1,
+          destinatario_cargo_2: parsed.cargo2,
+          data_secao: dataSecao,
+          horario,
+          local: local.trim(),
+          ramo_escoteiro: ramoEscoteiro,
+          tipo_atividade: tipoAtividade,
+          nome_evento: nomeEvento.trim(),
+          observacoes: observacoes.trim(),
+          status: 'confirmado',
+        })
+        .select('id')
+        .single();
+    });
 
-    if (error) {
+    const results = await Promise.all(insertPromises);
+    const errorsList = results.filter(r => r.error);
+
+    if (errorsList.length > 0) {
       setSubmitting(false);
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      toast({ title: 'Erro ao salvar algumas mensagens', description: errorsList[0].error?.message, variant: 'destructive' });
       return;
     }
 
@@ -269,44 +273,54 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
       return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
     })();
 
-    const templateData = {
-      nomeAssociado: nomeAssociado.trim(),
-      secao,
-      dirigente: nomeAssociado.trim(),
-      cargo1,
-      cargo2,
-      data: dataFormatada,
-      horario,
-      local: local.trim(),
-      ramo: ramoLabel,
-      tipoAtividade: tipoLabel,
-      nomeEvento: nomeEvento.trim(),
-      observacoes: observacoes.trim(),
-      emailDe: emailDe.trim(),
-      destinatarioNome: destNome.trim(),
-      destinatarioSecao: destSecao,
-      destinatarioCargo1: destCargo1,
-      destinatarioCargo2: destCargo2,
-      emailPara: emailPara.trim(),
-    };
+    const dataFormatada = (() => {
+      const [y, m, d] = dataSecao.split('-').map(Number);
+      return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+    })();
 
-    const recipients: string[] = [];
-    if (emailPara.trim()) recipients.push(emailPara.trim());
+    const tipoLabel = SCHEDULING_TYPES.find(t => t.value === tipoAtividade)?.label ?? tipoAtividade;
+    const ramoLabel = branches.find(b => b.id === ramoEscoteiro)
+      ? `${branches.find(b => b.id === ramoEscoteiro)!.icon} ${branches.find(b => b.id === ramoEscoteiro)!.display_name}`
+      : ramoEscoteiro;
 
     let emailOk = true;
     try {
-      await Promise.all(
-        recipients.map((to, idx) =>
-          supabase.functions.invoke('send-transactional-email', {
-            body: {
-              templateName: 'agendamento-notificacao',
-              recipientEmail: to,
-              idempotencyKey: `agendamento-${inserted?.id}-${idx}`,
-              templateData,
-            },
-          }),
-        ),
-      );
+      const emailPromises = destinatarios.map((dest, idx) => {
+        const parsed = dest.section ? parseVolunteerSection(dest.section) : { secao: '', cargo1: '', cargo2: '' };
+        const insertedId = results[idx].data?.id;
+        
+        const templateData = {
+          nomeAssociado: nomeAssociado.trim(),
+          secao,
+          dirigente: nomeAssociado.trim(),
+          cargo1,
+          cargo2,
+          data: dataFormatada,
+          horario,
+          local: local.trim(),
+          ramo: ramoLabel,
+          tipoAtividade: tipoLabel,
+          nomeEvento: nomeEvento.trim(),
+          observacoes: observacoes.trim(),
+          emailDe: emailDe.trim(),
+          destinatarioNome: dest.name.trim(),
+          destinatarioSecao: parsed.secao,
+          destinatarioCargo1: parsed.cargo1,
+          destinatarioCargo2: parsed.cargo2,
+          emailPara: dest.email.trim(),
+        };
+
+        return supabase.functions.invoke('send-transactional-email', {
+          body: {
+            templateName: 'agendamento-notificacao',
+            recipientEmail: dest.email.trim(),
+            idempotencyKey: `agendamento-${insertedId}-${idx}`,
+            templateData,
+          },
+        });
+      });
+
+      await Promise.all(emailPromises);
     } catch (err) {
       console.error('Falha no envio do e-mail de mensagem', err);
       emailOk = false;
@@ -378,49 +392,63 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
         </div>
 
         {/* Campo Para */}
-        <div className="flex flex-col sm:flex-row sm:items-center px-4 py-2 border-b border-gray-100 relative group gap-1 sm:gap-2">
-          <span className="text-xs text-gray-500 font-medium w-10 shrink-0">Para</span>
-          <div className="flex-1 relative">
-            <input
-              id="destNome"
-              value={destNome}
-              onChange={(e) => handleDestNomeChange(e.target.value)}
-              onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
-              onBlur={() => {
-                if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
-                destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
-              }}
-              placeholder="Destinatário"
-              autoComplete="off"
-              className={cn(
-                "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400",
-                errCls('destNome')
-              )}
-            />
-          </div>
-          {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600" />}
-          
-          {destDropdownOpen && destNome.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
-            <div className="absolute left-0 sm:left-12 right-0 sm:right-4 top-full z-50 mt-1 rounded-md border bg-white shadow-xl max-h-60 overflow-y-auto">
-              {destSuggestions.length === 0 && !destSearching ? (
-                <div className="px-3 py-2 text-sm text-gray-500">Nenhum usuário encontrado</div>
-              ) : (
-                destSuggestions.map((s) => (
-                  <button
-                    key={s.user_id}
-                    type="button"
-                    onMouseDown={(ev) => ev.preventDefault()}
-                    onClick={() => handleSelectDestSuggestion(s)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
-                  >
-                    <div className="text-sm font-medium text-gray-900">{s.name}</div>
-                    <div className="text-xs text-gray-500">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
-                  </button>
-                ))
+        <div className="flex flex-col sm:flex-row sm:items-start px-4 py-2 border-b border-gray-100 relative group gap-1 sm:gap-2 bg-white min-h-[42px]">
+          <span className="text-xs text-gray-500 font-medium w-10 shrink-0 mt-2">Para</span>
+          <div className="flex-1 flex flex-wrap gap-2 items-center">
+            {destinatarios.map(dest => (
+              <div key={dest.user_id} className="flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-full pl-2 pr-1 py-0.5 group/tag hover:bg-gray-200 transition-colors">
+                <span className="text-xs font-semibold text-gray-700">{dest.name}</span>
+                <button 
+                  type="button" 
+                  onClick={() => removeDestinatario(dest.user_id)}
+                  className="rounded-full p-0.5 hover:bg-gray-300 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+            <div className="flex-1 relative min-w-[120px]">
+              <input
+                id="destNome"
+                value={destNomeInput}
+                onChange={(e) => handleDestNomeChange(e.target.value)}
+                onFocus={() => { if (destSuggestions.length > 0) setDestDropdownOpen(true); }}
+                onBlur={() => {
+                  if (destBlurTimeout.current) window.clearTimeout(destBlurTimeout.current);
+                  destBlurTimeout.current = window.setTimeout(() => setDestDropdownOpen(false), 150);
+                }}
+                placeholder={destinatarios.length === 0 ? "Destinatários" : ""}
+                autoComplete="off"
+                className={cn(
+                  "w-full text-sm text-gray-900 font-semibold bg-transparent border-none focus:ring-0 p-0 placeholder:text-gray-400 py-1.5",
+                  errCls('destinatarios')
+                )}
+              />
+              
+              {destDropdownOpen && destNomeInput.trim().length >= 2 && (destSuggestions.length > 0 || (!destSearching && destSuggestions.length === 0)) && (
+                <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-md border bg-white shadow-xl max-h-60 overflow-y-auto">
+                  {destSuggestions.length === 0 && !destSearching ? (
+                    <div className="px-3 py-2 text-sm text-gray-500">Nenhum usuário encontrado</div>
+                  ) : (
+                    destSuggestions.map((s) => (
+                      <button
+                        key={s.user_id}
+                        type="button"
+                        onMouseDown={(ev) => ev.preventDefault()}
+                        onClick={() => handleSelectDestSuggestion(s)}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-50 border-b border-gray-50 last:border-b-0 transition-colors"
+                      >
+                        <div className="text-sm font-medium text-gray-900">{s.name}</div>
+                        <div className="text-xs text-gray-500">{s.email}{s.section ? ` • ${s.section}` : ''}</div>
+                      </button>
+                    ))
+                  )}
+                </div>
               )}
             </div>
-          )}
-          {fieldError('destNome')}
+          </div>
+          {destSearching && <Loader2 className="h-4 w-4 animate-spin text-gray-600 mt-2" />}
+          {fieldError('destinatarios')}
         </div>
 
         {/* Assunto (Nome do Evento) */}
