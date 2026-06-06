@@ -371,7 +371,10 @@ const SchedulingApprovalPanel = () => {
     setDetailOpen(true);
 
     const [{ data: atts }, { data: steps }] = await Promise.all([
-      supabase.from('agendamento_anexos').select('id, file_name, file_path, file_size, content_type').eq('agendamento_id', req.id),
+      supabase.from('agendamento_anexos')
+        .select('id, file_name, file_path, file_size, content_type')
+        .eq('agendamento_id', req.id)
+        .order('file_name'),
       supabase.from('aprovacoes').select('*').eq('agendamento_id', req.id).order('nivel'),
     ]);
     setDetailAttachments(atts ?? []);
