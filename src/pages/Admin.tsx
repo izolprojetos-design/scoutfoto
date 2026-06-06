@@ -31,6 +31,7 @@ import AdminOverview from '@/components/AdminOverview';
 import GroupLogoSettings from '@/components/GroupLogoSettings';
 import GoogleDriveSettings from '@/components/GoogleDriveSettings';
 import { validatePassword } from '@/lib/passwordValidation';
+import ScoutAvatar from '@/components/ScoutAvatar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
@@ -872,6 +873,7 @@ const Admin = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-[80px] font-bold text-center">Foto</TableHead>
                       <TableHead className="w-[80px] font-bold">ID</TableHead>
                       <TableHead className="font-bold">Nome</TableHead>
                       <TableHead className="font-bold">Seção</TableHead>
@@ -886,6 +888,13 @@ const Admin = () => {
                   <TableBody>
                     {filtered.map(u => (
                       <TableRow key={u.user_id}>
+                        <TableCell className="text-center py-1">
+                          <ScoutAvatar 
+                            name={u.name} 
+                            photoUrl={null} 
+                            className="h-9 w-9 mx-auto ring-1 ring-muted" 
+                          />
+                        </TableCell>
                         <TableCell className="font-mono text-sm font-semibold text-primary">
                           {u.user_number ? String(u.user_number).padStart(4, '0') : '—'}
                         </TableCell>
@@ -1163,7 +1172,7 @@ const Admin = () => {
                     ))}
                     {filtered.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
+                        <TableCell colSpan={10} className="py-8 text-center text-muted-foreground">Nenhum usuário encontrado</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
