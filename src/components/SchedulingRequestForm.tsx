@@ -264,15 +264,6 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
     }
 
     // Envio de e-mail (não bloqueia o fluxo principal)
-    const tipoLabel = SCHEDULING_TYPES.find(t => t.value === tipoAtividade)?.label ?? tipoAtividade;
-    const ramoLabel = branches.find(b => b.id === ramoEscoteiro)
-      ? `${branches.find(b => b.id === ramoEscoteiro)!.icon} ${branches.find(b => b.id === ramoEscoteiro)!.display_name}`
-      : ramoEscoteiro;
-    const dataFormatada = (() => {
-      const [y, m, d] = dataSecao.split('-').map(Number);
-      return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
-    })();
-
     const dataFormatada = (() => {
       const [y, m, d] = dataSecao.split('-').map(Number);
       return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
