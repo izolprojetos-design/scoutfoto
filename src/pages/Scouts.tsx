@@ -1010,23 +1010,28 @@ const Scouts = () => {
     }
 
     const drawHeader = (pageDoc: any) => {
+      pageDoc.setFillColor(25, 80, 140);
+      pageDoc.rect(0, 0, pageWidth, 30, 'F');
+      
       if (logoBase64) {
-        pageDoc.addImage(logoBase64, 'PNG', 14, 5, 20, 20);
+        try { 
+          pageDoc.setFillColor(255, 255, 255);
+          pageDoc.circle(10 + 10, 15, 12, 'F');
+          pageDoc.addImage(logoBase64, 'PNG', 10 + 3, 8, 14, 14, undefined, 'FAST'); 
+        } catch { /* */ }
       }
-      pageDoc.setFontSize(18);
+      
+      pageDoc.setTextColor(255, 255, 255);
       pageDoc.setFont('helvetica', 'bold');
-      pageDoc.setTextColor(30, 60, 35);
-      pageDoc.text(`Integrantes - ${filterLabel} (${filteredScouts.length})`, 38, 14);
-      pageDoc.setFontSize(11);
+      pageDoc.setFontSize(10);
+      pageDoc.text('LISTA DE INTEGRANTES', 10 + 25, 12);
+      pageDoc.setFontSize(14);
+      pageDoc.text(`Integrantes - ${filterLabel} (${filteredScouts.length})`, 10 + 25, 22);
+      
       pageDoc.setFont('helvetica', 'normal');
-      pageDoc.setTextColor(60);
-      pageDoc.text('12º Grupo Escoteiro Monte Caburai-12º GEMC', 38, 20);
-      pageDoc.setFontSize(9);
-      pageDoc.setTextColor(120);
+      pageDoc.setFontSize(8);
       const now = new Date();
-      pageDoc.text(`Exportado em: ${formatDatePtBR(now)}`, 38, 25);
-      pageDoc.text(`Horário: ${formatTimePtBR(now)}`, 38, 30);
-      pageDoc.setTextColor(0);
+      pageDoc.text(`Exportado em: ${formatDatePtBR(now)} ${formatTimePtBR(now)} • 12º GEMC`, pageWidth - 10, 22, { align: 'right' });
     };
 
     drawHeader(doc);
@@ -1075,7 +1080,7 @@ const Scouts = () => {
       body: rows,
       startY: 35,
       styles: { fontSize: 8, cellPadding: 2, textColor: [20, 20, 20] },
-      headStyles: { fillColor: [45, 80, 50], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+      headStyles: { fillColor: [25, 80, 140], textColor: 255, fontStyle: 'bold', fontSize: 8 },
       alternateRowStyles: { fillColor: [245, 245, 240] },
       margin: { top: 35 },
       didDrawPage: (data: any) => {

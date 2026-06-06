@@ -28,8 +28,11 @@ interface Guardian {
   phone?: string | null;
 }
 
-const PRIMARY: [number, number, number] = [25, 80, 140];
+const PRIMARY: [number, number, number] = [25, 80, 140]; // Dark blue header
+const SECONDARY_BLUE: [number, number, number] = [0, 51, 102]; // Even darker for accent
 const MUTED: [number, number, number] = [110, 110, 110];
+const BLACK: [number, number, number] = [0, 0, 0];
+const WHITE: [number, number, number] = [255, 255, 255];
 
 const imageCache = new Map<string, Promise<string | null>>();
 
@@ -78,30 +81,34 @@ export async function exportScoutProfilePdf(
   const yearsInGroup = differenceInYears(new Date(), created);
   const monthsInGroup = differenceInMonths(new Date(), created);
 
-  // ===== COVER =====
+  // ===== HEADER (Shared Style) =====
   doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, pageW, 55, 'F');
+  doc.rect(0, 0, pageW, 45, 'F');
 
-  // Logo do grupo (uploaded via Admin > Identidade, com fallback ao bundled)
   const logoDataUrl = await getGroupLogoDataUrl();
-  const textLeft = logoDataUrl ? margin + 30 : margin;
   if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', margin, 12, 25, 25, undefined, 'FAST'); } catch { /* ignore */ }
+    try { 
+      // Circle background for logo
+      doc.setFillColor(...WHITE);
+      doc.circle(margin + 12, 22, 16, 'F');
+      doc.addImage(logoDataUrl, 'PNG', margin + 2, 12, 20, 20, undefined, 'FAST'); 
+    } catch { /* ignore */ }
   }
 
-  doc.setTextColor(255, 255, 255);
+  const textLeft = margin + 30;
+  doc.setTextColor(...WHITE);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
-  doc.setFontSize(18);
-  doc.text(scout.name.toUpperCase(), textLeft, 34, { maxWidth: pageW - textLeft - margin });
-  doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  const subtitle = [scout.section, scout.scout_group].filter(Boolean).join(' • ');
-  if (subtitle) doc.text(subtitle, textLeft, 47);
+  doc.text('PERFIL DO INTEGRANTE', textLeft, 18);
+  doc.setFontSize(16);
+  doc.text(scout.name.toUpperCase(), textLeft, 28, { maxWidth: pageW - textLeft - margin });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const subtitle = [scout.section, scout.scout_group, '12º GEMC'].filter(Boolean).join(' • ');
+  if (subtitle) doc.text(subtitle, textLeft, 38);
 
   // Photo
-  let photoY = 70;
+  let photoY = 55;
   if (scout.photo_url) {
     const signed = await getSignedPhotoUrl(scout.photo_url);
     if (signed) {
@@ -279,23 +286,29 @@ export async function exportScoutProfilePdf(
 
   doc.addPage();
   doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, pageW, 18, 'F');
+  doc.rect(0, 0, pageW, 35, 'F');
   if (logoDataUrl) {
-    try { doc.addImage(logoDataUrl, 'PNG', margin, 2, 14, 14, undefined, 'FAST'); } catch { /* ignore */ }
+    try { 
+      doc.setFillColor(...WHITE);
+      doc.circle(margin + 10, 17, 12, 'F');
+      doc.addImage(logoDataUrl, 'PNG', margin + 3, 10, 14, 14, undefined, 'FAST'); 
+    } catch { /* ignore */ }
   }
-  doc.setTextColor(255, 255, 255);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(13);
-  doc.text('Linha do Tempo', logoDataUrl ? margin + 18 : margin, 12);
+  doc.setTextColor(...WHITE);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
+  doc.text('LINHA DO TEMPO', margin + 25, 16);
+  doc.setFontSize(14);
+  doc.text(scout.name.toUpperCase(), margin + 25, 26);
 
   autoTable(doc, {
-    startY: 24,
+    startY: 40,
     head: [['Data', 'Tipo', 'Marco']],
     body: items.map(i => [
       format(i.date, "dd/MM/yyyy", { locale: ptBR }),
       i.type,
       i.description ? `${i.title}\n${i.description}` : i.title,
     ]),
-    headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+    headStyles: { fillColor: PRIMARY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, valign: 'top' },
     columnStyles: {
       0: { cellWidth: 25 },
@@ -343,25 +356,44 @@ export async function exportScoutFolderPdf(
   const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
-  const margin = 12;
-  const titleLine1 = scoutName.toUpperCase();
-  const titleLine2 = `Pasta: ${format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}`;
-
+  const margin = 15;
+  
   const logoDataUrl = await getGroupLogoDataUrl();
 
-  // Cover
+  // Header Shared Style
+  pdf.setFillColor(...PRIMARY);
+  pdf.rect(0, 0, pageW, 45, 'F');
+
   if (logoDataUrl) {
-    try { pdf.addImage(logoDataUrl, 'PNG', (pageW - 35) / 2, 18, 35, 35, undefined, 'FAST'); } catch { /* */ }
+    try { 
+      pdf.setFillColor(...WHITE);
+      pdf.circle(margin + 12, 22, 16, 'F');
+      pdf.addImage(logoDataUrl, 'PNG', margin + 2, 12, 20, 20, undefined, 'FAST'); 
+    } catch { /* */ }
   }
-  const coverTop = logoDataUrl ? 62 : 30;
-  pdf.setFont('helvetica', 'bold'); pdf.setFontSize(18);
-  pdf.text(titleLine1, pageW / 2, coverTop, { align: 'center' });
-  pdf.setFont('helvetica', 'normal'); pdf.setFontSize(13);
-  pdf.text(titleLine2, pageW / 2, coverTop + 10, { align: 'center' });
+
+  const textLeft = margin + 30;
+  pdf.setTextColor(...WHITE);
+  pdf.setFont('helvetica', 'bold');
+  pdf.setFontSize(10);
+  pdf.text('PASTA DE FOTOS', textLeft, 18);
+  pdf.setFontSize(16);
+  pdf.text(scoutName.toUpperCase(), textLeft, 28, { maxWidth: pageW - textLeft - margin });
+  pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(9);
+  const dateStr = format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  pdf.text(`12º GEMC • ${dateStr} • ${photos.length} fotos`, textLeft, 38);
+
+  // Resume on cover
+  pdf.setTextColor(...BLACK);
   pdf.setFontSize(11);
-  pdf.text('12º Grupo Escoteiro Monte Caburaí', pageW / 2, coverTop + 18, { align: 'center' });
-  pdf.text(`Total de fotos: ${photos.length}`, pageW / 2, coverTop + 26, { align: 'center' });
-  pdf.text(`Gerado em ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, pageW / 2, coverTop + 33, { align: 'center' });
+  const coverY = 65;
+  pdf.text('Resumo do Álbum', margin, coverY);
+  pdf.setFontSize(10);
+  pdf.text(`Integrante: ${scoutName}`, margin, coverY + 10);
+  pdf.text(`Data da Pasta: ${dateStr}`, margin, coverY + 17);
+  pdf.text(`Total de Fotos: ${photos.length}`, margin, coverY + 24);
+  pdf.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, margin, coverY + 31);
 
   for (let i = 0; i < photos.length; i++) {
     const p = photos[i];
@@ -388,20 +420,36 @@ export async function exportScoutFolderPdf(
     } catch { continue; }
 
     const maxW = pageW - margin * 2;
-    const maxH = pageH - margin * 2 - 18;
+    const maxH = pageH - margin * 2 - 25;
     const ratio = Math.min(maxW / img.width, maxH / img.height);
     const w = img.width * ratio;
     const h = img.height * ratio;
     const x = (pageW - w) / 2;
-    const y = margin;
+    const y = 35; // Position below header
 
     pdf.addPage();
+    // Header for photo pages
+    pdf.setFillColor(...PRIMARY);
+    pdf.rect(0, 0, pageW, 25, 'F');
+    if (logoDataUrl) {
+      try { 
+        pdf.setFillColor(...WHITE);
+        pdf.circle(margin + 6, 12, 8, 'F');
+        pdf.addImage(logoDataUrl, 'PNG', margin + 2, 8, 8, 8, undefined, 'FAST'); 
+      } catch { /* */ }
+    }
+    pdf.setTextColor(...WHITE);
+    pdf.setFontSize(12);
+    pdf.text(scoutName.toUpperCase(), margin + 18, 14);
+    pdf.setFontSize(8);
+    pdf.text(`Foto ${i + 1} de ${photos.length} • ${dateStr}`, margin + 18, 20);
     try { pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST'); }
     catch { pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST'); }
     pdf.setFont('helvetica', 'normal'); pdf.setFontSize(10);
+    pdf.setTextColor(...BLACK);
     pdf.text(
-      `${i + 1} / ${photos.length} — ${format(new Date(p.created_at), 'dd/MM/yyyy')}`,
-      pageW / 2, y + h + 8, { align: 'center' },
+      `Página ${i + 2} • Foto enviada em ${format(new Date(p.created_at), 'dd/MM/yyyy HH:mm')}`,
+      pageW / 2, y + h + 10, { align: 'center' },
     );
   }
 
