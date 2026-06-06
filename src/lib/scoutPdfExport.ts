@@ -28,8 +28,8 @@ interface Guardian {
   phone?: string | null;
 }
 
-const PRIMARY: [number, number, number] = [34, 139, 34]; // Forest Green (Escoteiro)
-const SECONDARY_BLUE: [number, number, number] = [0, 100, 0]; // Darker green for accent
+const PRIMARY: [number, number, number] = [0, 100, 0]; // Forest Green (Escoteiro - Mais escuro conforme anexo)
+const SECONDARY_BLUE: [number, number, number] = [0, 60, 0]; // Ainda mais escuro para o acento
 const MUTED: [number, number, number] = [110, 110, 110];
 const BLACK: [number, number, number] = [0, 0, 0];
 const WHITE: [number, number, number] = [255, 255, 255];
@@ -83,34 +83,34 @@ export async function exportScoutProfilePdf(
 
   // ===== HEADER (Shared Style) =====
   doc.setFillColor(...PRIMARY);
-  doc.rect(0, 0, pageW, 55, 'F'); // Increased header height for more professional look
+  doc.rect(0, 0, pageW, 45, 'F'); // Adjusted height
   doc.setFillColor(...SECONDARY_BLUE);
-  doc.rect(0, 55, pageW, 2, 'F'); // Bottom accent line
+  doc.rect(0, 45, pageW, 1.5, 'F'); // Bottom accent line
 
   const logoDataUrl = await getGroupLogoDataUrl();
   if (logoDataUrl) {
     try { 
       // Circle background for logo
       doc.setFillColor(...WHITE);
-      doc.circle(margin + 15, 27, 20, 'F');
-      doc.addImage(logoDataUrl, 'PNG', margin + 3, 15, 24, 24, undefined, 'FAST'); 
+      doc.circle(margin + 12, 22, 16, 'F');
+      doc.addImage(logoDataUrl, 'PNG', margin + 3, 13, 18, 18, undefined, 'FAST');
     } catch { /* ignore */ }
   }
 
-  const textLeft = margin + 42;
+  const textLeft = margin + 35;
   doc.setTextColor(...WHITE);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
-  doc.setFontSize(22);
-  doc.text(scout.name.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
+  doc.setFontSize(10);
+  doc.text('PERFIL DO INTEGRANTE', textLeft, 18);
+  doc.setFontSize(20);
+  doc.text(scout.name.toUpperCase(), textLeft, 28, { maxWidth: pageW - textLeft - margin });
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
   const subtitle = [scout.section, scout.scout_group, '12º GEMC'].filter(Boolean).join(' • ');
-  if (subtitle) doc.text(subtitle, textLeft, 45);
-
+  if (subtitle) doc.text(subtitle, textLeft, 36);
+  
   // Photo
-  let photoY = 67;
+  let photoY = 55;
   if (scout.photo_url) {
     const signed = await getSignedPhotoUrl(scout.photo_url);
     if (signed) {
@@ -370,29 +370,29 @@ export async function exportScoutFolderPdf(
 
   // Header Shared Style
   pdf.setFillColor(...PRIMARY);
-  pdf.rect(0, 0, pageW, 55, 'F');
+  pdf.rect(0, 0, pageW, 45, 'F');
   pdf.setFillColor(...SECONDARY_BLUE);
-  pdf.rect(0, 55, pageW, 2, 'F');
+  pdf.rect(0, 45, pageW, 1.5, 'F');
 
   if (logoDataUrl) {
     try { 
       pdf.setFillColor(...WHITE);
-      pdf.circle(margin + 15, 27, 20, 'F');
-      pdf.addImage(logoDataUrl, 'PNG', margin + 3, 15, 24, 24, undefined, 'FAST'); 
+      pdf.circle(margin + 12, 22, 16, 'F');
+      pdf.addImage(logoDataUrl, 'PNG', margin + 3, 13, 18, 18, undefined, 'FAST');
     } catch { /* */ }
   }
 
-  const textLeft = margin + 42;
+  const textLeft = margin + 35;
   pdf.setTextColor(...WHITE);
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(11);
-  pdf.text('PASTA DE FOTOS', textLeft, 22);
-  pdf.setFontSize(22);
-  pdf.text(scoutName.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
+  pdf.setFontSize(10);
+  pdf.text('PASTA DE FOTOS', textLeft, 18);
+  pdf.setFontSize(20);
+  pdf.text(scoutName.toUpperCase(), textLeft, 28, { maxWidth: pageW - textLeft - margin });
   pdf.setFont('helvetica', 'normal');
   pdf.setFontSize(10);
   const dateStr = format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-  pdf.text(`12º GEMC • ${dateStr} • ${photos.length} fotos`, textLeft, 45);
+  pdf.text(`12º GEMC • ${dateStr} • ${photos.length} fotos`, textLeft, 36);
 
   // Resume on cover
   pdf.setTextColor(...BLACK);
