@@ -105,7 +105,8 @@ const MySchedulingRequests = ({ refreshKey }: Props) => {
       const { data: atts } = await supabase
         .from('agendamento_anexos')
         .select('id, agendamento_id, file_name, file_path, file_size, content_type')
-        .in('agendamento_id', ids);
+        .in('agendamento_id', ids)
+        .order('file_name');
       const grouped: Record<string, Attachment[]> = {};
       for (const a of atts ?? []) {
         const key = (a as any).agendamento_id as string;
