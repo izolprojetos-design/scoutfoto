@@ -92,25 +92,25 @@ export async function exportScoutProfilePdf(
     try { 
       // Circle background for logo
       doc.setFillColor(...WHITE);
-      doc.circle(margin + 12, 22, 16, 'F');
-      doc.addImage(logoDataUrl, 'PNG', margin + 2, 12, 20, 20, undefined, 'FAST'); 
+      doc.circle(margin + 15, 27, 20, 'F');
+      doc.addImage(logoDataUrl, 'PNG', margin + 3, 15, 24, 24, undefined, 'FAST'); 
     } catch { /* ignore */ }
   }
 
-  const textLeft = margin + 30;
+  const textLeft = margin + 42;
   doc.setTextColor(...WHITE);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('PERFIL DO INTEGRANTE', textLeft, 18);
-  doc.setFontSize(16);
-  doc.text(scout.name.toUpperCase(), textLeft, 28, { maxWidth: pageW - textLeft - margin });
+  doc.setFontSize(11);
+  doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
+  doc.setFontSize(22);
+  doc.text(scout.name.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(10);
   const subtitle = [scout.section, scout.scout_group, '12º GEMC'].filter(Boolean).join(' • ');
-  if (subtitle) doc.text(subtitle, textLeft, 38);
+  if (subtitle) doc.text(subtitle, textLeft, 45);
 
   // Photo
-  let photoY = 55;
+  let photoY = 67;
   if (scout.photo_url) {
     const signed = await getSignedPhotoUrl(scout.photo_url);
     if (signed) {
