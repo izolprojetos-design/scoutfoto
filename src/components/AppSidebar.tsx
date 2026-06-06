@@ -99,7 +99,6 @@ const AppSidebar = () => {
 
   const navItems = [
     { to: '/dashboard', label: 'Início', icon: Home, show: true },
-    { to: '/branch-gallery', label: 'Galeria por Ramo', icon: Cloud, show: canViewScouts },
     { 
       to: '/scouts', 
       label: primaryRole === 'parent' ? 'Meus Jovens' : 'Integrantes', 
