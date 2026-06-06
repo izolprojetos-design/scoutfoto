@@ -44,6 +44,7 @@ const EventPortal = lazyWithRetry(() => import("./pages/EventPortal"));
 const Scouts = lazyWithRetry(() => import("./pages/Scouts"));
 const ScoutCalendar = lazyWithRetry(() => import("./pages/ScoutCalendar"));
 const MyAgendamentos = lazyWithRetry(() => import("./pages/MyAgendamentos"));
+const BranchGallery = lazyWithRetry(() => import("./pages/BranchGallery"));
 
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
 const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
