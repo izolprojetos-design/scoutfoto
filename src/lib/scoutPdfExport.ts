@@ -29,7 +29,7 @@ interface Guardian {
 }
 
 const PRIMARY: [number, number, number] = [34, 139, 34]; // Forest Green (Escoteiro)
-const SECONDARY_BLUE: [number, number, number] = [0, 100, 0]; // Darker green for accent
+const SECONDARY_GREEN: [number, number, number] = [0, 100, 0]; // Darker green for accent
 const MUTED: [number, number, number] = [110, 110, 110];
 const BLACK: [number, number, number] = [0, 0, 0];
 const WHITE: [number, number, number] = [255, 255, 255];
@@ -84,7 +84,7 @@ export async function exportScoutProfilePdf(
   // ===== HEADER (Shared Style) =====
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, pageW, 55, 'F'); // Increased header height for more professional look
-  doc.setFillColor(...SECONDARY_BLUE);
+  doc.setFillColor(...SECONDARY_GREEN);
   doc.rect(0, 55, pageW, 2, 'F'); // Bottom accent line
 
   const logoDataUrl = await getGroupLogoDataUrl();
@@ -292,7 +292,7 @@ export async function exportScoutProfilePdf(
   doc.addPage();
   doc.setFillColor(...PRIMARY);
   doc.rect(0, 0, pageW, 40, 'F');
-  doc.setFillColor(...SECONDARY_BLUE);
+  doc.setFillColor(...SECONDARY_GREEN);
   doc.rect(0, 40, pageW, 1.5, 'F');
 
   if (logoDataUrl) {
@@ -371,7 +371,7 @@ export async function exportScoutFolderPdf(
   // Header Shared Style
   pdf.setFillColor(...PRIMARY);
   pdf.rect(0, 0, pageW, 55, 'F');
-  pdf.setFillColor(...SECONDARY_BLUE);
+  pdf.setFillColor(...SECONDARY_GREEN);
   pdf.rect(0, 55, pageW, 2, 'F');
 
   if (logoDataUrl) {
