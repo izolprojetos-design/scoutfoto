@@ -763,7 +763,7 @@ const Dashboard = () => {
 
       {/* Branch Cards */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold tracking-tight">Galerias de Integrantes por Ramo</h2>
+        <h2 className="text-lg font-semibold tracking-tight">Galeria de Integrantes por Ramo</h2>
       </div>
 
       {loading ? (
@@ -774,7 +774,7 @@ const Dashboard = () => {
             <motion.div key={branch.id} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 + index * 0.06 }}>
               <Card
                 className={`group cursor-pointer border bg-gradient-to-br transition-all duration-300 hover:shadow-md hover:-translate-y-0.5 ${branchColors[branch.key] || 'from-muted/50 to-muted/20 border-border hover:border-primary/30'}`}
-                onClick={() => navigate(`/branch/${branch.key}`)}
+                onClick={() => navigate(`/branch-gallery`)}
               >
                 <CardContent className="flex items-center justify-between p-6">
                   <div className="flex items-center gap-4">
