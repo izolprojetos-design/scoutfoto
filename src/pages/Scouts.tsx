@@ -162,6 +162,7 @@ const Scouts = () => {
   const [editPhone, setEditPhone] = useState('');
   const [editSection, setEditSection] = useState('');
   const [editTransitionDate, setEditTransitionDate] = useState('');
+  const [editAdmissionDate, setEditAdmissionDate] = useState('');
   // Scout form
   const [scoutName, setScoutName] = useState('');
   const [scoutBirth, setScoutBirth] = useState('');
@@ -176,6 +177,8 @@ const Scouts = () => {
   const [scoutPhone, setScoutPhone] = useState('');
   const [scoutSection, setScoutSection] = useState('');
   const [scoutTransitionDate, setScoutTransitionDate] = useState('');
+  const [scoutAdmissionDate, setScoutAdmissionDate] = useState('');
+
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [discardConfirmText, setDiscardConfirmText] = useState('');
