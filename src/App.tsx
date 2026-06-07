@@ -44,6 +44,7 @@ const EventPortal = lazyWithRetry(() => import("./pages/EventPortal"));
 const Scouts = lazyWithRetry(() => import("./pages/Scouts"));
 const ScoutCalendar = lazyWithRetry(() => import("./pages/ScoutCalendar"));
 const MyAgendamentos = lazyWithRetry(() => import("./pages/MyAgendamentos"));
+const ScoutPhotoGallery = lazyWithRetry(() => import("./pages/ScoutPhotoGallery"));
 
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
 const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
@@ -186,6 +187,7 @@ const App = () => {
                       <Route path="/events" element={<ProtectedRoute requiredPermission="view_events"><Events /></ProtectedRoute>} />
                       <Route path="/events/:eventId" element={<ProtectedRoute requiredPermission="view_events"><EventDetail /></ProtectedRoute>} />
                       <Route path="/scouts" element={<ProtectedRoute requiredPermission="view_scouts"><Scouts /></ProtectedRoute>} />
+                      <Route path="/scout-gallery" element={<ProtectedRoute requiredPermission="view_scouts"><ScoutPhotoGallery /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
                       <Route path="/agendamentos" element={<MyAgendamentos />} />
                       
