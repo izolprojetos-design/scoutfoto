@@ -789,7 +789,9 @@ const Scouts = () => {
       phone: editPhone,
       section: editSection,
       transition_date: editTransitionDate || null,
+      admission_date: editAdmissionDate || null,
     }).eq('id', editingScout.id);
+
 
     if (error) {
       console.error('[EDIT] update error:', error);
