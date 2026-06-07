@@ -448,10 +448,10 @@ export async function exportScoutFolderPdf(
         pdf.addImage(logoDataUrl, 'PNG', margin + 2, 8, 8, 8, undefined, 'FAST'); 
       } catch { /* */ }
     }
-    pdf.setTextColor(...WHITE);
-    pdf.setFontSize(12);
+    pdf.setTextColor(...BLACK);
+    pdf.setFontSize(11);
     pdf.text(scoutName.toUpperCase(), margin + 18, 14);
-    pdf.setFontSize(8);
+    pdf.setFontSize(7);
     pdf.text(`Foto ${i + 1} de ${photos.length} • ${dateStr}`, margin + 18, 20);
     try { pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST'); }
     catch { pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST'); }
