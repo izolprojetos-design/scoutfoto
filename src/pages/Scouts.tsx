@@ -68,6 +68,7 @@ interface Scout {
   phone: string;
   section: string;
   transition_date: string | null;
+  admission_date: string | null;
   is_active: boolean;
 }
 
