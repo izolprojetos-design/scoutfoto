@@ -302,10 +302,10 @@ export async function exportScoutProfilePdf(
       doc.addImage(logoDataUrl, 'PNG', margin + 3, 11, 18, 18, undefined, 'FAST'); 
     } catch { /* ignore */ }
   }
-  doc.setTextColor(...WHITE);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...BLACK);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
   doc.text('LINHA DO TEMPO', margin + 35, 18);
-  doc.setFontSize(18);
+  doc.setFontSize(16);
   doc.text(scout.name.toUpperCase(), margin + 35, 30);
 
   autoTable(doc, {
