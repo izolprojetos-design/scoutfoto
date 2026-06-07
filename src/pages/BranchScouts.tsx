@@ -243,12 +243,19 @@ const BranchScouts = () => {
                 }
               }}
             >
-              <div className="aspect-square overflow-hidden bg-muted">
+              <div className="aspect-square overflow-hidden bg-muted relative">
                 <ScoutAvatar
                   name={scout.name}
                   photoUrl={scout.photo_url}
                   className="h-full w-full object-cover object-top transition-transform duration-300 group-hover:scale-105 rounded-none"
                 />
+                {!scout.photo_url && (
+                  <div className="absolute top-2 right-2">
+                    <Badge variant="destructive" className="text-[10px] h-5 px-1.5 font-bold uppercase shadow-sm">
+                      Sem Foto
+                    </Badge>
+                  </div>
+                )}
               </div>
               <div className="p-3">
                 <p className="text-sm font-semibold break-words leading-tight whitespace-normal uppercase" style={{ overflowWrap: 'anywhere' }}>{scout.name}</p>
