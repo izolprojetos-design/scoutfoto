@@ -19,7 +19,9 @@ interface ScoutLike {
   phone?: string | null;
   notes?: string | null;
   transition_date?: string | null;
+  admission_date?: string | null;
   photo_url?: string | null;
+
 }
 
 interface Guardian {
