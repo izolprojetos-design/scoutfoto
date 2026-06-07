@@ -54,7 +54,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
       list.push({
         id: 'ingresso',
         type: 'ingresso',
-        date: new Date(scoutCreatedAt),
+        date: admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt),
         title: 'Ingresso no grupo',
         description: currentSection ? `Seção: ${currentSection}` : undefined,
       });
