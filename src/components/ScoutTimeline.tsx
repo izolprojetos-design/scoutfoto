@@ -39,7 +39,7 @@ const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: 
 
 const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario', 'conquista'];
 
-const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection }: Props) => {
+const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection, admissionDate }: Props) => {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTypes, setActiveTypes] = useState<Set<ItemType>>(new Set(ALL_TYPES));
