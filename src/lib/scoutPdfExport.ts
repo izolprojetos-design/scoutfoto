@@ -383,14 +383,14 @@ export async function exportScoutFolderPdf(
   }
 
   const textLeft = margin + 42;
-  pdf.setTextColor(...WHITE);
+  pdf.setTextColor(...BLACK);
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(11);
+  pdf.setFontSize(10);
   pdf.text('PASTA DE FOTOS', textLeft, 22);
-  pdf.setFontSize(22);
+  pdf.setFontSize(16);
   pdf.text(scoutName.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(10);
+  pdf.setFontSize(9);
   const dateStr = format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   pdf.text(`12º GEMC • ${dateStr} • ${photos.length} fotos`, textLeft, 45);
 
