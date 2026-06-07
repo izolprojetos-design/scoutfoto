@@ -2650,8 +2650,10 @@ const Scouts = () => {
             editPhone, setEditPhone,
             editSection, setEditSection,
             editTransitionDate, setEditTransitionDate,
+            editAdmissionDate, setEditAdmissionDate,
             editingScout?.id,
           )}
+
 
           {editingScout && (
             <div className="mt-6 border-t pt-4">
