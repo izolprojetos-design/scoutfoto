@@ -121,7 +121,7 @@ const Scouts = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [exportConfirm, setExportConfirm] = useState<'pdf' | 'excel' | 'docx' | 'sheets' | null>(null);
-  const [branchFilter, setBranchFilter] = useState('');
+  const [branchFilter, setBranchFilter] = useState('all');
   const [branchPickerOpen, setBranchPickerOpen] = useState(false);
   const [branchAnnouncement, setBranchAnnouncement] = useState('');
   const branchPickerRef = useRef<HTMLDivElement>(null);
