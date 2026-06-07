@@ -18,7 +18,7 @@ interface Stats {
   achievements: number;
 }
 
-const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
+const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate, admissionDate }: Props) => {
   const [stats, setStats] = useState<Stats>({ photos: 0, events: 0, achievements: 0 });
 
   useEffect(() => {
