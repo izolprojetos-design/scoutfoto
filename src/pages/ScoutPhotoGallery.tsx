@@ -41,7 +41,6 @@ const ScoutPhotoGallery = () => {
     const fetchScouts = async () => {
       setLoading(true);
       try {
-        console.log('Fetching scouts...');
         const { data, error } = await supabase
           .from('scouts')
           .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
@@ -49,10 +48,8 @@ const ScoutPhotoGallery = () => {
           .order('name');
         
         if (error) {
-          console.error('Supabase error:', error);
           throw error;
         }
-        console.log('Scouts fetched:', data?.length);
         setScouts(data || []);
       } catch (err) {
         console.error('Error fetching scouts:', err);
