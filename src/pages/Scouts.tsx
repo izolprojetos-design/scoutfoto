@@ -704,6 +704,8 @@ const Scouts = () => {
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
     setEditTransitionDate(scout.transition_date || '');
+    setEditAdmissionDate(scout.admission_date || (scout.created_at ? scout.created_at.split('T')[0] : ''));
+
     const branchKey = scout.manual_branch || '';
     const knownSections = branchKey ? [...new Set(scouts.filter(s => (s.manual_branch || '') === branchKey && s.section).map(s => s.section))] : [];
     setCustomSectionMode(!!scout.section && !knownSections.includes(scout.section));
