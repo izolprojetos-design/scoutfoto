@@ -13,7 +13,9 @@ interface Props {
   scoutCreatedAt: string;
   scoutBirthDate: string;
   transitionDate?: string | null;
+  admissionDate?: string | null;
   currentSection?: string | null;
+
 }
 
 type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario' | 'conquista';
