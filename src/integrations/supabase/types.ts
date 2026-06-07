@@ -1192,6 +1192,7 @@ export type Database = {
       }
       scouts: {
         Row: {
+          admission_date: string | null
           birth_date: string
           created_at: string
           created_by: string
@@ -1210,6 +1211,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          admission_date?: string | null
           birth_date: string
           created_at?: string
           created_by: string
@@ -1228,6 +1230,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          admission_date?: string | null
           birth_date?: string
           created_at?: string
           created_by?: string
