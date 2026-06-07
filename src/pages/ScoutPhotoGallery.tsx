@@ -41,6 +41,7 @@ const ScoutPhotoGallery = () => {
     const fetchScouts = async () => {
       setLoading(true);
       try {
+        console.log('Fetching scouts in ScoutPhotoGallery...');
         const { data, error } = await supabase
           .from('scouts')
           .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
@@ -48,11 +49,13 @@ const ScoutPhotoGallery = () => {
           .order('name');
         
         if (error) {
+          console.error('Supabase error fetching scouts:', error);
           throw error;
         }
+        console.log('Scouts fetched in ScoutPhotoGallery:', data?.length);
         setScouts(data || []);
       } catch (err) {
-        console.error('Error fetching scouts:', err);
+        console.error('Error fetching scouts in ScoutPhotoGallery:', err);
         toast.error('Erro ao carregar integrantes.');
       } finally {
         setLoading(false);
