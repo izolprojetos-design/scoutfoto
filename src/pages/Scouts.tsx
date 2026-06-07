@@ -2000,7 +2000,9 @@ const Scouts = () => {
                 scoutPhone, setScoutPhone,
                 scoutSection, setScoutSection,
                 scoutTransitionDate, setScoutTransitionDate,
+                scoutAdmissionDate, setScoutAdmissionDate,
                 undefined,
+
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
