@@ -1511,12 +1511,17 @@ const Scouts = () => {
         <Label>Celular</Label>
         <Input value={formatPhoneBR(phoneVal)} onChange={e => setPhoneVal(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
       </div>
-      <div className="space-y-2">
-        <Label>Data de nascimento *</Label>
-        <div className="relative">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Data de nascimento *</Label>
           <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
         </div>
+        <div className="space-y-2">
+          <Label>Ingresso no grupo</Label>
+          <Input type="date" value={admissionDate} onChange={e => setAdmissionDate(e.target.value)} className="h-11" />
+        </div>
       </div>
+
       <div className="space-y-2">
         <Label>Ramo</Label>
         <Select value={branchOverride} onValueChange={v => { setBranchOverride(v); setCustomSectionMode(false); }}>
