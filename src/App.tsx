@@ -47,7 +47,7 @@ const MyAgendamentos = lazyWithRetry(() => import("./pages/MyAgendamentos"));
 const ScoutPhotoGallery = lazyWithRetry(() => import("./pages/ScoutPhotoGallery"));
 
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
-const Debug = lazyWithRetry(() => import("./pages/Debug"));
+const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
 const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
 const Register = lazyWithRetry(() => import("./pages/Register"));
 const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
@@ -181,7 +181,6 @@ const App = () => {
                     <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/profile" element={<Profile />} />
-                      <Route path="/debug" element={<Debug />} />
                       <Route path="/upload" element={<ProtectedRoute requiredPermission="upload_photos"><Upload /></ProtectedRoute>} />
                       <Route path="/gallery" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
                       <Route path="/gallery/:branchKey" element={<ProtectedRoute requiredPermission="view_photos"><Gallery /></ProtectedRoute>} />
