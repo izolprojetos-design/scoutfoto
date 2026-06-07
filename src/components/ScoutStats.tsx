@@ -8,7 +8,9 @@ interface Props {
   scoutId: string;
   scoutCreatedAt: string;
   scoutBirthDate: string;
+  admissionDate?: string | null;
 }
+
 
 interface Stats {
   photos: number;
