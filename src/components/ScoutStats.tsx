@@ -37,7 +37,7 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate, admissionDate }: 
   }, [scoutId]);
 
   const birth = parseLocalDate(scoutBirthDate);
-  const created = new Date(scoutCreatedAt);
+  const created = admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt);
   const yearsInGroup = differenceInYears(new Date(), created);
   const monthsInGroup = differenceInMonths(new Date(), created);
   const next = getNextBranchChange(birth);
