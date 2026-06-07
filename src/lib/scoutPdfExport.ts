@@ -28,10 +28,10 @@ interface Guardian {
   phone?: string | null;
 }
 
-const PRIMARY: [number, number, number] = [34, 139, 34]; // Forest Green (Escoteiro)
-const SECONDARY_GREEN: [number, number, number] = [0, 100, 0]; // Darker green for accent
+const PRIMARY: [number, number, number] = [245, 245, 245]; // Light Gray (was Forest Green)
+const SECONDARY_GREEN: [number, number, number] = [100, 100, 100]; // Darker gray for accent
 const MUTED: [number, number, number] = [110, 110, 110];
-const BLACK: [number, number, number] = [0, 0, 0];
+const BLACK: [number, number, number] = [40, 40, 40];
 const WHITE: [number, number, number] = [255, 255, 255];
 
 const imageCache = new Map<string, Promise<string | null>>();
