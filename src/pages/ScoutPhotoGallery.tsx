@@ -136,8 +136,6 @@ const ScoutPhotoGallery = () => {
               return b?.key === branch.key;
             }).length;
 
-            console.log(`Branch ${branch.name} (${branch.key}) count: ${count}`);
-
             return (
               <TabsTrigger
                 key={branch.key}
