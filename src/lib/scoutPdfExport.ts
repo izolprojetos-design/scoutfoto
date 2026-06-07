@@ -28,10 +28,10 @@ interface Guardian {
   phone?: string | null;
 }
 
-const PRIMARY: [number, number, number] = [34, 139, 34]; // Forest Green (Escoteiro)
-const SECONDARY_GREEN: [number, number, number] = [0, 100, 0]; // Darker green for accent
+const PRIMARY: [number, number, number] = [245, 245, 245]; // Light Gray (was Forest Green)
+const SECONDARY_GREEN: [number, number, number] = [100, 100, 100]; // Darker gray for accent
 const MUTED: [number, number, number] = [110, 110, 110];
-const BLACK: [number, number, number] = [0, 0, 0];
+const BLACK: [number, number, number] = [40, 40, 40];
 const WHITE: [number, number, number] = [255, 255, 255];
 
 const imageCache = new Map<string, Promise<string | null>>();
@@ -98,14 +98,14 @@ export async function exportScoutProfilePdf(
   }
 
   const textLeft = margin + 42;
-  doc.setTextColor(...WHITE);
+  doc.setTextColor(...BLACK);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
-  doc.setFontSize(22);
+  doc.setFontSize(16);
   doc.text(scout.name.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   const subtitle = [scout.section, scout.scout_group, '12º GEMC'].filter(Boolean).join(' • ');
   if (subtitle) doc.text(subtitle, textLeft, 45);
 
@@ -165,7 +165,7 @@ export async function exportScoutProfilePdf(
       startY: cursorY + 3,
       head: [['Nome', 'E-mail', 'Telefone']],
       body: guardians.map(g => [g.name, g.email || '—', formatPhoneBR(g.phone) || '—']),
-      headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      headStyles: { fillColor: [80, 80, 80], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9 },
       margin: { left: margin, right: margin },
       theme: 'striped',
@@ -201,7 +201,7 @@ export async function exportScoutProfilePdf(
         a.name,
         a.description || '—',
       ]),
-      headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      headStyles: { fillColor: [80, 80, 80], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9, valign: 'top' },
       columnStyles: {
         0: { cellWidth: 22 },
@@ -302,10 +302,10 @@ export async function exportScoutProfilePdf(
       doc.addImage(logoDataUrl, 'PNG', margin + 3, 11, 18, 18, undefined, 'FAST'); 
     } catch { /* ignore */ }
   }
-  doc.setTextColor(...WHITE);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
+  doc.setTextColor(...BLACK);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
   doc.text('LINHA DO TEMPO', margin + 35, 18);
-  doc.setFontSize(18);
+  doc.setFontSize(16);
   doc.text(scout.name.toUpperCase(), margin + 35, 30);
 
   autoTable(doc, {
@@ -316,7 +316,7 @@ export async function exportScoutProfilePdf(
       i.type,
       i.description ? `${i.title}\n${i.description}` : i.title,
     ]),
-    headStyles: { fillColor: PRIMARY, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+    headStyles: { fillColor: [80, 80, 80], textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
     bodyStyles: { fontSize: 9, valign: 'top' },
     columnStyles: {
       0: { cellWidth: 25 },
@@ -383,14 +383,14 @@ export async function exportScoutFolderPdf(
   }
 
   const textLeft = margin + 42;
-  pdf.setTextColor(...WHITE);
+  pdf.setTextColor(...BLACK);
   pdf.setFont('helvetica', 'bold');
-  pdf.setFontSize(11);
+  pdf.setFontSize(10);
   pdf.text('PASTA DE FOTOS', textLeft, 22);
-  pdf.setFontSize(22);
+  pdf.setFontSize(16);
   pdf.text(scoutName.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
   pdf.setFont('helvetica', 'normal');
-  pdf.setFontSize(10);
+  pdf.setFontSize(9);
   const dateStr = format(parseLocalDate(dateKey), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   pdf.text(`12º GEMC • ${dateStr} • ${photos.length} fotos`, textLeft, 45);
 
@@ -448,10 +448,10 @@ export async function exportScoutFolderPdf(
         pdf.addImage(logoDataUrl, 'PNG', margin + 2, 8, 8, 8, undefined, 'FAST'); 
       } catch { /* */ }
     }
-    pdf.setTextColor(...WHITE);
-    pdf.setFontSize(12);
+    pdf.setTextColor(...BLACK);
+    pdf.setFontSize(11);
     pdf.text(scoutName.toUpperCase(), margin + 18, 14);
-    pdf.setFontSize(8);
+    pdf.setFontSize(7);
     pdf.text(`Foto ${i + 1} de ${photos.length} • ${dateStr}`, margin + 18, 20);
     try { pdf.addImage(dataUrl, 'JPEG', x, y, w, h, undefined, 'FAST'); }
     catch { pdf.addImage(dataUrl, 'PNG', x, y, w, h, undefined, 'FAST'); }
