@@ -201,7 +201,7 @@ export async function exportScoutProfilePdf(
         a.name,
         a.description || '—',
       ]),
-      headStyles: { fillColor: PRIMARY, textColor: 255, fontStyle: 'bold', fontSize: 9 },
+      headStyles: { fillColor: [80, 80, 80], textColor: 255, fontStyle: 'bold', fontSize: 9 },
       bodyStyles: { fontSize: 9, valign: 'top' },
       columnStyles: {
         0: { cellWidth: 22 },
