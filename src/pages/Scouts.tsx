@@ -636,7 +636,9 @@ const Scouts = () => {
       phone: scoutPhone,
       section: scoutSection,
       transition_date: scoutTransitionDate || null,
+      admission_date: scoutAdmissionDate || null,
     }).select('id').single();
+
 
     if (error) {
       toast.error('Erro ao cadastrar: ' + error.message);
