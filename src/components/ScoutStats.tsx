@@ -8,7 +8,9 @@ interface Props {
   scoutId: string;
   scoutCreatedAt: string;
   scoutBirthDate: string;
+  admissionDate?: string | null;
 }
+
 
 interface Stats {
   photos: number;
@@ -16,7 +18,7 @@ interface Stats {
   achievements: number;
 }
 
-const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
+const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate, admissionDate }: Props) => {
   const [stats, setStats] = useState<Stats>({ photos: 0, events: 0, achievements: 0 });
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const ScoutStats = ({ scoutId, scoutCreatedAt, scoutBirthDate }: Props) => {
   }, [scoutId]);
 
   const birth = parseLocalDate(scoutBirthDate);
-  const created = new Date(scoutCreatedAt);
+  const created = admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt);
   const yearsInGroup = differenceInYears(new Date(), created);
   const monthsInGroup = differenceInMonths(new Date(), created);
   const next = getNextBranchChange(birth);

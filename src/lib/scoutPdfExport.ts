@@ -19,7 +19,9 @@ interface ScoutLike {
   phone?: string | null;
   notes?: string | null;
   transition_date?: string | null;
+  admission_date?: string | null;
   photo_url?: string | null;
+
 }
 
 interface Guardian {
@@ -73,7 +75,7 @@ export async function exportScoutProfilePdf(
   const margin = 15;
 
   const birth = parseLocalDate(scout.birth_date);
-  const created = new Date(scout.created_at);
+  const created = scout.admission_date ? parseLocalDate(scout.admission_date) : new Date(scout.created_at);
   const branch = getCurrentBranch(birth);
   const isAdult = branch?.key === 'voluntario' || differenceInMonths(new Date(), birth) >= 252;
   const next = !isAdult ? getNextBranchChange(birth) : null;

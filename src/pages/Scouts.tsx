@@ -68,6 +68,7 @@ interface Scout {
   phone: string;
   section: string;
   transition_date: string | null;
+  admission_date: string | null;
   is_active: boolean;
 }
 
@@ -161,6 +162,7 @@ const Scouts = () => {
   const [editPhone, setEditPhone] = useState('');
   const [editSection, setEditSection] = useState('');
   const [editTransitionDate, setEditTransitionDate] = useState('');
+  const [editAdmissionDate, setEditAdmissionDate] = useState('');
   // Scout form
   const [scoutName, setScoutName] = useState('');
   const [scoutBirth, setScoutBirth] = useState('');
@@ -175,6 +177,8 @@ const Scouts = () => {
   const [scoutPhone, setScoutPhone] = useState('');
   const [scoutSection, setScoutSection] = useState('');
   const [scoutTransitionDate, setScoutTransitionDate] = useState('');
+  const [scoutAdmissionDate, setScoutAdmissionDate] = useState('');
+
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
   const [discardConfirmText, setDiscardConfirmText] = useState('');
@@ -632,7 +636,9 @@ const Scouts = () => {
       phone: scoutPhone,
       section: scoutSection,
       transition_date: scoutTransitionDate || null,
+      admission_date: scoutAdmissionDate || null,
     }).select('id').single();
+
 
     if (error) {
       toast.error('Erro ao cadastrar: ' + error.message);
@@ -682,7 +688,7 @@ const Scouts = () => {
     setDialogOpen(false);
     setScoutName(''); setScoutBirth(''); setScoutGroup(''); setScoutNotes(''); setScoutBranch('auto'); setScoutSubgroup('none');
     setScoutPhoto(null); setScoutPhotoPreview(null);
-    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection(''); setScoutTransitionDate('');
+    setScoutRegistrationId(''); setScoutPhone(''); setScoutSection(''); setScoutTransitionDate(''); setScoutAdmissionDate('');
     setInlineGuardianName(''); setInlineGuardianEmail(''); setInlineGuardianPhone(''); setInlineGuardianAuth(false);
     setUploading(false);
     fetchData();
@@ -700,6 +706,8 @@ const Scouts = () => {
     setEditPhone(scout.phone || '');
     setEditSection(scout.section || '');
     setEditTransitionDate(scout.transition_date || '');
+    setEditAdmissionDate(scout.admission_date || (scout.created_at ? scout.created_at.split('T')[0] : ''));
+
     const branchKey = scout.manual_branch || '';
     const knownSections = branchKey ? [...new Set(scouts.filter(s => (s.manual_branch || '') === branchKey && s.section).map(s => s.section))] : [];
     setCustomSectionMode(!!scout.section && !knownSections.includes(scout.section));
@@ -783,7 +791,9 @@ const Scouts = () => {
       phone: editPhone,
       section: editSection,
       transition_date: editTransitionDate || null,
+      admission_date: editAdmissionDate || null,
     }).eq('id', editingScout.id);
+
 
     if (error) {
       console.error('[EDIT] update error:', error);
@@ -1317,7 +1327,9 @@ const Scouts = () => {
     phoneVal: string, setPhoneVal: (v: string) => void,
     sectionVal: string, setSectionVal: (v: string) => void,
     transitionDate: string, setTransitionDate: (v: string) => void,
+    admissionDate: string, setAdmissionDate: (v: string) => void,
     scoutId?: string,
+
     guardianFields?: {
       name: string; setName: (v: string) => void;
       email: string; setEmail: (v: string) => void;
@@ -1362,7 +1374,9 @@ const Scouts = () => {
       phoneVal !== (editingScout.phone || '') ||
       sectionVal !== (editingScout.section || '') ||
       transitionDate !== (editingScout.transition_date || '') ||
+      admissionDate !== (editingScout.admission_date || (editingScout.created_at ? editingScout.created_at.split('T')[0] : '')) ||
       !!editPhoto
+
     ) : false;
 
     return (
@@ -1497,12 +1511,17 @@ const Scouts = () => {
         <Label>Celular</Label>
         <Input value={formatPhoneBR(phoneVal)} onChange={e => setPhoneVal(formatPhoneBR(e.target.value))} placeholder="(00) 00000-0000" className="h-11" inputMode="tel" maxLength={15} />
       </div>
-      <div className="space-y-2">
-        <Label>Data de nascimento *</Label>
-        <div className="relative">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Data de nascimento *</Label>
           <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
         </div>
+        <div className="space-y-2">
+          <Label>Ingresso no grupo</Label>
+          <Input type="date" value={admissionDate} onChange={e => setAdmissionDate(e.target.value)} className="h-11" />
+        </div>
       </div>
+
       <div className="space-y-2">
         <Label>Ramo</Label>
         <Select value={branchOverride} onValueChange={v => { setBranchOverride(v); setCustomSectionMode(false); }}>
@@ -1981,7 +2000,9 @@ const Scouts = () => {
                 scoutPhone, setScoutPhone,
                 scoutSection, setScoutSection,
                 scoutTransitionDate, setScoutTransitionDate,
+                scoutAdmissionDate, setScoutAdmissionDate,
                 undefined,
+
                 {
                   name: inlineGuardianName, setName: setInlineGuardianName,
                   email: inlineGuardianEmail, setEmail: setInlineGuardianEmail,
@@ -2629,8 +2650,10 @@ const Scouts = () => {
             editPhone, setEditPhone,
             editSection, setEditSection,
             editTransitionDate, setEditTransitionDate,
+            editAdmissionDate, setEditAdmissionDate,
             editingScout?.id,
           )}
+
 
           {editingScout && (
             <div className="mt-6 border-t pt-4">
@@ -3307,7 +3330,9 @@ const Scouts = () => {
                       scoutId={viewingScout.id}
                       scoutCreatedAt={viewingScout.created_at}
                       scoutBirthDate={viewingScout.birth_date}
+                      admissionDate={viewingScout.admission_date}
                     />
+
                     <div className="space-y-2 text-sm">
                       {viewingScout.registration_id && (
                         <div className="flex justify-between py-2 border-b">
@@ -3408,8 +3433,10 @@ const Scouts = () => {
                       scoutCreatedAt={viewingScout.created_at}
                       scoutBirthDate={viewingScout.birth_date}
                       transitionDate={viewingScout.transition_date}
+                      admissionDate={viewingScout.admission_date}
                       currentSection={viewingScout.section}
                     />
+
                   </TabsContent>
 
                   <TabsContent value="historico" className="mt-4">

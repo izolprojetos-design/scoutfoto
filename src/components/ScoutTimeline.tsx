@@ -13,7 +13,9 @@ interface Props {
   scoutCreatedAt: string;
   scoutBirthDate: string;
   transitionDate?: string | null;
+  admissionDate?: string | null;
   currentSection?: string | null;
+
 }
 
 type ItemType = 'ingresso' | 'transicao' | 'secao' | 'fotos' | 'aniversario' | 'conquista';
@@ -37,7 +39,7 @@ const TYPE_CONFIG: Record<ItemType, { icon: typeof Sparkles; color: string; bg: 
 
 const ALL_TYPES: ItemType[] = ['ingresso', 'transicao', 'secao', 'fotos', 'aniversario', 'conquista'];
 
-const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection }: Props) => {
+const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection, admissionDate }: Props) => {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTypes, setActiveTypes] = useState<Set<ItemType>>(new Set(ALL_TYPES));
@@ -52,7 +54,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
       list.push({
         id: 'ingresso',
         type: 'ingresso',
-        date: new Date(scoutCreatedAt),
+        date: admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt),
         title: 'Ingresso no grupo',
         description: currentSection ? `Seção: ${currentSection}` : undefined,
       });
@@ -113,7 +115,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
       });
 
       const birth = parseLocalDate(scoutBirthDate);
-      const start = new Date(scoutCreatedAt);
+      const start = admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt);
       const today = new Date();
       let year = start.getFullYear();
       while (year <= today.getFullYear()) {
@@ -156,7 +158,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
     };
     load();
     return () => { cancelled = true; };
-  }, [scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection]);
+  }, [scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection, admissionDate]);
 
   const years = useMemo(() => {
     const set = new Set<number>();
