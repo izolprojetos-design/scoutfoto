@@ -47,7 +47,9 @@ const ScoutPhotoGallery = () => {
           .eq('is_active', true)
           .order('name');
         
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         setScouts(data || []);
       } catch (err) {
         console.error('Error fetching scouts:', err);
@@ -78,6 +80,14 @@ const ScoutPhotoGallery = () => {
       return scoutBranch === activeTab;
     });
   }, [scouts, search, activeTab]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
 
   if (!canViewScouts) {
     return (
