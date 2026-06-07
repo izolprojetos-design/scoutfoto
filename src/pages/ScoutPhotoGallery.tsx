@@ -84,6 +84,14 @@ const ScoutPhotoGallery = () => {
     });
   }, [scouts, search, activeTab]);
 
+  if (loading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   if (!canViewScouts) {
     return (
       <div className="flex h-[50vh] flex-col items-center justify-center gap-4">
