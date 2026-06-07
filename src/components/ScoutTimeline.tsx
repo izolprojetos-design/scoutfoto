@@ -115,7 +115,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
       });
 
       const birth = parseLocalDate(scoutBirthDate);
-      const start = new Date(scoutCreatedAt);
+      const start = admissionDate ? parseLocalDate(admissionDate) : new Date(scoutCreatedAt);
       const today = new Date();
       let year = start.getFullYear();
       while (year <= today.getFullYear()) {
