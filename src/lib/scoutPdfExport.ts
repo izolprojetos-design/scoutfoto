@@ -98,14 +98,14 @@ export async function exportScoutProfilePdf(
   }
 
   const textLeft = margin + 42;
-  doc.setTextColor(...WHITE);
+  doc.setTextColor(...BLACK);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
+  doc.setFontSize(10);
   doc.text('PERFIL DO INTEGRANTE', textLeft, 22);
-  doc.setFontSize(22);
+  doc.setFontSize(16);
   doc.text(scout.name.toUpperCase(), textLeft, 35, { maxWidth: pageW - textLeft - margin });
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   const subtitle = [scout.section, scout.scout_group, '12º GEMC'].filter(Boolean).join(' • ');
   if (subtitle) doc.text(subtitle, textLeft, 45);
 
