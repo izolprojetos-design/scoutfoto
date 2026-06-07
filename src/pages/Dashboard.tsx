@@ -790,7 +790,10 @@ const Dashboard = () => {
                       </div>
                     </div>
                   </div>
-                  <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground/60 transition-colors group-hover:text-foreground/80">Editar</span>
+                    <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -849,8 +852,11 @@ const Dashboard = () => {
                           </div>
                         </div>
                       </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground/60 transition-colors group-hover:text-foreground/80">Editar</span>
                       <ArrowRight className="h-5 w-5 text-muted-foreground/50 transition-transform group-hover:translate-x-1 group-hover:text-foreground/70" />
-                    </CardContent>
+                    </div>
+                  </CardContent>
                   </Card>
                 </motion.div>
               );
