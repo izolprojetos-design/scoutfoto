@@ -3433,8 +3433,10 @@ const Scouts = () => {
                       scoutCreatedAt={viewingScout.created_at}
                       scoutBirthDate={viewingScout.birth_date}
                       transitionDate={viewingScout.transition_date}
+                      admissionDate={viewingScout.admission_date}
                       currentSection={viewingScout.section}
                     />
+
                   </TabsContent>
 
                   <TabsContent value="historico" className="mt-4">
