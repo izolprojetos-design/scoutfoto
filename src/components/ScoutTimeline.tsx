@@ -158,7 +158,7 @@ const ScoutTimeline = ({ scoutId, scoutCreatedAt, scoutBirthDate, transitionDate
     };
     load();
     return () => { cancelled = true; };
-  }, [scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection]);
+  }, [scoutId, scoutCreatedAt, scoutBirthDate, transitionDate, currentSection, admissionDate]);
 
   const years = useMemo(() => {
     const set = new Set<number>();
