@@ -48,7 +48,6 @@ const ScoutPhotoGallery = lazyWithRetry(() => import("./pages/ScoutPhotoGallery"
 
 const Profile = lazyWithRetry(() => import("./pages/Profile"));
 const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
-const BranchScouts = lazyWithRetry(() => import("./pages/BranchScouts"));
 const Register = lazyWithRetry(() => import("./pages/Register"));
 const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
 const ConfirmScheduling = lazyWithRetry(() => import("./pages/ConfirmScheduling"));
