@@ -106,7 +106,7 @@ const AppSidebar = () => {
       show: canViewScouts 
     },
     { 
-      to: '/scout-photo-gallery', 
+      to: '/scout-gallery', 
       label: 'Galerias de Fotos', 
       icon: ImageIcon, 
       show: canViewScouts 

@@ -3128,26 +3128,12 @@ const Scouts = () => {
                     <Button
                       type="button"
                       className="w-full h-10 font-bold bg-emerald-600 hover:bg-emerald-700 shadow-sm"
-                      onClick={() => {
-                        const filesToUpload = photosHubSummary.rawFiles?.filter(f => {
-                          const type = (f.type || '').toLowerCase();
-                          const ext = (f.name.split('.').pop() || '').toLowerCase();
-                          
-                          const isAcceptedMime = PHOTOS_HUB_ALLOWED_TYPES.some(allowed => 
-                            type === allowed || (type.startsWith('image/') && allowed.includes(type.split('/')[1]))
-                          );
-                          const isAcceptedExt = PHOTOS_HUB_ALLOWED_EXT.includes(ext);
-
-                          return (isAcceptedMime || isAcceptedExt) && f.size <= PHOTOS_HUB_MAX_SIZE;
-                        }) || [];
-                        
-                        if (filesToUpload.length === 0) {
-                          toast.error('Nenhum arquivo válido para enviar.');
-                          return;
-                        }
-                        
-                        uploadPhotosHubFiles(filesToUpload);
-                      }}
+                      onClick={() => uploadPhotosHubFiles(photosHubSummary.rawFiles?.filter(f => {
+                        const type = (f.type || '').toLowerCase();
+                        const ext = (f.name.split('.').pop() || '').toLowerCase();
+                        const isAllowed = (type && PHOTOS_HUB_ALLOWED_TYPES.includes(type)) || (!type.startsWith('video/') && PHOTOS_HUB_ALLOWED_EXT.includes(ext));
+                        return isAllowed && f.size <= PHOTOS_HUB_MAX_SIZE;
+                      }) || [])}
                     >
                       <Cloud className="mr-2 h-4 w-4" /> INICIAR ENVIO DE {photosHubSummary.accepted} FOTOS
                     </Button>

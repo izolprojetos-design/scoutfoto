@@ -47,9 +47,7 @@ const ScoutPhotoGallery = () => {
           .eq('is_active', true)
           .order('name');
         
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
         setScouts(data || []);
       } catch (err) {
         console.error('Error fetching scouts:', err);
@@ -80,14 +78,6 @@ const ScoutPhotoGallery = () => {
       return scoutBranch === activeTab;
     });
   }, [scouts, search, activeTab]);
-
-  if (loading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-      </div>
-    );
-  }
 
   if (!canViewScouts) {
     return (
@@ -129,26 +119,17 @@ const ScoutPhotoGallery = () => {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto gap-1 bg-transparent p-0">
-          {ALL_TABS.map((branch) => {
-            const count = scouts.filter(s => {
-              if (s.manual_branch) return s.manual_branch === branch.key;
-              const b = getCurrentBranch(parseLocalDate(s.birth_date));
-              return b?.key === branch.key;
-            }).length;
-
-            return (
-              <TabsTrigger
-                key={branch.key}
-                value={branch.key}
-                className="flex items-center gap-2 rounded-lg border py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                <span>{branch.icon}</span>
-                <span className="hidden sm:inline">{branch.name}</span>
-                <span className="sm:hidden">{branch.name.slice(0, 3)}</span>
-                <span className="ml-1 text-[10px] opacity-70">({count})</span>
-              </TabsTrigger>
-            );
-          })}
+          {ALL_TABS.map((branch) => (
+            <TabsTrigger
+              key={branch.key}
+              value={branch.key}
+              className="flex items-center gap-2 rounded-lg border py-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+            >
+              <span>{branch.icon}</span>
+              <span className="hidden sm:inline">{branch.name}</span>
+              <span className="sm:hidden">{branch.name.slice(0, 3)}</span>
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         {ALL_TABS.map((branch) => (
