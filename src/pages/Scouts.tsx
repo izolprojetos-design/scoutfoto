@@ -1374,7 +1374,9 @@ const Scouts = () => {
       phoneVal !== (editingScout.phone || '') ||
       sectionVal !== (editingScout.section || '') ||
       transitionDate !== (editingScout.transition_date || '') ||
+      admissionDate !== (editingScout.admission_date || (editingScout.created_at ? editingScout.created_at.split('T')[0] : '')) ||
       !!editPhoto
+
     ) : false;
 
     return (
