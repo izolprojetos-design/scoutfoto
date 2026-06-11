@@ -442,7 +442,12 @@ const SchedulingRequestForm = ({ onSuccess }: Props) => {
           {fieldError('destinatarios')}
         </div>
 
-        {/* Assunto (Nome do Evento) */}
+        {/* Assunto / Evento (Nome do Evento) */}
+        <div className="px-4 pt-3 pb-1 bg-white">
+          <Label htmlFor="nomeEvento" className="text-xs font-bold text-gray-600 uppercase tracking-tight">
+            Assunto / Evento
+          </Label>
+        </div>
         <div className="flex items-center px-4 py-2 border-b border-gray-100 bg-white">
           <input
             id="nomeEvento"
