@@ -21,6 +21,7 @@ import PermissionsManager from '@/components/PermissionsManager';
 import RolePermissionsManager from '@/components/RolePermissionsManager';
 
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
+import AccessLogViewer from '@/components/AccessLogViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
 import InviteLinkPanel from '@/components/InviteLinkPanel';
 import ArchivedPhotosPanel from '@/components/ArchivedPhotosPanel';
