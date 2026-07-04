@@ -211,7 +211,13 @@ const AccessLogViewer = () => {
         </div>
       </CardContent>
     </Card>
+
+    <div className="mt-6">
+      <DevicesSection />
+    </div>
+    </>
   );
 };
+
 
 export default AccessLogViewer;
