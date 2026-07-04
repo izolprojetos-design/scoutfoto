@@ -174,7 +174,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         fetchRoles(validatedUser.id),
         checkMfaStatus(),
       ]);
+
+      // Atualiza last_login_at do dispositivo atual em toda restauração/renovação de sessão
+      // para que a lista de "Dispositivos Conectados" mostre horário real do último acesso.
+      try {
+        void checkAndRegisterDevice(validatedUser.id);
+      } catch {}
     }
+
 
     setLoading(false);
   }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession, session?.access_token, user, profile]);

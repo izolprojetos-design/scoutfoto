@@ -34,7 +34,25 @@ const DevicesSection = () => {
     if (!user) return;
     fetchDevices();
     setCurrentFingerprint(getDeviceFingerprint());
-  }, [user]);
+
+    const channel = supabase
+      .channel(`user_devices:${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_devices', filter: `user_id=eq.${user.id}` },
+        () => { fetchDevices(); }
+      )
+      .subscribe();
+
+    const interval = setInterval(fetchDevices, 60_000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
 
   const fetchDevices = async () => {
     if (!user) return;
