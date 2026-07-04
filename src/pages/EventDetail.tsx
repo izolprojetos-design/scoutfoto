@@ -1089,10 +1089,18 @@ const EventDetail = () => {
                          <FileText className="h-6 w-6" />}
                       </div>
                       <p className="text-xs font-medium line-clamp-2 px-1">{img.filename}</p>
-                      <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openExternalLink(img.external_url, img);
+                        }}
+                        aria-label="Abrir no Google Drive"
+                        className="mt-2 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-1 text-[10px] font-medium text-primary hover:bg-primary/20 transition-colors"
+                      >
                         <ExternalLink className="h-3 w-3" />
-                        Google Drive
-                      </div>
+                        Abrir no Google Drive
+                      </button>
                     </div>
                   ) : img.media_type === 'video' ? (
                   <div className="relative flex h-full w-full items-center justify-center bg-muted">
