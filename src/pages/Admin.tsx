@@ -21,6 +21,7 @@ import PermissionsManager from '@/components/PermissionsManager';
 import RolePermissionsManager from '@/components/RolePermissionsManager';
 
 import ActivityLogsViewer from '@/components/ActivityLogsViewer';
+import AccessLogViewer from '@/components/AccessLogViewer';
 import SecurityDashboard from '@/components/SecurityDashboard';
 import InviteLinkPanel from '@/components/InviteLinkPanel';
 import ArchivedPhotosPanel from '@/components/ArchivedPhotosPanel';
@@ -686,6 +687,9 @@ const Admin = () => {
           <TabsTrigger value="audit" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             Auditoria
           </TabsTrigger>
+          <TabsTrigger value="access_log" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <LogOut className="h-4 w-4 rotate-180" /> Acessos
+          </TabsTrigger>
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <Link2 className="h-4 w-4" /> Convites
           </TabsTrigger>
@@ -1242,6 +1246,11 @@ const Admin = () => {
         <TabsContent value="audit">
           <ActivityLogsViewer />
         </TabsContent>
+
+        <TabsContent value="access_log">
+          <AccessLogViewer />
+        </TabsContent>
+
 
         <TabsContent value="subgroups">
           <Card className="border-0 shadow-lg">
