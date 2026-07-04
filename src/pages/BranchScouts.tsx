@@ -66,7 +66,7 @@ const BranchScouts = () => {
         return;
       }
 
-      const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
+      const [{ data: branchRes }, scoutResp, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
         supabase.from('scouts').select('*').eq('is_active', true).order('name'),
         supabase.from('subgroups').select('*'),
@@ -79,8 +79,13 @@ const BranchScouts = () => {
         return;
       }
 
-      if (scoutRes) {
-        const filtered = scoutRes.filter(s => {
+      const scoutRes = scoutResp.data;
+      const scoutErr = scoutResp.error;
+      const rows = scoutRes ?? [];
+      setLoadState(classifyLoadError(scoutErr, rows.length));
+
+      if (rows.length > 0) {
+        const filtered = rows.filter(s => {
           let matchesBranch = false;
           if (s.manual_branch) {
             matchesBranch = s.manual_branch === branchKey;
@@ -88,10 +93,11 @@ const BranchScouts = () => {
             const branch = getCurrentBranch(parseLocalDate(s.birth_date));
             matchesBranch = branch?.key === branchKey;
           }
-          
           return matchesBranch;
         });
         setScouts(filtered);
+      } else {
+        setScouts([]);
       }
       if (subgroupData) setSubgroups(subgroupData as Subgroup[]);
       setLoading(false);
