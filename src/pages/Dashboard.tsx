@@ -19,7 +19,7 @@ import { ptBR } from 'date-fns/locale';
 import LazyPieChart from '@/components/LazyPieChart';
 import ScoutPhoto from '@/components/ScoutPhoto';
 import ScoutAvatar from '@/components/ScoutAvatar';
-import DevicesSection from '@/components/profile/DevicesSection';
+
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
