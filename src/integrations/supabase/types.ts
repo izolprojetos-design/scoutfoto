@@ -1724,6 +1724,7 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      is_team_member: { Args: { _user_id: string }; Returns: boolean }
       log_audit: {
         Args: {
           _action: string
