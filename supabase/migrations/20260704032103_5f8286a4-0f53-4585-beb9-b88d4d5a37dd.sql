@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "profiles_view_auth" ON public.profiles;
