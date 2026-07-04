@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "images_view_auth" ON public.images;
