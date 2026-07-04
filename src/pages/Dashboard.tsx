@@ -867,7 +867,13 @@ const Dashboard = () => {
         );
       })()}
 
+      {/* Dispositivos conectados */}
+      <div className="mb-6">
+        <DevicesSection />
+      </div>
+
       {/* Photo Dialog */}
+
       <Dialog open={!!selectedPhoto} onOpenChange={() => setSelectedPhoto(null)}>
         <DialogContent className="sm:max-w-md flex flex-col items-center gap-4">
           <DialogTitle className="sr-only">{selectedPhoto?.name || 'Foto'}</DialogTitle>
