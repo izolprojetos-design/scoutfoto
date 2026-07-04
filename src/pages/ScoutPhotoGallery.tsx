@@ -142,11 +142,14 @@ const ScoutPhotoGallery = () => {
                   <div key={i} className="aspect-[4/5] animate-pulse rounded-xl bg-muted" />
                 ))}
               </div>
+            ) : loadState.kind === 'denied' || loadState.kind === 'error' ? (
+              <DataEmptyState state={loadState} />
             ) : filteredScouts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                <Camera className="mb-2 h-10 w-10 opacity-20" />
-                <p>Nenhum integrante encontrado no ramo {branch.name}.</p>
-              </div>
+              <DataEmptyState
+                state={{ kind: 'empty' }}
+                emptyTitle={`Nenhum integrante encontrado no ramo ${branch.name}.`}
+                icon={<Camera className="mb-2 h-10 w-10 opacity-20" />}
+              />
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 <AnimatePresence mode="popLayout">
