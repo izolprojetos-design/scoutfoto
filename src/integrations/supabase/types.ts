@@ -1650,6 +1650,7 @@ export type Database = {
         Returns: undefined
       }
       admin_unlock_login: { Args: { p_email: string }; Returns: undefined }
+      can_view_member_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_storage_image: {
         Args: { _storage_path: string; _user_id: string }
         Returns: boolean
