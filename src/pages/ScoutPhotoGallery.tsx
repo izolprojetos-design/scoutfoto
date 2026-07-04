@@ -13,6 +13,7 @@ import { SCOUT_BRANCHES, ADULT_CATEGORIES, getCurrentBranch, parseLocalDate, for
 import ScoutAvatar from '@/components/ScoutAvatar';
 import ScoutGallery from '@/components/ScoutGallery';
 import { toast } from 'sonner';
+import { DataEmptyState, classifyLoadError, type LoadState } from '@/components/DataEmptyState';
 
 interface Scout {
   id: string;
