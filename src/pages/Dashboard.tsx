@@ -867,10 +867,7 @@ const Dashboard = () => {
         );
       })()}
 
-      {/* Dispositivos conectados */}
-      <div className="mb-6">
-        <DevicesSection />
-      </div>
+
 
       {/* Photo Dialog */}
 
