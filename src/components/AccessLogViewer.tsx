@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import DevicesSection from '@/components/profile/DevicesSection';
+
 
 interface AccessLog {
   id: string;
