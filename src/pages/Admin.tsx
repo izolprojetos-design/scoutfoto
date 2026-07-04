@@ -40,6 +40,7 @@ import { SECTION_OPTIONS, VOLUNTEER_CARGOS, CARGO_2_OPTIONS } from '@/lib/sectio
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import HealthCheck from '@/components/HealthCheck';
 import EmailLogs from '@/components/EmailLogs';
+import { DataIntegrityCheck } from '@/components/admin/DataIntegrityCheck';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -1401,6 +1402,10 @@ const Admin = () => {
 
         <TabsContent value="system">
           <div className="space-y-8 pb-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+              <DataIntegrityCheck />
+            </motion.div>
+
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <HealthCheck />
             </motion.div>
