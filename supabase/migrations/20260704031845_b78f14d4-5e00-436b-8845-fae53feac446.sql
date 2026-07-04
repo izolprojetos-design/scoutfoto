@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "scout_photos_view_auth" ON public.scout_photos;
