@@ -6,19 +6,21 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, ShieldAlert } from 'lucide-react';
+import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
 
-
-interface AccessLog {
+interface DeviceAccess {
   id: string;
   user_id: string;
-  action: string;
+  device_name: string | null;
+  browser: string | null;
+  os: string | null;
+  device_fingerprint: string | null;
+  last_login_at: string;
   created_at: string;
-  ip_address: string | null;
-  details: Record<string, unknown> | null;
+  is_trusted: boolean;
 }
 
 interface Profile {
@@ -28,23 +30,16 @@ interface Profile {
 }
 
 const PAGE_SIZE = 25;
-const ACTION_FILTER = ['login', 'logout', 'login_failed', 'account_locked'];
-
-const ACTION_META: Record<string, { label: string; className: string }> = {
-  login: { label: 'Login', className: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' },
-  logout: { label: 'Logout', className: 'bg-slate-500/10 text-slate-700 dark:text-slate-400' },
-  login_failed: { label: 'Falha de Login', className: 'bg-red-500/10 text-red-700 dark:text-red-400' },
-  account_locked: { label: 'Conta Bloqueada', className: 'bg-red-500/15 text-red-700 dark:text-red-400' },
-};
+const ONLINE_WINDOW_MIN = 30;
 
 const AccessLogViewer = () => {
-  const [logs, setLogs] = useState<AccessLog[]>([]);
+  const [rows, setRows] = useState<DeviceAccess[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
-  const [actionFilter, setActionFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const load = async () => {
     setLoading(true);
@@ -52,17 +47,22 @@ const AccessLogViewer = () => {
       const from = page * PAGE_SIZE;
       const to = from + PAGE_SIZE - 1;
 
-      const actionsToUse = actionFilter === 'all' ? ACTION_FILTER : [actionFilter];
+      let q = supabase
+        .from('user_devices')
+        .select('id, user_id, device_name, browser, os, device_fingerprint, last_login_at, created_at, is_trusted', { count: 'exact' })
+        .order('last_login_at', { ascending: false });
 
-      const { data, count, error } = await supabase
-        .from('audit_logs')
-        .select('id, user_id, action, created_at, ip_address, details', { count: 'exact' })
-        .in('action', actionsToUse)
-        .order('created_at', { ascending: false })
-        .range(from, to);
+      if (statusFilter === 'online') {
+        const cutoff = new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString();
+        q = q.gte('last_login_at', cutoff);
+      } else if (statusFilter === 'offline') {
+        const cutoff = new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString();
+        q = q.lt('last_login_at', cutoff);
+      }
 
+      const { data, count, error } = await q.range(from, to);
       if (error) throw error;
-      setLogs((data || []) as AccessLog[]);
+      setRows((data || []) as DeviceAccess[]);
       setTotal(count || 0);
 
       const userIds = Array.from(new Set((data || []).map(d => d.user_id).filter(Boolean)));
@@ -80,62 +80,82 @@ const AccessLogViewer = () => {
     }
   };
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, actionFilter]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, statusFilter]);
 
-  const filteredLogs = useMemo(() => {
+  // Realtime: atualiza automaticamente quando qualquer usuário acessar/registrar dispositivo
+  useEffect(() => {
+    const channel = supabase
+      .channel('access_log_all_devices')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_devices' },
+        () => { void load(); }
+      )
+      .subscribe();
+
+    // fallback: revalida a cada 30s para reclassificar Online/Offline pelo tempo
+    const interval = setInterval(() => { void load(); }, 30_000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line
+  }, [page, statusFilter]);
+
+  const isOnline = (iso: string) =>
+    Date.now() - new Date(iso).getTime() < ONLINE_WINDOW_MIN * 60_000;
+
+  const isMobile = (os: string | null) => /android|ios|iphone|ipad/i.test(os || '');
+
+  const filteredRows = useMemo(() => {
     const s = search.trim().toLowerCase();
-    if (!s) return logs;
-    return logs.filter(l => {
-      const p = profiles[l.user_id];
+    if (!s) return rows;
+    return rows.filter(r => {
+      const p = profiles[r.user_id];
       return (
         p?.name?.toLowerCase().includes(s) ||
         p?.email?.toLowerCase().includes(s) ||
-        l.ip_address?.toLowerCase().includes(s) ||
-        (l.details && JSON.stringify(l.details).toLowerCase().includes(s))
+        r.device_name?.toLowerCase().includes(s) ||
+        r.browser?.toLowerCase().includes(s) ||
+        r.os?.toLowerCase().includes(s)
       );
     });
-  }, [logs, profiles, search]);
+  }, [rows, profiles, search]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-
-  const getDevice = (details: Record<string, unknown> | null) => {
-    if (!details) return '—';
-    const parts: string[] = [];
-    if (details.device) parts.push(String(details.device));
-    if (details.browser) parts.push(String(details.browser));
-    if (details.os) parts.push(String(details.os));
-    return parts.length ? parts.join(' · ') : '—';
-  };
+  const onlineCount = rows.filter(r => isOnline(r.last_login_at)).length;
 
   return (
     <>
     <Card className="border-0 shadow-lg">
-
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2 font-bold">
             <LogIn className="h-5 w-5 text-primary" />
             Log de Acessos
-            <Badge variant="outline" className="ml-2">{total}</Badge>
+            <Badge variant="outline" className="ml-2">{total} acessos</Badge>
+            <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+              <span className="mr-1 inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              {onlineCount} online
+            </Badge>
           </CardTitle>
           <div className="flex flex-wrap gap-2">
             <div className="relative">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar usuário, e-mail, IP..."
+                placeholder="Buscar usuário, e-mail, dispositivo..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="pl-8 h-9 w-[240px]"
+                className="pl-8 h-9 w-[260px]"
               />
             </div>
-            <Select value={actionFilter} onValueChange={v => { setPage(0); setActionFilter(v); }}>
-              <SelectTrigger className="h-9 w-[180px]"><SelectValue /></SelectTrigger>
+            <Select value={statusFilter} onValueChange={v => { setPage(0); setStatusFilter(v); }}>
+              <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Todos os eventos</SelectItem>
-                <SelectItem value="login">Login</SelectItem>
-                <SelectItem value="login_failed">Falha de Login</SelectItem>
-                <SelectItem value="logout">Logout</SelectItem>
-                <SelectItem value="account_locked">Conta Bloqueada</SelectItem>
+                <SelectItem value="all">Todos os acessos</SelectItem>
+                <SelectItem value="online">Online agora</SelectItem>
+                <SelectItem value="offline">Offline</SelectItem>
               </SelectContent>
             </Select>
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => load()} disabled={loading}>
@@ -149,47 +169,56 @@ const AccessLogViewer = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Data/Hora</TableHead>
+                <TableHead>Último acesso</TableHead>
                 <TableHead>Usuário</TableHead>
-                <TableHead>Evento</TableHead>
-                <TableHead>IP</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Dispositivo</TableHead>
+                <TableHead>Navegador / SO</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading && logs.length === 0 ? (
+              {loading && rows.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
-              ) : filteredLogs.length === 0 ? (
+              ) : filteredRows.length === 0 ? (
                 <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum acesso registrado.</TableCell></TableRow>
               ) : (
-                filteredLogs.map(l => {
-                  const p = profiles[l.user_id];
-                  const meta = ACTION_META[l.action] ?? { label: l.action, className: 'bg-muted' };
-                  const emailInDetails = typeof l.details?.email === 'string' ? String(l.details.email) : null;
-                  const newDevice = l.details?.new_device === true;
+                filteredRows.map(r => {
+                  const p = profiles[r.user_id];
+                  const online = isOnline(r.last_login_at);
                   return (
-                    <TableRow key={l.id}>
+                    <TableRow key={r.id}>
                       <TableCell className="whitespace-nowrap text-sm">
-                        {format(new Date(l.created_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
+                        {format(new Date(r.last_login_at), "dd/MM/yyyy HH:mm:ss", { locale: ptBR })}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
                           <span className="font-medium">{p?.name || 'Desconhecido'}</span>
-                          <span className="text-xs text-muted-foreground">{p?.email || emailInDetails || '—'}</span>
+                          <span className="text-xs text-muted-foreground">{p?.email || '—'}</span>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <div className="flex items-center gap-1.5">
-                          <Badge className={meta.className}>{meta.label}</Badge>
-                          {newDevice && (
-                            <Badge variant="outline" className="gap-1 text-amber-700 border-amber-300">
-                              <ShieldAlert className="h-3 w-3" /> Novo dispositivo
-                            </Badge>
+                        {online ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 gap-1">
+                            <span className="inline-block h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                            Online
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-muted-foreground">Offline</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {isMobile(r.os) ? (
+                            <Smartphone className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Monitor className="h-4 w-4 text-muted-foreground" />
                           )}
+                          <span className="text-sm">{r.device_name || '—'}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="font-mono text-xs">{l.ip_address || '—'}</TableCell>
-                      <TableCell className="text-xs text-muted-foreground">{getDevice(l.details)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {[r.browser, r.os].filter(Boolean).join(' · ') || '—'}
+                      </TableCell>
                     </TableRow>
                   );
                 })
@@ -220,6 +249,5 @@ const AccessLogViewer = () => {
     </>
   );
 };
-
 
 export default AccessLogViewer;
