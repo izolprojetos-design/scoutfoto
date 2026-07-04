@@ -1,7 +1,21 @@
+import { useState } from "react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
-import { CloudOff, RefreshCw, CheckCircle2 } from "lucide-react";
+import { CloudOff, RefreshCw, CheckCircle2, DownloadCloud, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+
+const clearCachesAndReload = async () => {
+  try {
+    if ('caches' in window) {
+      const names = await caches.keys();
+      await Promise.all(names.map((n) => caches.delete(n)));
+    }
+    localStorage.removeItem('scoutfoto_app_version');
+  } catch {
+    // ignore
+  }
+  window.location.reload();
+};
 
 const DataFreshnessIndicator = () => {
   const isFetching = useIsFetching();
