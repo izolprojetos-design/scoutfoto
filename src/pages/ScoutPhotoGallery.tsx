@@ -34,6 +34,7 @@ const ScoutPhotoGallery = () => {
   
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'ok' });
   const [search, setSearch] = useState('');
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
   const [activeTab, setActiveTab] = useState(ALL_TABS[0].key);
@@ -41,21 +42,21 @@ const ScoutPhotoGallery = () => {
   useEffect(() => {
     const fetchScouts = async () => {
       setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('scouts')
-          .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
-          .eq('is_active', true)
-          .order('name');
-        
-        if (error) throw error;
-        setScouts(data || []);
-      } catch (err) {
-        console.error('Error fetching scouts:', err);
+      const { data, error } = await supabase
+        .from('scouts')
+        .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
+        .eq('is_active', true)
+        .order('name');
+
+      const rows = data ?? [];
+      const state = classifyLoadError(error, rows.length);
+      setLoadState(state);
+      setScouts(rows);
+      if (state.kind === 'error') {
+        console.error('Error fetching scouts:', error);
         toast.error('Erro ao carregar integrantes.');
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     fetchScouts();
