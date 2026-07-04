@@ -5,7 +5,7 @@ import DataFreshnessIndicator from '@/components/DataFreshnessIndicator';
 import { Loader2, Menu } from 'lucide-react';
 import { useRenderDiagnostics } from '@/lib/useRenderDiagnostics';
 import RenderDiagnosticsToolbar from '@/components/RenderDiagnosticsToolbar';
-import { PermissionSimulationPanel } from '@/components/PermissionSimulationPanel';
+import { PermissionSimulationPanel, PermissionSimulationTrigger } from '@/components/PermissionSimulationPanel';
 import { Suspense, useEffect } from 'react';
 import { useNavigationGuard } from '@/hooks/useNavigationGuard';
 import AppSidebar from '@/components/AppSidebar';
@@ -46,6 +46,7 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
             </div>
             <div className="flex items-center gap-3">
               <DataFreshnessIndicator />
+              <PermissionSimulationTrigger />
               <NotificationBell />
             </div>
           </header>

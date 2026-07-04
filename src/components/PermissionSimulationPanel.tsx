@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Shield, Bug, X, Info, AlertTriangle, Home, LayoutDashboard, Users, User, ArrowRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -30,10 +31,15 @@ export const PermissionSimulationPanel = () => {
     const handleRedirect = (e: any) => {
       addLog(e.detail.message, e.detail.type);
     };
+    const handleToggle = () => setShowLogs((v) => !v);
 
     window.addEventListener('route-redirect', handleRedirect);
-    
-    return () => window.removeEventListener('route-redirect', handleRedirect);
+    window.addEventListener('toggle-permission-simulator', handleToggle);
+
+    return () => {
+      window.removeEventListener('route-redirect', handleRedirect);
+      window.removeEventListener('toggle-permission-simulator', handleToggle);
+    };
   }, [addLog]);
 
   useEffect(() => {
@@ -215,16 +221,32 @@ export const PermissionSimulationPanel = () => {
         </Card>
       )}
       
-      <button 
-        onClick={() => setShowLogs(!showLogs)}
-        className={cn(
-          "h-12 w-12 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all duration-300",
-          isSimulationActive ? "bg-amber-500 animate-pulse shadow-amber-500/50" : "bg-primary shadow-primary/50"
-        )}
-        title="Simulador de Navegação e Diagnóstico"
-      >
-        {isSimulationActive ? <AlertTriangle className="h-6 w-6 text-white" /> : <Bug className="h-6 w-6 text-primary-foreground" />}
-      </button>
     </div>
+  );
+};
+
+export const PermissionSimulationTrigger = () => {
+  const { roles, isSimulating } = useAuth();
+  if (!roles.includes('admin') && !isSimulating) return null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-permission-simulator'))}
+          className={cn(
+            "p-1 rounded-md transition-colors",
+            isSimulating
+              ? "text-amber-600 hover:bg-amber-50"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent"
+          )}
+        >
+          {isSimulating ? <AlertTriangle className="h-3.5 w-3.5" /> : <Bug className="h-3.5 w-3.5" />}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p className="text-xs">Simulador de Navegação</p>
+      </TooltipContent>
+    </Tooltip>
   );
 };
