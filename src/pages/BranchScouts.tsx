@@ -49,6 +49,7 @@ const BranchScouts = () => {
   const { section: userSection, isRestricted } = useUserSection();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'ok' });
   const [branchData, setBranchData] = useState<BranchData | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
