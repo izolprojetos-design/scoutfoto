@@ -229,11 +229,14 @@ const BranchScouts = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
+      ) : loadState.kind === 'denied' || loadState.kind === 'error' ? (
+        <DataEmptyState state={loadState} />
       ) : filteredScouts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <span className="mb-2 text-4xl">{branchData?.icon}</span>
-          <p>{hasActiveFilters ? 'Nenhum integrante encontrado com os filtros selecionados' : 'Nenhum integrante cadastrado neste ramo'}</p>
-        </div>
+        <DataEmptyState
+          state={{ kind: 'empty' }}
+          emptyTitle={hasActiveFilters ? 'Nenhum integrante encontrado com os filtros selecionados' : 'Nenhum integrante cadastrado neste ramo'}
+          icon={<span className="mb-2 text-4xl">{branchData?.icon}</span>}
+        />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredScouts.map((scout, index) => (
