@@ -1247,6 +1247,11 @@ const Admin = () => {
           <ActivityLogsViewer />
         </TabsContent>
 
+        <TabsContent value="access_log">
+          <AccessLogViewer />
+        </TabsContent>
+
+
         <TabsContent value="subgroups">
           <Card className="border-0 shadow-lg">
             <CardHeader>
