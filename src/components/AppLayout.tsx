@@ -46,6 +46,7 @@ const AppLayout = ({ children }: { children?: React.ReactNode }) => {
             </div>
             <div className="flex items-center gap-3">
               <DataFreshnessIndicator />
+              <PermissionSimulationTrigger />
               <NotificationBell />
             </div>
           </header>
