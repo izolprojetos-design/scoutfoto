@@ -1723,6 +1723,10 @@ export type Database = {
         Args: { p_token: string }
         Returns: undefined
       }
+      is_guardian_for_scout: {
+        Args: { _scout_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_team_member: { Args: { _user_id: string }; Returns: boolean }
       log_audit: {
         Args: {
