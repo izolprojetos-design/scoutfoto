@@ -221,16 +221,6 @@ export const PermissionSimulationPanel = () => {
         </Card>
       )}
       
-      <button 
-        onClick={() => setShowLogs(!showLogs)}
-        className={cn(
-          "h-12 w-12 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all duration-300",
-          isSimulationActive ? "bg-amber-500 animate-pulse shadow-amber-500/50" : "bg-primary shadow-primary/50"
-        )}
-        title="Simulador de Navegação e Diagnóstico"
-      >
-        {isSimulationActive ? <AlertTriangle className="h-6 w-6 text-white" /> : <Bug className="h-6 w-6 text-primary-foreground" />}
-      </button>
     </div>
   );
 };
