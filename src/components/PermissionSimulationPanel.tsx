@@ -30,10 +30,15 @@ export const PermissionSimulationPanel = () => {
     const handleRedirect = (e: any) => {
       addLog(e.detail.message, e.detail.type);
     };
+    const handleToggle = () => setShowLogs((v) => !v);
 
     window.addEventListener('route-redirect', handleRedirect);
-    
-    return () => window.removeEventListener('route-redirect', handleRedirect);
+    window.addEventListener('toggle-permission-simulator', handleToggle);
+
+    return () => {
+      window.removeEventListener('route-redirect', handleRedirect);
+      window.removeEventListener('toggle-permission-simulator', handleToggle);
+    };
   }, [addLog]);
 
   useEffect(() => {
