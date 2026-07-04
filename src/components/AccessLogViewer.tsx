@@ -108,7 +108,9 @@ const AccessLogViewer = () => {
   };
 
   return (
+    <>
     <Card className="border-0 shadow-lg">
+
       <CardHeader>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2 font-bold">
