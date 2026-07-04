@@ -22,10 +22,7 @@ const DataFreshnessIndicator = () => {
   const isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
 
   const queryClient = useQueryClient();
-  if (isFetching > 0) {
-    return (
-      <Tooltip>
-        <TooltipTrigger asChild>
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
           <div className="flex items-center gap-1 text-muted-foreground">
             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
           </div>
