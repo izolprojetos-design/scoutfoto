@@ -233,3 +233,29 @@ export const PermissionSimulationPanel = () => {
     </div>
   );
 };
+
+export const PermissionSimulationTrigger = () => {
+  const { roles, isSimulating } = useAuth();
+  if (!roles.includes('admin') && !isSimulating) return null;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('toggle-permission-simulator'))}
+          className={cn(
+            "p-1 rounded-md transition-colors",
+            isSimulating
+              ? "text-amber-600 hover:bg-amber-50"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent"
+          )}
+        >
+          {isSimulating ? <AlertTriangle className="h-3.5 w-3.5" /> : <Bug className="h-3.5 w-3.5" />}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
+        <p className="text-xs">Simulador de Navegação</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
