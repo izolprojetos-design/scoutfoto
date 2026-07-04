@@ -1712,15 +1712,13 @@ export type Database = {
         Args: { _permission_key: string; _user_id: string }
         Returns: boolean
       }
-      has_role:
-        | {
-            Args: {
-              _role: Database["public"]["Enums"]["app_role"]
-              _user_id: string
-            }
-            Returns: boolean
-          }
-        | { Args: { _role: string; _user_id: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       increment_share_link_view: {
         Args: { p_token: string }
         Returns: undefined
