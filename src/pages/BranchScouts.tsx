@@ -15,6 +15,7 @@ import ScoutPhoto from '@/components/ScoutPhoto';
 import ScoutAvatar from '@/components/ScoutAvatar';
 import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 import { useUserSection } from '@/hooks/useUserSection';
+import { DataEmptyState, classifyLoadError, type LoadState } from '@/components/DataEmptyState';
 
 interface Scout {
   id: string;
