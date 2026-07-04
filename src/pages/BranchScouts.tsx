@@ -15,6 +15,7 @@ import ScoutPhoto from '@/components/ScoutPhoto';
 import ScoutAvatar from '@/components/ScoutAvatar';
 import { SECTION_OPTIONS, parseVolunteerSection } from '@/lib/sectionOptions';
 import { useUserSection } from '@/hooks/useUserSection';
+import { DataEmptyState, classifyLoadError, type LoadState } from '@/components/DataEmptyState';
 
 interface Scout {
   id: string;
@@ -48,6 +49,7 @@ const BranchScouts = () => {
   const { section: userSection, isRestricted } = useUserSection();
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'ok' });
   const [branchData, setBranchData] = useState<BranchData | null>(null);
   const [selectedPhoto, setSelectedPhoto] = useState<{ name: string; url: string } | null>(null);
   const [subgroups, setSubgroups] = useState<Subgroup[]>([]);
@@ -64,7 +66,7 @@ const BranchScouts = () => {
         return;
       }
 
-      const [{ data: branchRes }, { data: scoutRes }, { data: subgroupData }] = await Promise.all([
+      const [{ data: branchRes }, scoutResp, { data: subgroupData }] = await Promise.all([
         supabase.from('branches').select('*').eq('key', branchKey!).single(),
         supabase.from('scouts').select('*').eq('is_active', true).order('name'),
         supabase.from('subgroups').select('*'),
@@ -77,8 +79,13 @@ const BranchScouts = () => {
         return;
       }
 
-      if (scoutRes) {
-        const filtered = scoutRes.filter(s => {
+      const scoutRes = scoutResp.data;
+      const scoutErr = scoutResp.error;
+      const rows = scoutRes ?? [];
+      setLoadState(classifyLoadError(scoutErr, rows.length));
+
+      if (rows.length > 0) {
+        const filtered = rows.filter(s => {
           let matchesBranch = false;
           if (s.manual_branch) {
             matchesBranch = s.manual_branch === branchKey;
@@ -86,10 +93,11 @@ const BranchScouts = () => {
             const branch = getCurrentBranch(parseLocalDate(s.birth_date));
             matchesBranch = branch?.key === branchKey;
           }
-          
           return matchesBranch;
         });
         setScouts(filtered);
+      } else {
+        setScouts([]);
       }
       if (subgroupData) setSubgroups(subgroupData as Subgroup[]);
       setLoading(false);
@@ -221,11 +229,14 @@ const BranchScouts = () => {
             <div key={i} className="aspect-square animate-pulse rounded-xl bg-muted" />
           ))}
         </div>
+      ) : loadState.kind === 'denied' || loadState.kind === 'error' ? (
+        <DataEmptyState state={loadState} />
       ) : filteredScouts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-          <span className="mb-2 text-4xl">{branchData?.icon}</span>
-          <p>{hasActiveFilters ? 'Nenhum integrante encontrado com os filtros selecionados' : 'Nenhum integrante cadastrado neste ramo'}</p>
-        </div>
+        <DataEmptyState
+          state={{ kind: 'empty' }}
+          emptyTitle={hasActiveFilters ? 'Nenhum integrante encontrado com os filtros selecionados' : 'Nenhum integrante cadastrado neste ramo'}
+          icon={<span className="mb-2 text-4xl">{branchData?.icon}</span>}
+        />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {filteredScouts.map((scout, index) => (

@@ -13,6 +13,7 @@ import { SCOUT_BRANCHES, ADULT_CATEGORIES, getCurrentBranch, parseLocalDate, for
 import ScoutAvatar from '@/components/ScoutAvatar';
 import ScoutGallery from '@/components/ScoutGallery';
 import { toast } from 'sonner';
+import { DataEmptyState, classifyLoadError, type LoadState } from '@/components/DataEmptyState';
 
 interface Scout {
   id: string;
@@ -33,6 +34,7 @@ const ScoutPhotoGallery = () => {
   
   const [scouts, setScouts] = useState<Scout[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadState, setLoadState] = useState<LoadState>({ kind: 'ok' });
   const [search, setSearch] = useState('');
   const [selectedScout, setSelectedScout] = useState<Scout | null>(null);
   const [activeTab, setActiveTab] = useState(ALL_TABS[0].key);
@@ -40,21 +42,21 @@ const ScoutPhotoGallery = () => {
   useEffect(() => {
     const fetchScouts = async () => {
       setLoading(true);
-      try {
-        const { data, error } = await supabase
-          .from('scouts')
-          .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
-          .eq('is_active', true)
-          .order('name');
-        
-        if (error) throw error;
-        setScouts(data || []);
-      } catch (err) {
-        console.error('Error fetching scouts:', err);
+      const { data, error } = await supabase
+        .from('scouts')
+        .select('id, name, birth_date, photo_url, manual_branch, section, is_active')
+        .eq('is_active', true)
+        .order('name');
+
+      const rows = data ?? [];
+      const state = classifyLoadError(error, rows.length);
+      setLoadState(state);
+      setScouts(rows);
+      if (state.kind === 'error') {
+        console.error('Error fetching scouts:', error);
         toast.error('Erro ao carregar integrantes.');
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     fetchScouts();
@@ -140,11 +142,14 @@ const ScoutPhotoGallery = () => {
                   <div key={i} className="aspect-[4/5] animate-pulse rounded-xl bg-muted" />
                 ))}
               </div>
+            ) : loadState.kind === 'denied' || loadState.kind === 'error' ? (
+              <DataEmptyState state={loadState} />
             ) : filteredScouts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 text-muted-foreground">
-                <Camera className="mb-2 h-10 w-10 opacity-20" />
-                <p>Nenhum integrante encontrado no ramo {branch.name}.</p>
-              </div>
+              <DataEmptyState
+                state={{ kind: 'empty' }}
+                emptyTitle={`Nenhum integrante encontrado no ramo ${branch.name}.`}
+                icon={<Camera className="mb-2 h-10 w-10 opacity-20" />}
+              />
             ) : (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
                 <AnimatePresence mode="popLayout">
