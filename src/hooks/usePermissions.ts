@@ -152,10 +152,10 @@ export const usePermissions = () => {
     canDeleteEventPhotos: hasPermission('delete_event_photos'),
     // Integrantes
     canViewScouts: hasPermission('view_scouts') || roles.includes('admin') || roles.includes('voluntario') || roles.includes('dirigente_gestor') || roles.includes('chefe') || roles.includes('dirigente') || roles.includes('parent') || roles.includes('viewer'),
-    canEditScouts: hasPermission('edit_scouts'),
-    canManageScouts: hasPermission('manage_scouts'),
-    canViewGuardians: hasPermission('view_guardians'),
-    canTransferBranch: hasPermission('transfer_branch'),
+    canEditScouts: hasPermission('edit_scouts') || roles.includes('admin') || roles.includes('voluntario'),
+    canManageScouts: hasPermission('manage_scouts') || roles.includes('admin') || roles.includes('voluntario'),
+    canViewGuardians: hasPermission('view_guardians') || roles.includes('admin') || roles.includes('voluntario'),
+    canTransferBranch: hasPermission('transfer_branch') || roles.includes('admin') || roles.includes('voluntario'),
     // Administração
     canManageUsers: hasPermission('manage_users'),
     canViewUsers: hasPermission('view_users'),
