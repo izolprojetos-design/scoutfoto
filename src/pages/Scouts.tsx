@@ -361,6 +361,7 @@ const Scouts = () => {
   const [guardianEmail, setGuardianEmail] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
   const [guardianAuth, setGuardianAuth] = useState(true);
+  const [editingGuardianId, setEditingGuardianId] = useState<string | null>(null);
   const [newSubgroupName, setNewSubgroupName] = useState('');
   const [creatingSubgroup, setCreatingSubgroup] = useState(false);
   const [customSectionMode, setCustomSectionMode] = useState(false);
@@ -811,24 +812,50 @@ const Scouts = () => {
     e.preventDefault();
     if (!user || !selectedScout) return;
 
-    const { error } = await supabase.from('guardians').insert({
-      name: guardianName,
-      email: guardianEmail,
-      phone: guardianPhone,
-      scout_id: selectedScout.id,
-      image_authorization: guardianAuth,
-      authorization_date: guardianAuth ? new Date().toISOString() : null,
-      created_by: user.id,
-    });
-
-    if (error) {
-      toast.error('Erro: ' + error.message);
+    if (editingGuardianId) {
+      const { error } = await supabase.from('guardians').update({
+        name: guardianName,
+        email: guardianEmail,
+        phone: guardianPhone,
+        image_authorization: guardianAuth,
+        authorization_date: guardianAuth ? new Date().toISOString() : null,
+      }).eq('id', editingGuardianId);
+      if (error) return toast.error('Erro: ' + error.message);
+      toast.success('Responsável atualizado!');
     } else {
+      const { error } = await supabase.from('guardians').insert({
+        name: guardianName,
+        email: guardianEmail,
+        phone: guardianPhone,
+        scout_id: selectedScout.id,
+        image_authorization: guardianAuth,
+        authorization_date: guardianAuth ? new Date().toISOString() : null,
+        created_by: user.id,
+      });
+      if (error) return toast.error('Erro: ' + error.message);
       toast.success('Responsável adicionado!');
-      setGuardianDialogOpen(false);
-      setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(false);
-      fetchData();
     }
+    setGuardianDialogOpen(false);
+    setEditingGuardianId(null);
+    setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(false);
+    fetchData();
+  };
+
+  const openEditGuardian = (scout: Scout, g: Guardian) => {
+    setSelectedScout(scout);
+    setEditingGuardianId(g.id);
+    setGuardianName(g.name || '');
+    setGuardianEmail(g.email || '');
+    setGuardianPhone(g.phone || '');
+    setGuardianAuth(!!g.image_authorization);
+    setGuardianDialogOpen(true);
+  };
+
+  const handleDeleteGuardian = async (id: string) => {
+    const { error } = await supabase.from('guardians').delete().eq('id', id);
+    if (error) return toast.error('Erro: ' + error.message);
+    toast.success('Responsável removido!');
+    fetchData();
   };
 
   const handleDeleteScout = async (scoutId: string) => {
@@ -2496,7 +2523,12 @@ const Scouts = () => {
                                         variant="ghost"
                                         size="sm"
                                         className="h-7 gap-1 text-xs"
-                                        onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
+                                        onClick={() => {
+                                          setSelectedScout(scout);
+                                          setEditingGuardianId(null);
+                                          setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(true);
+                                          setGuardianDialogOpen(true);
+                                        }}
                                       >
                                         <UserPlus className="h-3 w-3" />
                                         Responsável
@@ -2506,8 +2538,40 @@ const Scouts = () => {
                                   {scoutGuardians.length > 0 && (
                                     <div className="space-y-1">
                                       {scoutGuardians.map(g => (
-                                        <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                                          <span>{g.name}</span>
+                                        <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground gap-2">
+                                          <span className="truncate">{g.name}</span>
+                                          {(canManageScouts || canEditScouts) && (
+                                            <div className="flex items-center gap-1 shrink-0">
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6"
+                                                onClick={() => openEditGuardian(scout, g)}
+                                                title="Editar responsável"
+                                              >
+                                                <Pencil className="h-3 w-3" />
+                                              </Button>
+                                              <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" title="Remover responsável">
+                                                    <Trash2 className="h-3 w-3" />
+                                                  </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                  <AlertDialogHeader>
+                                                    <AlertDialogTitle>Remover responsável?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                      Tem certeza que deseja remover <strong>{g.name}</strong>? Esta ação não pode ser desfeita.
+                                                    </AlertDialogDescription>
+                                                  </AlertDialogHeader>
+                                                  <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteGuardian(g.id)}>Remover</AlertDialogAction>
+                                                  </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                              </AlertDialog>
+                                            </div>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
@@ -3204,10 +3268,10 @@ const Scouts = () => {
       </Dialog>
 
       {/* Guardian Dialog */}
-      <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
+      <Dialog open={guardianDialogOpen} onOpenChange={(o) => { setGuardianDialogOpen(o); if (!o) setEditingGuardianId(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Responsável — {selectedScout?.name}</DialogTitle>
+            <DialogTitle>{editingGuardianId ? 'Editar' : 'Adicionar'} Responsável — {selectedScout?.name}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddGuardian} className="space-y-4">
             <div className="space-y-2">
@@ -3229,7 +3293,7 @@ const Scouts = () => {
                 Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
               </p>
             </div>
-            <Button type="submit" className="w-full h-11 font-semibold">Adicionar Responsável</Button>
+            <Button type="submit" className="w-full h-11 font-semibold">{editingGuardianId ? 'Salvar Alterações' : 'Adicionar Responsável'}</Button>
           </form>
         </DialogContent>
       </Dialog>
