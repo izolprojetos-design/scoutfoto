@@ -3293,7 +3293,7 @@ const Scouts = () => {
                 Uso de imagem está de acordo com o "Termo de Autorização de Uso de Imagem (Paxtu)". Registro escoteiro (ficha de associado/Paxtu).
               </p>
             </div>
-            <Button type="submit" className="w-full h-11 font-semibold">Adicionar Responsável</Button>
+            <Button type="submit" className="w-full h-11 font-semibold">{editingGuardianId ? 'Salvar Alterações' : 'Adicionar Responsável'}</Button>
           </form>
         </DialogContent>
       </Dialog>
