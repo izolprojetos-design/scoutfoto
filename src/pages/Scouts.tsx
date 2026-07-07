@@ -812,24 +812,50 @@ const Scouts = () => {
     e.preventDefault();
     if (!user || !selectedScout) return;
 
-    const { error } = await supabase.from('guardians').insert({
-      name: guardianName,
-      email: guardianEmail,
-      phone: guardianPhone,
-      scout_id: selectedScout.id,
-      image_authorization: guardianAuth,
-      authorization_date: guardianAuth ? new Date().toISOString() : null,
-      created_by: user.id,
-    });
-
-    if (error) {
-      toast.error('Erro: ' + error.message);
+    if (editingGuardianId) {
+      const { error } = await supabase.from('guardians').update({
+        name: guardianName,
+        email: guardianEmail,
+        phone: guardianPhone,
+        image_authorization: guardianAuth,
+        authorization_date: guardianAuth ? new Date().toISOString() : null,
+      }).eq('id', editingGuardianId);
+      if (error) return toast.error('Erro: ' + error.message);
+      toast.success('Responsável atualizado!');
     } else {
+      const { error } = await supabase.from('guardians').insert({
+        name: guardianName,
+        email: guardianEmail,
+        phone: guardianPhone,
+        scout_id: selectedScout.id,
+        image_authorization: guardianAuth,
+        authorization_date: guardianAuth ? new Date().toISOString() : null,
+        created_by: user.id,
+      });
+      if (error) return toast.error('Erro: ' + error.message);
       toast.success('Responsável adicionado!');
-      setGuardianDialogOpen(false);
-      setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(false);
-      fetchData();
     }
+    setGuardianDialogOpen(false);
+    setEditingGuardianId(null);
+    setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(false);
+    fetchData();
+  };
+
+  const openEditGuardian = (scout: Scout, g: Guardian) => {
+    setSelectedScout(scout);
+    setEditingGuardianId(g.id);
+    setGuardianName(g.name || '');
+    setGuardianEmail(g.email || '');
+    setGuardianPhone(g.phone || '');
+    setGuardianAuth(!!g.image_authorization);
+    setGuardianDialogOpen(true);
+  };
+
+  const handleDeleteGuardian = async (id: string) => {
+    const { error } = await supabase.from('guardians').delete().eq('id', id);
+    if (error) return toast.error('Erro: ' + error.message);
+    toast.success('Responsável removido!');
+    fetchData();
   };
 
   const handleDeleteScout = async (scoutId: string) => {
