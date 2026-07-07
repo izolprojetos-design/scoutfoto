@@ -36,6 +36,8 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import HostingConfig from '@/components/HostingConfig';
+import MotivationalMessageCard from '@/components/MotivationalMessageCard';
+
 
 interface BranchWithCount {
   id: string;
