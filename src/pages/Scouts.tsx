@@ -3268,10 +3268,10 @@ const Scouts = () => {
       </Dialog>
 
       {/* Guardian Dialog */}
-      <Dialog open={guardianDialogOpen} onOpenChange={setGuardianDialogOpen}>
+      <Dialog open={guardianDialogOpen} onOpenChange={(o) => { setGuardianDialogOpen(o); if (!o) setEditingGuardianId(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Adicionar Responsável — {selectedScout?.name}</DialogTitle>
+            <DialogTitle>{editingGuardianId ? 'Editar' : 'Adicionar'} Responsável — {selectedScout?.name}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleAddGuardian} className="space-y-4">
             <div className="space-y-2">
