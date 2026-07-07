@@ -29,6 +29,8 @@ import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
+import MotivationalMessagesManager from '@/components/MotivationalMessagesManager';
+
 import GroupLogoSettings from '@/components/GroupLogoSettings';
 import GoogleDriveSettings from '@/components/GoogleDriveSettings';
 import { validatePassword } from '@/lib/passwordValidation';
