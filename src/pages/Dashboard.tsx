@@ -455,6 +455,9 @@ const Dashboard = () => {
         </motion.div>
       </div>
 
+      <MotivationalMessageCard />
+
+
       {/* KPI Stats Grid */}
       {loading ? <StatsSkeleton /> : (
         <div className={`mb-6 grid grid-cols-2 gap-3 lg:grid-cols-2`}>
