@@ -15,7 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard, Cloud, Mail, Server, ShieldCheck, Info } from 'lucide-react';
+import { Search, Users, Shield, UserPlus, KeyRound, Loader2, Lock, Save, Pencil, Trash2, Plus, FolderTree, Wrench, ImageOff, Eye, EyeOff, Link2, Archive, RefreshCw, Unlock, LogOut, LayoutDashboard, Cloud, Mail, Server, ShieldCheck, Info, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import PermissionsManager from '@/components/PermissionsManager';
 import RolePermissionsManager from '@/components/RolePermissionsManager';
@@ -29,6 +29,8 @@ import StorageUsageCard from '@/components/StorageUsageCard';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
+import MotivationalMessagesManager from '@/components/MotivationalMessagesManager';
+
 import GroupLogoSettings from '@/components/GroupLogoSettings';
 import GoogleDriveSettings from '@/components/GoogleDriveSettings';
 import { validatePassword } from '@/lib/passwordValidation';
@@ -708,6 +710,10 @@ const Admin = () => {
           <TabsTrigger value="system" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <RefreshCw className="h-4 w-4" /> Sistema
           </TabsTrigger>
+          <TabsTrigger value="motivational" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Sparkles className="h-4 w-4" /> Mensagens Motivacionais
+          </TabsTrigger>
+
           <TabsTrigger value="users" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             Usuários
           </TabsTrigger>
@@ -1250,6 +1256,11 @@ const Admin = () => {
         <TabsContent value="access_log">
           <AccessLogViewer />
         </TabsContent>
+
+        <TabsContent value="motivational">
+          <MotivationalMessagesManager />
+        </TabsContent>
+
 
 
         <TabsContent value="subgroups">
