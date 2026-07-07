@@ -3462,8 +3462,26 @@ const Scouts = () => {
                     )}
 
                     {ageInYears < 18 && scoutGuardians.length === 0 && (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800">
-                        ⚠️ Nenhum responsável cadastrado para este menor de idade.
+                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-sm text-amber-800 space-y-3">
+                        <p>
+                          ⚠️ <strong>Responsável obrigatório.</strong> Este integrante é menor de idade e ainda não possui um responsável legal vinculado. Para atender à LGPD e ao ECA, cadastre pelo menos um responsável.
+                        </p>
+                        {canEditScouts && (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setSelectedScout(viewingScout);
+                              setEditingGuardianId(null);
+                              setGuardianName('');
+                              setGuardianEmail('');
+                              setGuardianPhone('');
+                              setGuardianAuth(false);
+                              setGuardianDialogOpen(true);
+                            }}
+                          >
+                            ➕ Cadastrar Responsável
+                          </Button>
+                        )}
                       </div>
                     )}
                   </TabsContent>
