@@ -1257,6 +1257,11 @@ const Admin = () => {
           <AccessLogViewer />
         </TabsContent>
 
+        <TabsContent value="motivational">
+          <MotivationalMessagesManager />
+        </TabsContent>
+
+
 
         <TabsContent value="subgroups">
           <Card className="border-0 shadow-lg">
