@@ -2523,7 +2523,12 @@ const Scouts = () => {
                                         variant="ghost"
                                         size="sm"
                                         className="h-7 gap-1 text-xs"
-                                        onClick={() => { setSelectedScout(scout); setGuardianDialogOpen(true); }}
+                                        onClick={() => {
+                                          setSelectedScout(scout);
+                                          setEditingGuardianId(null);
+                                          setGuardianName(''); setGuardianEmail(''); setGuardianPhone(''); setGuardianAuth(true);
+                                          setGuardianDialogOpen(true);
+                                        }}
                                       >
                                         <UserPlus className="h-3 w-3" />
                                         Responsável
@@ -2533,8 +2538,40 @@ const Scouts = () => {
                                   {scoutGuardians.length > 0 && (
                                     <div className="space-y-1">
                                       {scoutGuardians.map(g => (
-                                        <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground">
-                                          <span>{g.name}</span>
+                                        <div key={g.id} className="flex items-center justify-between text-xs text-muted-foreground gap-2">
+                                          <span className="truncate">{g.name}</span>
+                                          {(canManageScouts || canEditScouts) && (
+                                            <div className="flex items-center gap-1 shrink-0">
+                                              <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-6 w-6"
+                                                onClick={() => openEditGuardian(scout, g)}
+                                                title="Editar responsável"
+                                              >
+                                                <Pencil className="h-3 w-3" />
+                                              </Button>
+                                              <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" title="Remover responsável">
+                                                    <Trash2 className="h-3 w-3" />
+                                                  </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                  <AlertDialogHeader>
+                                                    <AlertDialogTitle>Remover responsável?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                      Tem certeza que deseja remover <strong>{g.name}</strong>? Esta ação não pode ser desfeita.
+                                                    </AlertDialogDescription>
+                                                  </AlertDialogHeader>
+                                                  <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteGuardian(g.id)}>Remover</AlertDialogAction>
+                                                  </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                              </AlertDialog>
+                                            </div>
+                                          )}
                                         </div>
                                       ))}
                                     </div>
