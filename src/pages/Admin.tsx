@@ -710,6 +710,10 @@ const Admin = () => {
           <TabsTrigger value="system" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <RefreshCw className="h-4 w-4" /> Sistema
           </TabsTrigger>
+          <TabsTrigger value="motivational" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
+            <Sparkles className="h-4 w-4" /> Mensagens Motivacionais
+          </TabsTrigger>
+
           <TabsTrigger value="users" className="text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             Usuários
           </TabsTrigger>
