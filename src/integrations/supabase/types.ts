@@ -1436,33 +1436,45 @@ export type Database = {
       }
       user_devices: {
         Row: {
+          app_version: string | null
           browser: string
           created_at: string
           device_fingerprint: string
           device_name: string
+          geo_city: string | null
+          geo_country: string | null
           id: string
+          ip_address: string | null
           is_trusted: boolean
           last_login_at: string
           os: string
           user_id: string
         }
         Insert: {
+          app_version?: string | null
           browser?: string
           created_at?: string
           device_fingerprint: string
           device_name?: string
+          geo_city?: string | null
+          geo_country?: string | null
           id?: string
+          ip_address?: string | null
           is_trusted?: boolean
           last_login_at?: string
           os?: string
           user_id: string
         }
         Update: {
+          app_version?: string | null
           browser?: string
           created_at?: string
           device_fingerprint?: string
           device_name?: string
+          geo_city?: string | null
+          geo_country?: string | null
           id?: string
+          ip_address?: string | null
           is_trusted?: boolean
           last_login_at?: string
           os?: string
