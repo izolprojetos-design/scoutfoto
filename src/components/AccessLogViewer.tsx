@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor } from 'lucide-react';
+import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor, Download, ShieldAlert } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
