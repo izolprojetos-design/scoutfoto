@@ -47,6 +47,7 @@ const AccessLogViewer = () => {
   const [dateTo, setDateTo] = useState<string>('');
 
   const load = async () => {
+    if (!isAdmin) { setLoading(false); return; }
     setLoading(true);
     try {
       const from = page * PAGE_SIZE;
@@ -64,6 +65,9 @@ const AccessLogViewer = () => {
         const cutoff = new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString();
         q = q.lt('last_login_at', cutoff);
       }
+
+      if (dateFrom) q = q.gte('last_login_at', new Date(dateFrom + 'T00:00:00').toISOString());
+      if (dateTo) q = q.lte('last_login_at', new Date(dateTo + 'T23:59:59').toISOString());
 
       const { data, count, error } = await q.range(from, to);
       if (error) throw error;
@@ -85,10 +89,11 @@ const AccessLogViewer = () => {
     }
   };
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, statusFilter]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
 
   // Realtime: atualiza automaticamente quando qualquer usuário acessar/registrar dispositivo
   useEffect(() => {
+    if (!isAdmin) return;
     const channel = supabase
       .channel('access_log_all_devices')
       .on(
@@ -106,7 +111,57 @@ const AccessLogViewer = () => {
       clearInterval(interval);
     };
     // eslint-disable-next-line
-  }, [page, statusFilter]);
+  }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
+
+  const exportCSV = async () => {
+    let q = supabase
+      .from('user_devices')
+      .select('id, user_id, device_name, browser, os, last_login_at, is_trusted')
+      .order('last_login_at', { ascending: false });
+    if (statusFilter === 'online') {
+      q = q.gte('last_login_at', new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString());
+    } else if (statusFilter === 'offline') {
+      q = q.lt('last_login_at', new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString());
+    }
+    if (dateFrom) q = q.gte('last_login_at', new Date(dateFrom + 'T00:00:00').toISOString());
+    if (dateTo) q = q.lte('last_login_at', new Date(dateTo + 'T23:59:59').toISOString());
+    const { data } = await q.limit(10000);
+    const items = (data || []) as DeviceAccess[];
+    const userIds = Array.from(new Set(items.map(d => d.user_id).filter(Boolean)));
+    let profMap: Record<string, Profile> = { ...profiles };
+    const missing = userIds.filter(id => !profMap[id]);
+    if (missing.length > 0) {
+      const { data: profs } = await supabase.from('profiles').select('user_id, name, email').in('user_id', missing);
+      (profs || []).forEach(p => { profMap[p.user_id] = p as Profile; });
+    }
+    const s = search.trim().toLowerCase();
+    const filtered = s ? items.filter(r => {
+      const p = profMap[r.user_id];
+      return (
+        p?.name?.toLowerCase().includes(s) || p?.email?.toLowerCase().includes(s) ||
+        r.device_name?.toLowerCase().includes(s) || r.browser?.toLowerCase().includes(s) || r.os?.toLowerCase().includes(s)
+      );
+    }) : items;
+    const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = ['Data/Hora', 'Usuário', 'E-mail', 'Ação', 'Dispositivo', 'Navegador', 'SO', 'Confiável'];
+    const lines = [header.join(',')].concat(filtered.map(r => {
+      const p = profMap[r.user_id];
+      return [
+        format(new Date(r.last_login_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
+        p?.name || '', p?.email || '', 'login',
+        r.device_name || '', r.browser || '', r.os || '', r.is_trusted ? 'Sim' : 'Não',
+      ].map(esc).join(',');
+    }));
+    const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `log-de-acessos-${format(new Date(), 'yyyy-MM-dd-HHmm')}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+
 
   const isOnline = (iso: string) =>
     Date.now() - new Date(iso).getTime() < ONLINE_WINDOW_MIN * 60_000;
