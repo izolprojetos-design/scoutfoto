@@ -16,6 +16,8 @@ import { ptBR } from 'date-fns/locale';
 import { SECTION_OPTIONS } from '@/lib/sectionOptions';
 import { formatPhoneBR } from '@/lib/formatting';
 import type { Database } from '@/integrations/supabase/types';
+import { useAvailableRoles } from '@/hooks/useAvailableRoles';
+import { ROLE_LABELS } from '@/lib/userRoles';
 
 type AppRole = Database['public']['Enums']['app_role'];
 
@@ -32,6 +34,7 @@ interface InviteLink {
 
 const InviteLinkPanel = () => {
   const { user } = useAuth();
+  const { roles: availableRoles } = useAvailableRoles({ excludeAdmin: true });
   const [links, setLinks] = useState<InviteLink[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -159,17 +162,7 @@ const InviteLinkPanel = () => {
     return { label: 'Ativo', variant: 'default' as const, icon: Clock };
   };
 
-  const roleLabel = (r: string) => {
-    switch (r) {
-      case 'voluntario': return 'Voluntário';
-      case 'chefe': return 'Chefe';
-      case 'viewer': return 'Visualizador';
-      case 'dirigente': return 'Dirigente';
-      case 'dirigente_gestor': return 'Dirigente Gestor';
-      case 'parent': return 'Pai/Responsável';
-      default: return r;
-    }
-  };
+  const roleLabel = (r: string) => ROLE_LABELS[r as AppRole] || r;
 
   return (
     <Card className="border-0 shadow-lg">
@@ -200,12 +193,9 @@ const InviteLinkPanel = () => {
                     <Select value={role} onValueChange={setRole}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="voluntario">Voluntário</SelectItem>
-                        <SelectItem value="chefe">Chefe</SelectItem>
-                        <SelectItem value="dirigente">Dirigente</SelectItem>
-                        <SelectItem value="dirigente_gestor">Dirigente Gestor</SelectItem>
-                        <SelectItem value="parent">Pai/Responsável</SelectItem>
-                        <SelectItem value="viewer">Visualizador</SelectItem>
+                        {availableRoles.map(r => (
+                          <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
