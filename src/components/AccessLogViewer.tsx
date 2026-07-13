@@ -326,17 +326,20 @@ const AccessLogViewer = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Dispositivo</TableHead>
                 <TableHead>Navegador / SO</TableHead>
+                <TableHead>IP / Local</TableHead>
+                <TableHead>Versão</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading && rows.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
               ) : filteredRows.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum acesso registrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum acesso registrado.</TableCell></TableRow>
               ) : (
                 filteredRows.map(r => {
                   const p = profiles[r.user_id];
                   const online = isOnline(r.last_login_at);
+                  const local = [r.geo_city, r.geo_country].filter(Boolean).join(', ');
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="whitespace-nowrap text-sm">
@@ -371,6 +374,19 @@ const AccessLogViewer = () => {
                       <TableCell className="text-xs text-muted-foreground">
                         {[r.browser, r.os].filter(Boolean).join(' · ') || '—'}
                       </TableCell>
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col">
+                          <span className="font-mono">{r.ip_address || '—'}</span>
+                          {local && (
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> {local}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono">
+                        {r.app_version || '—'}
+                      </TableCell>
                     </TableRow>
                   );
                 })
@@ -378,6 +394,7 @@ const AccessLogViewer = () => {
             </TableBody>
           </Table>
         </div>
+
 
         <div className="flex items-center justify-between mt-4">
           <p className="text-xs text-muted-foreground">
