@@ -123,7 +123,10 @@ export const usePermissions = () => {
     };
 
     fetchPermissions();
-  }, [user?.id, currentRolesKey, authLoading, roles]);
+    // `roles` intentionally omitted — currentRolesKey covers real changes and
+    // avoids re-firing on every AuthContext render (roles is a new array ref each time).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, currentRolesKey, authLoading]);
 
   const hasPermission = (key: PermissionKey) => {
     if (roles.includes('admin')) return true;
