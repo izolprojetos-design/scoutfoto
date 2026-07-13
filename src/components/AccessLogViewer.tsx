@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor, Download, ShieldAlert } from 'lucide-react';
+import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor, Download, ShieldAlert, FileText, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface DeviceAccess {
   id: string;
