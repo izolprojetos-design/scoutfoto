@@ -38,6 +38,8 @@ import ScoutAvatar from '@/components/ScoutAvatar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
+import { useAvailableRoles } from '@/hooks/useAvailableRoles';
+import { ROLE_LABELS } from '@/lib/userRoles';
 import { ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { SECTION_OPTIONS, VOLUNTEER_CARGOS, CARGO_2_OPTIONS } from '@/lib/sectionOptions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
