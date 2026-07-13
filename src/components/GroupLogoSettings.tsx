@@ -148,6 +148,7 @@ export default function GroupLogoSettings() {
         .from('guardians')
         .select('name, email, phone')
         .eq('scout_id', selectedScout.id);
+      const { exportScoutProfilePdf } = await loadScoutPdfExport();
       const url = await exportScoutProfilePdf(selectedScout, (gData || []) as any, { preview: true });
       if (typeof url === 'string') {
         setPreviewOpen({
