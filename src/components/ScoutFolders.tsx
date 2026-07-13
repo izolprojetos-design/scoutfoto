@@ -1079,7 +1079,7 @@ export default function ScoutFolders({ scoutId, scoutName, onPickStart }: Props)
                       className="group relative aspect-square w-full rounded-lg overflow-hidden border bg-muted text-left flex items-stretch"
                     >
                       {url ? (
-                        <img src={url} alt={`Ano ${y}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" />
+                        <img src={url} alt={`Ano ${y}`} loading="lazy" decoding="async" className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"><ImageIcon className="h-8 w-8 opacity-30" /></div>
                       )}
