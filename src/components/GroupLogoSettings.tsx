@@ -17,10 +17,9 @@ import {
   removeGroupLogo,
   invalidateGroupLogoCache,
 } from '@/lib/groupLogo';
-import {
-  exportScoutProfilePdf,
-  exportScoutFolderPdf,
-} from '@/lib/scoutPdfExport';
+// PDF exports loaded dynamically to keep jsPDF out of the Admin bundle
+type ScoutPdfExports = typeof import('@/lib/scoutPdfExport');
+const loadScoutPdfExport = (): Promise<ScoutPdfExports> => import('@/lib/scoutPdfExport');
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const MAX_BYTES = 2 * 1024 * 1024;
