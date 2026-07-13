@@ -193,6 +193,10 @@ const AccessLogViewer = () => {
 
   const exportPDF = async () => {
     const { items, profMap } = await fetchExportRows();
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     doc.setFontSize(14);
     doc.text('Log de Acessos', 14, 14);
