@@ -1540,12 +1540,29 @@ const Scouts = () => {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label>Data de nascimento *</Label>
-          <Input type="date" value={birth} onChange={e => setBirth(e.target.value)} required className="h-11" />
+          <Label htmlFor="scout-birth-date">Data de nascimento *</Label>
+          <Input
+            id="scout-birth-date"
+            type="date"
+            value={birth}
+            onChange={e => setBirth(e.target.value)}
+            onClick={(e) => { const el = e.currentTarget as any; if (typeof el.showPicker === 'function') { try { el.showPicker(); } catch {} } }}
+            onFocus={(e) => { const el = e.currentTarget as any; if (typeof el.showPicker === 'function') { try { el.showPicker(); } catch {} } }}
+            required
+            className="h-11 cursor-pointer"
+          />
         </div>
         <div className="space-y-2">
-          <Label>Ingresso no grupo</Label>
-          <Input type="date" value={admissionDate} onChange={e => setAdmissionDate(e.target.value)} className="h-11" />
+          <Label htmlFor="scout-admission-date">Ingresso no grupo</Label>
+          <Input
+            id="scout-admission-date"
+            type="date"
+            value={admissionDate}
+            onChange={e => setAdmissionDate(e.target.value)}
+            onClick={(e) => { const el = e.currentTarget as any; if (typeof el.showPicker === 'function') { try { el.showPicker(); } catch {} } }}
+            onFocus={(e) => { const el = e.currentTarget as any; if (typeof el.showPicker === 'function') { try { el.showPicker(); } catch {} } }}
+            className="h-11 cursor-pointer"
+          />
         </div>
       </div>
 
