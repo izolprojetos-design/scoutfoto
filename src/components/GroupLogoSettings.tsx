@@ -17,10 +17,9 @@ import {
   removeGroupLogo,
   invalidateGroupLogoCache,
 } from '@/lib/groupLogo';
-import {
-  exportScoutProfilePdf,
-  exportScoutFolderPdf,
-} from '@/lib/scoutPdfExport';
+// PDF exports loaded dynamically to keep jsPDF out of the Admin bundle
+type ScoutPdfExports = typeof import('@/lib/scoutPdfExport');
+const loadScoutPdfExport = (): Promise<ScoutPdfExports> => import('@/lib/scoutPdfExport');
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const MAX_BYTES = 2 * 1024 * 1024;
@@ -149,6 +148,7 @@ export default function GroupLogoSettings() {
         .from('guardians')
         .select('name, email, phone')
         .eq('scout_id', selectedScout.id);
+      const { exportScoutProfilePdf } = await loadScoutPdfExport();
       const url = await exportScoutProfilePdf(selectedScout, (gData || []) as any, { preview: true });
       if (typeof url === 'string') {
         setPreviewOpen({
@@ -187,6 +187,7 @@ export default function GroupLogoSettings() {
         filtered.map((p: any) => p.storage_path),
         3600,
       );
+      const { exportScoutFolderPdf } = await loadScoutPdfExport();
       const url = await exportScoutFolderPdf(
         selectedScout.name,
         selectedDate,

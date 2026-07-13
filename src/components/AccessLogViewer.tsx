@@ -11,8 +11,7 @@ import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monito
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF/autoTable are loaded dynamically in exportPDF() to keep them out of the Admin bundle
 
 interface DeviceAccess {
   id: string;
@@ -194,6 +193,10 @@ const AccessLogViewer = () => {
 
   const exportPDF = async () => {
     const { items, profMap } = await fetchExportRows();
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import('jspdf'),
+      import('jspdf-autotable'),
+    ]);
     const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
     doc.setFontSize(14);
     doc.text('Log de Acessos', 14, 14);
