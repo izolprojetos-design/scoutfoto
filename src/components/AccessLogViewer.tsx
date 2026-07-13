@@ -307,6 +307,9 @@ const AccessLogViewer = () => {
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={exportCSV}>
               <Download className="h-3.5 w-3.5" /> CSV
             </Button>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={exportPDF}>
+              <FileText className="h-3.5 w-3.5" /> PDF
+            </Button>
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => load()} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
             </Button>
