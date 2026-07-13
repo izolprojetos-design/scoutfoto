@@ -11,8 +11,7 @@ import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monito
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+// jsPDF/autoTable are loaded dynamically in exportPDF() to keep them out of the Admin bundle
 
 interface DeviceAccess {
   id: string;
