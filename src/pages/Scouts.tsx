@@ -3377,7 +3377,10 @@ const Scouts = () => {
                   size="sm"
                   variant="outline"
                   className="gap-1.5 mr-6"
-                  onClick={() => exportScoutProfilePdf(viewingScout, getGuardiansForScout(viewingScout.id))}
+                  onClick={async () => {
+                    const { exportScoutProfilePdf } = await import('@/lib/scoutPdfExport');
+                    await exportScoutProfilePdf(viewingScout, getGuardiansForScout(viewingScout.id));
+                  }}
                 >
                   <FileDown className="h-4 w-4" />
                   Exportar PDF
