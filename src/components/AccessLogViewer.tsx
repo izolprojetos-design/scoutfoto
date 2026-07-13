@@ -24,6 +24,10 @@ interface DeviceAccess {
   last_login_at: string;
   created_at: string;
   is_trusted: boolean;
+  ip_address: string | null;
+  geo_country: string | null;
+  geo_city: string | null;
+  app_version: string | null;
 }
 
 interface Profile {
@@ -32,8 +36,11 @@ interface Profile {
   email: string;
 }
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+const DEFAULT_PAGE_SIZE = 25;
 const ONLINE_WINDOW_MIN = 30;
+
+const SELECT_COLS = 'id, user_id, device_name, browser, os, device_fingerprint, last_login_at, created_at, is_trusted, ip_address, geo_country, geo_city, app_version';
 
 const AccessLogViewer = () => {
   const { hasRole } = useAuth();
