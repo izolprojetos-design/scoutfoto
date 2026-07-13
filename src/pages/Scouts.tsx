@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -889,15 +889,32 @@ const Scouts = () => {
     return null;
   };
 
-  const branchOrder = ALL_CATEGORIES.map(b => b.key);
+  const branchOrder = useMemo(() => ALL_CATEGORIES.map(b => b.key), []);
 
-  const filteredScouts = scouts.filter(s => {
+  // O(1) lookup maps — avoid .find()/.filter() per row on every render
+  const subgroupsById = useMemo(() => {
+    const m = new Map<string, Subgroup>();
+    for (const sg of subgroups) m.set(sg.id, sg);
+    return m;
+  }, [subgroups]);
+
+  const guardiansByScoutId = useMemo(() => {
+    const m = new Map<string, Guardian[]>();
+    for (const g of guardians) {
+      const arr = m.get(g.scout_id);
+      if (arr) arr.push(g);
+      else m.set(g.scout_id, [g]);
+    }
+    return m;
+  }, [guardians]);
+
+  const filteredScouts = useMemo(() => scouts.filter(s => {
     // Status filter
     if (statusFilter === 'active' && !s.is_active) return false;
     if (statusFilter === 'inactive' && s.is_active) return false;
 
     const term = search.toLowerCase();
-    const subgroupName = s.subgroup_id ? subgroups.find(sg => sg.id === s.subgroup_id)?.name || '' : '';
+    const subgroupName = s.subgroup_id ? subgroupsById.get(s.subgroup_id)?.name || '' : '';
     const matchSearch = s.name.toLowerCase().includes(term) ||
       (s.section || '').toLowerCase().includes(term) ||
       subgroupName.toLowerCase().includes(term);
@@ -930,10 +947,11 @@ const Scouts = () => {
     const idxA = branchA ? branchOrder.indexOf(branchA.key) : 999;
     const idxB = branchB ? branchOrder.indexOf(branchB.key) : 999;
     return idxA - idxB;
-  });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [scouts, statusFilter, search, subgroupsById, branchFilter, sectionFilter, subgroupFilter, ageMinFilter, ageMaxFilter, tenureMinFilter, photoFilter, branchOrder]);
 
   // Distinct values for advanced filter options (based on currently visible status + branch scope)
-  const scopedScouts = scouts.filter(s => {
+  const scopedScouts = useMemo(() => scouts.filter(s => {
     if (statusFilter === 'active' && !s.is_active) return false;
     if (statusFilter === 'inactive' && s.is_active) return false;
     if (branchFilter && branchFilter !== 'all' && branchFilter !== '') {
@@ -941,11 +959,19 @@ const Scouts = () => {
       if (b?.key !== branchFilter) return false;
     }
     return true;
-  });
-  const availableSections = Array.from(new Set(scopedScouts.map(s => s.section).filter(Boolean) as string[])).sort();
-  const availableSubgroups = Array.from(new Set(scopedScouts.map(s => s.subgroup_id || '__none__')))
-    .map(id => id === '__none__' ? { id: '__none__', name: '— Sem equipe —' } : subgroups.find(sg => sg.id === id))
-    .filter(Boolean) as { id: string; name: string }[];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [scouts, statusFilter, branchFilter]);
+
+  const availableSections = useMemo(
+    () => Array.from(new Set(scopedScouts.map(s => s.section).filter(Boolean) as string[])).sort(),
+    [scopedScouts]
+  );
+  const availableSubgroups = useMemo(
+    () => Array.from(new Set(scopedScouts.map(s => s.subgroup_id || '__none__')))
+      .map(id => id === '__none__' ? { id: '__none__', name: '— Sem equipe —' } : subgroupsById.get(id))
+      .filter(Boolean) as { id: string; name: string }[],
+    [scopedScouts, subgroupsById]
+  );
 
   const advancedActiveCount =
     sectionFilter.length +
@@ -969,14 +995,16 @@ const Scouts = () => {
     else setter([...arr, value]);
   };
 
-  const activeScouts = scouts.filter(s => s.is_active);
-  const inactiveScouts = scouts.filter(s => !s.is_active);
+  const activeScouts = useMemo(() => scouts.filter(s => s.is_active), [scouts]);
+  const inactiveScouts = useMemo(() => scouts.filter(s => !s.is_active), [scouts]);
 
-  const branchCounts = activeScouts.reduce((acc, s) => {
+  const branchCounts = useMemo(() => activeScouts.reduce((acc, s) => {
     const branch = getEffectiveBranch(s);
     if (branch) acc[branch.key] = (acc[branch.key] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, number>),
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  [activeScouts]);
 
   const handleToggleActive = async (scout: Scout) => {
     const newStatus = !scout.is_active;
@@ -996,7 +1024,8 @@ const Scouts = () => {
   };
 
   const getGuardiansForScout = (scoutId: string) =>
-    guardians.filter(g => g.scout_id === scoutId);
+    guardiansByScoutId.get(scoutId) ?? [];
+
 
   const handleCreateSubgroup = async (branchKey: string) => {
     if (!user || !newSubgroupName.trim()) return null;
