@@ -187,6 +187,7 @@ export default function GroupLogoSettings() {
         filtered.map((p: any) => p.storage_path),
         3600,
       );
+      const { exportScoutFolderPdf } = await loadScoutPdfExport();
       const url = await exportScoutFolderPdf(
         selectedScout.name,
         selectedDate,
