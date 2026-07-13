@@ -34,6 +34,8 @@ const PAGE_SIZE = 25;
 const ONLINE_WINDOW_MIN = 30;
 
 const AccessLogViewer = () => {
+  const { hasRole } = useAuth();
+  const isAdmin = hasRole('admin');
   const [rows, setRows] = useState<DeviceAccess[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
   const [loading, setLoading] = useState(true);
@@ -41,6 +43,8 @@ const AccessLogViewer = () => {
   const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
 
   const load = async () => {
     setLoading(true);
