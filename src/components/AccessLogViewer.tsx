@@ -186,6 +186,18 @@ const AccessLogViewer = () => {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const onlineCount = rows.filter(r => isOnline(r.last_login_at)).length;
 
+  if (!isAdmin) {
+    return (
+      <Card className="border-0 shadow-lg">
+        <CardContent className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+          <ShieldAlert className="h-8 w-8 text-destructive" />
+          <p className="font-semibold">Acesso restrito</p>
+          <p className="text-sm text-muted-foreground">Apenas administradores podem visualizar o Log de Acessos.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <>
     <Card className="border-0 shadow-lg">
@@ -207,17 +219,42 @@ const AccessLogViewer = () => {
                 placeholder="Buscar usuário, e-mail, dispositivo..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="pl-8 h-9 w-[260px]"
+                className="pl-8 h-9 w-[240px]"
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={e => { setPage(0); setDateFrom(e.target.value); }}
+                className="h-9 w-[150px]"
+                aria-label="Data inicial"
+              />
+              <span className="text-xs text-muted-foreground">até</span>
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={e => { setPage(0); setDateTo(e.target.value); }}
+                className="h-9 w-[150px]"
+                aria-label="Data final"
               />
             </div>
             <Select value={statusFilter} onValueChange={v => { setPage(0); setStatusFilter(v); }}>
-              <SelectTrigger className="h-9 w-[160px]"><SelectValue /></SelectTrigger>
+              <SelectTrigger className="h-9 w-[150px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos os acessos</SelectItem>
                 <SelectItem value="online">Online agora</SelectItem>
                 <SelectItem value="offline">Offline</SelectItem>
               </SelectContent>
             </Select>
+            {(dateFrom || dateTo || search || statusFilter !== 'all') && (
+              <Button variant="ghost" size="sm" className="h-9" onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); setStatusFilter('all'); setPage(0); }}>
+                Limpar
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={exportCSV}>
+              <Download className="h-3.5 w-3.5" /> CSV
+            </Button>
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => load()} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
             </Button>
