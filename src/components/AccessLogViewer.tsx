@@ -7,10 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor, Download, ShieldAlert } from 'lucide-react';
+import { LogIn, Search, RefreshCw, ChevronLeft, ChevronRight, Smartphone, Monitor, Download, ShieldAlert, FileText, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import DevicesSection from '@/components/profile/DevicesSection';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface DeviceAccess {
   id: string;
@@ -22,6 +24,10 @@ interface DeviceAccess {
   last_login_at: string;
   created_at: string;
   is_trusted: boolean;
+  ip_address: string | null;
+  geo_country: string | null;
+  geo_city: string | null;
+  app_version: string | null;
 }
 
 interface Profile {
@@ -30,8 +36,11 @@ interface Profile {
   email: string;
 }
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+const DEFAULT_PAGE_SIZE = 25;
 const ONLINE_WINDOW_MIN = 30;
+
+const SELECT_COLS = 'id, user_id, device_name, browser, os, device_fingerprint, last_login_at, created_at, is_trusted, ip_address, geo_country, geo_city, app_version';
 
 const AccessLogViewer = () => {
   const { hasRole } = useAuth();
@@ -45,17 +54,18 @@ const AccessLogViewer = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const load = async () => {
     if (!isAdmin) { setLoading(false); return; }
     setLoading(true);
     try {
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
 
       let q = supabase
         .from('user_devices')
-        .select('id, user_id, device_name, browser, os, device_fingerprint, last_login_at, created_at, is_trusted', { count: 'exact' })
+        .select(SELECT_COLS, { count: 'exact' })
         .order('last_login_at', { ascending: false });
 
       if (statusFilter === 'online') {
@@ -89,7 +99,7 @@ const AccessLogViewer = () => {
     }
   };
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, pageSize, statusFilter, dateFrom, dateTo, isAdmin]);
 
   // Realtime: atualiza automaticamente quando qualquer usuário acessar/registrar dispositivo
   useEffect(() => {
@@ -111,12 +121,13 @@ const AccessLogViewer = () => {
       clearInterval(interval);
     };
     // eslint-disable-next-line
-  }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
+  }, [page, pageSize, statusFilter, dateFrom, dateTo, isAdmin]);
 
-  const exportCSV = async () => {
+  // Carrega o dataset completo (respeitando filtros) para exportação
+  const fetchExportRows = async (): Promise<{ items: DeviceAccess[]; profMap: Record<string, Profile> }> => {
     let q = supabase
       .from('user_devices')
-      .select('id, user_id, device_name, browser, os, last_login_at, is_trusted')
+      .select(SELECT_COLS)
       .order('last_login_at', { ascending: false });
     if (statusFilter === 'online') {
       q = q.gte('last_login_at', new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString());
@@ -126,9 +137,9 @@ const AccessLogViewer = () => {
     if (dateFrom) q = q.gte('last_login_at', new Date(dateFrom + 'T00:00:00').toISOString());
     if (dateTo) q = q.lte('last_login_at', new Date(dateTo + 'T23:59:59').toISOString());
     const { data } = await q.limit(10000);
-    const items = (data || []) as DeviceAccess[];
+    const items = ((data || []) as unknown) as DeviceAccess[];
     const userIds = Array.from(new Set(items.map(d => d.user_id).filter(Boolean)));
-    let profMap: Record<string, Profile> = { ...profiles };
+    const profMap: Record<string, Profile> = { ...profiles };
     const missing = userIds.filter(id => !profMap[id]);
     if (missing.length > 0) {
       const { data: profs } = await supabase.from('profiles').select('user_id, name, email').in('user_id', missing);
@@ -139,19 +150,39 @@ const AccessLogViewer = () => {
       const p = profMap[r.user_id];
       return (
         p?.name?.toLowerCase().includes(s) || p?.email?.toLowerCase().includes(s) ||
-        r.device_name?.toLowerCase().includes(s) || r.browser?.toLowerCase().includes(s) || r.os?.toLowerCase().includes(s)
+        r.device_name?.toLowerCase().includes(s) || r.browser?.toLowerCase().includes(s) ||
+        r.os?.toLowerCase().includes(s) || r.ip_address?.toLowerCase().includes(s) ||
+        r.geo_city?.toLowerCase().includes(s) || r.geo_country?.toLowerCase().includes(s)
       );
     }) : items;
+    return { items: filtered, profMap };
+  };
+
+  const HEADERS = ['Data/Hora', 'Usuário', 'E-mail', 'Ação', 'Dispositivo', 'Navegador', 'SO', 'IP', 'Local', 'Versão', 'Confiável'];
+
+  const rowToArray = (r: DeviceAccess, p?: Profile): string[] => [
+    format(new Date(r.last_login_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
+    p?.name || '', p?.email || '', 'login',
+    r.device_name || '', r.browser || '', r.os || '',
+    r.ip_address || '—',
+    [r.geo_city, r.geo_country].filter(Boolean).join(', ') || '—',
+    r.app_version || '—',
+    r.is_trusted ? 'Sim' : 'Não',
+  ];
+
+  const filterSuffix = () => {
+    const parts: string[] = [];
+    if (dateFrom) parts.push(`de ${dateFrom}`);
+    if (dateTo) parts.push(`até ${dateTo}`);
+    if (statusFilter !== 'all') parts.push(statusFilter);
+    if (search) parts.push(`busca:"${search}"`);
+    return parts.length ? ` — ${parts.join(' · ')}` : '';
+  };
+
+  const exportCSV = async () => {
+    const { items, profMap } = await fetchExportRows();
     const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const header = ['Data/Hora', 'Usuário', 'E-mail', 'Ação', 'Dispositivo', 'Navegador', 'SO', 'Confiável'];
-    const lines = [header.join(',')].concat(filtered.map(r => {
-      const p = profMap[r.user_id];
-      return [
-        format(new Date(r.last_login_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
-        p?.name || '', p?.email || '', 'login',
-        r.device_name || '', r.browser || '', r.os || '', r.is_trusted ? 'Sim' : 'Não',
-      ].map(esc).join(',');
-    }));
+    const lines = [HEADERS.join(',')].concat(items.map(r => rowToArray(r, profMap[r.user_id]).map(esc).join(',')));
     const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -161,7 +192,25 @@ const AccessLogViewer = () => {
     URL.revokeObjectURL(url);
   };
 
-
+  const exportPDF = async () => {
+    const { items, profMap } = await fetchExportRows();
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14);
+    doc.text('Log de Acessos', 14, 14);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })} · ${items.length} registros${filterSuffix()}`, 14, 20);
+    autoTable(doc, {
+      startY: 25,
+      head: [HEADERS],
+      body: items.map(r => rowToArray(r, profMap[r.user_id])),
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [34, 76, 44], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 8, right: 8 },
+    });
+    doc.save(`log-de-acessos-${format(new Date(), 'yyyy-MM-dd-HHmm')}.pdf`);
+  };
 
   const isOnline = (iso: string) =>
     Date.now() - new Date(iso).getTime() < ONLINE_WINDOW_MIN * 60_000;
@@ -178,12 +227,15 @@ const AccessLogViewer = () => {
         p?.email?.toLowerCase().includes(s) ||
         r.device_name?.toLowerCase().includes(s) ||
         r.browser?.toLowerCase().includes(s) ||
-        r.os?.toLowerCase().includes(s)
+        r.os?.toLowerCase().includes(s) ||
+        r.ip_address?.toLowerCase().includes(s) ||
+        r.geo_city?.toLowerCase().includes(s) ||
+        r.geo_country?.toLowerCase().includes(s)
       );
     });
   }, [rows, profiles, search]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const onlineCount = rows.filter(r => isOnline(r.last_login_at)).length;
 
   if (!isAdmin) {
@@ -255,6 +307,9 @@ const AccessLogViewer = () => {
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={exportCSV}>
               <Download className="h-3.5 w-3.5" /> CSV
             </Button>
+            <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={exportPDF}>
+              <FileText className="h-3.5 w-3.5" /> PDF
+            </Button>
             <Button variant="outline" size="sm" className="h-9 gap-1.5" onClick={() => load()} disabled={loading}>
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} /> Atualizar
             </Button>
@@ -271,17 +326,20 @@ const AccessLogViewer = () => {
                 <TableHead>Status</TableHead>
                 <TableHead>Dispositivo</TableHead>
                 <TableHead>Navegador / SO</TableHead>
+                <TableHead>IP / Local</TableHead>
+                <TableHead>Versão</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading && rows.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Carregando...</TableCell></TableRow>
               ) : filteredRows.length === 0 ? (
-                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Nenhum acesso registrado.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center py-8 text-muted-foreground">Nenhum acesso registrado.</TableCell></TableRow>
               ) : (
                 filteredRows.map(r => {
                   const p = profiles[r.user_id];
                   const online = isOnline(r.last_login_at);
+                  const local = [r.geo_city, r.geo_country].filter(Boolean).join(', ');
                   return (
                     <TableRow key={r.id}>
                       <TableCell className="whitespace-nowrap text-sm">
@@ -316,6 +374,19 @@ const AccessLogViewer = () => {
                       <TableCell className="text-xs text-muted-foreground">
                         {[r.browser, r.os].filter(Boolean).join(' · ') || '—'}
                       </TableCell>
+                      <TableCell className="text-xs">
+                        <div className="flex flex-col">
+                          <span className="font-mono">{r.ip_address || '—'}</span>
+                          {local && (
+                            <span className="text-muted-foreground flex items-center gap-1">
+                              <MapPin className="h-3 w-3" /> {local}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono">
+                        {r.app_version || '—'}
+                      </TableCell>
                     </TableRow>
                   );
                 })
@@ -324,10 +395,21 @@ const AccessLogViewer = () => {
           </Table>
         </div>
 
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-muted-foreground">
-            Página {page + 1} de {totalPages}
-          </p>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground">
+              Página {page + 1} de {totalPages} · {total} registros
+            </p>
+            <Select value={String(pageSize)} onValueChange={v => { setPage(0); setPageSize(Number(v)); }}>
+              <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map(n => (
+                  <SelectItem key={n} value={String(n)}>{n} / página</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>
               <ChevronLeft className="h-4 w-4" /> Anterior

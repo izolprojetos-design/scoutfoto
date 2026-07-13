@@ -67,8 +67,36 @@ export interface DeviceCheckResult {
   deviceInfo: DeviceInfo;
 }
 
+const APP_VERSION =
+  (import.meta as any).env?.VITE_APP_VERSION ||
+  (import.meta as any).env?.VITE_COMMIT_SHA ||
+  'web';
+
+// Best-effort captura de IP + geolocalização aproximada (não bloqueia login).
+const fetchGeoInfo = async (): Promise<{ ip?: string; country?: string; city?: string }> => {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 2500);
+    const res = await fetch('https://ipapi.co/json/', { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) return {};
+    const j = await res.json();
+    return { ip: j.ip, country: j.country_name || j.country, city: j.city };
+  } catch {
+    return {};
+  }
+};
+
 export const checkAndRegisterDevice = async (userId: string): Promise<DeviceCheckResult> => {
   const deviceInfo = getDeviceInfo();
+  const geo = await fetchGeoInfo();
+
+  const meta = {
+    ip_address: geo.ip ?? null,
+    geo_country: geo.country ?? null,
+    geo_city: geo.city ?? null,
+    app_version: APP_VERSION,
+  };
 
   // Check if this device is already known
   const { data: existing } = await supabase
@@ -79,10 +107,10 @@ export const checkAndRegisterDevice = async (userId: string): Promise<DeviceChec
     .maybeSingle();
 
   if (existing) {
-    // Known device - update last login
+    // Known device - update last login + metadata mais recente
     await supabase
       .from('user_devices')
-      .update({ last_login_at: new Date().toISOString() })
+      .update({ last_login_at: new Date().toISOString(), ...meta })
       .eq('id', existing.id);
 
     return { isNewDevice: false, deviceInfo };
@@ -97,6 +125,7 @@ export const checkAndRegisterDevice = async (userId: string): Promise<DeviceChec
       device_name: deviceInfo.deviceName,
       browser: deviceInfo.browser,
       os: deviceInfo.os,
+      ...meta,
     });
 
   return { isNewDevice: true, deviceInfo };
