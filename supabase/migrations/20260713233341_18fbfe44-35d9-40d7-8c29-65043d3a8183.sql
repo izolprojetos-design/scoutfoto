@@ -1,0 +1,1 @@
+CREATE INDEX IF NOT EXISTS idx_guardians_scout_id ON public.guardians (scout_id);

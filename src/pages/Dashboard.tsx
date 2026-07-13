@@ -315,7 +315,7 @@ const Dashboard = () => {
         );
       }
     };
-    const interval = setInterval(refreshOnline, 10_000);
+    const interval = setInterval(refreshOnline, 30_000);
     return () => clearInterval(interval);
   }, [isAdmin]);
 
