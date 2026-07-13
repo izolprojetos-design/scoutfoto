@@ -54,17 +54,18 @@ const AccessLogViewer = () => {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
+  const [pageSize, setPageSize] = useState<number>(DEFAULT_PAGE_SIZE);
 
   const load = async () => {
     if (!isAdmin) { setLoading(false); return; }
     setLoading(true);
     try {
-      const from = page * PAGE_SIZE;
-      const to = from + PAGE_SIZE - 1;
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
 
       let q = supabase
         .from('user_devices')
-        .select('id, user_id, device_name, browser, os, device_fingerprint, last_login_at, created_at, is_trusted', { count: 'exact' })
+        .select(SELECT_COLS, { count: 'exact' })
         .order('last_login_at', { ascending: false });
 
       if (statusFilter === 'online') {
