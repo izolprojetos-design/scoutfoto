@@ -1708,6 +1708,7 @@ export type Database = {
           remaining_seconds: number
         }[]
       }
+      cleanup_cron_job_run_details: { Args: never; Returns: number }
       cleanup_old_refresh_tokens: { Args: never; Returns: number }
       clear_login_attempts: { Args: { p_email: string }; Returns: undefined }
       delete_email: {
