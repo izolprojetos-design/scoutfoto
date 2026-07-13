@@ -227,19 +227,35 @@ const Gallery = () => {
     fetchImages(0);
   }, [fetchImages]);
 
-  // Infinite scroll
+  // Infinite scroll — refs avoid re-creating the observer on every state change
+  const hasMoreRef = useRef(hasMore);
+  const loadingRef = useRef(loading);
+  const pageRef = useRef(page);
+  const fetchImagesRef = useRef(fetchImages);
+  useEffect(() => { hasMoreRef.current = hasMore; }, [hasMore]);
+  useEffect(() => { loadingRef.current = loading; }, [loading]);
+  useEffect(() => { pageRef.current = page; }, [page]);
+  useEffect(() => { fetchImagesRef.current = fetchImages; }, [fetchImages]);
+
   useEffect(() => {
     if (observerRef.current) observerRef.current.disconnect();
     observerRef.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore && !loading) {
-        const nextPage = page + 1;
+      if (entries[0].isIntersecting && hasMoreRef.current && !loadingRef.current) {
+        const nextPage = pageRef.current + 1;
         setPage(nextPage);
-        fetchImages(nextPage, true);
+        fetchImagesRef.current(nextPage, true);
       }
     });
     if (loadMoreRef.current) observerRef.current.observe(loadMoreRef.current);
     return () => observerRef.current?.disconnect();
-  }, [hasMore, loading, page, fetchImages]);
+  }, []);
+
+  // O(1) lookup for filter — avoids events.find() inside the images loop
+  const eventsById = useMemo(() => {
+    const m = new Map<string, EventData>();
+    for (const e of events) m.set(e.id, e);
+    return m;
+  }, [events]);
 
   // Client-side filtering
   const filteredImages = useMemo(() => {
@@ -257,7 +273,7 @@ const Gallery = () => {
       let matchYear = true;
       if (yearFilter !== 'all') {
         if (img.event_id) {
-          const ev = events.find(e => e.id === img.event_id);
+          const ev = eventsById.get(img.event_id);
           matchYear = !!ev?.event_date && parseLocalDate(ev.event_date).getFullYear().toString() === yearFilter;
         } else {
           matchYear = new Date(img.created_at).getFullYear().toString() === yearFilter;
@@ -267,7 +283,7 @@ const Gallery = () => {
       // Group filter
       let matchGroup = true;
       if (groupFilter !== 'all' && img.event_id) {
-        const ev = events.find(e => e.id === img.event_id);
+        const ev = eventsById.get(img.event_id);
         matchGroup = ev?.scout_group === groupFilter;
       } else if (groupFilter !== 'all' && !img.event_id) {
         matchGroup = false;
@@ -275,7 +291,8 @@ const Gallery = () => {
 
       return matchSearch && matchEvent && matchBranch && matchYear && matchGroup;
     });
-  }, [images, search, eventFilter, branchFilter, yearFilter, groupFilter, events]);
+  }, [images, search, eventFilter, branchFilter, yearFilter, groupFilter, eventsById]);
+
 
   const handleViewImage = async (img: ImageData) => {
     setSelectedImage(img);
