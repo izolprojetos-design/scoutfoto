@@ -1881,6 +1881,10 @@ export type Database = {
         | "dirigente"
         | "dirigente_gestor"
         | "voluntario"
+        | "diretor_presidente"
+        | "diretor_administrativo"
+        | "diretor_financeiro"
+        | "assistente"
       image_visibility: "private" | "group" | "public"
       notification_channel_status: "pending" | "sent" | "error" | "discarded"
     }
@@ -2026,6 +2030,10 @@ export const Constants = {
         "dirigente",
         "dirigente_gestor",
         "voluntario",
+        "diretor_presidente",
+        "diretor_administrativo",
+        "diretor_financeiro",
+        "assistente",
       ],
       image_visibility: ["private", "group", "public"],
       notification_channel_status: ["pending", "sent", "error", "discarded"],

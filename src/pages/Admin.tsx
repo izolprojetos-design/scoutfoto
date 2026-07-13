@@ -38,6 +38,8 @@ import ScoutAvatar from '@/components/ScoutAvatar';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type { Database } from '@/integrations/supabase/types';
+import { useAvailableRoles } from '@/hooks/useAvailableRoles';
+import { ROLE_LABELS } from '@/lib/userRoles';
 import { ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { SECTION_OPTIONS, VOLUNTEER_CARGOS, CARGO_2_OPTIONS } from '@/lib/sectionOptions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -82,6 +84,7 @@ const Admin = () => {
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const { roles: availableRoles } = useAvailableRoles();
 
   const [users, setUsers] = useState<UserWithRole[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
@@ -845,9 +848,9 @@ const Admin = () => {
                           <Select value={newRole} onValueChange={(v: AppRole) => setNewRole(v)}>
                             <SelectTrigger><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="admin">Administrador</SelectItem>
-                              <SelectItem value="voluntario">Voluntário</SelectItem>
-                              <SelectItem value="viewer">Visitante</SelectItem>
+                              {availableRoles.map(r => (
+                                <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -1063,7 +1066,7 @@ const Admin = () => {
                           {(() => {
                             const currentRole = (pendingRoles[u.user_id] || u.role) as AppRole;
                             const isPending = !!pendingRoles[u.user_id];
-                            const label = ({ admin: 'Admin', voluntario: 'Voluntário', dirigente_gestor: 'Dir. Gestor', viewer: 'Visitante', parent: 'Pai/Mãe' } as Record<string, string>)[currentRole] || currentRole;
+                            const label = ROLE_LABELS[currentRole] || currentRole;
                             const isSelf = u.user_id === user?.id;
                             return (
                               <Select
@@ -1080,9 +1083,9 @@ const Admin = () => {
                                   </Badge>
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="admin">Admin</SelectItem>
-                                  <SelectItem value="voluntario">Voluntário</SelectItem>
-                                  <SelectItem value="viewer">Visitante</SelectItem>
+                                  {availableRoles.map(r => (
+                                    <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+                                  ))}
                                 </SelectContent>
                               </Select>
                             );
