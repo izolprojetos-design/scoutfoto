@@ -3416,6 +3416,35 @@ const Scouts = () => {
                           {parseLocalDate(viewingScout.birth_date).toLocaleDateString('pt-BR')}
                         </span>
                       </div>
+                      <div className="flex items-center justify-between gap-2 py-2 border-b">
+                        <span className="text-muted-foreground">Ingresso no grupo</span>
+                        {canEditScouts ? (
+                          <Input
+                            type="date"
+                            className="h-9 w-[160px] text-sm"
+                            value={viewingScout.admission_date || (viewingScout.created_at ? viewingScout.created_at.split('T')[0] : '')}
+                            onChange={async (e) => {
+                              const newDate = e.target.value || null;
+                              const prev = viewingScout;
+                              setViewingScout({ ...viewingScout, admission_date: newDate });
+                              const { error } = await supabase.from('scouts').update({ admission_date: newDate }).eq('id', viewingScout.id);
+                              if (error) {
+                                toast.error('Erro ao atualizar data de ingresso');
+                                setViewingScout(prev);
+                              } else {
+                                toast.success('Data de ingresso atualizada');
+                                fetchData();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <span className="font-medium">
+                            {viewingScout.admission_date
+                              ? parseLocalDate(viewingScout.admission_date).toLocaleDateString('pt-BR')
+                              : parseLocalDate((viewingScout.created_at || '').split('T')[0]).toLocaleDateString('pt-BR')}
+                          </span>
+                        )}
+                      </div>
                       {viewingScout.scout_group && (
                         <div className="flex justify-between py-2 border-b">
                           <span className="text-muted-foreground">Grupo Escoteiro</span>
