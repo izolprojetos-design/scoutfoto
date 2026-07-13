@@ -690,7 +690,7 @@ const Admin = () => {
             Auditoria
           </TabsTrigger>
           <TabsTrigger value="access_log" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
-            <LogOut className="h-4 w-4 rotate-180" /> Acessos
+            <LogOut className="h-4 w-4 rotate-180" /> Log de Acessos
           </TabsTrigger>
           <TabsTrigger value="invites" className="gap-1.5 text-sm font-bold px-4 py-2 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-all">
             <Link2 className="h-4 w-4" /> Convites
