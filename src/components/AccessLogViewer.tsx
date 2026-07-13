@@ -396,10 +396,20 @@ const AccessLogViewer = () => {
         </div>
 
 
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-muted-foreground">
-            Página {page + 1} de {totalPages}
-          </p>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mt-4">
+          <div className="flex items-center gap-3">
+            <p className="text-xs text-muted-foreground">
+              Página {page + 1} de {totalPages} · {total} registros
+            </p>
+            <Select value={String(pageSize)} onValueChange={v => { setPage(0); setPageSize(Number(v)); }}>
+              <SelectTrigger className="h-8 w-[110px] text-xs"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map(n => (
+                  <SelectItem key={n} value={String(n)}>{n} / página</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))}>
               <ChevronLeft className="h-4 w-4" /> Anterior
