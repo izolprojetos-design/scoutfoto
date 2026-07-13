@@ -48,7 +48,7 @@ import ScoutStats from '@/components/ScoutStats';
 import ScoutEvents from '@/components/ScoutEvents';
 import ScoutAchievements from '@/components/ScoutAchievements';
 
-import { exportScoutProfilePdf } from '@/lib/scoutPdfExport';
+// exportScoutProfilePdf is loaded dynamically on click to keep jsPDF out of the initial Scouts chunk
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CloudPhotoPickerDialog from '@/components/CloudPhotoPickerDialog';
 import { compressScoutPhoto } from '@/lib/imageCompression';
