@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -120,9 +120,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [clearAuthState]);
 
+  // Refs mirroring latest state so syncSessionState stays stable (no re-subscribe loop)
+  const userRef = useRef<User | null>(null);
+  const sessionRef = useRef<Session | null>(null);
+  const profileRef = useRef<Profile | null>(null);
+  useEffect(() => { userRef.current = user; }, [user]);
+  useEffect(() => { sessionRef.current = session; }, [session]);
+  useEffect(() => { profileRef.current = profile; }, [profile]);
+
   const syncSessionState = useCallback(async (nextSession: Session | null, showExpiredToast = true, skipValidation = false) => {
     if (!nextSession) {
-      if (user || session || profile) {
+      if (userRef.current || sessionRef.current || profileRef.current) {
         clearAuthState();
       }
       setLoading(false);
@@ -130,7 +138,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Only set loading if we don't have a session or if it's a new user
-    const isNewUser = !user || user.id !== nextSession.user.id;
+    const currentUser = userRef.current;
+    const isNewUser = !currentUser || currentUser.id !== nextSession.user.id;
     if (isNewUser) {
       setLoading(true);
     }
@@ -165,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Only update state if something actually changed to avoid unnecessary re-renders
-    if (isNewUser || session?.access_token !== activeSession.access_token) {
+    if (isNewUser || sessionRef.current?.access_token !== activeSession.access_token) {
       setSession(activeSession);
       setUser(validatedUser);
 
@@ -184,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
 
     setLoading(false);
-  }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession, session?.access_token, user, profile]);
+  }, [checkMfaStatus, clearAuthState, fetchProfile, fetchRoles, handleExpiredSession]);
 
   useEffect(() => {
     if (!user) return;
@@ -254,10 +263,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           void syncSessionState(nextSes, false, true);
         } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
           // Avoid triggering sync for minor events if we already have a valid session
-          if (event === 'TOKEN_REFRESHED' && session?.access_token === nextSes?.access_token) {
+          if (event === 'TOKEN_REFRESHED' && sessionRef.current?.access_token === nextSes?.access_token) {
             return;
           }
-          
+
           setTimeout(() => {
             void syncSessionState(nextSes, true, false);
           }, 0);
@@ -273,7 +282,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     return () => subscription.unsubscribe();
-  }, [clearAuthState, syncSessionState, session?.access_token]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -353,24 +363,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await supabase.auth.signOut();
   };
 
-  const currentRoles = simulatedRoles || roles;
-  const hasRole = (role: AppRole) => currentRoles.includes(role);
-  const isAdmin = hasRole('admin');
-  const isVoluntario = hasRole('voluntario');
+  const currentRoles = useMemo(() => simulatedRoles || roles, [simulatedRoles, roles]);
+  const isAdmin = currentRoles.includes('admin');
+  const isVoluntario = currentRoles.includes('voluntario');
   const canUpload = isAdmin || isVoluntario;
   const canViewMinors = isAdmin || isVoluntario;
 
+  // Stable hasRole via ref — avoids invalidating memoized context value
+  const currentRolesRef = useRef(currentRoles);
+  useEffect(() => { currentRolesRef.current = currentRoles; }, [currentRoles]);
+  const hasRole = useCallback((role: AppRole) => currentRolesRef.current.includes(role), []);
+
+  const refreshProfile = useCallback(
+    () => (userRef.current ? fetchProfile(userRef.current.id) : Promise.resolve()),
+    [fetchProfile],
+  );
+  const refreshRoles = useCallback(
+    () => (userRef.current ? fetchRoles(userRef.current.id) : Promise.resolve()),
+    [fetchRoles],
+  );
+
+  const contextValue = useMemo<AuthContextType>(() => ({
+    user, session, profile, roles: currentRoles, loading,
+    mfaRequired, mfaVerified, setMfaVerified,
+    signIn, signUp, signOut, hasRole,
+    isAdmin, isVoluntario, canUpload, canViewMinors,
+    refreshProfile,
+    refreshRoles,
+    simulateRoles: setSimulatedRoles,
+    isSimulating: simulatedRoles !== null,
+  }), [
+    user, session, profile, currentRoles, loading,
+    mfaRequired, mfaVerified,
+    hasRole, isAdmin, isVoluntario, canUpload, canViewMinors,
+    refreshProfile, refreshRoles, simulatedRoles,
+  ]);
+
   return (
-    <AuthContext.Provider value={{
-      user, session, profile, roles: currentRoles, loading,
-      mfaRequired, mfaVerified, setMfaVerified,
-      signIn, signUp, signOut, hasRole,
-      isAdmin, isVoluntario, canUpload, canViewMinors,
-      refreshProfile: () => user ? fetchProfile(user.id) : Promise.resolve(),
-      refreshRoles: () => user ? fetchRoles(user.id) : Promise.resolve(),
-      simulateRoles: setSimulatedRoles,
-      isSimulating: simulatedRoles !== null,
-    }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
