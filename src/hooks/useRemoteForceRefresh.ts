@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const STORAGE_KEY = 'scoutfoto_last_force_refresh_at';
-const CHECK_INTERVAL_MS = 2 * 60 * 1000; // 2 minutes
+const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes (realtime subscription handles instant updates)
 
 const clearCachesAndReload = async () => {
   try {
