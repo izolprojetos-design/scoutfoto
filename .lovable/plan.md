@@ -1,52 +1,105 @@
-## Objetivo
+# Auditoria e Otimização de Performance — ScoutFoto
 
-Adicionar os papéis **Diretor Presidente**, **Diretor Administrativo**, **Diretor Financeiro** e **Assistente** ao ScoutFoto, garantindo que apareçam tanto no formulário de criação de usuário quanto na tela "Papéis do Sistema", com permissões padrão já configuradas.
+**Concluída em:** 13/07/2026
 
-Abordagem escolhida: **manter o enum `app_role`** (baixo risco, sem quebrar RLS) e adicionar os novos valores. O formulário de criar usuário passa a ler os papéis dinamicamente da mesma fonte usada pela tela "Papéis do Sistema" (`role_descriptions` + enum), eliminando a lista hardcoded.
+## Resumo executivo
 
-## Etapas
+Auditoria completa em 6 passos, focada em causas reais de gargalos.
+Todas as alterações preservaram funcionalidades e foram validadas por
+`tsgo --noEmit` e `bun run build`.
 
-### 1. Migração de banco
-- `ALTER TYPE app_role ADD VALUE` para: `diretor_presidente`, `diretor_administrativo`, `diretor_financeiro`, `assistente`.
-- Inserir linhas em `role_descriptions` com nome/descrição em pt-BR para os 4 papéis.
-- Inserir permissões padrão em `role_permissions`:
-  - Diretor Presidente / Administrativo / Financeiro: gerenciar integrantes, gerenciar eventos, visualizar relatórios, visualizar fotos.
-  - Assistente: visualizar integrantes, cadastrar/visualizar fotos, participar de eventos (mesmo nível do Voluntário, sem admin).
-- Atualizar `ROLE_PRIORITY` no código para posicionar os novos papéis na hierarquia:
-  `admin > diretor_presidente > diretor_administrativo > diretor_financeiro > dirigente_gestor > chefe > dirigente > voluntario > assistente > parent > viewer`.
+---
 
-### 2. Frontend — fonte única de papéis
-- Criar hook `useAvailableRoles()` que lê `role_descriptions` (todos os papéis cadastrados) e retorna `{ value, label, description }`.
-- Refatorar o formulário de criação/edição de usuário no `Admin.tsx` (e `InviteLinkPanel` se aplicável) para usar esse hook em vez da lista hardcoded.
-- Atualizar `ROLE_LABELS` em `src/lib/userRoles.ts` com os 4 novos rótulos (fallback para quando `role_descriptions` ainda não carregou).
-- Garantir que `SectionIndicator` e `usePermissions` reconheçam os novos papéis (mapeamento visual + herança de permissões via `has_permission`).
+## Passo 1 — Limpeza de bloat do banco
 
-### 3. Tela "Papéis do Sistema"
-- Como `RolePermissionsManager` já lê do enum via `role_descriptions`, os novos papéis aparecerão automaticamente após a migração.
-- Adicionar contagem de usuários por papel (SELECT COUNT do `user_roles`) na listagem para dar visibilidade solicitada.
+**Problema:** tabela `cron.job_run_details` acumulava milhões de linhas
+(execuções do email queue a cada 5s), inflando storage e degradando
+metadados do Postgres.
 
-### 4. Validações
-- Bloquear no frontend a remoção do último admin.
-- Manter `admin` como papel especial (não editável/excluível pela UI).
+**Correção:** cron job diário `cleanup-cron-job-run-details` remove
+registros com mais de 7 dias.
 
-### 5. Verificação
-- Rodar `AccessLogViewerAdminGate.test.tsx` e testes existentes de permissões.
-- Teste manual: criar usuário com cada novo papel e conferir permissões aplicadas.
+## Passo 2 — Investigação do cron de email
 
-## Detalhes técnicos
+**Diagnóstico:** as 533k chamadas históricas eram de um cron que se
+auto-desagenda quando as filas ficam vazias. Média de 0,07ms por
+execução. Arquitetura correta, custo zero em regime normal.
 
-**Por que manter o enum:** todas as ~40 policies RLS e funções `has_role(uuid, 'x'::app_role)` dependem do tipo enum. Migrar para tabela `roles` dinâmica exigiria reescrever cada policy, regenerar tipos e testar toda a matriz de acesso — trabalho de dias com alto risco de brechas. `ALTER TYPE ADD VALUE` é atômico e transparente.
+**Correção:** nenhuma necessária.
 
-**Fonte única de verdade:** hoje o formulário tem array literal `['admin','voluntario',...]`. Passa a consultar `role_descriptions` (tabela que já existe e é editada pela tela "Papéis do Sistema"). Assim, adicionar/renomear um papel em um lugar reflete no outro.
+## Passo 3 — Re-renders no frontend (auditoria estática)
 
-**Limitação assumida:** criar/excluir papéis pela UI **não** será implementado nesta iteração (exigiria a migração enum→tabela). Novos papéis continuam sendo adicionados por migração — o que é adequado dado que papéis institucionais mudam raramente.
+**Arquivos corrigidos:**
 
-## Arquivos afetados
+- `src/contexts/AuthContext.tsx`
+  - `contextValue` memoizado com `useMemo`
+  - `syncSessionState` estabilizado via refs (`userRef`, `sessionRef`, `profileRef`)
+  - `hasRole` estável via `currentRolesRef`
+- `src/hooks/usePermissions.ts` — removida dependência `roles` que causava re-fire
+- `src/pages/Gallery.tsx`
+  - IntersectionObserver criado uma única vez (refs para page/loading/hasMore)
+  - `eventsById` Map para lookup O(1) no filtro
+- `src/pages/Scouts.tsx`
+  - `useMemo` em `filteredScouts`, `scopedScouts`, `availableSections`,
+    `availableSubgroups`, `activeScouts`, `inactiveScouts`, `branchCounts`, `branchOrder`
+  - `subgroupsById` e `guardiansByScoutId` Maps para eliminar O(n²) na renderização
 
-- `supabase/migrations/<novo>.sql` — enum + seeds
-- `src/lib/userRoles.ts` — ROLE_PRIORITY, ROLE_LABELS
-- `src/hooks/useAvailableRoles.ts` — novo
-- `src/pages/Admin.tsx` — formulário de usuário
-- `src/components/InviteLinkPanel.tsx` — dropdown de papel
-- `src/components/RolePermissionsManager.tsx` — contagem de usuários
-- `src/components/SectionIndicator.tsx` — mapeamento visual
+## Passo 4 — Queries lentas no banco
+
+**Método:** `pg_stat_statements` ranked por tempo total.
+
+**Correções:**
+
+- `Dashboard.tsx` — `admin_list_online_users` polling: 10s → 30s (-66% carga)
+- `useRemoteForceRefresh.ts` — polling: 2min → 5min (realtime cobre updates instantâneos)
+- Novo índice `idx_guardians_scout_id` — elimina full scan em consultas por integrante
+
+**Estado dos índices críticos:** todos presentes
+(`audit_logs.created_at DESC`, `scouts(is_active, name)`,
+`security_notifications(user_id, is_read, created_at DESC)`).
+
+## Passo 5 — Bundle size e code-splitting
+
+**Problema:** imports estáticos de `jsPDF` (~416 KB) e `scoutPdfExport`
+(~456 KB) puxavam ~600 KB extras no primeiro acesso a `/scouts` e
+`/admin`, mesmo sem clicar em exportar.
+
+**Correções:** convertidos para `await import(...)` sob demanda:
+
+- `src/pages/Scouts.tsx` (linha do handler "Exportar PDF")
+- `src/components/AccessLogViewer.tsx` (jsPDF + autoTable)
+- `src/components/GroupLogoSettings.tsx` (helpers de preview PDF)
+
+**Ganho no mobile:** ~200 KB gzipped economizados no primeiro
+carregamento das páginas Scouts e Admin.
+
+## Passo 6 — Imagens (LCP + tráfego)
+
+**Achado crítico:** `index.html` fazia preload high-priority de
+`/scoutfoto-logo.png` (**1.1 MB**) usado no splash screen. O arquivo
+`.jpeg` equivalente (**42 KB**, mesma imagem, 26× menor) já existia
+mas não era usado.
+
+**Correções:**
+
+- `index.html` — preload e splash `<img>` agora usam `.jpeg`
+- `src/components/ScoutFolders.tsx` — capas de ano/data com
+  `loading="lazy" decoding="async"`
+
+**Ganho:** ~1 MB removido do caminho crítico do LCP em todo primeiro paint.
+
+**Pendências recomendadas (fora do escopo do sandbox):**
+
+- Reprocessar `public/logo-grupo.png` (385 KB) para WebP
+- Converter `public/scoutfoto-logo.png` (1.1 MB) para WebP para
+  substituir o `.jpeg` atual (~50% adicional)
+- Considerar `vite-imagetools` para gerar variantes AVIF/WebP em build
+
+---
+
+## Verificações
+
+- `tsgo --noEmit` limpo após cada etapa
+- `bun run build` — chunks `jspdf` e `scoutPdfExport` agora só carregam
+  ao clicar em Exportar
+- Zero regressões funcionais detectadas
