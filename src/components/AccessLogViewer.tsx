@@ -99,7 +99,7 @@ const AccessLogViewer = () => {
     }
   };
 
-  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
+  useEffect(() => { void load(); /* eslint-disable-next-line */ }, [page, pageSize, statusFilter, dateFrom, dateTo, isAdmin]);
 
   // Realtime: atualiza automaticamente quando qualquer usuário acessar/registrar dispositivo
   useEffect(() => {
@@ -121,12 +121,13 @@ const AccessLogViewer = () => {
       clearInterval(interval);
     };
     // eslint-disable-next-line
-  }, [page, statusFilter, dateFrom, dateTo, isAdmin]);
+  }, [page, pageSize, statusFilter, dateFrom, dateTo, isAdmin]);
 
-  const exportCSV = async () => {
+  // Carrega o dataset completo (respeitando filtros) para exportação
+  const fetchExportRows = async (): Promise<{ items: DeviceAccess[]; profMap: Record<string, Profile> }> => {
     let q = supabase
       .from('user_devices')
-      .select('id, user_id, device_name, browser, os, last_login_at, is_trusted')
+      .select(SELECT_COLS)
       .order('last_login_at', { ascending: false });
     if (statusFilter === 'online') {
       q = q.gte('last_login_at', new Date(Date.now() - ONLINE_WINDOW_MIN * 60_000).toISOString());
@@ -136,9 +137,9 @@ const AccessLogViewer = () => {
     if (dateFrom) q = q.gte('last_login_at', new Date(dateFrom + 'T00:00:00').toISOString());
     if (dateTo) q = q.lte('last_login_at', new Date(dateTo + 'T23:59:59').toISOString());
     const { data } = await q.limit(10000);
-    const items = (data || []) as DeviceAccess[];
+    const items = ((data || []) as unknown) as DeviceAccess[];
     const userIds = Array.from(new Set(items.map(d => d.user_id).filter(Boolean)));
-    let profMap: Record<string, Profile> = { ...profiles };
+    const profMap: Record<string, Profile> = { ...profiles };
     const missing = userIds.filter(id => !profMap[id]);
     if (missing.length > 0) {
       const { data: profs } = await supabase.from('profiles').select('user_id, name, email').in('user_id', missing);
@@ -149,19 +150,39 @@ const AccessLogViewer = () => {
       const p = profMap[r.user_id];
       return (
         p?.name?.toLowerCase().includes(s) || p?.email?.toLowerCase().includes(s) ||
-        r.device_name?.toLowerCase().includes(s) || r.browser?.toLowerCase().includes(s) || r.os?.toLowerCase().includes(s)
+        r.device_name?.toLowerCase().includes(s) || r.browser?.toLowerCase().includes(s) ||
+        r.os?.toLowerCase().includes(s) || r.ip_address?.toLowerCase().includes(s) ||
+        r.geo_city?.toLowerCase().includes(s) || r.geo_country?.toLowerCase().includes(s)
       );
     }) : items;
+    return { items: filtered, profMap };
+  };
+
+  const HEADERS = ['Data/Hora', 'Usuário', 'E-mail', 'Ação', 'Dispositivo', 'Navegador', 'SO', 'IP', 'Local', 'Versão', 'Confiável'];
+
+  const rowToArray = (r: DeviceAccess, p?: Profile): string[] => [
+    format(new Date(r.last_login_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
+    p?.name || '', p?.email || '', 'login',
+    r.device_name || '', r.browser || '', r.os || '',
+    r.ip_address || '—',
+    [r.geo_city, r.geo_country].filter(Boolean).join(', ') || '—',
+    r.app_version || '—',
+    r.is_trusted ? 'Sim' : 'Não',
+  ];
+
+  const filterSuffix = () => {
+    const parts: string[] = [];
+    if (dateFrom) parts.push(`de ${dateFrom}`);
+    if (dateTo) parts.push(`até ${dateTo}`);
+    if (statusFilter !== 'all') parts.push(statusFilter);
+    if (search) parts.push(`busca:"${search}"`);
+    return parts.length ? ` — ${parts.join(' · ')}` : '';
+  };
+
+  const exportCSV = async () => {
+    const { items, profMap } = await fetchExportRows();
     const esc = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-    const header = ['Data/Hora', 'Usuário', 'E-mail', 'Ação', 'Dispositivo', 'Navegador', 'SO', 'Confiável'];
-    const lines = [header.join(',')].concat(filtered.map(r => {
-      const p = profMap[r.user_id];
-      return [
-        format(new Date(r.last_login_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }),
-        p?.name || '', p?.email || '', 'login',
-        r.device_name || '', r.browser || '', r.os || '', r.is_trusted ? 'Sim' : 'Não',
-      ].map(esc).join(',');
-    }));
+    const lines = [HEADERS.join(',')].concat(items.map(r => rowToArray(r, profMap[r.user_id]).map(esc).join(',')));
     const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -171,7 +192,25 @@ const AccessLogViewer = () => {
     URL.revokeObjectURL(url);
   };
 
-
+  const exportPDF = async () => {
+    const { items, profMap } = await fetchExportRows();
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+    doc.setFontSize(14);
+    doc.text('Log de Acessos', 14, 14);
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy HH:mm", { locale: ptBR })} · ${items.length} registros${filterSuffix()}`, 14, 20);
+    autoTable(doc, {
+      startY: 25,
+      head: [HEADERS],
+      body: items.map(r => rowToArray(r, profMap[r.user_id])),
+      styles: { fontSize: 7, cellPadding: 1.5 },
+      headStyles: { fillColor: [34, 76, 44], textColor: 255 },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { left: 8, right: 8 },
+    });
+    doc.save(`log-de-acessos-${format(new Date(), 'yyyy-MM-dd-HHmm')}.pdf`);
+  };
 
   const isOnline = (iso: string) =>
     Date.now() - new Date(iso).getTime() < ONLINE_WINDOW_MIN * 60_000;
@@ -188,12 +227,15 @@ const AccessLogViewer = () => {
         p?.email?.toLowerCase().includes(s) ||
         r.device_name?.toLowerCase().includes(s) ||
         r.browser?.toLowerCase().includes(s) ||
-        r.os?.toLowerCase().includes(s)
+        r.os?.toLowerCase().includes(s) ||
+        r.ip_address?.toLowerCase().includes(s) ||
+        r.geo_city?.toLowerCase().includes(s) ||
+        r.geo_country?.toLowerCase().includes(s)
       );
     });
   }, [rows, profiles, search]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const onlineCount = rows.filter(r => isOnline(r.last_login_at)).length;
 
   if (!isAdmin) {
