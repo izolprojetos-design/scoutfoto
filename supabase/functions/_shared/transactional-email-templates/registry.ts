@@ -17,6 +17,7 @@ import { template as schedulingAdminNotification } from './scheduling-admin-noti
 import { template as schedulingApproved } from './scheduling-approved.tsx'
 import { template as schedulingRejected } from './scheduling-rejected.tsx'
 import { template as agendamentoNotificacao } from './agendamento-notificacao.tsx'
+import { template as storageAlert } from './storage-alert.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'welcome': welcome,
@@ -27,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'scheduling-approved': schedulingApproved,
   'scheduling-rejected': schedulingRejected,
   'agendamento-notificacao': agendamentoNotificacao,
+  'storage-alert': storageAlert,
 }
