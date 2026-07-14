@@ -160,6 +160,58 @@ Deno.serve(async (req) => {
         await admin.from("storage_alerts_sent").insert(newOnes.map((a) => ({
           alert_key: a.key, level: a.level, value_bytes: a.value, threshold_bytes: a.threshold,
         })));
+
+        // --- E-mail para admins (via send-transactional-email) ---
+        try {
+          const { data: adminEmails } = await admin.rpc("get_admin_emails");
+          const emails = ((adminEmails ?? []) as Array<{ email: string }>).map((r) => r.email).filter(Boolean);
+          for (const a of newOnes) {
+            const resource = a.key.split(":").slice(1, -1).join(":") || a.key.split(":")[0];
+            const label = a.key.startsWith("bucket:")
+              ? `Bucket ${resource}`
+              : a.key.startsWith("db:") ? "Banco de dados" : "Storage total";
+            for (const email of emails) {
+              admin.functions.invoke("send-transactional-email", {
+                body: {
+                  templateName: "storage-alert",
+                  recipientEmail: email,
+                  idempotencyKey: `storage-alert-${a.key}-${new Date().toISOString().slice(0, 13)}`,
+                  templateData: {
+                    level: a.level,
+                    resource: label,
+                    valueMb: a.value / 1048576,
+                    thresholdMb: a.threshold / 1048576,
+                    message: a.message,
+                  },
+                },
+              }).catch((e) => console.error("email invoke error:", e));
+            }
+          }
+        } catch (e) {
+          console.error("email dispatch error:", e);
+        }
+
+        // --- Push notification para admins com inscrição ativa ---
+        try {
+          if (adminIds.length) {
+            const { data: subs } = await admin
+              .from("push_subscriptions")
+              .select("user_id")
+              .in("user_id", adminIds);
+            const pushUserIds = Array.from(new Set((subs ?? []).map((s: any) => s.user_id as string)));
+            for (const a of newOnes) {
+              const title = a.level === "crit" ? "🚨 Armazenamento crítico" : "⚠️ Atenção — armazenamento";
+              const body = `${a.message} (${(a.value / 1048576).toFixed(1)} MB / limite ${(a.threshold / 1048576).toFixed(0)} MB)`;
+              for (const uid of pushUserIds) {
+                admin.functions.invoke("send-push-notification", {
+                  body: { userId: uid, title, body, url: "/admin" },
+                }).catch((e) => console.error("push invoke error:", e));
+              }
+            }
+          }
+        } catch (e) {
+          console.error("push dispatch error:", e);
+        }
       }
     }
 
