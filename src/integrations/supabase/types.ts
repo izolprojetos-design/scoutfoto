@@ -1789,6 +1789,7 @@ export type Database = {
           email: string
         }[]
       }
+      get_db_storage_stats: { Args: never; Returns: Json }
       get_invite_link_by_token: {
         Args: { p_token: string }
         Returns: {
