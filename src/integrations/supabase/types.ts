@@ -1327,6 +1327,69 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_alert_config: {
+        Row: {
+          bucket_crit_bytes: number
+          bucket_warn_bytes: number
+          db_crit_bytes: number
+          db_warn_bytes: number
+          id: number
+          storage_crit_bytes: number
+          storage_warn_bytes: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          bucket_crit_bytes?: number
+          bucket_warn_bytes?: number
+          db_crit_bytes?: number
+          db_warn_bytes?: number
+          id?: number
+          storage_crit_bytes?: number
+          storage_warn_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          bucket_crit_bytes?: number
+          bucket_warn_bytes?: number
+          db_crit_bytes?: number
+          db_warn_bytes?: number
+          id?: number
+          storage_crit_bytes?: number
+          storage_warn_bytes?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      storage_alerts_sent: {
+        Row: {
+          alert_key: string
+          id: string
+          level: string
+          sent_at: string
+          threshold_bytes: number
+          value_bytes: number
+        }
+        Insert: {
+          alert_key: string
+          id?: string
+          level: string
+          sent_at?: string
+          threshold_bytes: number
+          value_bytes: number
+        }
+        Update: {
+          alert_key?: string
+          id?: string
+          level?: string
+          sent_at?: string
+          threshold_bytes?: number
+          value_bytes?: number
+        }
+        Relationships: []
+      }
       subgroups: {
         Row: {
           branch_key: string
