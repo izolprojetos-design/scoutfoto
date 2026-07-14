@@ -26,6 +26,7 @@ import SecurityDashboard from '@/components/SecurityDashboard';
 import InviteLinkPanel from '@/components/InviteLinkPanel';
 import ArchivedPhotosPanel from '@/components/ArchivedPhotosPanel';
 import StorageUsageCard from '@/components/StorageUsageCard';
+import AdminStorageMetrics from '@/components/admin/AdminStorageMetrics';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
 import LockedAccountsPanel from '@/components/LockedAccountsPanel';
 import AdminOverview from '@/components/AdminOverview';
@@ -1416,6 +1417,7 @@ const Admin = () => {
 
         <TabsContent value="security">
           <div className="space-y-6">
+            <AdminStorageMetrics />
             <StorageUsageCard />
             <LockedAccountsPanel />
             <SecurityDashboard />
