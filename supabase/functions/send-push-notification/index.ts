@@ -25,7 +25,7 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ---- Authentication: require a valid JWT ----
+    // ---- Authentication: require a valid JWT (or service-role for internal calls) ----
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(
@@ -33,18 +33,23 @@ Deno.serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+    const bearer = authHeader.replace("Bearer ", "").trim();
+    const isServiceRole = bearer === serviceRoleKey;
 
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: userData, error: userError } = await userClient.auth.getUser();
-    if (userError || !userData?.user) {
-      return new Response(
-        JSON.stringify({ error: "Unauthorized" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    let callerId: string | null = null;
+    if (!isServiceRole) {
+      const userClient = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: userData, error: userError } = await userClient.auth.getUser();
+      if (userError || !userData?.user) {
+        return new Response(
+          JSON.stringify({ error: "Unauthorized" }),
+          { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      callerId = userData.user.id;
     }
-    const callerId = userData.user.id;
 
     // Parse request
     const { userId, title, body: msgBody, icon, url, data } = await req.json();
@@ -56,10 +61,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ---- Authorization: caller may only target self, unless admin ----
+    // ---- Authorization: caller may only target self, unless admin or service-role ----
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    if (userId !== callerId) {
+    if (!isServiceRole && userId !== callerId) {
       const { data: isAdmin } = await supabase.rpc("has_role", {
         _user_id: callerId,
         _role: "admin",
@@ -71,6 +76,7 @@ Deno.serve(async (req) => {
         );
       }
     }
+
 
     // Fetch subscriptions for the user
     const { data: subscriptions, error: fetchError } = await supabase
