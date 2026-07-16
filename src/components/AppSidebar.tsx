@@ -52,16 +52,15 @@ const AppSidebar = () => {
 
   const adminSubItems = [
     { to: '/admin', label: 'Visão Geral', icon: LayoutDashboard, show: canAccessAdmin },
-    { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
-    { to: '/admin?tab=roles_permissions', label: 'Papéis e Permissões', icon: Shield, show: canAccessAdmin },
-
     { to: '/admin?tab=audit', label: 'Auditoria', icon: ListChecks, show: canAccessAdmin },
-    { to: '/admin?tab=subgroups', label: 'Equipes', icon: FolderTree, show: canAccessAdmin },
     { to: '/admin?tab=invites', label: 'Convites', icon: Link2, show: canAccessAdmin },
-    
+    { to: '/admin?tab=subgroups', label: 'Equipes', icon: FolderTree, show: canAccessAdmin },
+    { to: '/admin?tab=branding', label: 'Identidade', icon: ImageOff, show: canAccessAdmin },
+    { to: '/admin?tab=motivational', label: 'Mensagens Motivacionais', icon: Sparkles, show: canAccessAdmin },
+    { to: '/admin?tab=roles_permissions', label: 'Papéis e Permissões', icon: Shield, show: canAccessAdmin },
     { to: '/admin?tab=security', label: 'Segurança', icon: Shield, show: canAccessAdmin },
     { to: '/admin?tab=system', label: 'Sistema & Status', icon: RefreshCw, show: canAccessAdmin },
-    { to: '/admin?tab=branding', label: 'Identidade', icon: ImageOff, show: canAccessAdmin },
+    { to: '/admin?tab=users', label: 'Usuários', icon: Users, show: canAccessAdmin },
   ].filter(i => i.show);
 
 
