@@ -97,8 +97,8 @@ const MotivationalMessageCard = ({ showGreeting = false }: { showGreeting?: bool
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-background to-accent/5 shadow-sm overflow-hidden">
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Sparkles className="h-4.5 w-4.5" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary animate-spin-slow">
+              <img src="/scoutfoto-logo.png" alt="Flor de Lis" className="h-6 w-6 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <AnimatePresence mode="wait">
