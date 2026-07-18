@@ -52,6 +52,7 @@ const Register = lazyWithRetry(() => import("./pages/Register"));
 const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
 const ConfirmScheduling = lazyWithRetry(() => import("./pages/ConfirmScheduling"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Library = lazyWithRetry(() => import("./pages/Library"));
 
 const isAuthError = (error: unknown): boolean => {
   if (!error) return false;
