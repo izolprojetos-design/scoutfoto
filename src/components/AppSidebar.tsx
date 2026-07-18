@@ -110,6 +110,12 @@ const AppSidebar = () => {
       icon: ImageIcon, 
       show: canViewScouts 
     },
+    {
+      to: '/biblioteca',
+      label: 'Biblioteca Digital',
+      icon: LibraryIcon,
+      show: true,
+    },
   ];
 
   const initials = profile?.name
