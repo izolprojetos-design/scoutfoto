@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usePermissions } from '@/hooks/usePermissions';
 import { NavLink } from '@/components/NavLink';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw, Lock, FolderTree, Link2, Archive, ImageOff, Cloud, Image as ImageIcon, Sparkles } from 'lucide-react';
+import { LogOut, Settings, Home, Calendar, User, Users, CalendarDays, Sun, Moon, ListChecks, CalendarRange, ChevronRight, LayoutDashboard, Shield, RefreshCw, Lock, FolderTree, Link2, Archive, ImageOff, Cloud, Image as ImageIcon, Sparkles, Library as LibraryIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from 'next-themes';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -109,6 +109,12 @@ const AppSidebar = () => {
       label: 'Galerias de Fotos', 
       icon: ImageIcon, 
       show: canViewScouts 
+    },
+    {
+      to: '/biblioteca',
+      label: 'Biblioteca Digital',
+      icon: LibraryIcon,
+      show: true,
     },
   ];
 

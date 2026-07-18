@@ -52,6 +52,7 @@ const Register = lazyWithRetry(() => import("./pages/Register"));
 const Unsubscribe = lazyWithRetry(() => import("./pages/Unsubscribe"));
 const ConfirmScheduling = lazyWithRetry(() => import("./pages/ConfirmScheduling"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Library = lazyWithRetry(() => import("./pages/Library"));
 
 const isAuthError = (error: unknown): boolean => {
   if (!error) return false;
@@ -190,6 +191,8 @@ const App = () => {
                       <Route path="/scout-gallery" element={<ProtectedRoute requiredPermission="view_scouts"><ScoutPhotoGallery /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
                       <Route path="/agendamentos" element={<MyAgendamentos />} />
+                      <Route path="/biblioteca" element={<Library />} />
+                      
                       
                       <Route path="/admin" element={<ProtectedRoute requiredPermission="access_admin"><Admin /></ProtectedRoute>} />
                     </Route>
