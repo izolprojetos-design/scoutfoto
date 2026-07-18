@@ -191,6 +191,8 @@ const App = () => {
                       <Route path="/scout-gallery" element={<ProtectedRoute requiredPermission="view_scouts"><ScoutPhotoGallery /></ProtectedRoute>} />
                       <Route path="/calendar" element={<ScoutCalendar />} />
                       <Route path="/agendamentos" element={<MyAgendamentos />} />
+                      <Route path="/biblioteca" element={<Library />} />
+                      
                       
                       <Route path="/admin" element={<ProtectedRoute requiredPermission="access_admin"><Admin /></ProtectedRoute>} />
                     </Route>
