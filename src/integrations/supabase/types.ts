@@ -332,6 +332,226 @@ export type Database = {
         }
         Relationships: []
       }
+      document_access_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          document_id: string | null
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          document_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          document_id?: string | null
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_access_logs_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_folders: {
+        Row: {
+          category: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_system: boolean
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_system?: boolean
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_system?: boolean
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "document_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_role_permissions: {
+        Row: {
+          can_delete: boolean
+          can_download: boolean
+          can_edit: boolean
+          can_share: boolean
+          can_upload: boolean
+          can_view: boolean
+          created_at: string
+          document_id: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          can_delete?: boolean
+          can_download?: boolean
+          can_edit?: boolean
+          can_share?: boolean
+          can_upload?: boolean
+          can_view?: boolean
+          created_at?: string
+          document_id: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          can_delete?: boolean
+          can_download?: boolean
+          can_edit?: boolean
+          can_share?: boolean
+          can_upload?: boolean
+          can_view?: boolean
+          created_at?: string
+          document_id?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_role_permissions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          category: string | null
+          checksum: string | null
+          created_at: string
+          description: string | null
+          download_count: number
+          event_id: string | null
+          extension: string | null
+          filename: string
+          folder_id: string | null
+          id: string
+          is_archived: boolean
+          mime_type: string
+          scout_id: string | null
+          size_bytes: number
+          storage_path: string
+          title: string
+          updated_at: string
+          uploaded_by: string | null
+          view_count: number
+          visibility: string
+        }
+        Insert: {
+          category?: string | null
+          checksum?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          event_id?: string | null
+          extension?: string | null
+          filename: string
+          folder_id?: string | null
+          id?: string
+          is_archived?: boolean
+          mime_type: string
+          scout_id?: string | null
+          size_bytes?: number
+          storage_path: string
+          title: string
+          updated_at?: string
+          uploaded_by?: string | null
+          view_count?: number
+          visibility?: string
+        }
+        Update: {
+          category?: string | null
+          checksum?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          event_id?: string | null
+          extension?: string | null
+          filename?: string
+          folder_id?: string | null
+          id?: string
+          is_archived?: boolean
+          mime_type?: string
+          scout_id?: string | null
+          size_bytes?: number
+          storage_path?: string
+          title?: string
+          updated_at?: string
+          uploaded_by?: string | null
+          view_count?: number
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "documents_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "document_folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "documents_scout_id_fkey"
+            columns: ["scout_id"]
+            isOneToOne: false
+            referencedRelation: "scouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drive_uploads: {
         Row: {
           branch: string
@@ -1758,6 +1978,11 @@ export type Database = {
         Returns: undefined
       }
       admin_unlock_login: { Args: { p_email: string }; Returns: undefined }
+      can_access_document: {
+        Args: { _action?: string; _document_id: string; _user_id: string }
+        Returns: boolean
+      }
+      can_upload_documents: { Args: { _user_id: string }; Returns: boolean }
       can_view_member_data: { Args: { _user_id: string }; Returns: boolean }
       can_view_storage_image: {
         Args: { _storage_path: string; _user_id: string }
