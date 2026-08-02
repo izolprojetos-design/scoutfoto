@@ -12,11 +12,11 @@ jobs:
       - name: Enviar notificação por e-mail
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          DEPLOY_NOTIFY_SECRET: ${{ secrets.DEPLOY_NOTIFY_SECRET }}
           DEPLOY_NOTIFY_EMAIL: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
         run: |
-          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$DEPLOY_NOTIFY_EMAIL" ]; then
-            echo "::error::Secrets SUPABASE_URL, SUPABASE_ANON_KEY e DEPLOY_NOTIFY_EMAIL são obrigatórios."
+          if [ -z "$SUPABASE_URL" ] || [ -z "$DEPLOY_NOTIFY_SECRET" ] || [ -z "$DEPLOY_NOTIFY_EMAIL" ]; then
+            echo "::error::Secrets SUPABASE_URL, DEPLOY_NOTIFY_SECRET e DEPLOY_NOTIFY_EMAIL são obrigatórios."
             exit 1
           fi
 
@@ -29,7 +29,7 @@ jobs:
           AUTHOR_NAME=$(echo "$AUTHOR_NAME" | sed 's/"/\\"/g')
 
           curl -sS -X POST "${SUPABASE_URL}/functions/v1/send-transactional-email" \
-            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "x-deploy-secret: ${DEPLOY_NOTIFY_SECRET}" \
             -H "Content-Type: application/json" \
             -d "{
               \"templateName\": \"deploy-notification\",
