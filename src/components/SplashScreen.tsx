@@ -4,14 +4,21 @@ import LogoCircle from "@/components/LogoCircle";
 
 const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
   const [visible, setVisible] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Para de girar assim que o carregamento termina, e só então some.
+    const stopSpin = setTimeout(() => setLoaded(true), 800);
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onFinished, 300);
-    }, 1000);
-    return () => clearTimeout(timer);
+    }, 1200);
+    return () => {
+      clearTimeout(stopSpin);
+      clearTimeout(timer);
+    };
   }, [onFinished]);
+
 
   return (
     <AnimatePresence>
