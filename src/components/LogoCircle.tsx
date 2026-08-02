@@ -14,6 +14,8 @@ interface LogoCircleProps {
   shadowClassName?: string;
   className?: string;
   alt?: string;
+  /** Gira a flor de lis continuamente (usado durante o carregamento). */
+  spinning?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ const LogoCircle = ({
   shadowClassName = "shadow-xl",
   className,
   alt = "ScoutFoto Logo",
+  spinning = false,
 }: LogoCircleProps) => {
   return (
     <div
@@ -44,11 +47,15 @@ const LogoCircle = ({
         <img
           src="/scoutfoto-logo-512.png"
           alt={alt}
-          className="w-full h-full object-contain object-center"
+          className={cn(
+            "w-full h-full object-contain object-center",
+            spinning && "[animation:spin_2.5s_linear_infinite]",
+          )}
         />
       </div>
     </div>
   );
 };
+
 
 export default LogoCircle;
