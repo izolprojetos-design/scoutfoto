@@ -30,4 +30,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'scheduling-rejected': schedulingRejected,
   'agendamento-notificacao': agendamentoNotificacao,
   'storage-alert': storageAlert,
+  'deploy-notification': deployNotification,
 }
