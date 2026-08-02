@@ -183,4 +183,22 @@
     opacity: 0;
     z-index: 10;
   }
+
+  /* Regra global de quebra de texto:
+     palavras nunca são cortadas no meio; a quebra ocorre apenas entre palavras.
+     Palavras extremamente longas (URLs, e-mails) quebram só como último recurso. */
+  html {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  /* Neutraliza quebras agressivas herdadas de utilitários antigos */
+  .break-words,
+  .break-all {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
 }
+
