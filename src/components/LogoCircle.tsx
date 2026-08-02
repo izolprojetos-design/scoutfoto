@@ -38,11 +38,11 @@ const LogoCircle = ({
       )}
     >
       <div
-        className="flex h-full w-full items-center justify-center rounded-full p-[12%]"
+        className="flex h-full w-full items-center justify-center rounded-full overflow-hidden p-[10%]"
         style={{ backgroundColor: "#0a3d2e" }}
       >
         <img
-          src="/scoutfoto-logo.jpeg"
+          src="/scoutfoto-logo-512.png"
           alt={alt}
           className="w-full h-full object-contain object-center"
         />
