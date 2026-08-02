@@ -237,6 +237,48 @@ export default function Library() {
     load();
   };
 
+  const openNewFolder = () => { setFolderEditing(null); setFolderName(''); setFolderDialogOpen(true); };
+  const openRenameFolder = (f: Folder) => { setFolderEditing(f); setFolderName(f.name); setFolderDialogOpen(true); };
+
+  const saveFolder = async () => {
+    const name = folderName.trim();
+    if (!name) return;
+    setSavingFolder(true);
+    try {
+      if (folderEditing) {
+        const { error } = await supabase.from('document_folders')
+          .update({ name }).eq('id', folderEditing.id);
+        if (error) throw error;
+        toast.success('Pasta renomeada');
+      } else {
+        const { error } = await supabase.from('document_folders').insert({
+          name, parent_id: currentFolderId,
+          category: currentFolder?.category ?? null,
+          created_by: user?.id ?? null,
+        });
+        if (error) throw error;
+        toast.success('Pasta criada');
+      }
+      setFolderDialogOpen(false);
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? 'Sem permissão para salvar a pasta');
+    } finally {
+      setSavingFolder(false);
+    }
+  };
+
+  const removeFolder = async (f: Folder) => {
+    const hasChildren = folders.some(x => x.parent_id === f.id) || docs.some(d => d.folder_id === f.id);
+    if (hasChildren) { toast.error('A pasta não está vazia'); return; }
+    if (!confirm(`Excluir a pasta "${f.name}"?`)) return;
+    const { error } = await supabase.from('document_folders').delete().eq('id', f.id);
+    if (error) { toast.error('Sem permissão para excluir'); return; }
+    toast.success('Pasta excluída');
+    load();
+  };
+
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
