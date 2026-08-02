@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import {
   Upload, Search, FolderOpen, FileText, FileSpreadsheet, FileImage, FileArchive,
   File as FileIcon, Download, Trash2, Shield, Loader2, ChevronRight, Home,
+  FolderPlus, Pencil,
 } from 'lucide-react';
 import { ROLE_LABELS } from '@/lib/userRoles';
 import type { Database } from '@/integrations/supabase/types';
