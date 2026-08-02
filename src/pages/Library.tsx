@@ -94,6 +94,10 @@ export default function Library() {
   const [uploading, setUploading] = useState(false);
   const [permsDoc, setPermsDoc] = useState<Doc | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderEditing, setFolderEditing] = useState<Folder | null>(null);
+  const [folderName, setFolderName] = useState('');
+  const [savingFolder, setSavingFolder] = useState(false);
 
   const canUpload = useMemo(() => {
     if (!roles) return false;
