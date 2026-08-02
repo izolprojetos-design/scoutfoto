@@ -42,7 +42,7 @@ const LogoCircle = ({
         style={{ backgroundColor: "#0a3d2e" }}
       >
         <img
-          src="/scoutfoto-logo.png"
+          src="/scoutfoto-logo.jpeg"
           alt={alt}
           className="w-full h-full object-contain object-center"
         />

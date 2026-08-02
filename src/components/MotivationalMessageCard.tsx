@@ -98,7 +98,7 @@ const MotivationalMessageCard = ({ showGreeting = false }: { showGreeting?: bool
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-start gap-3">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary [animation:spin_6s_linear_infinite]">
-              <img src="/scoutfoto-logo.png" alt="Flor de Lis" className="h-6 w-6 object-contain" />
+              <img src="/scoutfoto-logo.jpeg" alt="Flor de Lis" className="h-6 w-6 object-contain" />
             </div>
             <div className="flex-1 min-w-0">
               <AnimatePresence mode="wait">
