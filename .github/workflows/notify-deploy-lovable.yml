@@ -5,56 +5,40 @@ on:
     branches:
       - main
 
-permissions:
-  issues: write
-  contents: read
-
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Criar lembrete de publicação na Lovable
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { data: issues } = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: 'deploy-lovable',
-              state: 'open'
-            });
+      - name: Enviar notificação por e-mail
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          DEPLOY_NOTIFY_EMAIL: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ] || [ -z "$DEPLOY_NOTIFY_EMAIL" ]; then
+            echo "::error::Secrets SUPABASE_URL, SUPABASE_ANON_KEY e DEPLOY_NOTIFY_EMAIL são obrigatórios."
+            exit 1
+          fi
 
-            const title = '🚀 Publicar nova versão na Lovable';
-            const body = `Houve um push na branch \`main\` e o código já foi sincronizado com o editor da Lovable.
+          COMMIT_MESSAGE='${{ github.event.head_commit.message }}'
+          COMMIT_URL='${{ github.event.head_commit.url }}'
+          AUTHOR_NAME='${{ github.event.head_commit.author.name }}'
 
-**Ação necessária:**
-1. Abra o projeto no editor da Lovable.
-2. Vá em **Publish → Update** para aplicar a nova versão em produção.
+          # Sanitiza aspas duplas para JSON
+          COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/"/\\"/g')
+          AUTHOR_NAME=$(echo "$AUTHOR_NAME" | sed 's/"/\\"/g')
 
-**Links úteis:**
-- Editor Lovable: https://lovable.dev/projects/ef806d68-a312-4bb7-aa7b-7d0bd0d87fda
-- Site publicado: https://scoutfoto.lovable.app
-
----
-*Commit:* ${context.payload.head_commit.url}
-*Mensagem:* ${context.payload.head_commit.message}
-*Autor:* ${context.payload.head_commit.author.name}`;
-
-            if (issues.length === 0) {
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['deploy-lovable']
-              });
-              console.log('Issue de lembrete criada.');
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issues[0].number,
-                body: `Novo push na \`main\`. ${body}`
-              });
-              console.log(`Comentário adicionado na issue #${issues[0].number}.`);
-            }
+          curl -sS -X POST "${SUPABASE_URL}/functions/v1/send-transactional-email" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"templateName\": \"deploy-notification\",
+              \"recipientEmail\": \"${DEPLOY_NOTIFY_EMAIL}\",
+              \"idempotencyKey\": \"deploy-${{ github.run_id }}\",
+              \"templateData\": {
+                \"commitMessage\": \"${COMMIT_MESSAGE}\",
+                \"commitUrl\": \"${COMMIT_URL}\",
+                \"authorName\": \"${AUTHOR_NAME}\",
+                \"branch\": \"main\"
+              }
+            }"
