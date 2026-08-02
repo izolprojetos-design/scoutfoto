@@ -1,0 +1,60 @@
+name: Notify Deploy on Lovable
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  issues: write
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Criar lembrete de publicação na Lovable
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'deploy-lovable',
+              state: 'open'
+            });
+
+            const title = '🚀 Publicar nova versão na Lovable';
+            const body = `Houve um push na branch \`main\` e o código já foi sincronizado com o editor da Lovable.
+
+**Ação necessária:**
+1. Abra o projeto no editor da Lovable.
+2. Vá em **Publish → Update** para aplicar a nova versão em produção.
+
+**Links úteis:**
+- Editor Lovable: https://lovable.dev/projects/ef806d68-a312-4bb7-aa7b-7d0bd0d87fda
+- Site publicado: https://scoutfoto.lovable.app
+
+---
+*Commit:* ${context.payload.head_commit.url}
+*Mensagem:* ${context.payload.head_commit.message}
+*Autor:* ${context.payload.head_commit.author.name}`;
+
+            if (issues.length === 0) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['deploy-lovable']
+              });
+              console.log('Issue de lembrete criada.');
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issues[0].number,
+                body: `Novo push na \`main\`. ${body}`
+              });
+              console.log(`Comentário adicionado na issue #${issues[0].number}.`);
+            }
