@@ -55,14 +55,23 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // CI path: GitHub Actions has no user session. It authenticates with a
+  // shared secret header instead (used only for deploy notifications).
+  const deploySecret = Deno.env.get('DEPLOY_NOTIFY_SECRET')
+  const providedSecret = req.headers.get('x-deploy-secret')
+  const isCI = !!deploySecret && providedSecret === deploySecret
+
   // Verify caller has a real user session
-  const caller = await verifyAuth(req)
+  const caller = isCI
+    ? { userId: 'github-actions', email: null as string | null }
+    : await verifyAuth(req)
   if (!caller) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
+
 
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
