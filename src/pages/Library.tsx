@@ -340,15 +340,16 @@ export default function Library() {
           {visibleFolders.length > 0 && (
             <div>
               <h2 className="text-sm font-semibold mb-2 text-muted-foreground">Pastas</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                 {visibleFolders.map(f => (
                   <Card
                     key={f.id}
-                    className="p-4 cursor-pointer hover:bg-accent transition-colors flex items-center gap-2"
+                    className="p-3 cursor-pointer hover:bg-accent transition-colors flex items-center gap-2"
                     onClick={() => setCurrentFolderId(f.id)}
                   >
                     <FolderOpen className="h-5 w-5 text-primary shrink-0" />
-                    <span className="font-medium break-words flex-1 min-w-0">{f.name}</span>
+                    <span className="font-medium flex-1 min-w-0 truncate" title={f.name}>{f.name}</span>
+
                     {isAdmin && (
                       <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
                         <Button size="icon" variant="ghost" className="h-8 w-8" title="Renomear"
