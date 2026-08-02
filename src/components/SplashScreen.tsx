@@ -4,14 +4,21 @@ import LogoCircle from "@/components/LogoCircle";
 
 const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
   const [visible, setVisible] = useState(true);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    // Para de girar assim que o carregamento termina, e só então some.
+    const stopSpin = setTimeout(() => setLoaded(true), 800);
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onFinished, 300);
-    }, 1000);
-    return () => clearTimeout(timer);
+    }, 1200);
+    return () => {
+      clearTimeout(stopSpin);
+      clearTimeout(timer);
+    };
   }, [onFinished]);
+
 
   return (
     <AnimatePresence>
@@ -28,7 +35,7 @@ const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
           >
-            <LogoCircle size="lg" spinning shadowClassName="shadow-2xl" ringClassName="ring-white/20" alt="12º Grupo Escoteiro Monte Caburaí" />
+            <LogoCircle size="lg" spinning={!loaded} shadowClassName="shadow-2xl" ringClassName="ring-white/20" alt="12º Grupo Escoteiro Monte Caburaí" />
           </motion.div>
           <motion.h1
             className="mt-6 text-3xl font-bold tracking-wide"
