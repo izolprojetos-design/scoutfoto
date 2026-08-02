@@ -35,7 +35,7 @@ const SplashScreen = ({ onFinished }: { onFinished: () => void }) => {
             animate={{ scale: 1, opacity: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
           >
-            <LogoCircle size="lg" spinning shadowClassName="shadow-2xl" ringClassName="ring-white/20" alt="12º Grupo Escoteiro Monte Caburaí" />
+            <LogoCircle size="lg" spinning={!loaded} shadowClassName="shadow-2xl" ringClassName="ring-white/20" alt="12º Grupo Escoteiro Monte Caburaí" />
           </motion.div>
           <motion.h1
             className="mt-6 text-3xl font-bold tracking-wide"
