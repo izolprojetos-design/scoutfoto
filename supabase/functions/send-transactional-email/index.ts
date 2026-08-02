@@ -55,14 +55,23 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders })
   }
 
+  // CI path: GitHub Actions has no user session. It authenticates with a
+  // shared secret header instead (used only for deploy notifications).
+  const deploySecret = Deno.env.get('DEPLOY_NOTIFY_SECRET')
+  const providedSecret = req.headers.get('x-deploy-secret')
+  const isCI = !!deploySecret && providedSecret === deploySecret
+
   // Verify caller has a real user session
-  const caller = await verifyAuth(req)
+  const caller = isCI
+    ? { userId: 'github-actions', email: null as string | null }
+    : await verifyAuth(req)
   if (!caller) {
     return new Response(
       JSON.stringify({ error: 'Unauthorized' }),
       { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
+
 
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
@@ -151,7 +160,15 @@ Deno.serve(async (req) => {
   // Authorization: restrict who can send to whom.
   // - Templates with a fixed `to` (e.g., admin notifications) are allowed for any authenticated user.
   // - Otherwise, the caller may only send to their own email, unless they are admin/voluntario.
-  if (!template.to) {
+  if (isCI && templateName !== 'deploy-notification') {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  if (!template.to && !isCI) {
+
     const callerEmail = (caller.email ?? '').toLowerCase()
     const targetEmail = effectiveRecipient.toLowerCase()
     if (callerEmail !== targetEmail) {
