@@ -286,21 +286,29 @@ export default function Library() {
           <h1 className="text-2xl font-bold">Biblioteca Digital</h1>
           <p className="text-sm text-muted-foreground">Documentos, formulários e materiais escoteiros.</p>
         </div>
-        {canUpload && (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.webp"
-              onChange={(e) => onPickFile(e.target.files?.[0])}
-            />
-            <Button onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-2" /> Enviar documento
+        <div className="flex items-center gap-2">
+          {canUpload && (
+            <Button variant="outline" onClick={openNewFolder}>
+              <FolderPlus className="h-4 w-4 mr-2" /> Nova pasta
             </Button>
-          </>
-        )}
+          )}
+          {canUpload && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => onPickFile(e.target.files?.[0])}
+              />
+              <Button onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-2" /> Enviar documento
+              </Button>
+            </>
+          )}
+        </div>
       </div>
+
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 text-sm flex-wrap">
