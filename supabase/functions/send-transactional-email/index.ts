@@ -160,7 +160,15 @@ Deno.serve(async (req) => {
   // Authorization: restrict who can send to whom.
   // - Templates with a fixed `to` (e.g., admin notifications) are allowed for any authenticated user.
   // - Otherwise, the caller may only send to their own email, unless they are admin/voluntario.
-  if (!template.to) {
+  if (isCI && templateName !== 'deploy-notification') {
+    return new Response(
+      JSON.stringify({ error: 'Forbidden' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  }
+
+  if (!template.to && !isCI) {
+
     const callerEmail = (caller.email ?? '').toLowerCase()
     const targetEmail = effectiveRecipient.toLowerCase()
     if (callerEmail !== targetEmail) {
