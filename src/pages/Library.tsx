@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 import {
   Upload, Search, FolderOpen, FileText, FileSpreadsheet, FileImage, FileArchive,
   File as FileIcon, Download, Trash2, Shield, Loader2, ChevronRight, Home,
+  FolderPlus, Pencil,
 } from 'lucide-react';
 import { ROLE_LABELS } from '@/lib/userRoles';
 import type { Database } from '@/integrations/supabase/types';
@@ -93,6 +94,10 @@ export default function Library() {
   const [uploading, setUploading] = useState(false);
   const [permsDoc, setPermsDoc] = useState<Doc | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderEditing, setFolderEditing] = useState<Folder | null>(null);
+  const [folderName, setFolderName] = useState('');
+  const [savingFolder, setSavingFolder] = useState(false);
 
   const canUpload = useMemo(() => {
     if (!roles) return false;
@@ -232,6 +237,48 @@ export default function Library() {
     load();
   };
 
+  const openNewFolder = () => { setFolderEditing(null); setFolderName(''); setFolderDialogOpen(true); };
+  const openRenameFolder = (f: Folder) => { setFolderEditing(f); setFolderName(f.name); setFolderDialogOpen(true); };
+
+  const saveFolder = async () => {
+    const name = folderName.trim();
+    if (!name) return;
+    setSavingFolder(true);
+    try {
+      if (folderEditing) {
+        const { error } = await supabase.from('document_folders')
+          .update({ name }).eq('id', folderEditing.id);
+        if (error) throw error;
+        toast.success('Pasta renomeada');
+      } else {
+        const { error } = await supabase.from('document_folders').insert({
+          name, parent_id: currentFolderId,
+          category: currentFolder?.category ?? null,
+          created_by: user?.id ?? null,
+        });
+        if (error) throw error;
+        toast.success('Pasta criada');
+      }
+      setFolderDialogOpen(false);
+      load();
+    } catch (e: any) {
+      toast.error(e.message ?? 'Sem permissão para salvar a pasta');
+    } finally {
+      setSavingFolder(false);
+    }
+  };
+
+  const removeFolder = async (f: Folder) => {
+    const hasChildren = folders.some(x => x.parent_id === f.id) || docs.some(d => d.folder_id === f.id);
+    if (hasChildren) { toast.error('A pasta não está vazia'); return; }
+    if (!confirm(`Excluir a pasta "${f.name}"?`)) return;
+    const { error } = await supabase.from('document_folders').delete().eq('id', f.id);
+    if (error) { toast.error('Sem permissão para excluir'); return; }
+    toast.success('Pasta excluída');
+    load();
+  };
+
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -239,21 +286,29 @@ export default function Library() {
           <h1 className="text-2xl font-bold">Biblioteca Digital</h1>
           <p className="text-sm text-muted-foreground">Documentos, formulários e materiais escoteiros.</p>
         </div>
-        {canUpload && (
-          <>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.webp"
-              onChange={(e) => onPickFile(e.target.files?.[0])}
-            />
-            <Button onClick={() => fileInputRef.current?.click()}>
-              <Upload className="h-4 w-4 mr-2" /> Enviar documento
+        <div className="flex items-center gap-2">
+          {canUpload && (
+            <Button variant="outline" onClick={openNewFolder}>
+              <FolderPlus className="h-4 w-4 mr-2" /> Nova pasta
             </Button>
-          </>
-        )}
+          )}
+          {canUpload && (
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip,.jpg,.jpeg,.png,.webp"
+                onChange={(e) => onPickFile(e.target.files?.[0])}
+              />
+              <Button onClick={() => fileInputRef.current?.click()}>
+                <Upload className="h-4 w-4 mr-2" /> Enviar documento
+              </Button>
+            </>
+          )}
+        </div>
       </div>
+
 
       {/* Breadcrumb */}
       <div className="flex items-center gap-1 text-sm flex-wrap">
@@ -289,12 +344,27 @@ export default function Library() {
                 {visibleFolders.map(f => (
                   <Card
                     key={f.id}
-                    className="p-4 cursor-pointer hover:bg-accent transition-colors flex items-center gap-3"
+                    className="p-4 cursor-pointer hover:bg-accent transition-colors flex items-center gap-2"
                     onClick={() => setCurrentFolderId(f.id)}
                   >
                     <FolderOpen className="h-5 w-5 text-primary shrink-0" />
-                    <span className="font-medium break-words">{f.name}</span>
+                    <span className="font-medium break-words flex-1 min-w-0">{f.name}</span>
+                    {isAdmin && (
+                      <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Renomear"
+                          onClick={() => openRenameFolder(f)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {!f.is_system && (
+                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Excluir"
+                            onClick={() => removeFolder(f)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </Card>
+
                 ))}
               </div>
             </div>
@@ -409,6 +479,35 @@ export default function Library() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Folder dialog */}
+      <Dialog open={folderDialogOpen} onOpenChange={(o) => !savingFolder && setFolderDialogOpen(o)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{folderEditing ? 'Renomear pasta' : 'Nova pasta'}</DialogTitle>
+            <DialogDescription>
+              {folderEditing ? 'Altere o nome da pasta.' : `Criar em: ${currentFolder?.name ?? 'Raiz'}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label>Nome *</Label>
+            <Input
+              className="h-12 text-base"
+              value={folderName}
+              onChange={e => setFolderName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveFolder(); }}
+              placeholder="Ex.: Atas 2026"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFolderDialogOpen(false)} disabled={savingFolder}>Cancelar</Button>
+            <Button onClick={saveFolder} disabled={savingFolder || !folderName.trim()}>
+              {savingFolder ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando...</> : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       {/* Permissions dialog */}
       <DocumentPermissionsDialog
