@@ -344,12 +344,27 @@ export default function Library() {
                 {visibleFolders.map(f => (
                   <Card
                     key={f.id}
-                    className="p-4 cursor-pointer hover:bg-accent transition-colors flex items-center gap-3"
+                    className="p-4 cursor-pointer hover:bg-accent transition-colors flex items-center gap-2"
                     onClick={() => setCurrentFolderId(f.id)}
                   >
                     <FolderOpen className="h-5 w-5 text-primary shrink-0" />
-                    <span className="font-medium break-words">{f.name}</span>
+                    <span className="font-medium break-words flex-1 min-w-0">{f.name}</span>
+                    {isAdmin && (
+                      <div className="flex items-center shrink-0" onClick={e => e.stopPropagation()}>
+                        <Button size="icon" variant="ghost" className="h-8 w-8" title="Renomear"
+                          onClick={() => openRenameFolder(f)}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        {!f.is_system && (
+                          <Button size="icon" variant="ghost" className="h-8 w-8" title="Excluir"
+                            onClick={() => removeFolder(f)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        )}
+                      </div>
+                    )}
                   </Card>
+
                 ))}
               </div>
             </div>
