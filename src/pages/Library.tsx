@@ -480,6 +480,35 @@ export default function Library() {
         </DialogContent>
       </Dialog>
 
+      {/* Folder dialog */}
+      <Dialog open={folderDialogOpen} onOpenChange={(o) => !savingFolder && setFolderDialogOpen(o)}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{folderEditing ? 'Renomear pasta' : 'Nova pasta'}</DialogTitle>
+            <DialogDescription>
+              {folderEditing ? 'Altere o nome da pasta.' : `Criar em: ${currentFolder?.name ?? 'Raiz'}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div>
+            <Label>Nome *</Label>
+            <Input
+              className="h-12 text-base"
+              value={folderName}
+              onChange={e => setFolderName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') saveFolder(); }}
+              placeholder="Ex.: Atas 2026"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setFolderDialogOpen(false)} disabled={savingFolder}>Cancelar</Button>
+            <Button onClick={saveFolder} disabled={savingFolder || !folderName.trim()}>
+              {savingFolder ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Salvando...</> : 'Salvar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       {/* Permissions dialog */}
       <DocumentPermissionsDialog
         doc={permsDoc}
