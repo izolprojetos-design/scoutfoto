@@ -1,0 +1,2 @@
+UPDATE public.scouts SET photo_url = 'IZOL_MARILDO_DOS_SANTOS_fd7b78cd.jpg' WHERE id = 'fd7b78cd-6caf-45a5-8765-23442ff22bd4' AND photo_url IS NULL;
+UPDATE public.scouts SET photo_url = 'Manuella_Magalhaes_dos_Santos_4b73b3c4.jpg' WHERE id = '4b73b3c4-3511-42ac-898f-2284af9bf8d4' AND photo_url IS NULL;

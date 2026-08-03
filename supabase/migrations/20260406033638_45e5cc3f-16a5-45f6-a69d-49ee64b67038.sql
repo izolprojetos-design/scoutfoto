@@ -1,0 +1,1 @@
+UPDATE public.guardians SET image_authorization = true, authorization_date = now() WHERE image_authorization = false;

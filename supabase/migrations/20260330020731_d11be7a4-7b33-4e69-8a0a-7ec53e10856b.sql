@@ -1,0 +1,1 @@
+ALTER TABLE public.scouts ADD COLUMN transition_date date DEFAULT NULL;

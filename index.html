@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      // Apply theme preference before render to avoid FOUC and respect dark mode.
+      // Note: do NOT override the initial-loader background (kept brand green to match the PWA splash).
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var isDark = stored === 'dark' || (!stored && prefersDark) || (stored === 'system' && prefersDark);
+          if (isDark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScoutFoto - Banco de Imagens Escoteiro</title>
+    <meta name="description" content="Sistema profissional de banco de imagens para grupos escoteiros. Todas as aventuras escoteiras em um só lugar.">
+    <meta name="author" content="ScoutFoto" />
+    <meta name="theme-color" content="#0a3d2e" />
+    <link rel="modulepreload" href="/src/main.tsx" />
+    <link rel="preload" as="image" href="/scoutfoto-logo-512.png" fetchpriority="high" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ScoutFoto" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="dns-prefetch" href="https://idrhcwxrifmmvdaitjiz.supabase.co" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/montserrat/v31/JTUSjIg1_i6t8kCHKm459WlhyyTh89Y.woff2" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" /></noscript>
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://scoutfoto.app/" />
+    <meta property="og:site_name" content="ScoutFoto" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:title" content="ScoutFoto - Banco de Imagens Escoteiro">
+  <meta name="twitter:title" content="ScoutFoto - Banco de Imagens Escoteiro">
+  <meta property="og:description" content="Sistema profissional de banco de imagens para grupos escoteiros. Todas as aventuras escoteiras em um só lugar.">
+  <meta name="twitter:description" content="Sistema profissional de banco de imagens para grupos escoteiros. Todas as aventuras escoteiras em um só lugar.">
+  <meta property="og:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3359ee17-cd70-4619-99da-34f24f7daeb6/id-preview-ec0f2aeb--ef806d68-a312-4bb7-aa7b-7d0bd0d87fda.lovable.app-1773027579466.png">
+  <meta name="twitter:image" content="https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/3359ee17-cd70-4619-99da-34f24f7daeb6/id-preview-ec0f2aeb--ef806d68-a312-4bb7-aa7b-7d0bd0d87fda.lovable.app-1773027579466.png">
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "ScoutFoto",
+        "url": "https://scoutfoto.app/",
+        "logo": "https://scoutfoto.app/scoutfoto-logo-512.png",
+        "description": "Sistema profissional de banco de imagens para grupos escoteiros."
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "ScoutFoto",
+        "url": "https://scoutfoto.app/",
+        "inLanguage": "pt-BR"
+      }
+    </script>
+</head>
+
+  <body>
+    <div id="root" style="min-height:100vh;background-color:#14532d">
+      <div id="initial-loader" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background-color:#14532d;font-family:Inter,system-ui,sans-serif;padding:24px;box-sizing:border-box">
+        <div style="width:clamp(128px,38vmin,200px);aspect-ratio:1/1;border-radius:50%;background:#ffffff;padding:clamp(8px,1.5vmin,14px);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.25);box-sizing:border-box">
+          <div style="width:100%;height:100%;border-radius:50%;background:#0a3d2e;display:flex;align-items:center;justify-content:center;padding:12%;box-sizing:border-box">
+            <img src="/scoutfoto-logo-512.png" alt="ScoutFoto" width="192" height="192" fetchpriority="high" decoding="async" style="width:100%;height:100%;object-fit:contain;object-position:center;animation:spin 2.5s linear infinite" />
+          </div>
+        </div>
+        <h1 style="margin:24px 0 0;font-size:clamp(22px,4.5vmin,30px);font-weight:700;letter-spacing:0.04em;color:#d4a843">ScoutFoto</h1>
+        <p style="margin:8px 0 0;font-size:clamp(12px,2.4vmin,14px);color:rgba(255,255,255,0.7)">Banco de Imagens Escoteiro</p>
+      </div>
+    </div>
+    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Clean start: removed recovery UI per user request.
+      // The initial-loader will remain until React mounts.
+      (function () {
+        var loader = document.getElementById('initial-loader');
+        if (!loader) return;
+        var root = document.getElementById('root');
+        if (!root) return;
+
+        var observer = new MutationObserver(function () {
+          if (!document.getElementById('initial-loader')) {
+            observer.disconnect();
+          }
+        });
+        observer.observe(root, { childList: true });
+      })();
+    </script>
+  </body>
+</html>

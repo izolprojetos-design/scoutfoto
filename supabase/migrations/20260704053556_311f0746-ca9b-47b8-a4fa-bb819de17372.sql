@@ -1,0 +1,2 @@
+ALTER TABLE public.images DROP CONSTRAINT IF EXISTS images_media_type_check;
+ALTER TABLE public.images ADD CONSTRAINT images_media_type_check CHECK (media_type = ANY (ARRAY['image'::text, 'video'::text, 'document'::text]));

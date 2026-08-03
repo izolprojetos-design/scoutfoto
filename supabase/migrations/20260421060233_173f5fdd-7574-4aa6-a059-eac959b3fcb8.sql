@@ -1,0 +1,1 @@
+ALTER TABLE public.scheduling_requests ADD COLUMN destinatario_email text NOT NULL DEFAULT '';

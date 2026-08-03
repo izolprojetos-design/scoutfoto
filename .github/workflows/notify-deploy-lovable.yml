@@ -1,0 +1,44 @@
+name: Notify Deploy on Lovable
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Enviar notificação por e-mail
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          DEPLOY_NOTIFY_SECRET: ${{ secrets.DEPLOY_NOTIFY_SECRET }}
+          DEPLOY_NOTIFY_EMAIL: ${{ secrets.DEPLOY_NOTIFY_EMAIL }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$DEPLOY_NOTIFY_SECRET" ] || [ -z "$DEPLOY_NOTIFY_EMAIL" ]; then
+            echo "::error::Secrets SUPABASE_URL, DEPLOY_NOTIFY_SECRET e DEPLOY_NOTIFY_EMAIL são obrigatórios."
+            exit 1
+          fi
+
+          COMMIT_MESSAGE='${{ github.event.head_commit.message }}'
+          COMMIT_URL='${{ github.event.head_commit.url }}'
+          AUTHOR_NAME='${{ github.event.head_commit.author.name }}'
+
+          # Sanitiza aspas duplas para JSON
+          COMMIT_MESSAGE=$(echo "$COMMIT_MESSAGE" | sed 's/"/\\"/g')
+          AUTHOR_NAME=$(echo "$AUTHOR_NAME" | sed 's/"/\\"/g')
+
+          curl -sS -X POST "${SUPABASE_URL}/functions/v1/send-transactional-email" \
+            -H "x-deploy-secret: ${DEPLOY_NOTIFY_SECRET}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"templateName\": \"deploy-notification\",
+              \"recipientEmail\": \"${DEPLOY_NOTIFY_EMAIL}\",
+              \"idempotencyKey\": \"deploy-${{ github.run_id }}\",
+              \"templateData\": {
+                \"commitMessage\": \"${COMMIT_MESSAGE}\",
+                \"commitUrl\": \"${COMMIT_URL}\",
+                \"authorName\": \"${AUTHOR_NAME}\",
+                \"branch\": \"main\"
+              }
+            }"

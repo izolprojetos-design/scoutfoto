@@ -1,0 +1,39 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 10
+    # Use groups to organize by severity and reduce noise
+    groups:
+      critical-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "security:critical"
+      high-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "security:high"
+      medium-security:
+        applies-to: security-updates
+        patterns:
+          - "*"
+        update-types:
+          - "security:medium"
+    # Ensure lockfile updates are tracked closely
+    versioning-strategy: increase-if-necessary
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5

@@ -1,0 +1,204 @@
+/* Fonts loaded via <link> in index.html for better LCP */
+
+#lovable-badge {
+  display: none !important;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 150 18% 96%;
+    --foreground: 210 100% 13%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 100% 13%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 100% 13%;
+
+    --primary: 155 62% 14%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 47 98% 50%;
+    --secondary-foreground: 210 100% 13%;
+
+    --muted: 150 10% 92%;
+    --muted-foreground: 210 15% 40%;
+
+    --accent: 47 98% 50%;
+    --accent-foreground: 210 100% 13%;
+
+    --destructive: 0 60% 48%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 10% 88%;
+    --input: 150 10% 88%;
+    --ring: 155 62% 14%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 155 62% 14%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 47 98% 50%;
+    --sidebar-primary-foreground: 155 62% 14%;
+    --sidebar-accent: 155 50% 20%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 155 40% 20%;
+    --sidebar-ring: 47 98% 50%;
+
+    --scout-blue: 210 100% 13%;
+    --scout-gold: 47 98% 50%;
+    --scout-navy: 210 80% 18%;
+    --scout-cream: 150 18% 96%;
+    --scout-green: 155 62% 14%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(155 62% 14%), hsl(210 100% 13%));
+    --shadow-card: 0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.03);
+    --shadow-card-hover: 0 10px 25px -5px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  }
+
+  .dark {
+    --background: 155 15% 7%;
+    --foreground: 45 12% 92%;
+
+    --card: 155 14% 11%;
+    --card-foreground: 45 12% 92%;
+
+    --popover: 155 14% 11%;
+    --popover-foreground: 45 12% 92%;
+
+    --primary: 155 50% 35%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 47 80% 45%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 155 10% 16%;
+    --muted-foreground: 150 8% 55%;
+
+    --accent: 47 80% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 50% 38%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 155 10% 18%;
+    --input: 155 10% 18%;
+    --ring: 155 50% 35%;
+
+    --sidebar-background: 155 50% 8%;
+    --sidebar-foreground: 150 12% 90%;
+    --sidebar-primary: 47 80% 50%;
+    --sidebar-primary-foreground: 155 60% 15%;
+    --sidebar-accent: 155 35% 15%;
+    --sidebar-accent-foreground: 150 12% 90%;
+    --sidebar-border: 155 30% 16%;
+    --sidebar-ring: 47 80% 50%;
+
+    --scout-blue: 210 50% 45%;
+    --scout-gold: 47 80% 45%;
+    --scout-navy: 210 40% 25%;
+    --scout-cream: 155 10% 14%;
+    --scout-green: 155 50% 35%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Montserrat', 'Space Grotesk', sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50;
+  }
+  .scout-gradient {
+    background: linear-gradient(135deg, hsl(155 62% 14%), hsl(155 50% 10%));
+  }
+  .gold-gradient {
+    background: linear-gradient(135deg, hsl(var(--scout-gold)), hsl(47 90% 42%));
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Custom date and time picker styles */
+  input[type="date"],
+  input[type="time"] {
+    position: relative;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Hide native icons and make the whole input clickable for the picker */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="date"]::-webkit-clear-button,
+  input[type="time"]::-webkit-clear-button,
+  input[type="date"]::-webkit-inner-spin-button,
+  input[type="time"]::-webkit-inner-spin-button {
+    background: transparent;
+    bottom: 0;
+    color: transparent;
+    cursor: pointer;
+    height: auto;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: auto;
+    opacity: 0;
+    z-index: 10;
+  }
+
+  /* Regra global de quebra de texto:
+     palavras nunca são cortadas no meio; a quebra ocorre apenas entre palavras.
+     Palavras extremamente longas (URLs, e-mails) quebram só como último recurso. */
+  html {
+    word-break: normal;
+    overflow-wrap: break-word;
+    hyphens: none;
+    -webkit-hyphens: none;
+  }
+
+  /* Neutraliza quebras agressivas herdadas de utilitários antigos */
+  .break-words,
+  .break-all {
+    word-break: normal !important;
+    overflow-wrap: break-word !important;
+  }
+}
+
