@@ -1,0 +1,1 @@
+UPDATE public.scouts SET photo_url = 'LEANDRA_MAGALHAES_DOS_SANTOS_55d1c9ba.jpg' WHERE id = '55d1c9ba-a087-4430-93a7-c2d9677ceab5';

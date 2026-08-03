@@ -1,0 +1,24 @@
+{
+  "name": "ScoutFoto - Banco de Imagens Escoteiro",
+  "short_name": "ScoutFoto",
+  "description": "Sistema profissional de banco de imagens para grupos escoteiros",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#14532d",
+  "theme_color": "#14532d",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Admins voluntarios can view all agendamentos" ON public.agendamentos;

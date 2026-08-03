@@ -1,0 +1,21 @@
+name: Dependabot Auto-Review
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    steps:
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1
+        with:
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Re-request review
+        if: github.event.action == 'synchronize'
+        run: gh pr edit "$PR_URL" --add-reviewer "@me" # Note: You'll need to configure specific reviewers in GitHub settings
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,1 @@
+DELETE FROM public.user_permissions WHERE id = 'aa2c5cc2-6e28-4d9a-9f8f-04875d0e544a';
