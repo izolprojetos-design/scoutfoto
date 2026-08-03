@@ -45,6 +45,7 @@ import { ALL_CATEGORIES } from '@/lib/scoutUtils';
 import { SECTION_OPTIONS, VOLUNTEER_CARGOS, CARGO_2_OPTIONS } from '@/lib/sectionOptions';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import HealthCheck from '@/components/HealthCheck';
+import GitHubReconnectCard from '@/components/GitHubReconnectCard';
 import EmailLogs from '@/components/EmailLogs';
 import { DataIntegrityCheck } from '@/components/admin/DataIntegrityCheck';
 
@@ -1434,6 +1435,11 @@ const Admin = () => {
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
               <HealthCheck />
             </motion.div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+              <GitHubReconnectCard />
+            </motion.div>
+
             
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
               <EmailLogs />
