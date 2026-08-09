@@ -52,6 +52,42 @@ interface Branch {
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+const LONG_DESCRIPTION_LIMIT = 180;
+
+const InformativoSection = ({ description }: { description: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = description.length > LONG_DESCRIPTION_LIMIT;
+  const visibleText = isLong && !expanded
+    ? `${description.slice(0, LONG_DESCRIPTION_LIMIT).trimEnd()}…`
+    : description;
+
+  return (
+    <div
+      data-testid="informativo-section"
+      className="rounded-lg border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-2.5"
+    >
+      <p className="text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 mb-1">
+        Informativo
+      </p>
+      <p className="text-xs text-foreground/90 leading-relaxed whitespace-pre-line">
+        {visibleText}
+      </p>
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded(v => !v)}
+          className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 hover:underline"
+        >
+          {expanded ? 'Ver menos' : 'Ver mais'}
+          {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+        </button>
+      )}
+    </div>
+  );
+};
+
+
+
 const ScoutCalendar = () => {
   const { roles } = useAuth();
   const [events, setEvents] = useState<any[]>([]);
