@@ -12,7 +12,9 @@ import {
   MapPin, 
   Calendar as CalIcon, 
   Clock,
-  X
+  X,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import {
   format,
