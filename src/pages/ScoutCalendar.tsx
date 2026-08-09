@@ -12,7 +12,6 @@ import {
   MapPin, 
   Calendar as CalIcon, 
   Clock,
-  Info,
   X
 } from 'lucide-react';
 import {
