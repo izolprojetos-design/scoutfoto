@@ -272,6 +272,17 @@ const ScoutCalendar = () => {
                           </div>
 
                           <div className="space-y-2.5">
+                            {item.description && (
+                              <div className="rounded-lg border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-2.5">
+                                <p className="text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 mb-1">
+                                  Informativo
+                                </p>
+                                <p className="text-xs text-foreground/90 leading-relaxed">
+                                  {item.description}
+                                </p>
+                              </div>
+                            )}
+
                             {item.time && (
                               <div className="flex items-center gap-2 text-sm text-foreground/80 font-medium">
                                 <Clock className="h-4 w-4 text-blue-500" />
@@ -283,13 +294,6 @@ const ScoutCalendar = () => {
                               <div className="flex items-start gap-2 text-sm text-foreground/80">
                                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                                 <span className="leading-tight">{item.location}</span>
-                              </div>
-                            )}
-
-                            {item.description && (
-                              <div className="flex items-start gap-2 text-xs text-muted-foreground bg-background/50 p-2 rounded-lg border border-border/50">
-                                <Info className="h-3.5 w-3.5 mt-0.5 shrink-0" />
-                                <p className="leading-relaxed italic">{item.description}</p>
                               </div>
                             )}
 
