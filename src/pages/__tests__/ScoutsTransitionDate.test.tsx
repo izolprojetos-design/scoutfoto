@@ -101,10 +101,20 @@ describe("Scouts Page - Data da Passagem", () => {
     // Verificar se o título do dialog está presente
     expect(baseElement.textContent).toContain("Cadastrar Membro");
 
+    // Preencher a data de nascimento para que o ramo efetivo seja calculado
+    const birthInput = baseElement.querySelector('input#scout-birth-date') as HTMLInputElement;
+    expect(birthInput).not.toBeNull();
+    fireEvent.change(birthInput, { target: { value: "2015-01-01" } });
+
+    // Aguardar o campo Equipe e Data da Passagem aparecerem
+    await waitFor(() => {
+      expect(baseElement.textContent).toContain("Equipe");
+    }, { timeout: 2000 });
+
     // Verificar se o label e o input de Data da Passagem estão presentes
     expect(baseElement.textContent).toContain("Data da Passagem");
 
-    const dateInput = baseElement.querySelector('input[type="date"]');
-    expect(dateInput).not.toBeNull();
+    const dateInputs = baseElement.querySelectorAll('input[type="date"]');
+    expect(dateInputs.length).toBeGreaterThanOrEqual(2);
   });
 });
