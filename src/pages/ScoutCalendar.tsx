@@ -310,14 +310,7 @@ const ScoutCalendar = () => {
 
                           <div className="space-y-2.5">
                             {item.description && (
-                              <div className="rounded-lg border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900/50 p-2.5">
-                                <p className="text-[10px] font-bold uppercase tracking-wide text-blue-700 dark:text-blue-300 mb-1">
-                                  Informativo
-                                </p>
-                                <p className="text-xs text-foreground/90 leading-relaxed">
-                                  {item.description}
-                                </p>
-                              </div>
+                              <InformativoSection description={item.description} />
                             )}
 
                             {item.time && (
