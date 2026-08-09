@@ -6,36 +6,39 @@ import { useAuth } from "@/contexts/AuthContext";
 import { usePermissions } from "@/hooks/usePermissions";
 
 // Mock Supabase
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => Promise.resolve({ data: [], error: null })),
-          single: vi.fn(() => Promise.resolve({ data: null, error: null })),
-        })),
+const mockSupabase = {
+  from: vi.fn(() => ({
+    select: vi.fn(() => ({
+      eq: vi.fn(() => ({
         order: vi.fn(() => Promise.resolve({ data: [], error: null })),
         single: vi.fn(() => Promise.resolve({ data: null, error: null })),
       })),
-      on: vi.fn(() => ({ subscribe: vi.fn() })),
-      removeChannel: vi.fn(),
-      update: vi.fn(() => Promise.resolve({ error: null })),
-      insert: vi.fn(() => Promise.resolve({ error: null })),
-      delete: vi.fn(() => Promise.resolve({ error: null })),
+      order: vi.fn(() => Promise.resolve({ data: [], error: null })),
+      single: vi.fn(() => Promise.resolve({ data: null, error: null })),
     })),
-    channel: vi.fn(() => ({
-      on: vi.fn(() => ({
-        subscribe: vi.fn(),
-      })),
+    on: vi.fn(() => ({ subscribe: vi.fn() })),
+    removeChannel: vi.fn(),
+    update: vi.fn(() => Promise.resolve({ error: null })),
+    insert: vi.fn(() => Promise.resolve({ error: null })),
+    delete: vi.fn(() => Promise.resolve({ error: null })),
+  })),
+  channel: vi.fn(() => ({
+    on: vi.fn(() => ({
+      subscribe: vi.fn(),
     })),
-    storage: {
-      from: vi.fn(() => ({
-        upload: vi.fn(() => Promise.resolve({ error: null })),
-        getPublicUrl: vi.fn(() => ({ data: { publicUrl: "" } })),
-        createSignedUrl: vi.fn(() => Promise.resolve({ data: { signedUrl: "" }, error: null })),
-      })),
-    },
+  })),
+  rpc: vi.fn(() => Promise.resolve({ data: null, error: null })),
+  storage: {
+    from: vi.fn(() => ({
+      upload: vi.fn(() => Promise.resolve({ error: null })),
+      getPublicUrl: vi.fn(() => ({ data: { publicUrl: "" } })),
+      createSignedUrl: vi.fn(() => Promise.resolve({ data: { signedUrl: "" }, error: null })),
+    })),
   },
+};
+
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: mockSupabase,
 }));
 
 // Mock Auth Context
