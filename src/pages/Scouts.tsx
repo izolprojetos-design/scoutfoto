@@ -3515,6 +3515,35 @@ const Scouts = () => {
                           <span className="font-medium">{viewingScout.section}</span>
                         </div>
                       )}
+                      <div className="flex items-center justify-between gap-2 py-2 border-b">
+                        <span className="text-muted-foreground">Data da Passagem</span>
+                        {canEditScouts ? (
+                          <Input
+                            type="date"
+                            className="h-9 w-[160px] text-sm"
+                            value={viewingScout.transition_date || ''}
+                            onChange={async (e) => {
+                              const newDate = e.target.value || null;
+                              const prev = viewingScout;
+                              setViewingScout({ ...viewingScout, transition_date: newDate });
+                              const { error } = await supabase.from('scouts').update({ transition_date: newDate }).eq('id', viewingScout.id);
+                              if (error) {
+                                toast.error('Erro ao atualizar data da passagem');
+                                setViewingScout(prev);
+                              } else {
+                                toast.success('Data da passagem atualizada');
+                                fetchData();
+                              }
+                            }}
+                          />
+                        ) : (
+                          <span className="font-medium">
+                            {viewingScout.transition_date
+                              ? parseLocalDate(viewingScout.transition_date).toLocaleDateString('pt-BR')
+                              : 'Não informada'}
+                          </span>
+                        )}
+                      </div>
                       {nextChange && (
                         <div className="flex justify-between py-2 border-b">
                           <span className="text-muted-foreground">Próximo ramo</span>
