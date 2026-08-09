@@ -1800,6 +1800,15 @@ const Scouts = () => {
               ))}
             </SelectContent>
           </Select>
+          <div className="space-y-2">
+            <Label>Data da Passagem</Label>
+            <Input
+              type="date"
+              value={transitionDate}
+              onChange={e => setTransitionDate(e.target.value)}
+              className="h-11"
+            />
+          </div>
           <div className="flex gap-2">
             <Input
               value={newSubgroupName}
