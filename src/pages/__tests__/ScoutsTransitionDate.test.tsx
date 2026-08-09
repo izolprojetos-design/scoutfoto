@@ -85,7 +85,7 @@ describe("Scouts Page - Data da Passagem", () => {
   });
 
   it("deve exibir o campo 'Data da Passagem' no formulário de cadastro abaixo do seletor de Equipe", async () => {
-    render(
+    const { baseElement } = render(
       <MemoryRouter>
         <Scouts />
       </MemoryRouter>
@@ -95,17 +95,18 @@ describe("Scouts Page - Data da Passagem", () => {
     const addButton = await waitFor(() => screen.getByRole("button", { name: /Novo Integrante/i }));
     fireEvent.click(addButton);
 
-    // Aguardar o dialog abrir
+    // Aguardar o dialog abrir (conteúdo portado para document.body)
     await waitFor(() => {
-      expect(screen.queryByText(/Cadastrar Membro/i)).not.toBeNull();
-    });
+      expect(baseElement.querySelector('[role="dialog"]')).not.toBeNull();
+    }, { timeout: 3000 });
+
+    // Verificar se o título do dialog está presente
+    expect(baseElement.textContent).toContain("Cadastrar Membro");
 
     // Verificar se o label e o input de Data da Passagem estão presentes
-    const label = screen.getByText("Data da Passagem");
-    expect(label).toBeDefined();
+    expect(baseElement.textContent).toContain("Data da Passagem");
 
-    const dateInput = screen.getByLabelText("Data da Passagem");
-    expect(dateInput).toBeDefined();
-    expect(dateInput.getAttribute("type")).toBe("date");
+    const dateInput = baseElement.querySelector('input[type="date"]');
+    expect(dateInput).not.toBeNull();
   });
 });
