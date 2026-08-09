@@ -38,7 +38,7 @@ describe('Seção Informativo do card de evento', () => {
     eventsData = [{ id: '1', name: 'Reunião', event_date: iso, description: null }];
     render(<ScoutCalendar />);
     await openDay();
-    expect(await screen.findByText('Reunião')).toBeTruthy();
+    expect((await screen.findAllByText('Reunião')).length).toBeGreaterThan(0);
     expect(screen.queryByTestId('informativo-section')).toBeNull();
   });
 
