@@ -309,7 +309,7 @@ const ScoutCalendar = () => {
                           </div>
 
                           <div className="space-y-2.5">
-                            {item.description && (
+                            {item.description && item.description.trim() !== '' && (
                               <InformativoSection description={item.description} />
                             )}
 

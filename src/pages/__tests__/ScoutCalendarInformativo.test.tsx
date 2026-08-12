@@ -42,6 +42,20 @@ describe('Seção Informativo do card de evento', () => {
     expect(screen.queryByTestId('informativo-section')).toBeNull();
   });
 
+  it('não aparece quando a descrição é uma string vazia', async () => {
+    eventsData = [{ id: '1-empty', name: 'Reunião Vazia', event_date: iso, description: '' }];
+    render(<ScoutCalendar />);
+    await openDay();
+    expect(screen.queryByTestId('informativo-section')).toBeNull();
+  });
+
+  it('não aparece quando a descrição contém apenas espaços', async () => {
+    eventsData = [{ id: '1-spaces', name: 'Reunião Espaços', event_date: iso, description: '   ' }];
+    render(<ScoutCalendar />);
+    await openDay();
+    expect(screen.queryByTestId('informativo-section')).toBeNull();
+  });
+
   it('aparece quando o evento tem descrição', async () => {
     eventsData = [{ id: '2', name: 'Acampamento', event_date: iso, description: 'Levar barraca' }];
     render(<ScoutCalendar />);
